@@ -1,0 +1,4 @@
+/* Le socle embarque Tailwind v4 (plugin PostCSS), mais cette application n'en charge
+   RIEN : Bootstrap et la feuille CityRésa (public/css/cityresa.css) portent tout le
+   style. Tailwind et Bootstrap partagent des noms de classes (collapse, container,
+   table…) : charger les deux ferait s'appliquer l'un par-dessus l'autre. */

@@ -1,0 +1,12 @@
+# Tâches planifiées CityRésa.
+# $CRON_SECRET est injecté via l'environnement du conteneur (docker-compose).
+# busybox crond exécute chaque ligne via /bin/sh, qui développe la variable.
+#
+# Toutes les tâches sont APPELÉES toutes les 5 minutes : l'app applique elle-même la
+# planification de chaque tâche (src/server/jobs-registre.ts) et ne l'exécute que si son
+# échéance est atteinte ; sinon l'appel répond `skipped` sans rien faire.
+# Horaires (Europe/Paris) : backup_database 01:00, archivage_auto 02:00,
+# purge_notifications 03:00, terminer_reservations toutes les heures, rappels_usagers 07:00,
+# relances_signature 07:15, relances_paiement 07:30, digest_agents 07:45.
+
+*/5 * * * * curl -fsS -H "x-cron-secret: $CRON_SECRET" http://app:3000/api/cron/tous >/dev/null 2>&1

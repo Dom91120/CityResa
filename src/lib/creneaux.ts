@@ -1,0 +1,300 @@
+/**
+ * Créneaux : chevauchements, récurrences, horaires d'ouverture et règles de délai.
+ * Logique PURE (aucune I/O) : testée unitairement (creneaux.test.ts).
+ *
+ * Un créneau est un intervalle d'instants [startAt, endAt[. Les récurrences se
+ * calculent en HEURE MURALE de Paris : « tous les mercredis 18h-20h » reste à 18h
+ * après le passage à l'heure d'été.
+ */
+import { pad2 } from "@/lib/date-utc";
+import { minutesDe, parisParts, parisWallToInstant, toParisWall } from "@/lib/paris-time";
+
+export type Intervalle = { startAt: Date; endAt: Date };
+
+/** Deux intervalles se chevauchent-ils (bornes exclues : 10h-12h et 12h-14h ne se touchent pas) ? */
+export function chevauche(a: Intervalle, b: Intervalle): boolean {
+  return a.startAt < b.endAt && b.startAt < a.endAt;
+}
+
+/** L'intervalle élargi des temps de montage / démontage (minutes). */
+export function avecMarges(i: Intervalle, avantMin: number, apresMin: number): Intervalle {
+  return {
+    startAt: new Date(i.startAt.getTime() - avantMin * 60_000),
+    endAt: new Date(i.endAt.getTime() + apresMin * 60_000),
+  };
+}
+
+export function dureeMinutes(i: Intervalle): number {
+  return Math.round((i.endAt.getTime() - i.startAt.getTime()) / 60_000);
+}
+
+// ── Récurrences ──
+
+export type Recurrence = {
+  /** daily | weekly | monthly */
+  freq: "daily" | "weekly" | "monthly";
+  /** Toutes les N unités (1 = chaque semaine, 2 = une semaine sur deux). */
+  interval?: number;
+  /** Jours ISO (1 = lundi … 7 = dimanche) pour une récurrence hebdomadaire ; vide = le jour du premier créneau. */
+  byWeekday?: number[];
+  /** Dernière date incluse « YYYY-MM-DD » (heure de Paris). */
+  until?: string;
+  /** Ou un nombre d'occurrences. */
+  count?: number;
+  /** Dates exclues « YYYY-MM-DD » (vacances, jours fériés). */
+  except?: string[];
+};
+
+export const MAX_OCCURRENCES = 200;
+
+/** Lit une récurrence depuis un JSON quelconque (null si absente ou invalide). */
+export function lireRecurrence(json: unknown): Recurrence | null {
+  if (!json || typeof json !== "object") return null;
+  const r = json as Record<string, unknown>;
+  if (r.freq !== "daily" && r.freq !== "weekly" && r.freq !== "monthly") return null;
+  const out: Recurrence = { freq: r.freq };
+  if (typeof r.interval === "number" && r.interval >= 1) out.interval = Math.floor(r.interval);
+  if (Array.isArray(r.byWeekday))
+    out.byWeekday = r.byWeekday.map(Number).filter((n) => Number.isInteger(n) && n >= 1 && n <= 7);
+  if (typeof r.until === "string" && /^\d{4}-\d{2}-\d{2}$/.test(r.until)) out.until = r.until;
+  if (typeof r.count === "number" && r.count >= 1) out.count = Math.floor(r.count);
+  if (Array.isArray(r.except))
+    out.except = r.except.filter((x) => typeof x === "string" && /^\d{4}-\d{2}-\d{2}$/.test(x));
+  return out;
+}
+
+function cleDate(y: number, mo: number, da: number): string {
+  return `${y}-${pad2(mo)}-${pad2(da)}`;
+}
+
+/**
+ * Développe un premier créneau selon sa récurrence : la liste des occurrences, premier
+ * créneau compris, bornée à MAX_OCCURRENCES. La durée de chaque occurrence est celle du
+ * premier créneau ; les heures sont celles de Paris.
+ */
+export function developperRecurrence(premier: Intervalle, rec: Recurrence | null): Intervalle[] {
+  if (!rec) return [premier];
+  const interval = Math.max(1, rec.interval ?? 1);
+  const duree = premier.endAt.getTime() - premier.startAt.getTime();
+  const debut = toParisWall(premier.startAt);
+  const max = Math.min(MAX_OCCURRENCES, rec.count ?? MAX_OCCURRENCES);
+  const except = new Set(rec.except ?? []);
+  const limiteCle = rec.until ?? null;
+  const out: Intervalle[] = [];
+  // Garde-fou : sans `until` ni `count`, on borne à un an.
+  const unAn = new Date(Date.UTC(debut.y + 1, debut.mo - 1, debut.da));
+  const borne =
+    limiteCle ?? cleDate(unAn.getUTCFullYear(), unAn.getUTCMonth() + 1, unAn.getUTCDate());
+
+  const pousser = (y: number, mo: number, da: number) => {
+    const cle = cleDate(y, mo, da);
+    if (cle > borne) return false;
+    if (!except.has(cle)) {
+      const startAt = parisWallToInstant(y, mo, da, debut.min);
+      out.push({ startAt, endAt: new Date(startAt.getTime() + duree) });
+    }
+    return out.length < max;
+  };
+
+  if (rec.freq === "daily") {
+    const cur = new Date(Date.UTC(debut.y, debut.mo - 1, debut.da));
+    for (let i = 0; i < 2000; i++) {
+      if (!pousser(cur.getUTCFullYear(), cur.getUTCMonth() + 1, cur.getUTCDate())) break;
+      cur.setUTCDate(cur.getUTCDate() + interval);
+    }
+  } else if (rec.freq === "weekly") {
+    const premierJour = parisParts(premier.startAt).weekday;
+    const jours = (rec.byWeekday?.length ? rec.byWeekday : [premierJour]).slice().sort();
+    // Lundi de la semaine du premier créneau.
+    const lundi = new Date(Date.UTC(debut.y, debut.mo - 1, debut.da));
+    lundi.setUTCDate(lundi.getUTCDate() - (premierJour - 1));
+    let continuer = true;
+    for (let semaine = 0; semaine < 600 && continuer; semaine += interval) {
+      for (const j of jours) {
+        const d = new Date(lundi.getTime());
+        d.setUTCDate(d.getUTCDate() + semaine * 7 + (j - 1));
+        const cle = cleDate(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+        if (cle < cleDate(debut.y, debut.mo, debut.da)) continue;
+        if (!pousser(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate())) {
+          continuer = false;
+          break;
+        }
+      }
+      if (
+        cleDate(
+          lundi.getUTCFullYear(),
+          lundi.getUTCMonth() + 1,
+          lundi.getUTCDate() + (semaine + interval) * 7,
+        ) > borne
+      )
+        break;
+    }
+  } else {
+    for (let i = 0; i < 240; i++) {
+      const mois = debut.mo - 1 + i * interval;
+      const y = debut.y + Math.floor(mois / 12);
+      const mo = (mois % 12) + 1;
+      const dernierJour = new Date(Date.UTC(y, mo, 0)).getUTCDate();
+      if (!pousser(y, mo, Math.min(debut.da, dernierJour))) break;
+    }
+  }
+  return out;
+}
+
+/** Une phrase pour une récurrence : « Chaque semaine le mercredi, jusqu'au 30/06/2026 ». */
+export function decrireRecurrence(rec: Recurrence | null): string {
+  if (!rec) return "";
+  const JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
+  const n = rec.interval ?? 1;
+  let base: string;
+  if (rec.freq === "daily") base = n === 1 ? "Chaque jour" : `Tous les ${n} jours`;
+  else if (rec.freq === "weekly") {
+    base =
+      n === 1 ? "Chaque semaine" : n === 2 ? "Une semaine sur deux" : `Toutes les ${n} semaines`;
+    if (rec.byWeekday?.length) base += ` le ${rec.byWeekday.map((j) => JOURS[j - 1]).join(", ")}`;
+  } else base = n === 1 ? "Chaque mois" : `Tous les ${n} mois`;
+  if (rec.until) {
+    const [y, m, d] = rec.until.split("-");
+    base += `, jusqu'au ${d}/${m}/${y}`;
+  } else if (rec.count) base += `, ${rec.count} fois`;
+  return base;
+}
+
+// ── Horaires d'ouverture ──
+
+/** {"1":[["08:00","22:00"]], …} : plages par jour ISO. */
+export type Horaires = Record<string, [string, string][]>;
+
+export function lireHoraires(json: unknown): Horaires | null {
+  if (!json || typeof json !== "object") return null;
+  const out: Horaires = {};
+  for (const [k, v] of Object.entries(json as Record<string, unknown>)) {
+    if (!/^[1-7]$/.test(k) || !Array.isArray(v)) continue;
+    const plages: [string, string][] = [];
+    for (const p of v) {
+      if (
+        Array.isArray(p) &&
+        p.length === 2 &&
+        typeof p[0] === "string" &&
+        typeof p[1] === "string"
+      )
+        plages.push([p[0], p[1]]);
+    }
+    out[k] = plages;
+  }
+  return out;
+}
+
+/**
+ * Le créneau (heure de Paris) tombe-t-il dans les horaires d'ouverture ? Sans horaires
+ * déclarés : toujours. Un créneau sur plusieurs jours est vérifié jour par jour.
+ */
+export function dansHoraires(horaires: Horaires | null, i: Intervalle): boolean {
+  if (!horaires) return true;
+  const a = parisParts(i.startAt);
+  const b = parisParts(new Date(i.endAt.getTime() - 1));
+  if (a.dateKey !== b.dateKey) {
+    // Multi-jours : chaque jour doit être ouvert de l'heure de début à minuit, etc. On
+    // simplifie en exigeant que chaque jour touché soit ouvert sur la partie concernée.
+    const jours: Intervalle[] = [];
+    let cur = i.startAt;
+    while (cur < i.endAt) {
+      const p = parisParts(cur);
+      const [y, mo, da] = p.dateKey.split("-").map(Number);
+      const minuitSuivant = parisWallToInstant(y, mo, da + 1, 0);
+      // biome-ignore lint/complexity/useMathMinMax: comparaison de dates, pas de nombres.
+      const fin = minuitSuivant < i.endAt ? minuitSuivant : i.endAt;
+      jours.push({ startAt: cur, endAt: fin });
+      cur = fin;
+    }
+    return jours.every((j) => dansHoraires(horaires, j));
+  }
+  const plages = horaires[String(a.weekday)] ?? [];
+  const finMin = b.min + 1;
+  return plages.some(([ouv, ferm]) => {
+    const o = minutesDe(ouv);
+    const f = minutesDe(ferm);
+    if (o === null || f === null) return false;
+    const fermeture = f === 0 ? 1440 : f;
+    return a.min >= o && finMin <= fermeture;
+  });
+}
+
+/** Horaires par défaut : tous les jours 8h-22h. */
+export const HORAIRES_DEFAUT: Horaires = Object.fromEntries(
+  [1, 2, 3, 4, 5, 6, 7].map((j) => [String(j), [["08:00", "22:00"]]]),
+);
+
+// ── Règles d'un espace ──
+
+export type ReglesEspace = {
+  slotStepMin: number;
+  minDurationMin: number;
+  maxDurationMin: number | null;
+  delayMinDays: number;
+  horizonMaxDays: number;
+  openHours: unknown;
+};
+
+/** Les manquements d'un créneau aux règles de l'espace (vide = conforme). */
+export function verifierRegles(
+  regles: ReglesEspace,
+  i: Intervalle,
+  now: Date = new Date(),
+  opts: { ignorerDelai?: boolean } = {},
+): string[] {
+  const erreurs: string[] = [];
+  if (i.endAt <= i.startAt) {
+    erreurs.push("L'heure de fin doit être après l'heure de début.");
+    return erreurs;
+  }
+  const d = dureeMinutes(i);
+  if (d < regles.minDurationMin)
+    erreurs.push(`Durée minimale : ${Math.round(regles.minDurationMin / 60)} h.`);
+  if (regles.maxDurationMin && d > regles.maxDurationMin)
+    erreurs.push(`Durée maximale : ${Math.round(regles.maxDurationMin / 60)} h.`);
+  const pas = regles.slotStepMin || 15;
+  const a = toParisWall(i.startAt).min;
+  const b = toParisWall(i.endAt).min;
+  if (a % pas !== 0 || b % pas !== 0)
+    erreurs.push(`Les horaires se saisissent par pas de ${pas} min.`);
+  if (!opts.ignorerDelai) {
+    const jours = Math.floor((i.startAt.getTime() - now.getTime()) / 86_400_000);
+    if (jours < regles.delayMinDays)
+      erreurs.push(
+        `La demande doit être déposée au moins ${regles.delayMinDays} jour(s) à l'avance.`,
+      );
+    if (jours > regles.horizonMaxDays)
+      erreurs.push(`Impossible de réserver plus de ${regles.horizonMaxDays} jours à l'avance.`);
+  }
+  if (!dansHoraires(lireHoraires(regles.openHours), i))
+    erreurs.push("Le créneau sort des horaires d'ouverture de l'espace.");
+  return erreurs;
+}
+
+// ── Conflits ──
+
+export type Occupant = Intervalle & { id: number; reservationId?: number; libelle: string };
+
+/** Parmi `existants`, ceux qui chevauchent un des créneaux demandés (marges comprises). */
+export function conflits<T extends Intervalle>(
+  demandes: Intervalle[],
+  existants: T[],
+  marges: { avantMin: number; apresMin: number } = { avantMin: 0, apresMin: 0 },
+): { demande: Intervalle; existant: T }[] {
+  const out: { demande: Intervalle; existant: T }[] = [];
+  for (const d of demandes) {
+    const dm = avecMarges(d, marges.avantMin, marges.apresMin);
+    for (const e of existants) {
+      if (chevauche(dm, e)) out.push({ demande: d, existant: e });
+    }
+  }
+  return out;
+}
+
+/** Bornes (premier début, dernière fin) d'un ensemble de créneaux. */
+export function bornes(creneaux: Intervalle[]): Intervalle {
+  const startAt = new Date(Math.min(...creneaux.map((c) => c.startAt.getTime())));
+  const endAt = new Date(Math.max(...creneaux.map((c) => c.endAt.getTime())));
+  return { startAt, endAt };
+}
