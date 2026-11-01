@@ -174,6 +174,20 @@ const PHOTOS_REELLES: Record<string, { fichier: string; titre: string }[]> = {
     { fichier: "espace-mb-polyvalente-3.jpg", titre: "Configuration réunion" },
     { fichier: "espace-mb-polyvalente-2.jpg", titre: "Cuisine attenante" },
   ],
+  "site:folie-desmares": [{ fichier: "espace-folie-desmares-3.jpg", titre: "Entrée" }],
+  "espace:folie-desmares": [
+    { fichier: "espace-folie-desmares-1.jpg", titre: "Vue d'ensemble en configuration conférence" },
+    { fichier: "espace-folie-desmares-2.jpg", titre: "Conférence, vue du public" },
+    { fichier: "espace-folie-desmares-3.jpg", titre: "Entrée du bâtiment" },
+  ],
+  "site:henri-matisse": [{ fichier: "espace-henri-matisse-1.jpg", titre: "La salle" }],
+  "espace:henri-matisse": [{ fichier: "espace-henri-matisse-1.jpg", titre: "Vue d'ensemble" }],
+  "site:moquet": [{ fichier: "espace-moquet-1.jpg", titre: "Vue aérienne" }],
+  "espace:moquet": [
+    { fichier: "espace-moquet-1.jpg", titre: "Vue aérienne du terrain synthétique et de la piste" },
+  ],
+  "site:gabriel-peri": [{ fichier: "espace-gabriel-peri-1.jpg", titre: "La salle" }],
+  "espace:gabriel-peri": [{ fichier: "espace-gabriel-peri-1.jpg", titre: "Vue d'ensemble" }],
   "site:terrain-multisport": [
     { fichier: "espace-terrain-multisport-1.jpg", titre: "Vue d'ensemble" },
   ],

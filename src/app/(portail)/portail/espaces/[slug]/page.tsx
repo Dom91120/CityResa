@@ -89,7 +89,9 @@ export default async function FicheEspacePage({
       <div className="fiche-espace">
         <div>
           {imgs.length ? (
-            <div className={`galerie${imgs.length === 1 ? " galerie--une" : ""}`}>
+            <div
+              className={`galerie${imgs.length === 1 ? " galerie--une" : imgs.length === 2 ? " galerie--deux" : ""}`}
+            >
               <a
                 href={`/documents/${imgs[0].id}/view`}
                 target="_blank"
@@ -111,7 +113,6 @@ export default async function FicheEspacePage({
                   />
                 </a>
               ))}
-              {imgs.length === 2 ? <div className="vide" /> : null}
             </div>
           ) : (
             <div className="galerie galerie--une">

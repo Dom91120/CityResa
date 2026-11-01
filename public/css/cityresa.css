@@ -631,6 +631,7 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .galerie img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .galerie .principale { grid-row: 1 / 3; }
 .galerie--une { grid-template-columns: 1fr; grid-template-rows: 360px; }
+.galerie--deux > a:not(.principale) { grid-row: 1 / 3; }
 .galerie .vide { background: var(--inset); display: flex; align-items: center; justify-content: center; color: var(--faint); }
 @media (max-width: 767px) { .galerie { grid-template-columns: 1fr; grid-template-rows: 220px; } .galerie img:not(.principale) { display: none; } }
 .fiche-espace { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: 24px; align-items: start; }
