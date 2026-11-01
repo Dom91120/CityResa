@@ -97,6 +97,7 @@ def main():
     p.add_argument("--zone", action="append", default=[], help="x,y,w,h (image de sortie)")
     p.add_argument("--controle", help="aperçu réduit avec les zones encadrées")
     p.add_argument("--sans-detection", action="store_true")
+    p.add_argument("--seuil", type=float, default=0.45, help="score minimal de détection (0-1)")
     a = p.parse_args()
 
     donnees = np.fromfile(a.source, dtype=np.uint8)  # chemins accentués sous Windows
@@ -107,7 +108,7 @@ def main():
         echelle = a.largeur / img.shape[1]
         img = cv2.resize(img, (a.largeur, round(img.shape[0] * echelle)), interpolation=cv2.INTER_AREA)
 
-    boites = [] if a.sans_detection else detecter(img)
+    boites = [] if a.sans_detection else detecter(img, a.seuil)
     for z in a.zone:
         boites.append(tuple(int(v) for v in z.split(",")))
     print(f"{a.source} : {len(boites)} zone(s) floutée(s) {boites}")
