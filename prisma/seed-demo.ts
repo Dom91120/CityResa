@@ -197,6 +197,24 @@ const PHOTOS_REELLES: Record<string, { fichier: string; titre: string }[]> = {
   ],
   "site:chalet": [{ fichier: "espace-chalet-1.jpg", titre: "Le chalet" }],
   "espace:chalet": [{ fichier: "espace-chalet-1.jpg", titre: "Vue extérieure" }],
+  "site:republique": [{ fichier: "espace-republique-1.jpg", titre: "Le gymnase" }],
+  "espace:republique": [
+    { fichier: "espace-republique-1.jpg", titre: "Vue d'ensemble, tournoi de judo" },
+    { fichier: "espace-republique-2.jpg", titre: "Tournoi de judo" },
+    { fichier: "espace-republique-3.jpg", titre: "Tatamis" },
+  ],
+  "site:langevin": [{ fichier: "espace-langevin-1.jpg", titre: "Le gymnase" }],
+  "espace:langevin": [
+    { fichier: "espace-langevin-1.jpg", titre: "Vue d'ensemble, badminton" },
+    { fichier: "espace-langevin-2.jpg", titre: "Mur d'escalade" },
+    { fichier: "espace-langevin-3.jpg", titre: "Cours collectif sur tatamis" },
+  ],
+  "site:roland-garros": [{ fichier: "espace-roland-garros-1.jpg", titre: "Le gymnase" }],
+  "espace:roland-garros": [
+    { fichier: "espace-roland-garros-1.jpg", titre: "Vue d'ensemble, initiation au badminton" },
+    { fichier: "espace-roland-garros-2.jpg", titre: "Configuration salon" },
+    { fichier: "espace-roland-garros-3.jpg", titre: "Entraînement" },
+  ],
   "site:henri-matisse": [{ fichier: "espace-henri-matisse-1.jpg", titre: "La salle" }],
   "espace:henri-matisse": [
     { fichier: "espace-henri-matisse-1.jpg", titre: "Vue d'ensemble" },
