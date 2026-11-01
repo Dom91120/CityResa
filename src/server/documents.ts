@@ -286,19 +286,29 @@ function nomAttache(filename: string): string {
   return `filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(filename)}`;
 }
 
-/** La réponse HTTP d'une pièce : en pièce jointe, ou en ligne quand son type s'y prête. */
+/**
+ * La réponse HTTP d'une pièce : en pièce jointe, ou en ligne quand son type s'y prête.
+ * Les vignettes et affichages en ligne portent un ETag : le navigateur revalide à chaque
+ * affichage (réponse 304 si la pièce n'a pas changé), ce qui évite d'afficher une image
+ * périmée quand un identifiant est réutilisé ou une photo remplacée.
+ */
 export async function reponseDocument(
   id: number,
   mode: "download" | "view" | "thumb",
+  ifNoneMatch: string | null = null,
 ): Promise<Response | null> {
   const doc = await prisma.document.findUnique({ where: { id }, include: { content: true } });
   if (!doc?.content) return null;
+  const etag = `"${doc.id}-${doc.createdAt.getTime()}-${doc.size}-${mode}"`;
+  if (mode !== "download" && ifNoneMatch === etag)
+    return new Response(null, { status: 304, headers: { ETag: etag } });
   if (mode === "thumb") {
     const data = doc.content.thumb ?? doc.content.data;
     return new Response(new Uint8Array(data), {
       headers: {
         "Content-Type": doc.content.thumb ? "image/jpeg" : doc.mimeType,
-        "Cache-Control": "private, max-age=3600",
+        "Cache-Control": "private, no-cache",
+        ETag: etag,
         "X-Content-Type-Options": "nosniff",
       },
     });
@@ -310,6 +320,7 @@ export async function reponseDocument(
       "Content-Disposition": `${mime ? "inline" : "attachment"}; ${nomAttache(doc.filename)}`,
       "Content-Length": String(doc.content.data.byteLength),
       "X-Content-Type-Options": "nosniff",
+      ...(mime ? { "Cache-Control": "private, no-cache", ETag: etag } : {}),
       ...(mime
         ? {
             "Content-Security-Policy":

@@ -15,6 +15,8 @@
  * montant calculé avec `deviser`, comme le ferait l'application. Les conventions PDF ne
  * sont pas générées (pas de navigateur dans un script).
  */
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import "dotenv/config";
 import type { ReservationStatus } from "@/lib/constantes";
 import { COULEURS_ESPACE, FACTURE_TYPES, RESERVATION_STATUS } from "@/lib/constantes";
@@ -158,6 +160,37 @@ function lignesTitre(titre: string): string {
         `<text x="600" y="${t.base + i * Math.round(t.taille * 1.15)}" font-family="Arial, Helvetica, sans-serif" font-size="${t.taille}" font-weight="700" fill="#fff" text-anchor="middle">${echapper(l)}</text>`,
     )
     .join("\n");
+}
+
+// ── Photos réelles livrées avec le dépôt (prisma/assets/photos) ──
+// Clé « site:<cle> » ou « espace:<cle> » → fichiers (JPEG, 1 600 px de large) et titres. Les
+// sites et espaces absents d'ici gardent une image générée. Les originaux sont copiés dans
+// Documents/ (hors dépôt) et réduits avec sharp avant d'être déposés ici.
+const DOSSIER_PHOTOS = "prisma/assets/photos";
+const PHOTOS_REELLES: Record<string, { fichier: string; titre: string }[]> = {
+  "site:maison-blanche": [{ fichier: "site-maison-blanche-1.jpg", titre: "Façade" }],
+  "espace:mb-polyvalente": [
+    { fichier: "espace-mb-polyvalente-1.jpg", titre: "Vue d'ensemble" },
+    { fichier: "espace-mb-polyvalente-2.jpg", titre: "Cuisine attenante" },
+  ],
+  "site:terrain-multisport": [
+    { fichier: "espace-terrain-multisport-1.jpg", titre: "Vue d'ensemble" },
+  ],
+  "espace:terrain-multisport": [
+    {
+      fichier: "espace-terrain-multisport-1.jpg",
+      titre: "Terrain de basket 3x3 et station d'éveil sportif",
+    },
+    { fichier: "espace-terrain-multisport-2.jpg", titre: "Tables de ping-pong et espace détente" },
+  ],
+};
+
+/** Les photos réelles d'un site ou d'un espace lues sur le disque ; vide si aucune. */
+function photosReelles(cle: string): { nom: string; titre: string; octets: Buffer }[] {
+  return (PHOTOS_REELLES[cle] ?? [])
+    .map((p) => ({ ...p, chemin: path.join(DOSSIER_PHOTOS, p.fichier) }))
+    .filter((p) => existsSync(p.chemin))
+    .map((p) => ({ nom: p.fichier, titre: p.titre, octets: readFileSync(p.chemin) }));
 }
 
 async function photo(
@@ -2256,22 +2289,33 @@ async function creerSitesEtEspaces(): Promise<{
     });
     sites.set(s.cle, { id: site.id, name: site.name });
     compter("sites");
-    const octets = await photo(
-      COULEURS_ESPACE[(i * 3) % COULEURS_ESPACE.length],
-      s.picto,
-      s.name,
-      `${s.address} · ${s.city}`,
-      i,
-    );
-    await deposerDocument({
-      kind: "site",
-      parentId: site.id,
-      fichier: { nom: "photo-1.jpg", mime: "image/jpeg", octets },
-      docKind: "photo",
-      title: "Façade",
-      isPublic: true,
-    });
-    compter("photos");
+    const reellesSite = photosReelles(`site:${s.cle}`);
+    const photosSite = reellesSite.length
+      ? reellesSite
+      : [
+          {
+            nom: "photo-1.jpg",
+            titre: "Façade",
+            octets: await photo(
+              COULEURS_ESPACE[(i * 3) % COULEURS_ESPACE.length],
+              s.picto,
+              s.name,
+              `${s.address} · ${s.city}`,
+              i,
+            ),
+          },
+        ];
+    for (const p of photosSite) {
+      await deposerDocument({
+        kind: "site",
+        parentId: site.id,
+        fichier: { nom: p.nom, mime: "image/jpeg", octets: p.octets },
+        docKind: "photo",
+        title: p.titre,
+        isPublic: true,
+      });
+      compter("photos");
+    }
   }
 
   const espaces = new Map<string, EspaceRow>();
@@ -2352,14 +2396,22 @@ async function creerSitesEtEspaces(): Promise<{
       compter("options");
     }
     const sousTitres = ["Vue d'ensemble", "Configuration conférence", "Détail de l'équipement"];
-    for (let v = 0; v < e.photos; v++) {
-      const octets = await photo(couleur, e.picto, e.name, `${site.name} · ${sousTitres[v]}`, v);
+    const reelles = photosReelles(`espace:${e.cle}`);
+    const photosEspace = reelles.length ? reelles : [];
+    if (!reelles.length)
+      for (let v = 0; v < e.photos; v++)
+        photosEspace.push({
+          nom: `photo-${v + 1}.jpg`,
+          titre: sousTitres[v],
+          octets: await photo(couleur, e.picto, e.name, `${site.name} · ${sousTitres[v]}`, v),
+        });
+    for (const p of photosEspace) {
       await deposerDocument({
         kind: "espace",
         parentId: row.id,
-        fichier: { nom: `photo-${v + 1}.jpg`, mime: "image/jpeg", octets },
+        fichier: { nom: p.nom, mime: "image/jpeg", octets: p.octets },
         docKind: "photo",
-        title: sousTitres[v],
+        title: p.titre,
         isPublic: true,
       });
       compter("photos");
