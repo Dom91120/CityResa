@@ -1,0 +1,39 @@
+# dépendances
+node_modules
+.pnpm-store
+
+# build Next.js
+.next
+out
+next-env.d.ts
+
+# cache TypeScript
+*.tsbuildinfo
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# logs / divers
+npm-debug.log*
+*.log
+.DS_Store
+coverage
+
+# Prisma (le client généré ne se commit pas)
+prisma/generated
+src/generated
+
+# Sauvegardes de la base (dumps produits par le conteneur cron et l'onglet Sauvegardes)
+/backups/
+
+# config locale Claude Code
+.claude/settings.local.json
+
+# Fichiers temporaires Office
+~$*
+
+# Documents de référence (brochures, cahier des charges d'origine) : hors dépôt
+/Documents/
+.next-build

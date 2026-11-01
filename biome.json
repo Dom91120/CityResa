@@ -1,0 +1,45 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.6.4/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "includes": [
+      "**",
+      "!**/.next",
+      "!**/node_modules",
+      "!**/prisma/migrations",
+      "!**/docs",
+      "!**/Documents",
+      "!**/public/*.svg",
+      "!**/public/img",
+      "!**/src/app/globals.css",
+      "!**/tsconfig.json",
+      "!**/public/js",
+      "!**/public/vendor",
+      "!**/public/css",
+      "!**/src/generated"
+    ]
+  },
+  "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "a11y": {
+        "noStaticElementInteractions": "off",
+        "useAriaPropsSupportedByRole": "off",
+        "noLabelWithoutControl": "off",
+        "useSemanticElements": "off",
+        "useAriaPropsForRole": "off",
+        "useValidAriaRole": "off",
+        "noAutofocus": "off",
+        "noNoninteractiveElementToInteractiveRole": "off",
+        "noAriaHiddenOnFocusable": "off"
+      },
+      "complexity": { "noImportantStyles": "off" },
+      "style": { "noDescendingSpecificity": "off" },
+      "suspicious": { "noArrayIndexKey": "off" },
+      "performance": { "noImgElement": "off" }
+    }
+  },
+  "javascript": { "formatter": { "quoteStyle": "double", "semicolons": "always" } }
+}

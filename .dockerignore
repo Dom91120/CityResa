@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.github
+.env
+.env.*
+!.env.example
+backups
+docs
+Documents
+tests
+*.tsbuildinfo
+*.log
+.claude
