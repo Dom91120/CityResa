@@ -5,7 +5,7 @@ import { idDe, interdit, pasTrouve } from "@/server/http";
 
 /** GET /documents/<id>/download | view | thumb */
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string; mode: string }> },
 ) {
   const { id: raw, mode } = await params;
@@ -18,6 +18,10 @@ export async function GET(
     return user
       ? interdit()
       : new Response(null, { status: 303, headers: { Location: "/connexion" } });
-  const r = await reponseDocument(id, mode as "download" | "view" | "thumb");
+  const r = await reponseDocument(
+    id,
+    mode as "download" | "view" | "thumb",
+    req.headers.get("if-none-match"),
+  );
   return r ?? pasTrouve();
 }

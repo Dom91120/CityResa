@@ -112,18 +112,22 @@ export function libelleReserveA(
   return `Réservé aux ${noms.join(", ")}`;
 }
 
-/** L'image de fond du bandeau d'accueil : la première photo publique d'un site ou d'un espace. */
+/**
+ * L'image de fond du bandeau d'accueil : la façade du premier site (par position), sinon
+ * la première photo publique d'un espace.
+ */
 export async function imageAccueil(): Promise<{ id: number } | null> {
-  const d = await prisma.document.findFirst({
-    where: {
-      kind: "photo",
-      isPublic: true,
-      OR: [{ siteId: { not: null } }, { espace: WHERE_ESPACE_PUBLIC }],
-    },
-    orderBy: [{ siteId: "desc" }, { position: "asc" }, { createdAt: "desc" }],
+  const site = await prisma.document.findFirst({
+    where: { kind: "photo", isPublic: true, site: { isActive: true } },
+    orderBy: [{ site: { position: "asc" } }, { position: "asc" }],
     select: { id: true },
   });
-  return d;
+  if (site) return site;
+  return prisma.document.findFirst({
+    where: { kind: "photo", isPublic: true, espace: WHERE_ESPACE_PUBLIC },
+    orderBy: [{ espace: { position: "asc" } }, { position: "asc" }],
+    select: { id: true },
+  });
 }
 
 // ── Calendrier de disponibilité ──

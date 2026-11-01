@@ -69,6 +69,11 @@ export default async function FicheEspacePage({
   if (profil && !lignesTarif.some((l) => l.mien) && lignesTarif[0]?.id === null)
     lignesTarif[0].mien = true;
   const site = espace.site;
+  const photoSite = await prisma.document.findFirst({
+    where: { siteId: site.id, kind: "photo", isPublic: true },
+    orderBy: { position: "asc" },
+    select: { id: true, title: true },
+  });
   const carte =
     site.lat && site.lng
       ? `https://www.openstreetmap.org/?mlat=${site.lat}&mlon=${site.lng}#map=17/${site.lat}/${site.lng}`
@@ -276,6 +281,13 @@ export default async function FicheEspacePage({
             ) : null}
 
             <Section titre="Le site" icone="map-pin">
+              {photoSite ? (
+                <img
+                  src={`/documents/${photoSite.id}/thumb`}
+                  alt={photoSite.title ?? site.name}
+                  className="photo-site mb-2"
+                />
+              ) : null}
               <div className="fw-semibold">{site.name}</div>
               {site.address || site.postalCode || site.city ? (
                 <div>
