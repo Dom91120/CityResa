@@ -222,7 +222,6 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
 .topbar-icone { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; color: var(--body); border: 0; background: none; }
 .topbar-icone:hover { background: var(--inset); color: var(--strong); }
 .topbar-icone .dot { position: absolute; top: 7px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--primary); border: 2px solid var(--surface); }
-.topbar-user { display: flex; align-items: center; gap: 8px; padding: 4px 6px 4px 4px; border: 1px solid var(--line); border-radius: 10px; }
 .topbar-search { position: relative; }
 .topbar-search input { width: 240px; border-radius: var(--radius-pill); background: var(--inset); border: 1px solid transparent; padding: 7px 12px 7px 34px; font-size: 0.82rem; }
 .topbar-search .lucide { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--faint); }
