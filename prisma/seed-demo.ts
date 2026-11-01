@@ -171,6 +171,7 @@ const PHOTOS_REELLES: Record<string, { fichier: string; titre: string }[]> = {
   "site:maison-blanche": [{ fichier: "site-maison-blanche-1.jpg", titre: "Façade" }],
   "espace:mb-polyvalente": [
     { fichier: "espace-mb-polyvalente-1.jpg", titre: "Vue d'ensemble" },
+    { fichier: "espace-mb-polyvalente-3.jpg", titre: "Configuration réunion" },
     { fichier: "espace-mb-polyvalente-2.jpg", titre: "Cuisine attenante" },
   ],
   "site:terrain-multisport": [
@@ -181,6 +182,7 @@ const PHOTOS_REELLES: Record<string, { fichier: string; titre: string }[]> = {
       fichier: "espace-terrain-multisport-1.jpg",
       titre: "Terrain de basket 3x3 et station d'éveil sportif",
     },
+    { fichier: "espace-terrain-multisport-3.jpg", titre: "Partie d'échecs sur la station de jeux" },
     { fichier: "espace-terrain-multisport-2.jpg", titre: "Tables de ping-pong et espace détente" },
   ],
 };
