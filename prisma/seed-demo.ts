@@ -183,7 +183,7 @@ const PHOTOS_REELLES: Record<string, { fichier: string; titre: string }[]> = {
       titre: "Terrain de basket 3x3 et station d'éveil sportif",
     },
     { fichier: "espace-terrain-multisport-3.jpg", titre: "Partie d'échecs sur la station de jeux" },
-    { fichier: "espace-terrain-multisport-2.jpg", titre: "Tables de ping-pong et espace détente" },
+    { fichier: "espace-terrain-multisport-2.jpg", titre: "Terrain de basket 3x3" },
   ],
 };
 
