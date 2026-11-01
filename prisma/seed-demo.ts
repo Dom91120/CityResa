@@ -195,6 +195,8 @@ const PHOTOS_REELLES: Record<string, { fichier: string; titre: string }[]> = {
     { fichier: "espace-doret-1.jpg", titre: "Cours de danse enfants" },
     { fichier: "espace-doret-2.jpg", titre: "Spectacle de fin d'année" },
   ],
+  "site:chalet": [{ fichier: "espace-chalet-1.jpg", titre: "Le chalet" }],
+  "espace:chalet": [{ fichier: "espace-chalet-1.jpg", titre: "Vue extérieure" }],
   "site:henri-matisse": [{ fichier: "espace-henri-matisse-1.jpg", titre: "La salle" }],
   "espace:henri-matisse": [
     { fichier: "espace-henri-matisse-1.jpg", titre: "Vue d'ensemble" },
@@ -208,8 +210,8 @@ const PHOTOS_REELLES: Record<string, { fichier: string; titre: string }[]> = {
   "site:gabriel-peri": [{ fichier: "espace-gabriel-peri-1.jpg", titre: "La salle" }],
   "espace:gabriel-peri": [
     { fichier: "espace-gabriel-peri-1.jpg", titre: "Vue d'ensemble" },
-    { fichier: "espace-gabriel-peri-2.jpg", titre: "Réunion en cercle" },
     { fichier: "espace-gabriel-peri-3.jpg", titre: "Exposition-vente" },
+    { fichier: "espace-gabriel-peri-2.jpg", titre: "Réunion en cercle" },
   ],
   "site:terrain-multisport": [
     { fichier: "espace-terrain-multisport-1.jpg", titre: "Vue d'ensemble" },
