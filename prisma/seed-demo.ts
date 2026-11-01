@@ -36,6 +36,7 @@ import { deposerDocument } from "@/server/documents";
 import { prochainNumero } from "@/server/numerotation";
 import { deviser, verifierDisponibilite } from "@/server/reservations";
 import { profilParDefaut } from "@/server/usagers";
+import { ASSOCIATIONS_SPORTIVES, type OrgSpec } from "./seed-associations";
 
 const MOT_DE_PASSE = "Demo-2026!!";
 /** Code de signature posé sur les dossiers « acceptée » : l'usager peut signer avec. */
@@ -1202,134 +1203,8 @@ const MATERIELS = [
 
 // ── Usagers ──
 
-type OrgSpec = {
-  cle: string;
-  type: string;
-  name: string;
-  siret?: string;
-  rna?: string;
-  address: string;
-  postalCode: string;
-  city: string;
-  email: string;
-  phone: string;
-  website?: string;
-  contact: string;
-  notes?: string;
-  valide: boolean;
-  user: { prenom: string; nom: string; email: string; phone: string; fonction?: string };
-};
-
 const ORGS: OrgSpec[] = [
-  {
-    cle: "basket",
-    type: "association",
-    name: "Châtillon Basket Club",
-    rna: "W923001234",
-    address: "15 rue des Pierrelais",
-    postalCode: "92320",
-    city: "Châtillon",
-    email: "contact@chatillon-basket.exemple.fr",
-    phone: "01 46 57 12 34",
-    website: "https://chatillon-basket.exemple.fr",
-    contact: "Nadia Rahmani",
-    notes:
-      "Club de 320 licenciés, 3 équipes en championnat régional. Créneaux du mardi soir et du samedi matin au gymnase.",
-    valide: true,
-    user: {
-      prenom: "Nadia",
-      nom: "Rahmani",
-      email: "nadia.rahmani@exemple.fr",
-      phone: "06 12 45 78 90",
-      fonction: "Présidente",
-    },
-  },
-  {
-    cle: "echecs",
-    type: "association",
-    name: "Club d'échecs de Châtillon",
-    rna: "W923002345",
-    address: "7 rue Gabriel-Péri",
-    postalCode: "92320",
-    city: "Châtillon",
-    email: "echecs.chatillon@exemple.fr",
-    phone: "06 23 56 89 01",
-    contact: "Jean-Pierre Morel",
-    notes: "Cours le mercredi après-midi, tournoi annuel en janvier.",
-    valide: true,
-    user: {
-      prenom: "Jean-Pierre",
-      nom: "Morel",
-      email: "jean-pierre.morel@exemple.fr",
-      phone: "06 23 56 89 01",
-      fonction: "Secrétaire",
-    },
-  },
-  {
-    cle: "lutins",
-    type: "association",
-    name: "Les Petits Lutins",
-    rna: "W923003456",
-    address: "24 rue de la Mairie",
-    postalCode: "92320",
-    city: "Châtillon",
-    email: "lespetitslutins@exemple.fr",
-    phone: "06 34 67 90 12",
-    contact: "Camille Lefèvre",
-    notes: "Association de parents : éveil musical, ateliers et fête de fin d'année.",
-    valide: true,
-    user: {
-      prenom: "Camille",
-      nom: "Lefèvre",
-      email: "camille.lefevre@exemple.fr",
-      phone: "06 34 67 90 12",
-      fonction: "Trésorière",
-    },
-  },
-  {
-    cle: "harmonie",
-    type: "association",
-    name: "Harmonie municipale de Châtillon",
-    rna: "W923004567",
-    address: "2 avenue Saint-Exupéry",
-    postalCode: "92320",
-    city: "Châtillon",
-    email: "harmonie.chatillon@exemple.fr",
-    phone: "06 45 78 01 23",
-    website: "https://harmonie-chatillon.exemple.fr",
-    contact: "Thomas Girard",
-    notes: "Orchestre d'harmonie de 45 musiciens, répétitions le jeudi soir.",
-    valide: true,
-    user: {
-      prenom: "Thomas",
-      nom: "Girard",
-      email: "thomas.girard@exemple.fr",
-      phone: "06 45 78 01 23",
-      fonction: "Chef d'orchestre",
-    },
-  },
-  {
-    cle: "solidarite",
-    type: "association",
-    name: "Solidarité Sud 92",
-    rna: "W922005678",
-    address: "18 avenue Henri-Barbusse",
-    postalCode: "92220",
-    city: "Bagneux",
-    email: "solidarite.sud92@exemple.fr",
-    phone: "06 56 89 12 34",
-    contact: "Fatou Diallo",
-    notes:
-      "Association extérieure (Bagneux) : collectes et repas solidaires. Compte créé depuis le portail, fiche à valider.",
-    valide: false,
-    user: {
-      prenom: "Fatou",
-      nom: "Diallo",
-      email: "fatou.diallo@exemple.fr",
-      phone: "06 56 89 12 34",
-      fonction: "Présidente",
-    },
-  },
+  ...ASSOCIATIONS_SPORTIVES,
   {
     cle: "atelier",
     type: "entreprise",
@@ -1496,7 +1371,7 @@ function reservations(): ResaSpec[] {
     // ── Récurrences hebdomadaires (confirmées) ──
     {
       espace: "sablons",
-      org: "basket",
+      org: "ascb",
       titre: "Entraînement seniors masculins",
       nature: "Activité sportive",
       jour: mardi,
@@ -1531,8 +1406,8 @@ function reservations(): ResaSpec[] {
     },
     {
       espace: "mb-reunion-2",
-      org: "echecs",
-      titre: "Cours d'échecs jeunes et club adultes",
+      org: "ttmc",
+      titre: "Entraînement jeunes et adultes",
       nature: "Activité culturelle",
       jour: mercredi,
       de: "14:00",
@@ -1550,8 +1425,8 @@ function reservations(): ResaSpec[] {
     },
     {
       espace: "gabriel-peri",
-      org: "lutins",
-      titre: "Éveil musical des tout-petits",
+      org: "arounddance",
+      titre: "Éveil à la danse des tout-petits",
       nature: "Activité culturelle",
       jour: samedi,
       de: "09:30",
@@ -1571,8 +1446,8 @@ function reservations(): ResaSpec[] {
     },
     {
       espace: "folie-desmares",
-      org: "harmonie",
-      titre: "Répétition de l'Harmonie municipale",
+      org: "sgdt",
+      titre: "Entraînement twirling et acrodanse",
       nature: "Activité culturelle",
       jour: jeudi,
       de: "20:00",
@@ -1659,9 +1534,9 @@ function reservations(): ResaSpec[] {
     },
     {
       espace: "henri-matisse",
-      org: "solidarite",
-      titre: "Exposition photo « Regards solidaires »",
-      nature: "Exposition",
+      org: "gama",
+      titre: "Démonstration et initiation à l'aïkido",
+      nature: "Activité sportive",
       jour: js(2, 40),
       de: "10:00",
       a: "19:00",
@@ -1681,7 +1556,7 @@ function reservations(): ResaSpec[] {
     },
     {
       espace: "mb-reunion-1",
-      org: "echecs",
+      org: "ttmc",
       titre: "Conseil d'administration",
       nature: "Réunion",
       jour: js(2, 9),
@@ -1764,8 +1639,8 @@ function reservations(): ResaSpec[] {
     },
     {
       espace: "gabriel-peri",
-      org: "solidarite",
-      titre: "Repas solidaire de Noël",
+      org: "gama",
+      titre: "Repas de fin d'année du club",
       nature: "Autre",
       jour: js(7, 50),
       de: "11:00",
@@ -1785,7 +1660,7 @@ function reservations(): ResaSpec[] {
     },
     {
       espace: "folie-desmares",
-      org: "lutins",
+      org: "arounddance",
       titre: "Spectacle de fin d'année des enfants",
       nature: "Spectacle",
       jour: js(6, 48),
@@ -1865,8 +1740,8 @@ function reservations(): ResaSpec[] {
     },
     {
       espace: "sablons",
-      org: "solidarite",
-      titre: "Tournoi caritatif de futsal",
+      org: "gama",
+      titre: "Stage de ken jutsu",
       nature: "Activité sportive",
       jour: js(7, 36),
       de: "10:00",
@@ -1949,8 +1824,8 @@ function reservations(): ResaSpec[] {
     },
     {
       espace: "mb-polyvalente",
-      org: "lutins",
-      titre: "Fête de fin d'année des Petits Lutins",
+      org: "arounddance",
+      titre: "Gala de fin d'année d'Around dance",
       nature: "Fête familiale",
       jour: js(6, 55),
       de: "14:00",
@@ -2024,8 +1899,8 @@ function reservations(): ResaSpec[] {
     },
     {
       espace: "mb-reunion-1",
-      org: "harmonie",
-      titre: "Assemblée générale de l'Harmonie",
+      org: "sgdt",
+      titre: "Assemblée générale de Sport Gym Danse Twirling",
       nature: "Assemblée générale",
       jour: js(2, 14),
       de: "19:00",
@@ -2037,7 +1912,7 @@ function reservations(): ResaSpec[] {
     },
     {
       espace: "moquet",
-      org: "basket",
+      org: "ascb",
       titre: "Entraînement physique sur terrain",
       nature: "Activité sportive",
       jour: js(6, 8),
@@ -2114,8 +1989,8 @@ function reservations(): ResaSpec[] {
     },
     {
       espace: "henri-matisse",
-      org: "harmonie",
-      titre: "Exposition « 100 ans d'Harmonie »",
+      org: "sgdt",
+      titre: "Exposition « Le twirling à Châtillon »",
       nature: "Exposition",
       jour: js(2, -55),
       de: "10:00",
@@ -2174,7 +2049,7 @@ function reservations(): ResaSpec[] {
     },
     {
       espace: "mb-reunion-1",
-      org: "lutins",
+      org: "arounddance",
       titre: "Réunion de rentrée des parents",
       nature: "Réunion",
       jour: js(2, -50),
@@ -2198,12 +2073,12 @@ function reservations(): ResaSpec[] {
       depuis: 16,
       source: "portail",
       motif:
-        "La salle des fêtes est déjà réservée ce soir-là pour la fête de fin d'année des Petits Lutins ; la fin à 2 h du matin dépasse par ailleurs les horaires autorisés.",
+        "La salle des fêtes est déjà réservée ce soir-là pour le gala de fin d'année d'Around dance ; la fin à 2 h du matin dépasse par ailleurs les horaires autorisés.",
     },
     {
       espace: "sablons",
-      org: "solidarite",
-      titre: "Brocante solidaire",
+      org: "gama",
+      titre: "Vide-grenier du club",
       nature: "Vide-grenier / brocante",
       jour: js(7, 29),
       de: "08:00",
@@ -2233,8 +2108,8 @@ function reservations(): ResaSpec[] {
     // ── Annulées ──
     {
       espace: "gabriel-peri",
-      org: "lutins",
-      titre: "Bourse aux jouets",
+      org: "arounddance",
+      titre: "Bourse aux costumes de danse",
       nature: "Vide-grenier / brocante",
       jour: js(7, -6),
       de: "09:00",
@@ -2275,8 +2150,8 @@ function reservations(): ResaSpec[] {
     // ── Archivées (anciennes) ──
     {
       espace: "mb-polyvalente",
-      org: "harmonie",
-      titre: "Concert de printemps",
+      org: "sgdt",
+      titre: "Gala de printemps",
       nature: "Spectacle",
       jour: js(6, -88),
       de: "15:00",
@@ -2292,7 +2167,7 @@ function reservations(): ResaSpec[] {
     },
     {
       espace: "sablons",
-      org: "basket",
+      org: "ascb",
       titre: "Tournoi de fin de saison",
       nature: "Activité sportive",
       jour: js(6, -80),
@@ -2309,8 +2184,8 @@ function reservations(): ResaSpec[] {
     },
     {
       espace: "gabriel-peri",
-      org: "echecs",
-      titre: "Open d'échecs de Châtillon",
+      org: "ttmc",
+      titre: "Open de tennis de table de Châtillon",
       nature: "Activité culturelle",
       jour: js(7, -85),
       de: "09:00",
@@ -2618,14 +2493,14 @@ async function creerUsagers(): Promise<Map<string, OrgRow>> {
         name: o.name,
         siret: o.siret ?? null,
         rna: o.rna ?? null,
-        address: o.address,
+        address: o.address ?? null,
         postalCode: o.postalCode,
         city: o.city,
-        email: o.email,
-        phone: o.phone,
+        email: o.email ?? null,
+        phone: o.phone ?? null,
         website: o.website ?? null,
-        legalFirstName: o.contact.split(" ")[0],
-        legalLastName: o.contact.split(" ").slice(1).join(" ") || null,
+        legalFirstName: o.contact?.split(" ")[0] ?? null,
+        legalLastName: o.contact?.split(" ").slice(1).join(" ") || null,
         legalAppointedAt:
           o.type === "association" ? new Date(Date.UTC(2025, entre(0, 11), entre(1, 28))) : null,
         profilId,
@@ -2640,7 +2515,7 @@ async function creerUsagers(): Promise<Map<string, OrgRow>> {
         name: `${o.user.prenom} ${o.user.nom}`,
         firstName: o.user.prenom,
         lastName: o.user.nom,
-        phone: o.user.phone,
+        phone: o.user.phone ?? null,
         fonction: o.user.fonction ?? null,
         kind: "usager",
         role: "usager",
@@ -2661,11 +2536,11 @@ async function creerUsagers(): Promise<Map<string, OrgRow>> {
     compter("organisations");
     compter("usagers");
   }
-  // Statuts déposés par Châtillon Basket (pièce de la fiche organisation).
-  const basket = out.get("basket");
+  // Statuts déposés par l'ASCB (pièce de la fiche organisation).
+  const basket = out.get("ascb");
   if (basket) {
     const texte =
-      "STATUTS DE L'ASSOCIATION « CHÂTILLON BASKET CLUB »\n\nArticle 1 : Il est fondé entre les adhérents aux présents statuts une association régie par la loi du 1er juillet 1901, ayant pour titre Châtillon Basket Club.\nArticle 2 : L'association a pour objet la pratique et la promotion du basket-ball à Châtillon.\nArticle 3 : Le siège social est fixé 15 rue des Pierrelais, 92320 Châtillon.\n\n(Document de démonstration.)";
+      "STATUTS DE L'ASSOCIATION « ASSOCIATION SPORTIVE CHÂTILLON BASKET »\n\nArticle 1 : Il est fondé entre les adhérents aux présents statuts une association régie par la loi du 1er juillet 1901, ayant pour titre Association sportive Châtillon Basket.\nArticle 2 : L'association a pour objet la pratique et la promotion du basket-ball à Châtillon.\nArticle 3 : Le siège social est fixé 35 avenue Clément Perrière, 92320 Châtillon.\n\n(Document de démonstration.)";
     await deposerDocument({
       kind: "organisation",
       parentId: basket.id,
@@ -3110,7 +2985,7 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
   const annee = toParisWall(now).y;
   const specs = [
     {
-      org: "basket",
+      org: "ascb",
       exercice: annee,
       type: "fonctionnement",
       objet: "Subvention de fonctionnement du club",
@@ -3134,40 +3009,40 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
       depuis: 140,
     },
     {
-      org: "harmonie",
+      org: "sgdt",
       exercice: annee,
       type: "exceptionnelle",
-      objet: "Renouvellement des instruments (pupitre cuivres)",
+      objet: "Renouvellement du matériel (tapis et bâtons)",
       montant: 2500,
       accorde: 2500,
       status: "versee",
       budget: 6200,
       beneficiaires: 45,
       description:
-        "Achat de deux trombones et d'un tuba pour le pupitre cuivres, dans le cadre du centenaire de l'Harmonie.",
+        "Achat de tapis d'acrodanse et de bâtons de twirling de compétition pour la nouvelle saison.",
       note: "Versée par mandat administratif.",
       avis: [
         {
           qui: "pierre",
           avis: "favorable",
           montant: 2500,
-          commentaire: "Avis favorable, projet lié au centenaire.",
+          commentaire: "Avis favorable, matériel nécessaire aux compétitions.",
         },
       ],
       depuis: 160,
     },
     {
-      org: "lutins",
+      org: "arounddance",
       exercice: annee + 1,
       type: "fonctionnement",
-      objet: "Ateliers d'éveil et fête de fin d'année",
+      objet: "Ateliers d'éveil à la danse et gala de fin d'année",
       montant: 3000,
       accorde: null,
       status: "avis",
       budget: 9500,
       beneficiaires: 60,
       description:
-        "Rémunération de l'intervenante en éveil musical, achat de petit matériel, location de costumes pour le spectacle.",
+        "Rémunération de l'intervenante en éveil à la danse, achat de petit matériel, location de costumes pour le gala.",
       note: null,
       avis: [
         {
@@ -3175,23 +3050,23 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
           avis: "reserve",
           montant: 2000,
           commentaire:
-            "Demande en hausse de 50 % par rapport à l'an dernier ; proposer 2 000 € et demander le bilan de la fête 2026.",
+            "Demande en hausse de 50 % par rapport à l'an dernier ; proposer 2 000 € et demander le bilan du gala 2026.",
         },
       ],
       depuis: 25,
     },
     {
-      org: "echecs",
+      org: "ttmc",
       exercice: annee + 1,
       type: "projet",
-      objet: "Open international d'échecs de Châtillon",
+      objet: "Open de tennis de table de Châtillon",
       montant: 1800,
       accorde: null,
       status: "deposee",
       budget: 5400,
       beneficiaires: 120,
       description:
-        "Organisation d'un open homologué FIDE sur un week-end : arbitrage, dotation, communication.",
+        "Organisation d'un open homologué FFTT sur un week-end : arbitrage, dotation, communication.",
       note: null,
       avis: [],
       depuis: 4,
@@ -3240,7 +3115,7 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
       });
       compter("avis");
     }
-    if (s.org === "basket") {
+    if (s.org === "ascb") {
       const csv =
         "Poste;Dépenses;Recettes\nEngagements championnat;6 200;\nFormation entraîneurs;3 100;\nMatériel école de basket;2 400;\nCotisations;;21 500\nSubvention Ville de Châtillon;;4 500\nPartenariats;;4 800\n";
       await deposerDocument({
@@ -3332,16 +3207,16 @@ async function creerNotificationsEtJournal(
       compter("notifications");
     }
   }
-  const solidarite = ctx.orgs.get("solidarite");
-  if (solidarite) {
+  const gama = ctx.orgs.get("gama");
+  if (gama) {
     for (const d of destinataires.slice(0, 2)) {
       await prisma.notification.create({
         data: {
           userId: d.id,
           type: "usager",
-          title: `Nouvel usager : ${solidarite.name}`,
-          body: `${solidarite.user.nom} · ${solidarite.user.email}`,
-          link: `/usagers/${solidarite.id}`,
+          title: `Nouvel usager : ${gama.name}`,
+          body: `${gama.user.nom} · ${gama.user.email}`,
+          link: `/usagers/${gama.id}`,
           createdAt: ilYA(5),
         },
       });
@@ -3391,7 +3266,13 @@ async function creerNotificationsEtJournal(
       119,
     ],
     [karim?.email ?? "admin", "creation espace", "Gymnase les Sablons", "espaces", 118],
-    [sophie?.email ?? "admin", "validation organisation", "Châtillon Basket Club", "usagers", 95],
+    [
+      sophie?.email ?? "admin",
+      "validation organisation",
+      "Association sportive Châtillon Basket - ASCB",
+      "usagers",
+      95,
+    ],
     [
       sophie?.email ?? "admin",
       "reservation acceptee",
@@ -3399,11 +3280,11 @@ async function creerNotificationsEtJournal(
       "reservations",
       12,
     ],
-    [karim?.email ?? "admin", "reservation refusee", "Brocante solidaire", "reservations", 11],
+    [karim?.email ?? "admin", "reservation refusee", "Vide-grenier du club", "reservations", 11],
     [
       sophie?.email ?? "admin",
       "emission facture",
-      "Acompte · Fête de fin d'année des Petits Lutins",
+      "Acompte · Gala de fin d'année d'Around dance",
       "paiements",
       9,
     ],
