@@ -340,10 +340,6 @@ export function Shell({
             csrf={csrf}
             lienTout="/notifications"
           />
-          <a href="/profil" className="topbar-user" title="Mon profil">
-            <Avatar nom={user.name} agent />
-            <Icone nom="menu" taille={16} classes="text-muted" />
-          </a>
         </div>
       </header>
 
