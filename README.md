@@ -94,23 +94,25 @@ codes de signature dans la console du serveur.
 Chargés par `pnpm db:demo` (mot de passe commun **`Demo-2026!!`**, adresses fictives
 `@exemple.fr`). Le compte administrateur et son mot de passe sont ceux affichés par `pnpm db:init`.
 
-| Rôle                   | Compte                         | Qui                                                                                               |
-| ---------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------- |
-| Gestionnaire           | `sophie.martin@exemple.fr`     | Sophie Martin — Vie associative et location de salles (Espace Maison Blanche, salles de quartier) |
-| Agent                  | `karim.benali@exemple.fr`      | Karim Benali — équipements sportifs (gymnases, stade, salle sportive, terrain multisport)         |
-| Élu                    | `pierre.durand@exemple.fr`     | Pierre Durand — adjoint au maire (avis sur les subventions)                                       |
-| Association            | `nadia.rahmani@exemple.fr`     | Châtillon Basket Club (créneau hebdomadaire au gymnase les Sablons, subvention votée)             |
-| Association            | `jean-pierre.morel@exemple.fr` | Club d'échecs de Châtillon                                                                        |
-| Association            | `camille.lefevre@exemple.fr`   | Les Petits Lutins                                                                                 |
-| Association            | `thomas.girard@exemple.fr`     | Harmonie municipale de Châtillon                                                                  |
-| Association extérieure | `fatou.diallo@exemple.fr`      | Solidarité Sud 92 (Bagneux) — fiche **à valider**                                                 |
-| Entreprise             | `julien.bernard@exemple.fr`    | Atelier Numérique SAS                                                                             |
-| Entreprise             | `isabelle.roux@exemple.fr`     | Médéric Formation (Boulogne)                                                                      |
-| Particulier            | `martine.dupont@exemple.fr`    | Martine Dupont (Châtillon)                                                                        |
-| Particulier extérieur  | `antoine.garcia@exemple.fr`    | Antoine Garcia (Vanves)                                                                           |
-| Service interne        | `lea.fontaine@exemple.fr`      | Service Culturel                                                                                  |
+| Rôle                   | Compte                           | Qui                                                                                                          |
+| ---------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Gestionnaire           | `sophie.martin@exemple.fr`       | Sophie Martin — Vie associative et location de salles (Espace Maison Blanche, salles de quartier)            |
+| Agent                  | `karim.benali@exemple.fr`        | Karim Benali — équipements sportifs (gymnases, stade, salle sportive, terrain multisport)                    |
+| Élu                    | `pierre.durand@exemple.fr`       | Pierre Durand — adjoint au maire (avis sur les subventions)                                                  |
+| Association            | `redouane.el-bennane@exemple.fr` | Association sportive Châtillon Basket - ASCB (créneau hebdomadaire au gymnase les Sablons, subvention votée) |
+| Association            | `jean-luc.vandamme@exemple.fr`   | Tennis de Table Municipal de Châtillon - TTMC                                                                |
+| Association            | `sandra.da-silva@exemple.fr`     | Around dance                                                                                                 |
+| Association            | `sylvie.savignac@exemple.fr`     | Sport Gym Danse Twirling 92                                                                                  |
+| Association extérieure | `josette.nickels@exemple.fr`     | GAMA, aïkido (Fontenay-aux-Roses) — fiche **à valider**                                                      |
+| Entreprise             | `julien.bernard@exemple.fr`      | Atelier Numérique SAS                                                                                        |
+| Entreprise             | `isabelle.roux@exemple.fr`       | Médéric Formation (Boulogne)                                                                                 |
+| Particulier            | `martine.dupont@exemple.fr`      | Martine Dupont (Châtillon)                                                                                   |
+| Particulier extérieur  | `antoine.garcia@exemple.fr`      | Antoine Garcia (Vanves)                                                                                      |
+| Service interne        | `lea.fontaine@exemple.fr`        | Service Culturel                                                                                             |
 
-Le jeu contient les 8 salles et 8 équipements sportifs de la ville (13 sites, 16 espaces),
+Le jeu contient les 8 salles et 8 équipements sportifs de la ville (13 sites, 16 espaces), les
+41 associations sportives du guide des sports 2023-2024 (un compte `prenom.nom@exemple.fr` chacune,
+voir `prisma/seed-associations.ts`),
 6 matériels, une cinquantaine de réservations à tous les statuts sur −3 / +3 mois (dont des
 récurrences hebdomadaires et mensuelle), des messages, des factures et paiements, 4 demandes de
 subvention et des notifications. Les dossiers « acceptés » se signent avec le code **`123456`**.
