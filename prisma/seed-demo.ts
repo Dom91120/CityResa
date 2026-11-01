@@ -194,6 +194,7 @@ const PHOTOS_REELLES: Record<string, { fichier: string; titre: string }[]> = {
   "espace:doret": [
     { fichier: "espace-doret-1.jpg", titre: "Cours de danse enfants" },
     { fichier: "espace-doret-2.jpg", titre: "Spectacle de fin d'année" },
+    { fichier: "espace-doret-3.jpg", titre: "Le public" },
   ],
   "site:chalet": [{ fichier: "espace-chalet-1.jpg", titre: "Le chalet" }],
   "espace:chalet": [{ fichier: "espace-chalet-1.jpg", titre: "Vue extérieure" }],
@@ -214,6 +215,18 @@ const PHOTOS_REELLES: Record<string, { fichier: string; titre: string }[]> = {
     { fichier: "espace-roland-garros-1.jpg", titre: "Vue d'ensemble, initiation au badminton" },
     { fichier: "espace-roland-garros-2.jpg", titre: "Configuration salon" },
     { fichier: "espace-roland-garros-3.jpg", titre: "Entraînement" },
+  ],
+  "site:gambetta": [{ fichier: "espace-gambetta-1.jpg", titre: "Le gymnase" }],
+  "espace:gambetta": [
+    { fichier: "espace-gambetta-1.jpg", titre: "Vue d'ensemble" },
+    { fichier: "espace-gambetta-2.jpg", titre: "Côté mezzanine" },
+    { fichier: "espace-gambetta-3.jpg", titre: "Séance de parkour" },
+  ],
+  "site:sablons": [{ fichier: "espace-sablons-2.jpg", titre: "Le gymnase" }],
+  "espace:sablons": [
+    { fichier: "espace-sablons-1.jpg", titre: "Vue d'ensemble, match de volley-ball" },
+    { fichier: "espace-sablons-2.jpg", titre: "Côté mezzanine" },
+    { fichier: "espace-sablons-3.jpg", titre: "Côté baies vitrées" },
   ],
   "site:henri-matisse": [{ fichier: "espace-henri-matisse-1.jpg", titre: "La salle" }],
   "espace:henri-matisse": [
