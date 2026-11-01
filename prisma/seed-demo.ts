@@ -169,9 +169,19 @@ function lignesTitre(titre: string): string {
 const DOSSIER_PHOTOS = "prisma/assets/photos";
 const PHOTOS_REELLES: Record<string, { fichier: string; titre: string }[]> = {
   "site:maison-blanche": [{ fichier: "site-maison-blanche-1.jpg", titre: "Façade" }],
+  // Pas encore de photo des salles de réunion : la façade en attendant.
+  "espace:mb-reunion-1": [
+    { fichier: "site-maison-blanche-1.jpg", titre: "Façade de l'Espace Maison Blanche" },
+  ],
+  "espace:mb-reunion-2": [
+    { fichier: "site-maison-blanche-1.jpg", titre: "Façade de l'Espace Maison Blanche" },
+  ],
+  "espace:mb-reunion-3": [
+    { fichier: "site-maison-blanche-1.jpg", titre: "Façade de l'Espace Maison Blanche" },
+  ],
   "espace:mb-polyvalente": [
     { fichier: "espace-mb-polyvalente-1.jpg", titre: "Vue d'ensemble" },
-    { fichier: "espace-mb-polyvalente-3.jpg", titre: "Configuration réunion" },
+    { fichier: "espace-mb-polyvalente-3.jpg", titre: "Configuration banquet, scène" },
     { fichier: "espace-mb-polyvalente-2.jpg", titre: "Cuisine attenante" },
   ],
   "site:folie-desmares": [{ fichier: "espace-folie-desmares-3.jpg", titre: "Entrée" }],
@@ -196,7 +206,11 @@ const PHOTOS_REELLES: Record<string, { fichier: string; titre: string }[]> = {
     { fichier: "espace-moquet-1.jpg", titre: "Vue aérienne du terrain synthétique et de la piste" },
   ],
   "site:gabriel-peri": [{ fichier: "espace-gabriel-peri-1.jpg", titre: "La salle" }],
-  "espace:gabriel-peri": [{ fichier: "espace-gabriel-peri-1.jpg", titre: "Vue d'ensemble" }],
+  "espace:gabriel-peri": [
+    { fichier: "espace-gabriel-peri-1.jpg", titre: "Vue d'ensemble" },
+    { fichier: "espace-gabriel-peri-2.jpg", titre: "Réunion en cercle" },
+    { fichier: "espace-gabriel-peri-3.jpg", titre: "Exposition-vente" },
+  ],
   "site:terrain-multisport": [
     { fichier: "espace-terrain-multisport-1.jpg", titre: "Vue d'ensemble" },
   ],
