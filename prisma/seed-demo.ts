@@ -177,11 +177,20 @@ const PHOTOS_REELLES: Record<string, { fichier: string; titre: string }[]> = {
   "site:folie-desmares": [{ fichier: "espace-folie-desmares-3.jpg", titre: "Entrée" }],
   "espace:folie-desmares": [
     { fichier: "espace-folie-desmares-1.jpg", titre: "Vue d'ensemble en configuration conférence" },
-    { fichier: "espace-folie-desmares-2.jpg", titre: "Conférence, vue du public" },
+    { fichier: "espace-folie-desmares-2.jpg", titre: "Fête de fin d'année" },
     { fichier: "espace-folie-desmares-3.jpg", titre: "Entrée du bâtiment" },
   ],
+  "site:doret": [{ fichier: "espace-doret-1.jpg", titre: "La salle" }],
+  "espace:doret": [
+    { fichier: "espace-doret-1.jpg", titre: "Cours de danse enfants" },
+    { fichier: "espace-doret-2.jpg", titre: "Spectacle de fin d'année" },
+  ],
   "site:henri-matisse": [{ fichier: "espace-henri-matisse-1.jpg", titre: "La salle" }],
-  "espace:henri-matisse": [{ fichier: "espace-henri-matisse-1.jpg", titre: "Vue d'ensemble" }],
+  "espace:henri-matisse": [
+    { fichier: "espace-henri-matisse-1.jpg", titre: "Vue d'ensemble" },
+    { fichier: "espace-henri-matisse-2.jpg", titre: "Deuxième salle" },
+    { fichier: "espace-henri-matisse-3.jpg", titre: "Troisième salle" },
+  ],
   "site:moquet": [{ fichier: "espace-moquet-1.jpg", titre: "Vue aérienne" }],
   "espace:moquet": [
     { fichier: "espace-moquet-1.jpg", titre: "Vue aérienne du terrain synthétique et de la piste" },
