@@ -112,7 +112,8 @@ Chargés par `pnpm db:demo` (mot de passe commun **`Demo-2026!!`**, adresses fic
 
 Le jeu contient les 8 salles et 8 équipements sportifs de la ville (13 sites, 16 espaces), les
 41 associations sportives du guide des sports 2023-2024 (un compte `prenom.nom@exemple.fr` chacune,
-voir `prisma/seed-associations.ts`),
+voir `prisma/seed-associations.ts`), les photos réelles de `prisma/assets/photos` (visages floutés
+par `scripts/flouter-visages.py`, détecteur YuNet d'OpenCV),
 6 matériels, une cinquantaine de réservations à tous les statuts sur −3 / +3 mois (dont des
 récurrences hebdomadaires et mensuelle), des messages, des factures et paiements, 4 demandes de
 subvention et des notifications. Les dossiers « acceptés » se signent avec le code **`123456`**.
