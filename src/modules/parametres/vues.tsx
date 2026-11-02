@@ -194,6 +194,14 @@ export function VoletReservations({ cfg }: { cfg: AppSettings }) {
           min={1}
           valeur={cfg.SIGNATURE_VALIDITE_HEURES}
         />
+        <Champ
+          label="Alerte d'expiration des pièces (jours avant)"
+          name="ALERTE_PIECES_JOURS"
+          type="number"
+          min={0}
+          valeur={cfg.ALERTE_PIECES_JOURS}
+          aide="Une pièce datée (assurance…) qui expire dans ce délai apparaît dans les alertes et l'usager est prévenu par courriel."
+        />
       </Grille>
       <div className="d-flex flex-column gap-2 mt-2 mb-3">
         <Interrupteur

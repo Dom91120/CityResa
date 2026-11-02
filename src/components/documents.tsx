@@ -5,13 +5,33 @@
 import { Icone } from "@/components/icones";
 import type { Document, Referential } from "@/generated/prisma/client";
 import { DOCUMENT_KINDS } from "@/lib/constantes";
+import { ymdUtc } from "@/lib/date-utc";
 import { dateCourte, tailleLabel } from "@/lib/libelles";
+import { todayParisISO } from "@/lib/paris-time";
+import { etatPiecesAttendues, etatValidite, libelleValidite, type PieceJugee } from "@/lib/pieces";
 import { estImage, viewable } from "@/server/documents";
 
 export type DocLigne = Document & {
   category?: Referential | null;
   uploadedBy?: { firstName: string; lastName: string } | null;
 };
+
+/** La pastille de validité d'une pièce datée (rien si elle n'a pas de date). */
+export function ChipValidite({
+  validUntil,
+  seuilJours = 30,
+}: {
+  validUntil: Date | null | undefined;
+  seuilJours?: number;
+}) {
+  if (!validUntil) return null;
+  const today = todayParisISO();
+  const etat = etatValidite(validUntil, today, seuilJours);
+  const teinte = etat === "expiree" ? "red" : etat === "bientot" ? "amber" : "emerald";
+  return (
+    <span className={`chip chip-${teinte}`}>{libelleValidite(validUntil, today, seuilJours)}</span>
+  );
+}
 
 function icone(d: DocLigne): string {
   if (d.kind === "convention") return "file-signature";
@@ -27,12 +47,17 @@ export function ListeDocuments({
   csrf,
   next,
   peutSupprimer,
+  peutDater,
+  seuilJours = 30,
   vide = "Aucune pièce jointe.",
 }: {
   documents: DocLigne[];
   csrf: string;
   next: string;
   peutSupprimer?: (d: DocLigne) => boolean;
+  /** Un agent peut poser ou corriger la date de validité d'une pièce. */
+  peutDater?: (d: DocLigne) => boolean;
+  seuilJours?: number;
   vide?: string;
 }) {
   if (!documents.length) return <p className="text-muted small mb-0">{vide}</p>;
@@ -42,14 +67,17 @@ export function ListeDocuments({
         <div key={d.id} className="doc-ligne">
           <Icone nom={icone(d)} taille={18} classes="doc-ico" />
           <span className="cell2" style={{ minWidth: 0, flex: 1 }}>
-            <a
-              href={viewable(d) ? `/documents/${d.id}/view` : `/documents/${d.id}/download`}
-              className="nom"
-              target={viewable(d) ? "_blank" : undefined}
-              rel="noopener"
-            >
-              {d.title || d.filename}
-            </a>
+            <span className="d-flex align-items-center gap-2 flex-wrap">
+              <a
+                href={viewable(d) ? `/documents/${d.id}/view` : `/documents/${d.id}/download`}
+                className="nom"
+                target={viewable(d) ? "_blank" : undefined}
+                rel="noopener"
+              >
+                {d.title || d.filename}
+              </a>
+              <ChipValidite validUntil={d.validUntil} seuilJours={seuilJours} />
+            </span>
             <small>
               {[
                 DOCUMENT_KINDS[d.kind] !== "Pièce justificative" ? DOCUMENT_KINDS[d.kind] : null,
@@ -63,6 +91,33 @@ export function ListeDocuments({
             </small>
           </span>
           <span className="droite">
+            {peutDater?.(d) ? (
+              <form
+                method="POST"
+                action={`/documents/${d.id}/validite`}
+                className="d-inline-flex align-items-center gap-1"
+              >
+                <input type="hidden" name="csrf_token" value={csrf} />
+                <input type="hidden" name="next" value={next} />
+                <input
+                  type="date"
+                  name="valid_until"
+                  className="form-control form-control-sm"
+                  style={{ width: 150 }}
+                  defaultValue={d.validUntil ? ymdUtc(d.validUntil) : ""}
+                  aria-label="Valide jusqu'au"
+                  title="Valide jusqu'au"
+                />
+                <button
+                  type="submit"
+                  className="btn btn-ghost btn-icone btn-sm"
+                  title="Enregistrer la date de validité"
+                  aria-label="Enregistrer la date de validité"
+                >
+                  <Icone nom="calendar-check" taille={14} />
+                </button>
+              </form>
+            ) : null}
             <a
               href={`/documents/${d.id}/download`}
               className="btn btn-ghost btn-icone btn-sm"
@@ -103,6 +158,7 @@ export function FormDocument({
   kinds,
   compact = false,
   publicOption = false,
+  validite = false,
 }: {
   parentKind: string;
   parentId: number;
@@ -112,6 +168,8 @@ export function FormDocument({
   kinds?: [string, string][];
   compact?: boolean;
   publicOption?: boolean;
+  /** Propose une date de fin de validité (attestation d'assurance…). */
+  validite?: boolean;
 }) {
   return (
     <form
@@ -182,6 +240,20 @@ export function FormDocument({
             id={`doc-title-${parentKind}`}
             className="form-control form-control-sm"
             placeholder="facultatif"
+          />
+        </div>
+      ) : null}
+      {validite ? (
+        <div>
+          <label className="form-label" htmlFor={`doc-valid-${parentKind}`}>
+            Valide jusqu'au
+          </label>
+          <input
+            type="date"
+            name="valid_until"
+            id={`doc-valid-${parentKind}`}
+            className="form-control form-control-sm"
+            title="Date de fin de validité de la pièce (facultative)"
           />
         </div>
       ) : null}
@@ -324,5 +396,64 @@ export function Vignette({
     <span className={`${classes} vignette-vide`}>
       <Icone nom={icone} taille={18} />
     </span>
+  );
+}
+
+/** L'état des pièces attendues d'un usager selon son type : manquante, fournie, valide, à renouveler. */
+export function PiecesAttendues({
+  type,
+  pieces,
+  seuilJours = 30,
+  usager = false,
+}: {
+  type: string;
+  pieces: PieceJugee[];
+  seuilJours?: number;
+  /** Côté portail : on s'adresse à l'usager. */
+  usager?: boolean;
+}) {
+  const today = todayParisISO();
+  const etats = etatPiecesAttendues(type, pieces, today, seuilJours);
+  if (!etats.length) return null;
+  const TEINTE: Record<string, string> = {
+    manquante: "red",
+    expiree: "red",
+    bientot: "amber",
+    fournie: "sky",
+    valide: "emerald",
+  };
+  const LIBELLE: Record<string, string> = {
+    manquante: "Manquante",
+    expiree: "Expirée",
+    bientot: "À renouveler",
+    fournie: "Fournie (sans date)",
+    valide: "Valide",
+  };
+  const aRegler = etats.filter((e) => e.etat !== "valide" && e.etat !== "fournie").length;
+  return (
+    <div className={`pieces-attendues mb-3${aRegler ? " a-regler" : ""}`}>
+      <div className="small fw-medium mb-1" style={{ color: "var(--strong)" }}>
+        Pièces attendues
+        {aRegler ? (
+          <span className="text-danger fw-normal">
+            {" "}
+            · {aRegler} à {usager ? "fournir" : "réclamer"}
+          </span>
+        ) : null}
+      </div>
+      <ul className="list-unstyled mb-0 d-flex flex-column gap-1">
+        {etats.map((e) => (
+          <li key={e.kind} className="d-flex align-items-center gap-2 small">
+            <span className={`chip chip-${TEINTE[e.etat]}`}>{LIBELLE[e.etat]}</span>
+            <span>{e.libelle}</span>
+            {e.validUntil ? (
+              <span className="text-muted">
+                · {libelleValidite(e.validUntil, today, seuilJours).toLowerCase()}
+              </span>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

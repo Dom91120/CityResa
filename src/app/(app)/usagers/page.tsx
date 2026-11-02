@@ -3,6 +3,8 @@ import { Barre, PaginationBar, SegTabs, Th, trier, urlAvec, Vide } from "@/compo
 import { Avatar, Chip, TypeOrganisation } from "@/components/macros";
 import { nomRepresentant } from "@/lib/dossier-usager";
 import { dateCourte } from "@/lib/libelles";
+import { todayParisISO } from "@/lib/paris-time";
+import { type EtatValidite, pireEtat } from "@/lib/pieces";
 import { nomComplet } from "@/modules/utilisateurs/server";
 import { prisma } from "@/server/db";
 import { contexteModule } from "@/server/module";
@@ -31,12 +33,23 @@ export default async function UsagersPage({
     include: {
       profil: true,
       users: { select: { firstName: true, lastName: true, name: true, email: true } },
+      documents: { where: { validUntil: { not: null } }, select: { kind: true, validUntil: true } },
       _count: { select: { reservations: true } },
     },
+  });
+  const today = todayParisISO();
+  const seuil = page.user.settings.ALERTE_PIECES_JOURS ?? 30;
+  const etatPieces = new Map<number, EtatValidite | null>(
+    tous.map((o) => [o.id, o.isActive ? pireEtat(o.documents, today, seuil) : null]),
+  );
+  const aVerifier = tous.filter((o) => {
+    const e = etatPieces.get(o.id);
+    return e === "expiree" || e === "bientot";
   });
   const aValider = tous.filter((o) => !o.validatedAt && o.isActive);
   let items = tous;
   if (onglet === "a_valider") items = aValider;
+  else if (onglet === "pieces") items = aVerifier;
   else {
     const def = ONGLETS.find(([k]) => k === onglet);
     if (def) items = tous.filter((o) => def[2](o.type));
@@ -83,6 +96,13 @@ export default async function UsagersPage({
       label: "À valider",
       count: aValider.length,
       active: onglet === "a_valider",
+    },
+    {
+      href: urlAvec(page.pathname, page.search, { type: "pieces", page: null }),
+      label: "Pièces à vérifier",
+      count: aVerifier.length,
+      teinte: aVerifier.length ? "red" : "muted",
+      active: onglet === "pieces",
     },
   ];
   return (
@@ -179,6 +199,11 @@ export default async function UsagersPage({
                         ) : (
                           <Chip teinte="emerald">Validé</Chip>
                         )}
+                        {etatPieces.get(o.id) === "expiree" ? (
+                          <Chip teinte="red">Pièce expirée</Chip>
+                        ) : etatPieces.get(o.id) === "bientot" ? (
+                          <Chip teinte="amber">Pièce à renouveler</Chip>
+                        ) : null}
                       </span>
                     </td>
                     <td className="small text-muted">{dateCourte(o.createdAt)}</td>
@@ -193,7 +218,9 @@ export default async function UsagersPage({
                       ? "Aucun usager ne correspond à cette recherche."
                       : onglet === "a_valider"
                         ? "Aucune organisation en attente de validation."
-                        : "Aucun usager pour le moment."
+                        : onglet === "pieces"
+                          ? "Aucune pièce expirée ni sur le point d'expirer."
+                          : "Aucun usager pour le moment."
                   }
                   urlAjout={peutEditer && !q ? "/usagers/nouveau" : null}
                   libelleAjout="Créer le premier usager"

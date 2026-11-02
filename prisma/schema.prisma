@@ -687,6 +687,8 @@ model Document {
   /// Visible sur le portail (photos et règlement d'un espace).
   isPublic   Boolean      @default(false) @map("is_public")
   position   Int          @default(0)
+  /// Fin de validité d'une pièce justificative (attestation d'assurance…) ; alerte à l'approche.
+  validUntil DateTime?    @map("valid_until") @db.Date
 
   siteId         Int?          @map("site_id")
   site           Site?         @relation(fields: [siteId], references: [id], onDelete: Cascade)

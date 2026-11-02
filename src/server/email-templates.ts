@@ -191,6 +191,15 @@ export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
     aide: "Envoyé chaque matin aux agents qui ont choisi de le recevoir.",
   },
   {
+    key: "piece_expiration",
+    label: "Pièce justificative à renouveler (usager)",
+    subject: "{{piece}} : {{echeance}}",
+    body:
+      '<p>Bonjour,</p><p>La pièce <strong>{{piece}}</strong> de <strong>{{organisation}}</strong> {{echeance_phrase}}.</p><p>Merci de déposer la nouvelle version depuis votre espace : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Envoyé à l'approche de la fin de validité d'une pièce datée (attestation d'assurance…), puis le jour de son expiration.",
+  },
+  {
     key: "mot_de_passe",
     label: "Réinitialisation du mot de passe",
     subject: "Réinitialisation de votre mot de passe",

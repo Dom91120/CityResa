@@ -1,15 +1,16 @@
 /**
  * Les tâches planifiées, et leur exécution tracée (scheduler_run).
  */
-import { STATUTS_FERMES } from "@/lib/constantes";
+import { DOCUMENT_KINDS, STATUTS_FERMES } from "@/lib/constantes";
 import { dateCourte, montant } from "@/lib/libelles";
 import { addParisDays, parisMidnight, todayParisISO } from "@/lib/paris-time";
+import { joursRestants } from "@/lib/pieces";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { backupDatabase } from "@/server/db-backup";
 import { TACHES as REGISTRE } from "@/server/jobs-registre";
 import { envoyerDepuisModele } from "@/server/mailer";
-import { notifier } from "@/server/notifications";
+import { notifier, notifierAgents } from "@/server/notifications";
 import { changerStatut, chargerReservation, courrielUsager } from "@/server/reservations";
 
 type Resultat = { ok: boolean; message: string };
@@ -179,6 +180,85 @@ async function digest(): Promise<Resultat> {
   return { ok: true, message: `récapitulatif envoyé à ${agents.length} agent(s)` };
 }
 
+/**
+ * Pièces datées des usagers : à J-N (ALERTE_PIECES_JOURS) puis le jour de l'expiration,
+ * courriel aux comptes de l'organisation, cloche pour eux et pour les gestionnaires.
+ * Un même courriel n'est pas renvoyé dans la journée (trace mail_log).
+ */
+async function alertesPieces(): Promise<Resultat> {
+  const cfg = await getSettings();
+  if (!cfg.DOCUMENTS_ENABLED) return { ok: true, message: "module désactivé" };
+  const today = todayParisISO();
+  const seuil = cfg.ALERTE_PIECES_JOURS ?? 30;
+  const debutJour = parisMidnight(today);
+  const pieces = await prisma.document.findMany({
+    where: {
+      organisationId: { not: null },
+      validUntil: { not: null },
+      organisation: { isActive: true },
+    },
+    include: {
+      organisation: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          users: { where: { isActive: true, notifEmail: true }, select: { id: true, email: true } },
+        },
+      },
+    },
+  });
+  let n = 0;
+  for (const p of pieces) {
+    if (!p.validUntil || !p.organisation) continue;
+    const restants = joursRestants(p.validUntil, today);
+    if (restants !== seuil && restants !== 0) continue;
+    const piece = p.title || DOCUMENT_KINDS[p.kind] || p.filename;
+    const echeance = restants === 0 ? "expire aujourd'hui" : `expire dans ${restants} jours`;
+    const destinataires = [
+      ...new Set(
+        [...p.organisation.users.map((u) => u.email), p.organisation.email].filter(
+          (e): e is string => Boolean(e),
+        ),
+      ),
+    ];
+    if (!destinataires.length) continue;
+    const deja = await prisma.mailLog.findFirst({
+      where: {
+        templateKey: "piece_expiration",
+        recipient: { contains: destinataires[0] },
+        subject: { contains: piece },
+        sentAt: { gte: debutJour },
+      },
+    });
+    if (deja) continue;
+    await envoyerDepuisModele("piece_expiration", destinataires, {
+      piece,
+      organisation: p.organisation.name,
+      echeance: echeance.charAt(0).toUpperCase() + echeance.slice(1),
+      echeance_phrase: `${echeance} (${dateCourte(p.validUntil)})`,
+      lien: `${cfg.APP_BASE_URL}/portail/mon-organisation`,
+    });
+    for (const u of p.organisation.users)
+      await notifier(
+        u.id,
+        "rappel",
+        `${piece} : ${echeance}`,
+        "Déposez la nouvelle version depuis « Mon organisation ».",
+        "/portail/mon-organisation",
+      );
+    await notifierAgents(
+      null,
+      "usager",
+      `${p.organisation.name} : ${piece.toLowerCase()} ${echeance}`,
+      null,
+      `/usagers/${p.organisation.id}#documents`,
+    );
+    n += 1;
+  }
+  return { ok: true, message: `${n} alerte(s) de pièce envoyée(s)` };
+}
+
 async function sauvegarde(): Promise<Resultat> {
   const cfg = await getSettings();
   const chemin = await backupDatabase(cfg);
@@ -194,6 +274,7 @@ export const TACHES: Record<string, () => Promise<Resultat>> = {
   relances_signature: relancesSignature,
   relances_paiement: relancesPaiement,
   digest_agents: digest,
+  alertes_pieces: alertesPieces,
 };
 
 export const LIBELLES_TACHES: Record<string, string> = Object.fromEntries(

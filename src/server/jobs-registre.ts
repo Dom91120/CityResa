@@ -47,6 +47,13 @@ export const TACHES: Tache[] = [
     actif: (c) => Boolean(c.PAIEMENTS_ENABLED),
   },
   { id: "digest_agents", label: "Récapitulatif quotidien des agents", heure: 7, minute: 45 },
+  {
+    id: "alertes_pieces",
+    label: "Alertes d'expiration des pièces justificatives",
+    heure: 7,
+    minute: 50,
+    actif: (c) => Boolean(c.DOCUMENTS_ENABLED),
+  },
 ];
 
 export function tachesActives(cfg: AppSettings): Tache[] {

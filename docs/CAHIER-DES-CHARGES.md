@@ -146,7 +146,10 @@ tant que le délai d'annulation est respecté ; flux ICS personnel de l'usager.
 ### Étape 9 — Statistiques et tableaux de bord
 
 Tableau de bord des agents (à traiter, messages sans réponse, conventions en attente,
-factures à encaisser, réservations du jour) et récapitulatif quotidien par courriel ;
+factures à encaisser, réservations du jour), **bloc d'alertes** à compteurs cliquables vers la
+liste filtrée (pièces expirées ou à renouveler, factures échues, conventions non signées
+malgré la relance, demandes sans réponse depuis plus de sept jours, fiches à valider,
+messages) et récapitulatif quotidien par courriel ;
 statistiques par période (mois, trimestre, année, 30 / 90 jours, 12 mois) : volume de
 demandes, taux d'acceptation, **taux d'occupation** par espace, recettes, valeur des mises à
 disposition gracieuses accordées aux associations, top organisations ; export **Excel**.
@@ -219,6 +222,12 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 - Rattachement à un site, un espace, un matériel, une organisation, une réservation, une
   subvention ; vignettes des photos ; extensions et taille maximales contrôlées ; octets
   stockés en base (sauvegarde unique).
+- **Date de validité** facultative sur une pièce (attestation d'assurance…) : pastille
+  « valide / à renouveler / expirée », **pièces attendues** selon le type d'usager (statuts et
+  assurance pour une association, assurance pour une entreprise ou un particulier) affichées
+  sur la fiche et dans « Mon organisation », onglet « Pièces à vérifier » de la liste des
+  usagers, courriel et notification à J-N (paramètre, 30 jours par défaut) puis le jour de
+  l'expiration.
 
 ### Signature électronique
 

@@ -55,6 +55,7 @@ export const ONGLETS: Onglet[] = [
       "ARCHIVAGE_AUTO_JOURS",
       "RELANCE_SIGNATURE_JOURS",
       "SIGNATURE_VALIDITE_HEURES",
+      "ALERTE_PIECES_JOURS",
       "RAPPEL_J7",
       "RAPPEL_J1",
       "AGENTS_NOTIFIES",

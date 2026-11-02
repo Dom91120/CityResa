@@ -3,7 +3,10 @@
  * catégorie du parent) ou par un usager (ses propres dossiers, son organisation, ses
  * demandes de subvention).
  */
+
+import { RE_YMD } from "@/lib/calendrier";
 import { DOCUMENT_PARENTS } from "@/lib/constantes";
+import { parseYmdUtc } from "@/lib/date-utc";
 import { champ, coche, idOuNull, parseInt_ } from "@/lib/forms-util";
 import { auditRecord } from "@/server/audit";
 import { prisma } from "@/server/db";
@@ -77,6 +80,7 @@ export async function deposer(user: CurrentUser, form: FormData): Promise<Respon
     categoryId: idOuNull(form, "category_id"),
     isPublic: user.isAgent ? coche(form, "is_public") || docKind === "photo" : false,
     uploadedById: user.id,
+    validUntil: lireValidite(form),
   });
   await auditRecord("depot piece", `${doc.filename} (${kind} #${pid})`, categorie, user.email);
   if (kind === "reservation" && user.isUsager) {
@@ -92,6 +96,36 @@ export async function deposer(user: CurrentUser, form: FormData): Promise<Respon
   return redirigerAvecMessage(
     ou,
     docKind === "photo" ? "Photo ajoutée" : "Pièce jointe ajoutée",
+    "success",
+  );
+}
+
+/** La date « valid_until » du formulaire (YYYY-MM-DD → minuit UTC), ou null si vide. */
+function lireValidite(form: FormData): Date | null {
+  const v = champ(form, "valid_until");
+  return RE_YMD.test(v) ? parseYmdUtc(v) : null;
+}
+
+/** Pose ou efface la date de validité d'une pièce (agents ayant le droit d'écriture sur le parent). */
+export async function dater(user: CurrentUser, id: number, form: FormData): Promise<Response> {
+  const doc = await prisma.document.findUnique({ where: { id } });
+  if (!doc) return pasTrouve();
+  const kind = parentKind(doc);
+  const pid = parentId(doc);
+  const ou = suite(form, kind && pid ? retour(kind, pid) : "/");
+  if (!user.isAgent || !user.canEdit(permissionCategoryOf(doc)))
+    return redirigerAvecMessage(ou, "Vous n'avez pas les droits pour dater cette pièce.", "danger");
+  const validUntil = lireValidite(form);
+  await prisma.document.update({ where: { id }, data: { validUntil } });
+  await auditRecord(
+    "validite piece",
+    `${doc.filename} · ${validUntil ? validUntil.toISOString().slice(0, 10) : "sans date"}`,
+    permissionCategoryOf(doc),
+    user.email,
+  );
+  return redirigerAvecMessage(
+    ou,
+    validUntil ? "Date de validité enregistrée" : "Date de validité effacée",
     "success",
   );
 }
