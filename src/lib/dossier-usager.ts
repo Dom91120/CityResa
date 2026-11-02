@@ -228,7 +228,7 @@ export function reglesInscription(type: string): Record<ChampInscription, RegleC
     aide,
   });
   const regles: Record<ChampInscription, RegleChamp> = {
-    phone: r(true, "Téléphone mobile"),
+    phone: r(true, "Téléphone mobile", "Pour la signature par SMS"),
     org_name: r(
       !particulier,
       asso ? "Nom de l'association" : entreprise ? "Raison sociale" : "Nom de l'organisation",
@@ -236,11 +236,15 @@ export function reglesInscription(type: string): Record<ChampInscription, RegleC
     address: r(true, particulier ? "Adresse" : "Adresse du siège"),
     postal_code: r(true, "Code postal"),
     city: r(true, "Ville"),
-    siret: r(!particulier, "SIRET"),
-    rna: r(asso, "N° RNA"),
+    siret: r(
+      !particulier,
+      "SIRET",
+      entreprise ? "14 chiffres" : asso ? "Si l'association est employeuse" : "",
+    ),
+    rna: r(asso, "N° RNA", "W suivi de 9 chiffres"),
     legal_first_name: r(!particulier, "Prénom"),
     legal_last_name: r(!particulier, "Nom"),
-    legal_appointed_at: r(asso, "Élu(e) en AG le"),
+    legal_appointed_at: r(asso, "Date de l'AG de nomination", "L'AG qui a élu la présidence"),
   };
   for (const c of CHAMPS_INSCRIPTION) regles[c].requis = regles[c].visible && exiges.has(c);
   return regles;

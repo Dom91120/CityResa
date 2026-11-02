@@ -19,6 +19,13 @@ export const metadata = { title: "Créer mon espace - CityRésa" };
 
 const TYPE_INITIAL = "particulier";
 
+/** Le titre de l'étape 2 par type ; un type absent (particulier) s'inscrit en une étape. */
+const TITRES_ETAPE_2: Record<string, string> = {
+  association: "Votre association",
+  entreprise: "Votre entreprise",
+  autre: "Votre organisation",
+};
+
 export default async function InscriptionPage() {
   const cfg = await getSettings();
   if (!cfg.INSCRIPTION_ENABLED || !cfg.PORTAIL_ENABLED) notFound();
@@ -36,7 +43,14 @@ export default async function InscriptionPage() {
     masque: !initial[c].visible,
   });
   const regles = Object.fromEntries(
-    types.map(([t]) => [t, { titre: qualiteRepresentant(t), champs: reglesInscription(t) }]),
+    types.map(([t]) => [
+      t,
+      {
+        titre: qualiteRepresentant(t),
+        etape2: TITRES_ETAPE_2[t] ?? null,
+        champs: reglesInscription(t),
+      },
+    ]),
   );
   return (
     <>
@@ -69,95 +83,126 @@ export default async function InscriptionPage() {
               </div>
             ))}
             {flashes.length ? <script src="/js/flash-clear.js" nonce={nonce} /> : null}
-            <form method="POST" action="/inscription" data-double-envoi>
+            <form
+              method="POST"
+              action="/inscription"
+              data-double-envoi
+              data-inscription-etapes=""
+              className="inscription-form"
+            >
               <input type="hidden" name="csrf_token" value={csrf} />
-              <div className="grille grille-2">
-                <Champ label="Prénom" name="first_name" requis autoComplete="given-name" />
-                <Champ label="Nom" name="last_name" requis autoComplete="family-name" />
-                <Champ label="Courriel" name="email" type="email" requis autoComplete="email" />
-                <Champ
-                  name="phone"
-                  type="tel"
-                  autoComplete="tel"
-                  placeholder="Pour la signature par SMS"
-                  {...champ("phone")}
-                />
-                <Select
-                  label="Vous êtes"
-                  name="type"
-                  options={types}
-                  valeur={TYPE_INITIAL}
-                  requis
-                  attrs={{ "data-type-org": "" }}
-                />
-                <Champ name="org_name" {...champ("org_name")} />
-                <div className="sous-grille sous-grille-adresse">
-                  <Champ name="address" autoComplete="street-address" {...champ("address")} />
-                  <Champ name="postal_code" autoComplete="postal-code" {...champ("postal_code")} />
-                  <Champ name="city" autoComplete="address-level2" {...champ("city")} />
+              <div className="etape-indicateur" data-indicateur="" hidden>
+                <span>
+                  Étape <span data-numero="">1</span> sur 2 · <span data-titre-etape="">Vous</span>
+                </span>
+                <button type="button" className="btn btn-link" data-retour="" hidden>
+                  <Icone nom="arrow-left" taille={13} /> Retour
+                </button>
+              </div>
+
+              {/* Étape 1 : la personne et son compte. */}
+              <div data-etape="1">
+                <div className="grille grille-2">
+                  <Select
+                    label="Vous êtes"
+                    name="type"
+                    options={types}
+                    valeur={TYPE_INITIAL}
+                    requis
+                    attrs={{ "data-type-org": "" }}
+                  />
+                  <div aria-hidden="true" />
+                  <Champ label="Prénom" name="first_name" requis autoComplete="given-name" />
+                  <Champ label="Nom" name="last_name" requis autoComplete="family-name" />
+                  <Champ label="Courriel" name="email" type="email" requis autoComplete="email" />
+                  <Champ name="phone" type="tel" autoComplete="tel" {...champ("phone")} />
+                  <Champ
+                    label="Mot de passe"
+                    name="password"
+                    type="password"
+                    requis
+                    autoComplete="new-password"
+                    aide={`${cfg.PASSWORD_MIN_LENGTH} caractères minimum, lettres et chiffres`}
+                  />
+                  <Champ
+                    label="Confirmer le mot de passe"
+                    name="password2"
+                    type="password"
+                    requis
+                    autoComplete="new-password"
+                  />
                 </div>
-                <Champ
-                  name="siret"
-                  placeholder="14 chiffres"
-                  attrs={{ inputMode: "numeric" }}
-                  {...champ("siret")}
-                />
-                <Champ name="rna" placeholder="W123456789" {...champ("rna")} />
-                <div
-                  className="grille-pleine"
-                  style={{ gridColumn: "1 / -1" }}
-                  data-titre-representant=""
-                  hidden={!initial.legal_first_name.visible}
-                >
-                  <h2 className="h6 mb-0 mt-1">
-                    <Icone nom="user-check" taille={15} />{" "}
-                    <span>{qualiteRepresentant(TYPE_INITIAL)}</span>
-                  </h2>
+                {/* L'adresse : ici pour un particulier, déplacée à l'étape 2 sinon. */}
+                <div data-place-adresse="1">
+                  <div className="grille grille-adresse" data-bloc-adresse="">
+                    <Champ name="address" autoComplete="street-address" {...champ("address")} />
+                    <Champ
+                      name="postal_code"
+                      autoComplete="postal-code"
+                      {...champ("postal_code")}
+                    />
+                    <Champ name="city" autoComplete="address-level2" {...champ("city")} />
+                  </div>
                 </div>
-                <div className="sous-grille sous-grille-representant">
+              </div>
+
+              {/* Étape 2 : l'organisation (association, entreprise, autre). */}
+              <div data-etape="2" hidden>
+                <div className="grille grille-2">
+                  <Champ name="org_name" pleine {...champ("org_name")} />
+                  <Champ name="siret" attrs={{ inputMode: "numeric" }} {...champ("siret")} />
+                  <Champ name="rna" placeholder="W…" {...champ("rna")} />
+                </div>
+                <div data-place-adresse="2" />
+                <div className="grille grille-2">
+                  <div
+                    className="grille-pleine"
+                    style={{ gridColumn: "1 / -1" }}
+                    data-titre-representant=""
+                  >
+                    <h3 className="h6 mb-0 mt-1">
+                      <Icone nom="user-check" taille={15} />{" "}
+                      <span>{qualiteRepresentant(TYPE_INITIAL)}</span>
+                    </h3>
+                  </div>
                   <Champ
                     name="legal_first_name"
                     autoComplete="off"
                     {...champ("legal_first_name")}
                   />
                   <Champ name="legal_last_name" autoComplete="off" {...champ("legal_last_name")} />
-                  <Champ
-                    name="legal_appointed_at"
-                    type="date"
-                    attrs={{
-                      title: "L'assemblée générale qui a élu le président ou la présidente",
-                    }}
-                    {...champ("legal_appointed_at")}
-                  />
+                  <Champ name="legal_appointed_at" type="date" {...champ("legal_appointed_at")} />
                 </div>
-                <Champ
-                  label="Mot de passe"
-                  name="password"
-                  type="password"
-                  requis
-                  autoComplete="new-password"
-                  placeholder={`${cfg.PASSWORD_MIN_LENGTH} caractères, lettres et chiffres`}
-                />
-                <Champ
-                  label="Confirmer le mot de passe"
-                  name="password2"
-                  type="password"
-                  requis
-                  autoComplete="new-password"
-                />
               </div>
-              <div className="form-check mb-2">
-                <input className="form-check-input" type="checkbox" name="cgu" id="cgu" required />
-                <label className="form-check-label small" htmlFor="cgu">
-                  J'accepte que mes données soient utilisées par {cfg.COLLECTIVITE_NOM} pour le
-                  traitement de mes demandes de réservation.
-                </label>
+
+              <div className="inscription-actions">
+                <div className="form-check mb-2" data-cgu="">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    name="cgu"
+                    id="cgu"
+                    required
+                  />
+                  <label className="form-check-label small" htmlFor="cgu">
+                    J'accepte que mes données soient utilisées par {cfg.COLLECTIVITE_NOM} pour le
+                    traitement de mes demandes de réservation.
+                  </label>
+                </div>
+                <button type="submit" className="btn btn-primary btn-lg w-100" data-creer="">
+                  Créer mon compte
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-lg w-100"
+                  data-continuer=""
+                  hidden
+                >
+                  Continuer <Icone nom="arrow-right" taille={16} />
+                </button>
               </div>
-              <button type="submit" className="btn btn-primary btn-lg w-100">
-                Créer mon compte
-              </button>
             </form>
-            <div className="text-center mt-2 small text-muted">
+            <div className="text-center mt-3 small text-muted" data-deja-inscrit="">
               Déjà inscrit ? <a href="/connexion">Se connecter</a>
             </div>
           </div>

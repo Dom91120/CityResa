@@ -1,10 +1,5 @@
 import { Icone } from "@/components/icones";
-import {
-  espacesBloquesLe,
-  espacesPublics,
-  imageAccueil,
-  profilDe,
-} from "@/modules/portail/catalogue";
+import { espacesBloquesLe, espacesPublics, profilDe } from "@/modules/portail/catalogue";
 import { BlocVide, EspaceCarte } from "@/modules/portail/vues";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
@@ -47,11 +42,10 @@ export default async function CataloguePage({
   const fDate = /^\d{4}-\d{2}-\d{2}$/.test(lire("date")) ? lire("date") : "";
   const q = lire("q");
 
-  const [cfg, user, espaces, image, profils] = await Promise.all([
+  const [cfg, user, espaces, profils] = await Promise.all([
     getSettings(),
     getCurrentUser(),
     espacesPublics(),
-    imageAccueil(),
     prisma.referential.findMany({
       where: { kind: "profil" },
       select: { code: true, label: true },
@@ -92,7 +86,13 @@ export default async function CataloguePage({
   return (
     <>
       <section className="hero">
-        {image ? <img src={`/documents/${image.id}/thumb`} alt="" /> : null}
+        <img
+          src="/img/illustration-cityresa.webp"
+          alt=""
+          className="hero-illustration"
+          width={2240}
+          height={1260}
+        />
         <div>
           <h1>{cfg.PORTAIL_TITRE}</h1>
           <p>{cfg.PORTAIL_ACCROCHE}</p>
