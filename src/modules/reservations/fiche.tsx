@@ -505,6 +505,8 @@ export function PanneauApprobation({
             {(rec.except ?? []).map((d) => (
               <input key={d} type="hidden" name="except" value={d} />
             ))}
+            {rec.horsVacances ? <input type="hidden" name="hors_vacances" value="on" /> : null}
+            {rec.horsFeries ? <input type="hidden" name="hors_feries" value="on" /> : null}
           </>
         ) : null}
         <div className="offcanvas-header">

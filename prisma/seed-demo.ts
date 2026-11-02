@@ -18,9 +18,11 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import "dotenv/config";
+import { saisonDe } from "@/lib/calendrier";
 import type { ReservationStatus } from "@/lib/constantes";
 import { COULEURS_ESPACE, FACTURE_TYPES, RESERVATION_STATUS } from "@/lib/constantes";
 import { bornes, developperRecurrence, type Intervalle, type Recurrence } from "@/lib/creneaux";
+import { parseYmdUtc } from "@/lib/date-utc";
 import { montant, plage } from "@/lib/libelles";
 import {
   addParisDays,
@@ -32,12 +34,14 @@ import {
   toParisWall,
 } from "@/lib/paris-time";
 import { amorcer, poserMotDePasse } from "@/server/amorcage";
+import { creerSaison, joursExclus, saisons } from "@/server/calendrier";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { deposerDocument } from "@/server/documents";
 import { prochainNumero } from "@/server/numerotation";
 import { deviser, verifierDisponibilite } from "@/server/reservations";
 import { profilParDefaut } from "@/server/usagers";
+import { VACANCES_ZONE_C } from "./calendrier-zone-c";
 import { ASSOCIATIONS_SPORTIVES, type OrgSpec } from "./seed-associations";
 
 const MOT_DE_PASSE = "Demo-2026!!";
@@ -320,6 +324,52 @@ async function remettreAZero(): Promise<void> {
   );
   await prisma.organisation.deleteMany({});
   await prisma.$executeRawUnsafe(`ALTER SEQUENCE organisation_id_seq RESTART WITH 1`);
+}
+
+// ── Calendrier des saisons ──
+
+/**
+ * Les saisons qui couvrent la fenêtre du jeu (−3 mois / +3 mois), avec leurs jours fériés,
+ * et les vacances scolaires de la zone C connues pour ces saisons (sinon importées depuis
+ * l'écran Calendrier). Ne touche pas aux saisons et périodes déjà présentes.
+ */
+async function creerCalendrier(): Promise<void> {
+  console.log("→ Saisons, vacances scolaires zone C, jours fériés…");
+  const voulues = new Set([saisonDe(ymd(-100)).label, saisonDe(ymd(100)).label]);
+  let existantes = await saisons();
+  for (const label of voulues) {
+    if (existantes.some((s) => s.label === label)) continue;
+    const p = saisonDe(`${label.slice(0, 4)}-09-01`);
+    await creerSaison({ ...p, isActive: false });
+    compter("saisons");
+  }
+  existantes = await saisons();
+  const courante = existantes.find((s) => s.debut <= ymd(0) && s.fin >= ymd(0));
+  if (courante && !existantes.some((s) => s.isActive))
+    await prisma.saison.update({ where: { id: courante.id }, data: { isActive: true } });
+  for (const s of existantes) {
+    const connues = VACANCES_ZONE_C[s.label];
+    if (!connues) continue;
+    const deja = await prisma.periodeCalendrier.count({
+      where: {
+        kind: "vacances",
+        startDate: { lte: parseYmdUtc(s.fin) },
+        endDate: { gte: parseYmdUtc(s.debut) },
+      },
+    });
+    if (deja) continue;
+    await prisma.periodeCalendrier.createMany({
+      data: connues.map((v) => ({
+        kind: "vacances",
+        label: v.label,
+        startDate: parseYmdUtc(v.debut),
+        endDate: parseYmdUtc(v.fin),
+        source: "import",
+        zone: "Zone C",
+      })),
+    });
+    compter("périodes de vacances", connues.length);
+  }
 }
 
 // ── Référentiels ──
@@ -1490,9 +1540,10 @@ function reservations(): ResaSpec[] {
         interval: 1,
         byWeekday: [2],
         until: ymd(85),
-        except: [ymd(js(2, 20)), ymd(js(2, 27))],
+        horsVacances: true,
+        horsFeries: true,
       },
-      description: "Créneau annuel du club, saison 2026-2027.",
+      description: "Créneau annuel du club, hors vacances scolaires et jours fériés.",
       depuis: 95,
       messages: [
         {
@@ -2725,7 +2776,11 @@ async function creerReservations(ctx: Contexte): Promise<Map<ReservationStatus, 
     const premier: Intervalle = { startAt: a(s.jour, s.de), endAt: a(s.jour, s.a) };
     if (premier.endAt <= premier.startAt)
       premier.endAt = new Date(premier.endAt.getTime() + 86_400_000);
-    const creneaux = developperRecurrence(premier, s.recurrence ?? null);
+    const creneaux = developperRecurrence(
+      premier,
+      s.recurrence ?? null,
+      await joursExclus(premier, s.recurrence ?? null),
+    );
     const conflitsTrouves = await verifierDisponibilite(espace, creneaux);
     if (conflitsTrouves.length) {
       const c = conflitsTrouves[0];
@@ -3454,6 +3509,7 @@ async function main(): Promise<void> {
     return;
   }
   await chargerReferentiels();
+  await creerCalendrier();
   const cfg = await getSettings();
   const adminRow = await prisma.user.findFirst({
     where: { kind: "agent", role: "admin" },

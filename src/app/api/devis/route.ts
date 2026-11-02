@@ -1,6 +1,7 @@
 import { decrireRecurrence, developperRecurrence, verifierRegles } from "@/lib/creneaux";
 import { plage } from "@/lib/libelles";
 import { lireDemande } from "@/modules/reservations/formulaire";
+import { joursExclus } from "@/server/calendrier";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
 import { getCurrentUser } from "@/server/guards";
@@ -26,7 +27,11 @@ export async function POST(req: Request) {
     });
     const espace = await prisma.espace.findUnique({ where: { id: d.espaceId } });
     if (!espace) return json({ error: "Espace inconnu." }, 404);
-    const creneaux = developperRecurrence(d.premier, d.recurrence);
+    const creneaux = developperRecurrence(
+      d.premier,
+      d.recurrence,
+      await joursExclus(d.premier, d.recurrence),
+    );
     const erreurs = new Set<string>();
     for (const c of creneaux.slice(0, 50))
       for (const e of verifierRegles(espace, c, new Date(), { ignorerDelai: d.ignorerDelai }))

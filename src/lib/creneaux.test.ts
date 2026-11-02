@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   avecMarges,
   bornes,
+  bornesRecurrence,
   chevauche,
   conflits,
   dansHoraires,
@@ -13,6 +14,7 @@ import {
   lireHoraires,
   lireRecurrence,
   MAX_OCCURRENCES,
+  utiliseCalendrier,
   verifierRegles,
 } from "@/lib/creneaux";
 import { parisDateTimeToInstant, toParisWall } from "@/lib/paris-time";
@@ -273,6 +275,58 @@ describe("decrireRecurrence", () => {
     expect(decrireRecurrence({ freq: "weekly", interval: 3 })).toBe("Toutes les 3 semaines");
     expect(decrireRecurrence({ freq: "monthly" })).toBe("Chaque mois");
     expect(decrireRecurrence({ freq: "monthly", interval: 2 })).toBe("Tous les 2 mois");
+  });
+
+  it("mentionne les vacances scolaires et les jours fériés sautés", () => {
+    expect(decrireRecurrence({ freq: "weekly", horsVacances: true })).toBe(
+      "Chaque semaine, hors vacances scolaires",
+    );
+    expect(decrireRecurrence({ freq: "weekly", horsFeries: true })).toBe(
+      "Chaque semaine, hors jours fériés",
+    );
+    expect(
+      decrireRecurrence({
+        freq: "weekly",
+        until: "2027-06-30",
+        horsVacances: true,
+        horsFeries: true,
+      }),
+    ).toBe("Chaque semaine, jusqu'au 30/06/2027, hors vacances scolaires et jours fériés");
+  });
+});
+
+describe("récurrence et calendrier", () => {
+  it("lireRecurrence ne retient horsVacances / horsFeries que vrais", () => {
+    expect(lireRecurrence({ freq: "weekly", horsVacances: true, horsFeries: "oui" })).toEqual({
+      freq: "weekly",
+      horsVacances: true,
+    });
+    expect(utiliseCalendrier(null)).toBe(false);
+    expect(utiliseCalendrier({ freq: "weekly" })).toBe(false);
+    expect(utiliseCalendrier({ freq: "weekly", horsFeries: true })).toBe(true);
+  });
+
+  it("bornesRecurrence : du premier créneau à la fin, ou à un an", () => {
+    const i = cr("2026-11-04", "18:00", "20:00");
+    expect(bornesRecurrence(i, null)).toEqual({ debut: "2026-11-04", fin: "2026-11-04" });
+    expect(bornesRecurrence(i, { freq: "weekly", until: "2027-06-30" })).toEqual({
+      debut: "2026-11-04",
+      fin: "2027-06-30",
+    });
+    expect(bornesRecurrence(i, { freq: "weekly", count: 10 })).toEqual({
+      debut: "2026-11-04",
+      fin: "2027-11-04",
+    });
+  });
+
+  it("developperRecurrence saute les jours exclus automatiquement, en plus des dates saisies", () => {
+    // Tous les mercredis de novembre 2026 ; le 11 novembre est férié, le 25 est exclu à la main.
+    const out = developperRecurrence(
+      cr("2026-11-04", "18:00", "20:00"),
+      { freq: "weekly", until: "2026-11-30", except: ["2026-11-25"] },
+      new Set(["2026-11-11"]),
+    );
+    expect(out.map((o) => paris(o.startAt))).toEqual(["2026-11-04 18:00", "2026-11-18 18:00"]);
   });
 });
 

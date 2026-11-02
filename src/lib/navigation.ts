@@ -66,6 +66,7 @@ export const ADMINISTRATION: NavDomaine = {
     { ...e("/utilisateurs", "Utilisateurs", "user-cog"), admin: true },
     { ...e("/roles", "Rôles & permissions", "shield"), admin: true },
     { ...e("/referentiels", "Référentiels", "list"), admin: true },
+    { ...e("/calendrier", "Calendrier des saisons", "calendar-range"), admin: true },
     { ...e("/modeles-courriel", "Modèles de courriel", "mail"), admin: true },
     { ...e("/audit", "Journal d'audit", "notebook-text"), admin: true },
     { ...e("/taches", "Tâches planifiées", "calendar-clock"), admin: true },

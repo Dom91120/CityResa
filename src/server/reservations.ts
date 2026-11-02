@@ -16,12 +16,14 @@ import {
   developperRecurrence,
   type Intervalle,
   type Recurrence,
+  utiliseCalendrier,
   verifierRegles,
 } from "@/lib/creneaux";
 import { manquesDossier, nomRepresentant, phraseManques } from "@/lib/dossier-usager";
 import { dateMoyenne, plage } from "@/lib/libelles";
 import { calculerDevis, type Devis } from "@/lib/tarification";
 import { auditRecord } from "@/server/audit";
+import { joursExclus } from "@/server/calendrier";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
@@ -250,8 +252,17 @@ export async function creerReservation(
   if (!espace?.isActive) throw new UserFacingError("Cet espace n'est pas disponible.");
   if (!e.title.trim()) throw new UserFacingError("Indiquez l'objet de la réservation.");
   const now = new Date();
-  const creneaux = developperRecurrence(e.premier, e.recurrence);
-  if (!creneaux.length) throw new UserFacingError("Aucun créneau à réserver.");
+  const creneaux = developperRecurrence(
+    e.premier,
+    e.recurrence,
+    await joursExclus(e.premier, e.recurrence),
+  );
+  if (!creneaux.length)
+    throw new UserFacingError(
+      utiliseCalendrier(e.recurrence)
+        ? "Aucun créneau à réserver : toutes les dates tombent pendant les vacances ou un jour férié."
+        : "Aucun créneau à réserver.",
+    );
   for (const c of creneaux) {
     const erreurs = verifierRegles(espace, c, now, { ignorerDelai: e.ignorerDelai });
     if (erreurs.length)

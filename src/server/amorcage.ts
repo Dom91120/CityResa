@@ -2,13 +2,14 @@
  * Amorçage idempotent de la base : rôles, référentiels, modèles de courriel, compte
  * administrateur (mot de passe aléatoire affiché en console, ou ADMIN_INITIAL_PASSWORD),
  * configuration copiée du .env si la table est vide, logo de la collectivité livré avec le
- * dépôt si aucun n'est configuré. Appelé par `pnpm db:init` et au
- * démarrage du serveur (instrumentation.ts).
+ * dépôt si aucun n'est configuré, saison en cours avec ses jours fériés si aucune saison
+ * n'existe. Appelé par `pnpm db:init` et au démarrage du serveur (instrumentation.ts).
  */
 import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { PERMISSION_CATEGORIES, REFERENTIAL_SEEDS, ROLE_SEEDS } from "@/lib/constantes";
+import { seedSaison } from "@/server/calendrier";
 import { getSettings, saveSettings, seedFromEnv } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { EMAIL_TEMPLATE_SEEDS } from "@/server/email-templates";
@@ -157,4 +158,5 @@ export async function amorcer(opts: { annoncer?: boolean } = {}): Promise<void> 
   await seedDefaultUser(opts);
   await seedFromEnv();
   await seedLogo();
+  await seedSaison();
 }

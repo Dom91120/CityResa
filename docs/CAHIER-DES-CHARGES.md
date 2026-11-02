@@ -73,7 +73,8 @@ surface, photos, règlement et plan joints, horaires d'ouverture, règles de ré
 équipements, caution), sous-espaces d'une salle modulable, grilles tarifaires par profil et par
 unité, options et prestations, matériel et stocks, indisponibilités (travaux, usage municipal),
 agents responsables de chaque espace, modèles de courriel, texte de la convention, modules
-actifs.
+actifs, **calendrier des saisons** (saison active, vacances scolaires de la zone C importées
+du calendrier officiel, jours fériés).
 
 ### Étape 2 — Catalogue et recherche (portail)
 
@@ -262,6 +263,11 @@ disposition gracieuses accordées aux associations, top organisations ; export *
   espaces, second facteur, désactivation.
 - **Référentiels** : natures d'espace, natures d'événement, équipements, profils tarifaires,
   catégories de matériel, catégories de pièces.
+- **Calendrier des saisons** : saisons (années scolaires, du 1er septembre au 31 août ; une
+  seule active, dont la fin pré-remplit la date de fin des récurrences), vacances scolaires
+  importées du jeu open data national « fr-en-calendrier-scolaire » pour la zone choisie
+  (zone C par défaut) ou déposées en JSON, jours fériés légaux calculés et modifiables, ponts
+  et périodes saisis à la main.
 - **Modèles de courriel**, **journal d'audit** (qui a fait quoi), **tâches planifiées** (état,
   dernière exécution, lancement manuel), **sauvegardes** (`pg_dump` quotidien, rotation,
   téléchargement, suppression), journal applicatif.
@@ -321,8 +327,11 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 
 - Fréquence quotidienne, hebdomadaire (jours de la semaine, intervalle : « une semaine sur
   deux »), mensuelle (le même quantième, ramené au dernier jour des mois courts) ; fin par date
-  incluse ou nombre d'occurrences ; dates exclues (vacances, fériés) ; 200 occurrences au plus ;
-  un an au plus sans borne.
+  incluse ou nombre d'occurrences ; 200 occurrences au plus ; un an au plus sans borne.
+- **Hors vacances scolaires** et **hors jours fériés** : les occurrences qui tombent sur une
+  période du calendrier des saisons (vacances de la zone C, fériés) ne sont pas créées ; des
+  dates exclues peuvent s'ajouter à la main. La convention et la fiche décrivent la règle
+  (« Chaque semaine le mardi, jusqu'au 30/06/2027, hors vacances scolaires et jours fériés »).
 - Les occurrences se calculent en **heure murale de Paris** : « tous les mercredis 18 h-20 h »
   reste à 18 h après le passage à l'heure d'été.
 - Chaque occurrence est un créneau propre (planning, conflits, annulation d'une occurrence).
@@ -380,7 +389,7 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 | Catalogue de salles avec filtres (capacité, équipements, type) | **Oui** — portail `/portail/espaces`, filtres site / nature / capacité / équipements / date. |
 | Géolocalisation, descriptifs, documents joints (règlement, tarifs) | **Oui** — lat/lng et accès par site, carte, photos, pièces publiques (règlement, plan), grille tarifaire affichée selon le profil. |
 | Consultation en vue liste ou carte | **Oui** — liste et carte des sites (coordonnées). |
-| Créneaux récurrents (« tous les mercredis après-midi ») | **Oui** — récurrences quotidienne / hebdomadaire / mensuelle, exclusions, développées en créneaux individuels. |
+| Créneaux récurrents (« tous les mercredis après-midi ») | **Oui** — récurrences quotidienne / hebdomadaire / mensuelle, hors vacances scolaires (zone C) et jours fériés du calendrier des saisons, exclusions à la main, développées en créneaux individuels. |
 | Multisalle / multidate | **Partiel** — un dossier porte un espace et plusieurs dates (récurrence) ; plusieurs salles = plusieurs dossiers (créés en quelques clics, regroupés par organisation). |
 | Salles simples, sous-salles, espaces modulables | **Oui** — espace parent / sous-espaces, blocage croisé parent ↔ enfants. |
 | Scénarios par profil (particulier, association…) | **Oui** — profils tarifaires, profils autorisés par espace, validation requise ou non, gratuité, délais ; logigramme unique paramétré par les règles de l'espace et les modules. |
