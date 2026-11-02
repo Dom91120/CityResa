@@ -593,6 +593,10 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .login-brand .lucide { color: var(--primary); }
 .login-brand small { color: var(--muted); font-weight: 400; font-size: 0.85rem; display: block; margin-top: 2px; }
 .login-brand .blason { width: 48px; height: 48px; border-radius: 10px; }
+.login-entete { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 48px; }
+.login-entete .login-brand { margin-bottom: 0; }
+.login-lien-portail { display: inline-flex; align-items: center; gap: 6px; color: var(--primary); font-weight: 500; font-size: 0.84rem; padding: 8px 12px; border-radius: 8px; white-space: nowrap; }
+.login-lien-portail:hover { background: var(--inset); color: var(--primary); }
 .login-form { margin: auto 0; max-width: 380px; width: 100%; }
 .login-form h1 { font-size: 1.6rem; font-weight: 600; margin-bottom: 24px; line-height: 1.25; }
 .login-visuel { background: linear-gradient(135deg, #006e46 0%, #268462 50%, #59a187 100%); position: relative; overflow: hidden; display: flex; align-items: flex-end; padding: 56px; color: #fff; }

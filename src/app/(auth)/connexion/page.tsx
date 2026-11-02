@@ -24,17 +24,22 @@ export default async function ConnexionPage({
     <>
       <div className="login-page">
         <div className="login-panel">
-          <a href="/portail" className="login-brand">
-            {urlLogo(cfg) ? (
-              <Blason logo={urlLogo(cfg)} taille={48} nom={cfg.COLLECTIVITE_NOM} />
-            ) : (
-              <Icone nom="calendar-check" taille={40} />
-            )}
-            <span>
-              CityRésa
-              <small>{cfg.COLLECTIVITE_NOM}</small>
-            </span>
-          </a>
+          <div className="login-entete">
+            <div className="login-brand">
+              {urlLogo(cfg) ? (
+                <Blason logo={urlLogo(cfg)} taille={48} nom={cfg.COLLECTIVITE_NOM} />
+              ) : (
+                <Icone nom="calendar-check" taille={40} />
+              )}
+              <span>
+                CityRésa
+                <small>{cfg.COLLECTIVITE_NOM}</small>
+              </span>
+            </div>
+            <a href="/portail" className="login-lien-portail">
+              <Icone nom="door-open" taille={15} /> Espaces
+            </a>
+          </div>
           <div className="login-form">
             <h1>Connexion à votre espace réservation</h1>
             {flashes.map(([category, message], i) => (
