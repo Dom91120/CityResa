@@ -356,12 +356,9 @@ textarea.form-control { min-height: 90px; }
 .grille-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .grille-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .grille-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-/* Sous-grille sur toute la largeur d'une grille : plusieurs champs sur une ligne. Les
-   champs masqués (hidden) libèrent leur colonne. */
-.sous-grille { grid-column: 1 / -1; display: grid; gap: 12px 16px; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
-.sous-grille-adresse { grid-template-columns: minmax(0, 2fr) minmax(0, 0.9fr) minmax(0, 1.3fr); }
-.sous-grille:not(:has(> :not([hidden]))) { display: none; }
-@media (max-width: 575px) { .sous-grille { grid-auto-flow: row; grid-template-columns: 1fr; } }
+/* Adresse, code postal et ville sur une ligne (l'adresse prend la plus grande part). */
+.grille-adresse { grid-template-columns: minmax(0, 2fr) minmax(0, 0.9fr) minmax(0, 1.3fr); }
+@media (max-width: 575px) { .grille-adresse { grid-template-columns: 1fr; } }
 @media (max-width: 767px) { .grille-2, .grille-3, .grille-4 { grid-template-columns: 1fr; } }
 .form-pied { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 8px; }
 .form-pied-supprimer { margin-right: auto; }
@@ -593,32 +590,34 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 
 /* ============================ CONNEXION ============================ */
 .login-page { min-height: 100vh; display: grid; grid-template-columns: minmax(360px, 520px) 1fr; background: var(--surface); }
-.login-panel { display: flex; flex-direction: column; padding: 40px 56px; }
-.login-brand { display: flex; align-items: center; gap: 14px; color: var(--strong); font-weight: 600; font-size: 1.4rem; line-height: 1.2; margin-bottom: 48px; }
+.login-panel { display: flex; flex-direction: column; padding: 24px 56px; }
+.login-brand { display: flex; align-items: center; gap: 14px; color: var(--strong); font-weight: 600; font-size: 1.4rem; line-height: 1.2; margin-bottom: 24px; }
 .login-brand:hover { color: var(--strong); }
 .login-brand .lucide { color: var(--primary); }
 .login-brand small { color: var(--muted); font-weight: 400; font-size: 0.85rem; display: block; margin-top: 2px; }
 .login-brand .blason { width: 48px; height: 48px; border-radius: 10px; }
-.login-entete { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 48px; }
+.login-entete { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
 .login-entete .login-brand { margin-bottom: 0; }
 .login-lien-portail { display: inline-flex; align-items: center; gap: 6px; color: var(--primary); font-weight: 500; font-size: 0.84rem; padding: 8px 12px; border-radius: 8px; white-space: nowrap; }
 .login-lien-portail:hover { background: var(--inset); color: var(--primary); }
 .login-form { margin: auto 0; max-width: 380px; width: 100%; }
 .login-form h1 { font-size: 1.6rem; font-weight: 600; margin-bottom: 24px; line-height: 1.25; }
-/* Formulaire long (inscription) : en-tête et marges resserrés pour tenir sur un écran. */
-.login-page--long .login-panel { padding-top: 24px; padding-bottom: 16px; }
-.login-page--long .login-entete { margin-bottom: 24px; }
-.login-page--long .login-form h1 { font-size: 1.45rem; margin-bottom: 16px; }
+/* Inscription : le formulaire part du haut (il ne saute pas quand le type change) ; la
+   case d'acceptation et les boutons restent en bas de l'écran. Deux étapes pour une
+   association, une entreprise ou « Autre » (public/js/inscription.js). */
+.login-page--long .login-form { margin: 0; flex: 1; display: flex; flex-direction: column; }
+.login-page--long .login-form form { flex: 1; display: flex; flex-direction: column; }
+.inscription-actions { margin-top: auto; padding-top: 4px; }
+.login-page--long .login-form h1 { margin-bottom: 16px; }
+.etape-indicateur { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 24px; font-size: 0.76rem; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: .04em; margin: -8px 0 10px; }
+.etape-indicateur .btn-link { padding: 0; font-size: 0.82rem; font-weight: 500; text-transform: none; letter-spacing: 0; text-decoration: none; }
 .login-visuel { position: sticky; top: 0; height: 100vh; align-self: start; background: linear-gradient(135deg, #006e46 0%, #268462 50%, #59a187 100%); overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; gap: 32px; padding: 56px; color: #fff; }
 .login-visuel::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 70% 30%, rgba(89,161,135,.45), transparent 45%), radial-gradient(circle at 20% 80%, rgba(89,161,135,.30), transparent 40%); }
 .login-visuel .accroche { position: relative; max-width: 520px; }
 .login-visuel .accroche h2 { color: #fff; font-size: 2rem; font-weight: 600; line-height: 1.2; }
 .login-visuel .accroche p { opacity: .9; font-size: 1rem; }
-.login-atouts { position: relative; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 400px; align-self: flex-end; }
-.login-atouts li { display: flex; align-items: flex-start; gap: 14px; padding: 14px 18px; border-radius: 14px; background: #fff; color: #111827; box-shadow: var(--shadow-lg); }
-.login-atouts .ico { flex: none; width: 36px; height: 36px; border-radius: 10px; background: rgba(var(--primary-rgb), .1); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; }
-.login-atouts strong { display: block; font-weight: 600; font-size: .95rem; }
-.login-atouts span:not(.ico) { display: block; font-size: .82rem; color: #6b7280; }
+/* Écrans de CityRésa au premier plan : l'image déborde sur le bord droit et se réduit sur les écrans bas. */
+.login-illustration { position: relative; display: block; width: auto; max-width: 100%; height: auto; max-height: calc(100vh - 280px); align-self: center; }
 .login-pied { margin-top: 24px; font-size: 0.76rem; color: var(--faint); }
 @media (max-width: 991px) { .login-page { grid-template-columns: 1fr; } .login-visuel { display: none; } .login-panel { padding: 32px 24px; } }
 
@@ -631,14 +630,15 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .portail-brand small { color: var(--muted); font-weight: 400; font-size: 0.72rem; display: block; }
 .portail-nav { margin-left: auto; display: flex; align-items: center; gap: 4px; }
 .portail-nav a { color: var(--body); font-weight: 500; font-size: 0.84rem; padding: 8px 12px; border-radius: 8px; }
-.portail-nav a:hover { background: var(--inset); color: var(--strong); }
+.portail-nav a:not(.btn):hover { background: var(--inset); color: var(--strong); }
 .portail-nav a.active { color: var(--primary); }
 .portail-main { flex: 1; max-width: 1180px; width: 100%; margin: 0 auto; padding: 24px 20px 64px; }
 .portail-footer { border-top: 1px solid var(--line); background: var(--surface); padding: 20px; text-align: center; color: var(--muted); font-size: 0.76rem; }
-.hero { border-radius: 24px; overflow: hidden; position: relative; min-height: 300px; display: flex; align-items: flex-end; padding: 36px; color: #fff; background: linear-gradient(135deg, #0f2a20 0%, #006e46 100%); margin-bottom: 28px; }
-.hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.7); }
-.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.65), rgba(0,0,0,.05)); }
-.hero > div { position: relative; max-width: 640px; }
+.hero { border-radius: 24px; overflow: hidden; position: relative; min-height: 300px; display: flex; align-items: center; padding: 36px 40px; color: #fff; background: linear-gradient(135deg, #006e46 0%, #268462 50%, #59a187 100%); margin-bottom: 28px; }
+/* Écrans de CityRésa au premier plan, à droite, coupés par le bord bas du bandeau. */
+.hero-illustration { position: absolute; right: -24px; top: 32px; width: 52%; max-width: 620px; height: auto; pointer-events: none; }
+.hero > div { position: relative; max-width: 46%; }
+@media (max-width: 991px) { .hero-illustration { display: none; } .hero > div { max-width: 640px; } }
 .hero h1 { color: #fff; font-size: 2rem; font-weight: 600; margin-bottom: 8px; }
 .hero p { opacity: .92; font-size: 1rem; margin: 0; }
 .catalogue-filtres { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; }

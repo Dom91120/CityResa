@@ -39,7 +39,11 @@ export default async function PortailLayout({ children }: { children: React.Reac
   const nonLus = counts.messages ?? 0;
 
   type Lien = { href: string; label: string; icone: string; nb?: number };
-  const liens: Lien[] = [{ href: "/portail", label: "Espaces", icone: "door-open" }];
+  // « Espaces » mène au catalogue : inutile sur le catalogue lui-même pour un visiteur, dont
+  // c'est la seule entrée du menu. Un usager connecté le garde (repère parmi ses pages).
+  const surCatalogue = ctx.pathname === "/portail";
+  const liens: Lien[] =
+    user || !surCatalogue ? [{ href: "/portail", label: "Espaces", icone: "door-open" }] : [];
   if (usager) {
     liens.push({
       href: "/portail/mes-reservations",
@@ -133,7 +137,7 @@ export default async function PortailLayout({ children }: { children: React.Reac
             </button>
             <div className="dropdown-menu dropdown-menu-end">
               {liens.map((l) => lienNav(l, "dropdown-item"))}
-              <div className="dropdown-divider" />
+              {liens.length ? <div className="dropdown-divider" /> : null}
               {user?.isAgent ? (
                 <a href="/" className="dropdown-item">
                   <Icone nom="layout-dashboard" taille={14} /> Back-office
