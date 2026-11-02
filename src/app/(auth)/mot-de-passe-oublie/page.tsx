@@ -15,13 +15,16 @@ export default async function MotDePasseOubliePage() {
       <div className="login-page">
         <div className="login-panel">
           <a href="/connexion" className="login-brand">
-            <Icone nom="calendar-check" taille={26} />
-            CityRésa
+            {urlLogo(cfg) ? (
+              <Blason logo={urlLogo(cfg)} taille={48} nom={cfg.COLLECTIVITE_NOM} />
+            ) : (
+              <Icone nom="calendar-check" taille={40} />
+            )}
+            <span>
+              CityRésa
+              <small>{cfg.COLLECTIVITE_NOM}</small>
+            </span>
           </a>
-          <div className="login-coll">
-            <Blason logo={urlLogo(cfg)} taille={28} nom={cfg.COLLECTIVITE_NOM} />
-            {cfg.COLLECTIVITE_NOM}
-          </div>
           <div className="login-form">
             <h1>Mot de passe oublié</h1>
             <p className="text-muted">

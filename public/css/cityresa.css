@@ -13,10 +13,7 @@
     --primary-dim: rgba(var(--primary-rgb), 0.09);
     --primary-soft: #e6f1ed;
     --primary-text: #005a39;
-    --secondary: #aec80c;
-    --secondary-rgb: 174, 200, 12;
-    --gradient: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
-    --gradient-btn: linear-gradient(90deg, var(--primary) 0%, #338b6b 100%);
+    --gradient: linear-gradient(90deg, var(--primary) 0%, #338b6b 100%);
 
     --success: #10b981;
     --success-dim: #d1fae5;
@@ -311,7 +308,7 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
 .btn { font-family: var(--font-sans); font-weight: 500; font-size: 0.84rem; border-radius: var(--radius-pill); padding: 8px 16px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s ease; }
 .btn-sm { font-size: 0.78rem; padding: 5px 12px; }
 .btn-lg { font-size: 0.95rem; padding: 11px 22px; }
-.btn-primary { background: var(--gradient-btn); border: 0; color: #fff; box-shadow: 0 4px 12px -4px rgba(var(--primary-rgb), 0.6); }
+.btn-primary { background: var(--gradient); border: 0; color: #fff; box-shadow: 0 4px 12px -4px rgba(var(--primary-rgb), 0.6); }
 .btn-primary:hover, .btn-primary:focus { background: var(--primary-dark); color: #fff; box-shadow: 0 6px 16px -4px rgba(var(--primary-rgb), 0.7); transform: translateY(-1px); }
 .btn-primary:disabled { background: var(--sub); box-shadow: none; }
 .btn-outline-primary { color: var(--primary); border-color: var(--primary); background: transparent; }
@@ -591,12 +588,15 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 /* ============================ CONNEXION ============================ */
 .login-page { min-height: 100vh; display: grid; grid-template-columns: minmax(360px, 520px) 1fr; background: var(--surface); }
 .login-panel { display: flex; flex-direction: column; padding: 40px 56px; }
-.login-brand { display: flex; align-items: center; gap: 10px; color: var(--primary); font-weight: 700; font-size: 1.4rem; margin-bottom: 8px; }
-.login-coll { color: var(--muted); font-size: 0.85rem; margin-bottom: 48px; }
+.login-brand { display: flex; align-items: center; gap: 14px; color: var(--strong); font-weight: 600; font-size: 1.4rem; line-height: 1.2; margin-bottom: 48px; }
+.login-brand:hover { color: var(--strong); }
+.login-brand .lucide { color: var(--primary); }
+.login-brand small { color: var(--muted); font-weight: 400; font-size: 0.85rem; display: block; margin-top: 2px; }
+.login-brand .blason { width: 48px; height: 48px; border-radius: 10px; }
 .login-form { margin: auto 0; max-width: 380px; width: 100%; }
 .login-form h1 { font-size: 1.6rem; font-weight: 600; margin-bottom: 24px; line-height: 1.25; }
-.login-visuel { background: linear-gradient(135deg, var(--primary) 0%, #338b6b 45%, var(--secondary) 100%); position: relative; overflow: hidden; display: flex; align-items: flex-end; padding: 56px; color: #fff; }
-.login-visuel::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 70% 30%, rgba(255,255,255,.28), transparent 45%), radial-gradient(circle at 20% 80%, rgba(255,255,255,.18), transparent 40%); }
+.login-visuel { background: linear-gradient(135deg, #006e46 0%, #268462 50%, #59a187 100%); position: relative; overflow: hidden; display: flex; align-items: flex-end; padding: 56px; color: #fff; }
+.login-visuel::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 70% 30%, rgba(89,161,135,.45), transparent 45%), radial-gradient(circle at 20% 80%, rgba(89,161,135,.30), transparent 40%); }
 .login-visuel .accroche { position: relative; max-width: 520px; }
 .login-visuel .accroche h2 { color: #fff; font-size: 2rem; font-weight: 600; line-height: 1.2; }
 .login-visuel .accroche p { opacity: .9; font-size: 1rem; }
@@ -617,7 +617,7 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .portail-nav a.active { color: var(--primary); }
 .portail-main { flex: 1; max-width: 1180px; width: 100%; margin: 0 auto; padding: 24px 20px 64px; }
 .portail-footer { border-top: 1px solid var(--line); background: var(--surface); padding: 20px; text-align: center; color: var(--muted); font-size: 0.76rem; }
-.hero { border-radius: 24px; overflow: hidden; position: relative; min-height: 300px; display: flex; align-items: flex-end; padding: 36px; color: #fff; background: linear-gradient(135deg, #0f2a20 0%, var(--primary) 60%, var(--secondary) 100%); margin-bottom: 28px; }
+.hero { border-radius: 24px; overflow: hidden; position: relative; min-height: 300px; display: flex; align-items: flex-end; padding: 36px; color: #fff; background: linear-gradient(135deg, #0f2a20 0%, #006e46 100%); margin-bottom: 28px; }
 .hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.7); }
 .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.65), rgba(0,0,0,.05)); }
 .hero > div { position: relative; max-width: 640px; }
@@ -705,7 +705,6 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .blason.blason--logo { background: transparent; }
 .blason img { width: 100%; height: 100%; object-fit: contain; border-radius: 0; display: block; }
 .blason--grand { width: 56px; height: 56px; border-radius: 10px; font-size: 1.6rem; }
-.login-coll { display: flex; align-items: center; gap: 8px; }
 .portail-brand .blason { width: 32px; height: 32px; border-radius: 8px; }
 .logo-apercu { display: flex; align-items: center; gap: 14px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 10px; }
 .logo-apercu img { max-height: 64px; max-width: 160px; object-fit: contain; }
