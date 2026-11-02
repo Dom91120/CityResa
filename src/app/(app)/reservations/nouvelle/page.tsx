@@ -29,6 +29,7 @@ import {
   optionsPour,
   organisationsSaisie,
 } from "@/modules/reservations/saisie";
+import { saisonActive } from "@/server/calendrier";
 import { redirigerAvecFlashDepuisRendu } from "@/server/flash";
 import { contexteModule } from "@/server/module";
 import { param } from "@/server/paging";
@@ -64,10 +65,11 @@ export default async function NouvelleReservationPage({
   const titre = param(params, "title") ?? "";
   const participants = param(params, "participants") ?? "";
 
-  const [espaces, organisations, natures] = await Promise.all([
+  const [espaces, organisations, natures, saison] = await Promise.all([
     espacesSaisie(page.user),
     organisationsSaisie(),
     naturesEvenement(),
+    saisonActive(),
   ]);
   const espace = espaceId && voitEspace(page.user, espaceId) ? await espaceSaisie(espaceId) : null;
   const debut = date && heureDebut ? parisDateTimeToInstant(date, heureDebut) : null;
@@ -221,7 +223,7 @@ export default async function NouvelleReservationPage({
                     requis
                     step={pas}
                   />
-                  <BlocRecurrence />
+                  <BlocRecurrence saison={saison} />
                 </Grille>
               </SectionForm>
 

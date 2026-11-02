@@ -430,6 +430,43 @@ model Indisponibilite {
 }
 
 // ============================================================
+//  Calendrier : saisons, vacances scolaires, jours fériés
+// ============================================================
+
+/// Une saison (année scolaire ou sportive, du 1er septembre au 31 août) : la période de
+/// référence des créneaux annuels. Une seule saison est active à la fois.
+model Saison {
+  id        Int      @id @default(autoincrement())
+  /// « 2026-2027 »
+  label     String   @unique @db.VarChar(40)
+  startDate DateTime @map("start_date") @db.Date
+  endDate   DateTime @map("end_date") @db.Date
+  isActive  Boolean  @default(false) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("saison")
+}
+
+/// Une période du calendrier, bornes incluses : vacances scolaires (zone C) ou jour férié.
+/// Une récurrence « hors vacances » / « hors jours fériés » saute ces jours.
+model PeriodeCalendrier {
+  id        Int      @id @default(autoincrement())
+  /// vacances | ferie
+  kind      String   @db.VarChar(12)
+  label     String   @db.VarChar(120)
+  startDate DateTime @map("start_date") @db.Date
+  endDate   DateTime @map("end_date") @db.Date
+  /// saisie | import | calcul
+  source    String   @default("saisie") @db.VarChar(10)
+  /// Zone de vacances scolaires (« Zone C ») pour une période importée.
+  zone      String?  @db.VarChar(20)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([startDate, endDate])
+  @@map("periode_calendrier")
+}
+
+// ============================================================
 //  Usagers : organisations (associations, entreprises, services) et particuliers
 // ============================================================
 

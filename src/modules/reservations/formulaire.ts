@@ -4,7 +4,7 @@
  *
  *   espace_id · date (YYYY-MM-DD) · heure_debut / heure_fin (HH:MM)
  *   recurrence=on · freq (daily|weekly|monthly) · interval · until (YYYY-MM-DD) · weekday (1-7, multiple)
- *   · except (YYYY-MM-DD, multiple)
+ *   · except (YYYY-MM-DD, multiple) · hors_vacances · hors_feries
  *   title · nature_id · description · participants · is_public_event
  *   option_<id> = quantité (vide / 0 = non retenue) · materiel_<id> = quantité
  *   organisation_id · gratuit · ignorer_delai · statut_initial  (back-office seulement)
@@ -49,6 +49,8 @@ export function lireRecurrenceForm(form: FormData): Recurrence | null {
     .map(String)
     .filter((s) => /^\d{4}-\d{2}-\d{2}$/.test(s));
   if (except.length) rec.except = except;
+  if (coche(form, "hors_vacances")) rec.horsVacances = true;
+  if (coche(form, "hors_feries")) rec.horsFeries = true;
   if (!rec.until && !rec.count)
     throw new UserFacingError("Indiquez la date de fin de la récurrence.");
   return rec;

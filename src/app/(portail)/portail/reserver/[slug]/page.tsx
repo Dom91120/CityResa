@@ -15,6 +15,8 @@ import {
   profilAutorise,
 } from "@/modules/portail/catalogue";
 import { Etapes } from "@/modules/portail/vues";
+import { CochesCalendrier } from "@/modules/reservations/champs";
+import { saisonActive } from "@/server/calendrier";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { getCurrentUser } from "@/server/guards";
@@ -39,7 +41,7 @@ export default async function ReserverPage({
   const cfg = await getSettings();
   const sp = await searchParams;
   const v = (k: string) => (typeof sp[k] === "string" ? String(sp[k]) : "");
-  const [org, natures, options, materiels, profils] = await Promise.all([
+  const [org, natures, options, materiels, profils, saison] = await Promise.all([
     organisationDe(user),
     prisma.referential.findMany({
       where: { kind: "evenement_nature", isActive: true },
@@ -57,6 +59,7 @@ export default async function ReserverPage({
         })
       : [],
     prisma.referential.findMany({ where: { kind: "profil" }, select: { code: true, label: true } }),
+    saisonActive(),
   ]);
   const profil = org?.profil ?? null;
   const photo = photoPrincipale(espace);
@@ -309,8 +312,11 @@ export default async function ReserverPage({
                         className="form-control"
                         min={dateMin}
                         max={dateMax}
-                        defaultValue={v("until")}
+                        defaultValue={v("until") || saison?.fin || ""}
                       />
+                      {saison ? (
+                        <div className="form-text">Fin de la saison {saison.label} par défaut.</div>
+                      ) : null}
                     </div>
                   </div>
                   <div className="form-label">Jours de la semaine (récurrence hebdomadaire)</div>
@@ -327,10 +333,17 @@ export default async function ReserverPage({
                       </label>
                     ))}
                   </div>
+                  <div className="grille grille-2 mb-3">
+                    <CochesCalendrier
+                      horsVacances={v("hors_vacances") === "on"}
+                      horsFeries={v("hors_feries") === "on"}
+                      saison={saison}
+                    />
+                  </div>
                   <div className="grille grille-2">
                     <div>
                       <label className="form-label" htmlFor="f-except">
-                        Date à exclure (facultatif)
+                        Autre date à exclure (facultatif)
                       </label>
                       <input type="date" name="except" id="f-except" className="form-control" />
                       <div className="form-text">Vacances, jour férié…</div>

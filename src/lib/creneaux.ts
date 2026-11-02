@@ -41,11 +41,20 @@ export type Recurrence = {
   until?: string;
   /** Ou un nombre d'occurrences. */
   count?: number;
-  /** Dates exclues « YYYY-MM-DD » (vacances, jours fériés). */
+  /** Dates exclues « YYYY-MM-DD » saisies à la main. */
   except?: string[];
+  /** Sauter les vacances scolaires du calendrier des saisons. */
+  horsVacances?: boolean;
+  /** Sauter les jours fériés. */
+  horsFeries?: boolean;
 };
 
 export const MAX_OCCURRENCES = 200;
+
+/** La récurrence s'appuie-t-elle sur le calendrier (vacances ou jours fériés à sauter) ? */
+export function utiliseCalendrier(rec: Recurrence | null): boolean {
+  return !!rec && (!!rec.horsVacances || !!rec.horsFeries);
+}
 
 /** Lit une récurrence depuis un JSON quelconque (null si absente ou invalide). */
 export function lireRecurrence(json: unknown): Recurrence | null {
@@ -60,6 +69,8 @@ export function lireRecurrence(json: unknown): Recurrence | null {
   if (typeof r.count === "number" && r.count >= 1) out.count = Math.floor(r.count);
   if (Array.isArray(r.except))
     out.except = r.except.filter((x) => typeof x === "string" && /^\d{4}-\d{2}-\d{2}$/.test(x));
+  if (r.horsVacances === true) out.horsVacances = true;
+  if (r.horsFeries === true) out.horsFeries = true;
   return out;
 }
 
@@ -68,23 +79,43 @@ function cleDate(y: number, mo: number, da: number): string {
 }
 
 /**
+ * Les jours « YYYY-MM-DD » (heure de Paris) entre lesquels une récurrence peut produire des
+ * occurrences : du premier créneau à la date de fin, ou à un an au plus sans date de fin.
+ */
+export function bornesRecurrence(
+  premier: Intervalle,
+  rec: Recurrence | null,
+): { debut: string; fin: string } {
+  const debut = toParisWall(premier.startAt);
+  const debutCle = cleDate(debut.y, debut.mo, debut.da);
+  if (!rec) return { debut: debutCle, fin: debutCle };
+  const unAn = new Date(Date.UTC(debut.y + 1, debut.mo - 1, debut.da));
+  return {
+    debut: debutCle,
+    fin: rec.until ?? cleDate(unAn.getUTCFullYear(), unAn.getUTCMonth() + 1, unAn.getUTCDate()),
+  };
+}
+
+/**
  * Développe un premier créneau selon sa récurrence : la liste des occurrences, premier
  * créneau compris, bornée à MAX_OCCURRENCES. La durée de chaque occurrence est celle du
- * premier créneau ; les heures sont celles de Paris.
+ * premier créneau ; les heures sont celles de Paris. `exclusAuto` : les jours du calendrier
+ * (vacances, fériés) à sauter en plus des dates exclues à la main — fournis par l'appelant,
+ * qui les lit en base selon `horsVacances` / `horsFeries`.
  */
-export function developperRecurrence(premier: Intervalle, rec: Recurrence | null): Intervalle[] {
+export function developperRecurrence(
+  premier: Intervalle,
+  rec: Recurrence | null,
+  exclusAuto: Iterable<string> = [],
+): Intervalle[] {
   if (!rec) return [premier];
   const interval = Math.max(1, rec.interval ?? 1);
   const duree = premier.endAt.getTime() - premier.startAt.getTime();
   const debut = toParisWall(premier.startAt);
   const max = Math.min(MAX_OCCURRENCES, rec.count ?? MAX_OCCURRENCES);
-  const except = new Set(rec.except ?? []);
-  const limiteCle = rec.until ?? null;
+  const except = new Set([...(rec.except ?? []), ...exclusAuto]);
   const out: Intervalle[] = [];
-  // Garde-fou : sans `until` ni `count`, on borne à un an.
-  const unAn = new Date(Date.UTC(debut.y + 1, debut.mo - 1, debut.da));
-  const borne =
-    limiteCle ?? cleDate(unAn.getUTCFullYear(), unAn.getUTCMonth() + 1, unAn.getUTCDate());
+  const borne = bornesRecurrence(premier, rec).fin;
 
   const pousser = (y: number, mo: number, da: number) => {
     const cle = cleDate(y, mo, da);
@@ -157,6 +188,9 @@ export function decrireRecurrence(rec: Recurrence | null): string {
     const [y, m, d] = rec.until.split("-");
     base += `, jusqu'au ${d}/${m}/${y}`;
   } else if (rec.count) base += `, ${rec.count} fois`;
+  if (rec.horsVacances && rec.horsFeries) base += ", hors vacances scolaires et jours fériés";
+  else if (rec.horsVacances) base += ", hors vacances scolaires";
+  else if (rec.horsFeries) base += ", hors jours fériés";
   return base;
 }
 

@@ -131,8 +131,47 @@ export function ChoixMateriel({
   );
 }
 
-/** Le bloc de récurrence (recurrence, freq, interval, until, weekday, except). */
-export function BlocRecurrence({ id = "bloc-recurrence" }: { id?: string }) {
+/** Les cases « hors vacances scolaires » / « hors jours fériés » d'une récurrence. */
+export function CochesCalendrier({
+  horsVacances = false,
+  horsFeries = false,
+  saison,
+}: {
+  horsVacances?: boolean;
+  horsFeries?: boolean;
+  /** La saison active, pour l'aide (« vacances de la zone C de la saison 2026-2027 »). */
+  saison?: { label: string } | null;
+}) {
+  return (
+    <div style={{ gridColumn: "1 / -1" }}>
+      <div className="form-label">Calendrier</div>
+      <div className="coches">
+        <label>
+          <input type="checkbox" name="hors_vacances" value="on" defaultChecked={horsVacances} />
+          Hors vacances scolaires
+        </label>
+        <label>
+          <input type="checkbox" name="hors_feries" value="on" defaultChecked={horsFeries} />
+          Hors jours fériés
+        </label>
+      </div>
+      <div className="form-text">
+        Les séances qui tombent pendant les vacances
+        {saison ? ` (zone C, saison ${saison.label})` : ""} ou un jour férié ne sont pas créées.
+      </div>
+    </div>
+  );
+}
+
+/** Le bloc de récurrence (recurrence, freq, interval, until, weekday, hors_vacances, hors_feries, except). */
+export function BlocRecurrence({
+  id = "bloc-recurrence",
+  saison,
+}: {
+  id?: string;
+  /** La saison active : sa fin pré-remplit « Jusqu'au ». */
+  saison?: { label: string; fin: string } | null;
+}) {
   return (
     <>
       <div className="form-check form-switch" style={{ gridColumn: "1 / -1" }}>
@@ -179,7 +218,16 @@ export function BlocRecurrence({ id = "bloc-recurrence" }: { id?: string }) {
             <label className="form-label" htmlFor="f-until">
               Jusqu'au <span className="req">*</span>
             </label>
-            <input type="date" name="until" id="f-until" className="form-control" />
+            <input
+              type="date"
+              name="until"
+              id="f-until"
+              className="form-control"
+              defaultValue={saison?.fin ?? ""}
+            />
+            {saison ? (
+              <div className="form-text">Fin de la saison {saison.label} par défaut.</div>
+            ) : null}
           </div>
           <div style={{ gridColumn: "1 / -1" }}>
             <div className="form-label">Jours (récurrence hebdomadaire)</div>
@@ -193,8 +241,9 @@ export function BlocRecurrence({ id = "bloc-recurrence" }: { id?: string }) {
             </div>
             <div className="form-text">Aucun jour coché = le jour du premier créneau.</div>
           </div>
+          <CochesCalendrier saison={saison} />
           <div style={{ gridColumn: "1 / -1" }}>
-            <div className="form-label">Dates exclues (vacances, jours fériés)</div>
+            <div className="form-label">Autres dates exclues</div>
             <div className="d-flex gap-2 flex-wrap">
               {[0, 1, 2, 3].map((i) => (
                 <input
