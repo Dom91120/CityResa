@@ -228,7 +228,7 @@ export function reglesInscription(type: string): Record<ChampInscription, RegleC
     aide,
   });
   const regles: Record<ChampInscription, RegleChamp> = {
-    phone: r(true, "Téléphone mobile", "Pour la signature par SMS"),
+    phone: r(true, "Téléphone mobile"),
     org_name: r(
       !particulier,
       asso ? "Nom de l'association" : entreprise ? "Raison sociale" : "Nom de l'organisation",
@@ -236,19 +236,11 @@ export function reglesInscription(type: string): Record<ChampInscription, RegleC
     address: r(true, particulier ? "Adresse" : "Adresse du siège"),
     postal_code: r(true, "Code postal"),
     city: r(true, "Ville"),
-    siret: r(
-      !particulier,
-      "SIRET",
-      entreprise ? "14 chiffres" : asso ? "Si l'association est employeuse" : "",
-    ),
-    rna: r(asso, "N° RNA", "W suivi de 9 chiffres"),
+    siret: r(!particulier, "SIRET"),
+    rna: r(asso, "N° RNA"),
     legal_first_name: r(!particulier, "Prénom"),
     legal_last_name: r(!particulier, "Nom"),
-    legal_appointed_at: r(
-      asso,
-      "Date de l'AG de nomination",
-      "L'assemblée générale qui a élu le président ou la présidente",
-    ),
+    legal_appointed_at: r(asso, "Élu(e) en AG le"),
   };
   for (const c of CHAMPS_INSCRIPTION) regles[c].requis = regles[c].visible && exiges.has(c);
   return regles;
@@ -263,24 +255,15 @@ export function controlerInscription<T extends Partial<Record<ChampInscription, 
   valeurs: T,
 ): { valeurs: T; manques: string[] } {
   const regles = reglesInscription(type);
-  const propres = { ...valeurs };
-  const manques: string[] = [];
-  for (const c of CHAMPS_INSCRIPTION) {
-    const regle = regles[c];
-    if (!regle.visible) {
-      (propres as Record<string, unknown>)[c] = null;
-      continue;
-    }
-    const v = propres[c];
-    const rempli = v instanceof Date ? !Number.isNaN(v.getTime()) : Boolean(String(v ?? "").trim());
-    if (regle.requis && !rempli) {
-      const qualite = c.startsWith("legal_") && c !== "legal_appointed_at";
-      manques.push(
-        qualite
-          ? `${regle.libelle} du ${qualiteRepresentant(type).replace("(e)", "").toLowerCase()}`
-          : regle.libelle,
-      );
-    }
-  }
-  return { valeurs: propres, manques };
+  const propres = { ...valeurs } as Record<string, unknown>;
+  for (const c of CHAMPS_INSCRIPTION) if (!regles[c].visible) propres[c] = null;
+  const manques = exigencesPour(type)
+    .filter((e) => {
+      const c = CHAMP_DE_L_EXIGENCE[e.cle];
+      if (!c || !regles[c].requis) return false;
+      const v = propres[c];
+      return v instanceof Date ? Number.isNaN(v.getTime()) : !String(v ?? "").trim();
+    })
+    .map((e) => e.libelle);
+  return { valeurs: propres as T, manques };
 }
