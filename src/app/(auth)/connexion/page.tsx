@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Blason } from "@/components/blason";
 import { Icone } from "@/components/icones";
 import { ScriptsPage } from "@/components/scripts";
+import { VisuelConnexion } from "@/components/visuel-connexion";
 import { getSettings } from "@/server/config-store";
 import { getCurrentUser } from "@/server/guards";
 import { urlLogo } from "@/server/logo";
@@ -102,45 +103,7 @@ export default async function ConnexionPage({
             CityRésa · réservation des espaces de {cfg.COLLECTIVITE_NOM}
           </div>
         </div>
-        <div className="login-visuel">
-          <div className="carte-demo">
-            <div className="d-flex align-items-center gap-2 mb-2">
-              <span className="stat-ico chip-primary">
-                <Icone nom="door-open" taille={16} />
-              </span>
-              <div>
-                <div className="fw-medium" style={{ fontSize: ".85rem" }}>
-                  Salle des fêtes
-                </div>
-                <div className="text-muted" style={{ fontSize: ".72rem" }}>
-                  Sam. 14 mars · 18h00 – 23h30
-                </div>
-              </div>
-            </div>
-            <div className="frise">
-              <div className="frise-etape faite">
-                <div className="pt" />
-                Demande
-              </div>
-              <div className="frise-etape faite">
-                <div className="pt" />
-                Signature
-              </div>
-              <div className="frise-etape courante">
-                <div className="pt" />
-                Confirmée
-              </div>
-              <div className="frise-etape">
-                <div className="pt" />
-                Terminée
-              </div>
-            </div>
-          </div>
-          <div className="accroche">
-            <h2>{cfg.PORTAIL_TITRE}</h2>
-            <p>{cfg.PORTAIL_ACCROCHE}</p>
-          </div>
-        </div>
+        <VisuelConnexion titre={cfg.PORTAIL_TITRE} texte={cfg.PORTAIL_ACCROCHE} />
       </div>
       <ScriptsPage nonce={nonce} />
     </>
