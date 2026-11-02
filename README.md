@@ -86,6 +86,11 @@ pnpm db:demo         # sites, espaces (photos générées), usagers, réservatio
 pnpm dev             # http://localhost:3000  (portail : /portail)
 ```
 
+L'illustration des pages de connexion et d'accueil (`public/img/illustration-cityresa.webp`)
+est faite de captures du portail usager : `pnpm illustration` la refait, serveur de
+développement lancé et jeu de démonstration chargé (écrans et cadrage dans
+`scripts/illustration-connexion.mjs`).
+
 Sans SMTP, les courriels sont simulés et journalisés ; le fournisseur SMS `console` écrit les
 codes de signature dans la console du serveur.
 
