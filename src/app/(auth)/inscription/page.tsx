@@ -2,14 +2,21 @@ import { notFound, redirect } from "next/navigation";
 import { Blason } from "@/components/blason";
 import { Champ, Select } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
-import { ScriptsPage } from "@/components/scripts";
+import { DonneesGraphique, ScriptDiffere, ScriptsPage } from "@/components/scripts";
 import { ORGANISATION_TYPES } from "@/lib/constantes";
+import {
+  type ChampInscription,
+  qualiteRepresentant,
+  reglesInscription,
+} from "@/lib/dossier-usager";
 import { getSettings } from "@/server/config-store";
 import { getCurrentUser } from "@/server/guards";
 import { urlLogo } from "@/server/logo";
 import { contexteAnonyme } from "@/server/page";
 
 export const metadata = { title: "Créer mon espace - CityRésa" };
+
+const TYPE_INITIAL = "association";
 
 export default async function InscriptionPage() {
   const cfg = await getSettings();
@@ -20,12 +27,22 @@ export default async function InscriptionPage() {
   const types = Object.entries(ORGANISATION_TYPES).filter(
     ([k]) => !["service_interne", "collectivite"].includes(k),
   ) as [string, string][];
+  const initial = reglesInscription(TYPE_INITIAL);
+  const champ = (c: ChampInscription) => ({
+    label: initial[c].libelle,
+    requis: initial[c].requis,
+    aide: initial[c].aide || undefined,
+    masque: !initial[c].visible,
+  });
+  const regles = Object.fromEntries(
+    types.map(([t]) => [t, { titre: qualiteRepresentant(t), champs: reglesInscription(t) }]),
+  );
   return (
     <>
       <div className="login-page" style={{ gridTemplateColumns: "minmax(360px, 640px) 1fr" }}>
         <div className="login-panel">
           <div className="login-entete">
-            <div className="login-brand">
+            <a href="/connexion" className="login-brand" title="Retour à la connexion">
               {urlLogo(cfg) ? (
                 <Blason logo={urlLogo(cfg)} taille={48} nom={cfg.COLLECTIVITE_NOM} />
               ) : (
@@ -35,7 +52,7 @@ export default async function InscriptionPage() {
                 CityRésa
                 <small>{cfg.COLLECTIVITE_NOM}</small>
               </span>
-            </div>
+            </a>
             <a href="/portail" className="login-lien-portail">
               <Icone nom="door-open" taille={15} /> Espaces
             </a>
@@ -54,49 +71,39 @@ export default async function InscriptionPage() {
                 <Champ label="Prénom" name="first_name" requis autoComplete="given-name" />
                 <Champ label="Nom" name="last_name" requis autoComplete="family-name" />
                 <Champ label="Courriel" name="email" type="email" requis autoComplete="email" />
-                <Champ
-                  label="Téléphone mobile"
-                  name="phone"
-                  type="tel"
-                  autoComplete="tel"
-                  aide="Pour la signature par SMS"
-                />
+                <Champ name="phone" type="tel" autoComplete="tel" {...champ("phone")} />
                 <Select
                   label="Vous êtes"
                   name="type"
                   options={types}
-                  valeur="association"
+                  valeur={TYPE_INITIAL}
                   requis
                   attrs={{ "data-type-org": "" }}
                 />
+                <Champ name="org_name" {...champ("org_name")} />
+                <Champ name="address" pleine autoComplete="street-address" {...champ("address")} />
+                <Champ name="postal_code" autoComplete="postal-code" {...champ("postal_code")} />
+                <Champ name="city" autoComplete="address-level2" {...champ("city")} />
+                <Champ name="siret" attrs={{ inputMode: "numeric" }} {...champ("siret")} />
+                <Champ name="rna" placeholder="W…" {...champ("rna")} />
+                <div
+                  className="grille-pleine"
+                  style={{ gridColumn: "1 / -1" }}
+                  data-titre-representant=""
+                  hidden={!initial.legal_first_name.visible}
+                >
+                  <h2 className="h6 mb-0 mt-2">
+                    <Icone nom="user-check" taille={15} />{" "}
+                    <span>{qualiteRepresentant(TYPE_INITIAL)}</span>
+                  </h2>
+                </div>
+                <Champ name="legal_first_name" autoComplete="off" {...champ("legal_first_name")} />
+                <Champ name="legal_last_name" autoComplete="off" {...champ("legal_last_name")} />
                 <Champ
-                  label="Nom de l'organisation"
-                  name="org_name"
-                  placeholder="Association, entreprise…"
-                  aide="Sans objet pour un particulier"
-                />
-                <Champ label="Adresse" name="address" pleine autoComplete="street-address" />
-                <Champ label="Code postal" name="postal_code" autoComplete="postal-code" />
-                <Champ label="Ville" name="city" autoComplete="address-level2" />
-                <Champ label="SIRET" name="siret" aide="Entreprises et associations employeuses" />
-                <Champ label="N° RNA" name="rna" aide="Associations (W…)" />
-                <Champ
-                  label="Prénom du président ou dirigeant"
-                  name="legal_first_name"
-                  aide="Associations et entreprises : exigé avant toute demande"
-                  autoComplete="off"
-                />
-                <Champ
-                  label="Nom du président ou dirigeant"
-                  name="legal_last_name"
-                  autoComplete="off"
-                />
-                <Champ
-                  label="Date de l'AG de nomination"
                   name="legal_appointed_at"
                   type="date"
-                  aide="Associations : l'assemblée générale qui a élu le président"
                   pleine
+                  {...champ("legal_appointed_at")}
                 />
                 <Champ
                   label="Mot de passe"
@@ -140,7 +147,8 @@ export default async function InscriptionPage() {
           </div>
         </div>
       </div>
-      <ScriptsPage nonce={nonce} />
+      <DonneesGraphique id="regles-inscription" config={regles} />
+      <ScriptsPage nonce={nonce} extra={<ScriptDiffere src="/js/inscription.js" nonce={nonce} />} />
     </>
   );
 }

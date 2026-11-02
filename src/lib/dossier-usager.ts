@@ -174,3 +174,113 @@ export function phraseManques(manques: Exigence[]): string {
   if (!manques.length) return "";
   return `Il manque : ${manques.map((m) => m.libelle.charAt(0).toLowerCase() + m.libelle.slice(1)).join(", ")}.`;
 }
+
+// ── Formulaire d'inscription ──
+
+/** Les champs du formulaire d'inscription qui dépendent du type d'organisation. */
+export const CHAMPS_INSCRIPTION = [
+  "phone",
+  "org_name",
+  "address",
+  "postal_code",
+  "city",
+  "siret",
+  "rna",
+  "legal_first_name",
+  "legal_last_name",
+  "legal_appointed_at",
+] as const;
+export type ChampInscription = (typeof CHAMPS_INSCRIPTION)[number];
+
+export type RegleChamp = { visible: boolean; requis: boolean; libelle: string; aide: string };
+
+/** Le champ du formulaire qui porte une exigence du dossier. */
+const CHAMP_DE_L_EXIGENCE: Partial<Record<ExigenceCle, ChampInscription>> = {
+  contact_phone: "phone",
+  org_name: "org_name",
+  address: "address",
+  postal_code: "postal_code",
+  city: "city",
+  siret: "siret",
+  legal_first_name: "legal_first_name",
+  legal_last_name: "legal_last_name",
+  legal_appointed_at: "legal_appointed_at",
+};
+
+/**
+ * Pour chaque champ variable de l'inscription : affiché ou non, obligatoire ou non, libellé
+ * et aide, selon le type choisi. Les données exigées avant toute demande sont obligatoires
+ * dès l'inscription ; un champ sans objet pour ce type est masqué.
+ */
+export function reglesInscription(type: string): Record<ChampInscription, RegleChamp> {
+  const asso = type === "association";
+  const entreprise = type === "entreprise";
+  const particulier = type === "particulier";
+  const exiges = new Set(
+    exigencesPour(type)
+      .map((e) => CHAMP_DE_L_EXIGENCE[e.cle])
+      .filter((c): c is ChampInscription => Boolean(c)),
+  );
+  const r = (visible: boolean, libelle: string, aide = ""): RegleChamp => ({
+    visible,
+    requis: false,
+    libelle,
+    aide,
+  });
+  const regles: Record<ChampInscription, RegleChamp> = {
+    phone: r(true, "Téléphone mobile", "Pour la signature par SMS"),
+    org_name: r(
+      !particulier,
+      asso ? "Nom de l'association" : entreprise ? "Raison sociale" : "Nom de l'organisation",
+    ),
+    address: r(true, particulier ? "Adresse" : "Adresse du siège"),
+    postal_code: r(true, "Code postal"),
+    city: r(true, "Ville"),
+    siret: r(
+      !particulier,
+      "SIRET",
+      entreprise ? "14 chiffres" : asso ? "Si l'association est employeuse" : "",
+    ),
+    rna: r(asso, "N° RNA", "W suivi de 9 chiffres"),
+    legal_first_name: r(!particulier, "Prénom"),
+    legal_last_name: r(!particulier, "Nom"),
+    legal_appointed_at: r(
+      asso,
+      "Date de l'AG de nomination",
+      "L'assemblée générale qui a élu le président ou la présidente",
+    ),
+  };
+  for (const c of CHAMPS_INSCRIPTION) regles[c].requis = regles[c].visible && exiges.has(c);
+  return regles;
+}
+
+/**
+ * Contrôle et nettoyage d'une inscription : les champs sans objet pour le type sont vidés,
+ * les champs obligatoires absents sont listés par leur libellé.
+ */
+export function controlerInscription<T extends Partial<Record<ChampInscription, unknown>>>(
+  type: string,
+  valeurs: T,
+): { valeurs: T; manques: string[] } {
+  const regles = reglesInscription(type);
+  const propres = { ...valeurs };
+  const manques: string[] = [];
+  for (const c of CHAMPS_INSCRIPTION) {
+    const regle = regles[c];
+    if (!regle.visible) {
+      (propres as Record<string, unknown>)[c] = null;
+      continue;
+    }
+    const v = propres[c];
+    const rempli = v instanceof Date ? !Number.isNaN(v.getTime()) : Boolean(String(v ?? "").trim());
+    if (regle.requis && !rempli) {
+      const qualite = c.startsWith("legal_") && c !== "legal_appointed_at";
+      manques.push(
+        qualite
+          ? `${regle.libelle} du ${qualiteRepresentant(type).replace("(e)", "").toLowerCase()}`
+          : regle.libelle,
+      );
+    }
+  }
+  return { valeurs: propres, manques };
+}

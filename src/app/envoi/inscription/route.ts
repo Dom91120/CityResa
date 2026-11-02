@@ -1,3 +1,4 @@
+import { controlerInscription } from "@/lib/dossier-usager";
 import { champ, champOuNull, parseDate } from "@/lib/forms-util";
 import { getSettings } from "@/server/config-store";
 import { seConnecter } from "@/server/connexion";
@@ -29,24 +30,43 @@ export async function POST(req: Request) {
         );
       if (!form.get("cgu"))
         return redirigerAvecMessage("/inscription", "Merci d'accepter les conditions.", "danger");
+      const type = champ(form, "type");
+      const { valeurs: v, manques } = controlerInscription(type, {
+        phone: champOuNull(form, "phone"),
+        org_name: champOuNull(form, "org_name"),
+        address: champOuNull(form, "address"),
+        postal_code: champOuNull(form, "postal_code"),
+        city: champOuNull(form, "city"),
+        siret: champOuNull(form, "siret"),
+        rna: champOuNull(form, "rna"),
+        legal_first_name: champOuNull(form, "legal_first_name"),
+        legal_last_name: champOuNull(form, "legal_last_name"),
+        legal_appointed_at: parseDate(form.get("legal_appointed_at")),
+      });
+      if (manques.length)
+        return redirigerAvecMessage(
+          "/inscription",
+          `Merci de renseigner : ${manques.map((m) => m.charAt(0).toLowerCase() + m.slice(1)).join(", ")}.`,
+          "danger",
+        );
       try {
         await creerCompteUsager(
           {
             firstName: champ(form, "first_name"),
             lastName: champ(form, "last_name"),
             email: champ(form, "email"),
-            phone: champOuNull(form, "phone"),
+            phone: v.phone,
             password,
-            type: champ(form, "type"),
-            orgName: champOuNull(form, "org_name"),
-            address: champOuNull(form, "address"),
-            postalCode: champOuNull(form, "postal_code"),
-            city: champOuNull(form, "city"),
-            siret: champOuNull(form, "siret"),
-            rna: champOuNull(form, "rna"),
-            legalFirstName: champOuNull(form, "legal_first_name"),
-            legalLastName: champOuNull(form, "legal_last_name"),
-            legalAppointedAt: parseDate(form.get("legal_appointed_at")),
+            type,
+            orgName: v.org_name,
+            address: v.address,
+            postalCode: v.postal_code,
+            city: v.city,
+            siret: v.siret,
+            rna: v.rna,
+            legalFirstName: v.legal_first_name,
+            legalLastName: v.legal_last_name,
+            legalAppointedAt: v.legal_appointed_at,
           },
           champ(form, "email"),
         );
