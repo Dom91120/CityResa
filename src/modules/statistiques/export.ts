@@ -18,7 +18,7 @@ function entete(ws: ExcelJS.Worksheet) {
   const row = ws.getRow(1);
   row.font = { bold: true };
   row.alignment = { vertical: "middle" };
-  row.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFDEEF3" } };
+  row.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFE6F1ED" } };
   ws.views = [{ state: "frozen", ySplit: 1 }];
   ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: ws.columnCount } };
 }

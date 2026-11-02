@@ -8,7 +8,7 @@
         return {
             texte: cs.getPropertyValue('--muted').trim() || '#6b7280',
             ligne: cs.getPropertyValue('--line').trim() || '#ececf1',
-            primaire: cs.getPropertyValue('--primary').trim() || '#e8336d',
+            primaire: cs.getPropertyValue('--primary').trim() || '#006e46',
         };
     }
     document.addEventListener('DOMContentLoaded', function () {

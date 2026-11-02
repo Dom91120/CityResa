@@ -425,7 +425,7 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 | Modèles de documents, emailings (Agora) | **Partiel** — modèles de courriel ; pas d'emailing de masse. |
 | Plusieurs services et accès, droits paramétrables (Agora) | **Oui** — rôles, permissions par catégorie, périmètre par espace. |
 | Site internet responsive avec formulaire personnalisable (AgoraSite) | **Oui / partiel** — portail responsive aux couleurs de la ville (titre, accroche, conditions paramétrables) ; formulaire de demande fixe. |
-| Charte graphique (barre latérale blanche, accent rose, cartes, pastilles)  | **Oui** — feuille `cityresa.css`, couleur d'accent paramétrable. |
+| Charte graphique (barre latérale blanche, accent vert, cartes, pastilles)  | **Oui** — feuille `cityresa.css`, couleur d'accent paramétrable. |
 
 ---
 

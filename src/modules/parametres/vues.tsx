@@ -435,7 +435,7 @@ export function VoletPieces({ cfg }: { cfg: AppSettings }) {
 }
 
 export function VoletApparence({ cfg }: { cfg: AppSettings }) {
-  const couleur = normalizeColor(cfg.UI_PRIMARY_COLOR) || "#e8336d";
+  const couleur = normalizeColor(cfg.UI_PRIMARY_COLOR) || "#006e46";
   const style = {
     "--apercu": couleur,
     "--apercu-dark": colorMix(couleur, -0.18),
@@ -446,7 +446,7 @@ export function VoletApparence({ cfg }: { cfg: AppSettings }) {
     <>
       <p className="form-section-aide">
         La couleur d'accent de l'interface, du portail et des courriels. Vide ou réinitialisée : le
-        rose CityRésa.
+        thème Vert.
       </p>
       <div className="d-flex align-items-end gap-3 flex-wrap mb-3">
         <div>

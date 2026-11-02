@@ -97,7 +97,7 @@ export default async function ConnexionPage({
         <div className="login-visuel">
           <div className="carte-demo">
             <div className="d-flex align-items-center gap-2 mb-2">
-              <span className="stat-ico chip-rose">
+              <span className="stat-ico chip-primary">
                 <Icone nom="door-open" taille={16} />
               </span>
               <div>

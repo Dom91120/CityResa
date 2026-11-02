@@ -63,10 +63,10 @@ export const CSS_EDITION = `
   * { box-sizing: border-box; }
   body { font-family: "Segoe UI", Helvetica, Arial, sans-serif; font-size: 11pt; color: #1f2937; line-height: 1.45; margin: 0; }
   h1 { font-size: 20pt; margin: 0 0 4px; color: #111827; }
-  h2 { font-size: 13pt; margin: 18px 0 6px; color: #e8336d; border-bottom: 1px solid #f3cfdc; padding-bottom: 3px; }
+  h2 { font-size: 13pt; margin: 18px 0 6px; color: #006e46; border-bottom: 1px solid #bfdbd1; padding-bottom: 3px; }
   h3 { font-size: 11.5pt; margin: 12px 0 4px; }
   p { margin: 0 0 6px; }
-  .entete { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #e8336d; padding-bottom: 10px; margin-bottom: 16px; }
+  .entete { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #006e46; padding-bottom: 10px; margin-bottom: 16px; }
   .entete .coll { font-weight: 700; font-size: 13pt; }
 .entete .logo { display: block; height: 52px; max-width: 140px; object-fit: contain; object-position: left; margin-bottom: 6px; }
   .entete .doc { text-align: right; color: #6b7280; }
