@@ -130,7 +130,10 @@ export function Champ({
   step,
   autoComplete,
   attrs,
+  masque = false,
 }: ChampBase & {
+  /** Masqué et désactivé (non envoyé) ; un script peut le réafficher. */
+  masque?: boolean;
   valeur?: string | number | null;
   type?: string;
   placeholder?: string;
@@ -145,12 +148,14 @@ export function Champ({
     <div
       className={pleine ? "grille-pleine" : undefined}
       style={pleine ? { gridColumn: "1 / -1" } : undefined}
+      hidden={masque}
     >
       <label className="form-label" htmlFor={ident}>
         {label}
         {requis ? <span className="req"> *</span> : null}
       </label>
       <input
+        disabled={masque || undefined}
         type={type}
         name={name}
         id={ident}
