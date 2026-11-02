@@ -12,6 +12,7 @@ import {
   plageHoraire,
 } from "@/lib/libelles";
 import { PERIODES, periode, precedente } from "@/lib/periodes";
+import { alertes } from "@/server/alertes";
 import {
   aTraiterPour,
   indicateurs,
@@ -45,19 +46,21 @@ export default async function DashboardPage({
   const p = periode(sp.periode);
   const prec = precedente(p);
   const now = new Date();
-  const [kpi, occupation, usagers, revenus, aTraiter, prochains, notifs] = await Promise.all([
-    indicateurs(p, prec),
-    occupationParEspace(p),
-    repartitionUsagers(p),
-    revenusParMois(p.a > now ? now : p.a),
-    aTraiterPour(user),
-    prochainement(now, 7),
-    prisma.notification.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
-  ]);
+  const [kpi, occupation, usagers, revenus, aTraiter, prochains, notifs, alertesDuJour] =
+    await Promise.all([
+      indicateurs(p, prec),
+      occupationParEspace(p),
+      repartitionUsagers(p),
+      revenusParMois(p.a > now ? now : p.a),
+      aTraiterPour(user),
+      prochainement(now, 7),
+      prisma.notification.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      }),
+      alertes(user, user.settings, now),
+    ]);
   const totalUsagers = Object.values(usagers).reduce((s, n) => s + n, 0);
   const occupationTop = [...occupation].sort((a, b) => b.taux - a.taux).slice(0, 8);
   const jourLong = dateLongue(now);
@@ -418,6 +421,44 @@ export default async function DashboardPage({
         </div>
 
         <div className="dash-col">
+          <div className="data-card">
+            <div className="card-header-custom">
+              <h6>
+                <Icone nom="triangle-alert" taille={16} classes="text-primary" /> Alertes
+                {alertesDuJour.length ? (
+                  <span className="chip chip-red">{alertesDuJour.length}</span>
+                ) : null}
+              </h6>
+            </div>
+            {alertesDuJour.length ? (
+              <ul className="liste-simple liste-alertes">
+                {alertesDuJour.map((a) => (
+                  <li key={a.cle}>
+                    <a href={a.href} className="alerte-ligne" title={a.detail}>
+                      <span
+                        className={`notif-ico chip-${a.niveau === "danger" ? "red" : a.niveau === "warning" ? "amber" : "sky"}`}
+                      >
+                        <Icone nom={a.icone} taille={14} />
+                      </span>
+                      <span className="cell2" style={{ minWidth: 0, flex: 1 }}>
+                        <span className="fw-medium" style={{ color: "var(--strong)" }}>
+                          {a.titre}
+                        </span>
+                        <small>{a.detail}</small>
+                      </span>
+                      <Icone nom="chevron-right" taille={14} classes="text-muted" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="p-3 text-center text-muted small">
+                <Icone nom="circle-check" taille={22} classes="text-success d-block mx-auto mb-1" />
+                Aucune alerte : pièces, factures et signatures sont à jour.
+              </div>
+            )}
+          </div>
+
           <div className="data-card">
             <div className="card-header-custom">
               <h6>

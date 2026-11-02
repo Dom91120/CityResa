@@ -190,6 +190,8 @@ export type DepotEntree = {
   categoryId?: number | null;
   isPublic?: boolean;
   uploadedById?: string | null;
+  /** Fin de validité (minuit UTC d'un jour calendaire), pour une pièce datée. */
+  validUntil?: Date | null;
 };
 
 /** Enregistre une pièce (et sa vignette si c'est une image). */
@@ -217,6 +219,7 @@ export async function deposerDocument(e: DepotEntree): Promise<Document> {
       isPublic: e.isPublic ?? false,
       position: (dernier._max.position ?? -1) + 1,
       uploadedById: e.uploadedById ?? null,
+      validUntil: e.validUntil ?? null,
       [col]: e.parentId,
       content: {
         create: {

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { FormDocument, ListeDocuments } from "@/components/documents";
+import { FormDocument, ListeDocuments, PiecesAttendues } from "@/components/documents";
 import {
   BoutonOuvrir,
   Entete,
@@ -477,11 +477,18 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
         <div>
           {features.documents ? (
             <Section titre="Pièces" icone="paperclip" nb={documents.length} id="documents">
+              <PiecesAttendues
+                type={org.type}
+                pieces={documents}
+                seuilJours={user.settings.ALERTE_PIECES_JOURS}
+              />
               <ListeDocuments
                 documents={documents}
                 csrf={csrf}
                 next={`${ici}#documents`}
                 peutSupprimer={() => peutEditer}
+                peutDater={(d) => peutEditer && d.kind !== "photo"}
+                seuilJours={user.settings.ALERTE_PIECES_JOURS}
                 vide="Aucune pièce : statuts, attestation d'assurance, justificatifs…"
               />
               {peutEditer ? (
@@ -494,6 +501,7 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
                     kinds={KINDS_ORG}
                     categories={categories}
                     compact
+                    validite
                   />
                 </div>
               ) : null}

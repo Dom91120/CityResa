@@ -463,6 +463,10 @@ textarea.form-control { min-height: 90px; }
 .doc-ligne { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 0.82rem; }
 .doc-ligne:first-child { border-top: 0; }
 .doc-ligne .lucide.doc-ico { color: var(--primary); }
+.pieces-attendues { padding: 10px 12px; border: 1px dashed var(--line); border-radius: var(--radius); }
+.pieces-attendues.a-regler { border-color: rgba(220, 38, 38, .35); }
+.liste-alertes .alerte-ligne { display: flex; align-items: center; gap: 10px; color: var(--body); text-decoration: none; width: 100%; }
+.liste-alertes .alerte-ligne:hover { color: var(--body); }
 .doc-ligne .nom { color: var(--strong); font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .doc-ligne .meta { color: var(--muted); font-size: 0.74rem; }
 .doc-ligne .droite { margin-left: auto; display: flex; gap: 4px; align-items: center; }

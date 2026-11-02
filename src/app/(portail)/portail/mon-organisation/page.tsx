@@ -1,4 +1,4 @@
-import { FormDocument, ListeDocuments } from "@/components/documents";
+import { FormDocument, ListeDocuments, PiecesAttendues } from "@/components/documents";
 import { Lu, Lus, Section } from "@/components/fiche";
 import { Champ } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
@@ -165,11 +165,18 @@ export default async function MonOrganisationPage() {
                 Statuts, attestation d'assurance responsabilité civile, justificatifs : ces pièces
                 sont demandées pour valider votre fiche et vos réservations.
               </p>
+              <PiecesAttendues
+                type={org.type}
+                pieces={pieces}
+                seuilJours={cfg.ALERTE_PIECES_JOURS}
+                usager
+              />
               <ListeDocuments
                 documents={pieces}
                 csrf={csrf}
                 next={ici}
                 peutSupprimer={(d) => d.uploadedById === user.id}
+                seuilJours={cfg.ALERTE_PIECES_JOURS}
                 vide="Aucun document déposé."
               />
               {features.documents ? (
@@ -185,6 +192,7 @@ export default async function MonOrganisationPage() {
                       ["piece", "Pièce justificative"],
                       ["autre", "Autre"],
                     ]}
+                    validite
                   />
                 </div>
               ) : null}

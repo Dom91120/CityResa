@@ -1,8 +1,8 @@
-import { reordonner, supprimer } from "@/modules/documents/routes";
+import { dater, reordonner, supprimer } from "@/modules/documents/routes";
 import { requireUser } from "@/server/guards";
 import { idDe, pasTrouve, traiterFormulaire } from "@/server/http";
 
-/** POST /documents/<id>/delete | haut | bas */
+/** POST /documents/<id>/delete | haut | bas | validite */
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string; action: string }> },
@@ -13,6 +13,7 @@ export async function POST(
   return traiterFormulaire(req, async (form) => {
     const user = await requireUser();
     if (action === "delete") return supprimer(user, id, form);
+    if (action === "validite") return dater(user, id, form);
     if (action === "haut" || action === "bas") return reordonner(user, id, action, form);
     return pasTrouve();
   });
