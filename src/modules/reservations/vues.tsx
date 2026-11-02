@@ -1,5 +1,5 @@
 /**
- * Sous-composants de la liste des réservations : la carte (charte rose) et la ligne de
+ * Sous-composants de la liste des réservations : la carte (thème Vert) et la ligne de
  * table d'un dossier.
  */
 import { Vignette } from "@/components/documents";

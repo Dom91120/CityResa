@@ -74,7 +74,7 @@ export default async function PortailLayout({ children }: { children: React.Reac
   const lienNav = (l: Lien, classes = "") => (
     <a key={l.href} href={l.href} className={`${classes}${actif(l.href) ? " active" : ""}`}>
       <Icone nom={l.icone} taille={15} /> {l.label}
-      {l.nb ? <span className="chip chip-rose ms-1">{l.nb}</span> : null}
+      {l.nb ? <span className="chip chip-primary ms-1">{l.nb}</span> : null}
     </a>
   );
 

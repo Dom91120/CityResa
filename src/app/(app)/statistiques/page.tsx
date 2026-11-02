@@ -32,7 +32,7 @@ const COULEURS_TYPES: Record<string, string> = {
   autre: "#9ca3af",
 };
 const PALETTE = [
-  "#e8336d",
+  "#006e46",
   "#3b82f6",
   "#10b981",
   "#f59e0b",
@@ -384,7 +384,7 @@ export default async function StatistiquesPage({
                         type: "bar",
                         label: "Demandes",
                         data: mois.map((m) => m.demandes),
-                        backgroundColor: "rgba(232,51,109,.75)",
+                        backgroundColor: "rgba(0,110,70,.75)",
                         borderRadius: 6,
                         yAxisID: "y",
                       },

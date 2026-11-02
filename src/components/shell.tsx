@@ -101,7 +101,7 @@ export function Cloche({
         <div className="notif-head">
           <span>Notifications</span>
           {nonLues ? (
-            <span className="chip chip-rose">
+            <span className="chip chip-primary">
               {nonLues} non lue{nonLues > 1 ? "s" : ""}
             </span>
           ) : null}

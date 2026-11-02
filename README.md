@@ -5,7 +5,7 @@ usagers (associations, entreprises, particuliers, services) et des demandes de s
 associations, pour la **Ville de Châtillon (92320)**.
 
 Next.js 16 (App Router) · Prisma 7 / PostgreSQL 18 · Better Auth · Bootstrap 5 + charte
-charte rose · Vitest · Docker Compose.
+thème Vert · Vitest · Docker Compose.
 
 ## Ce que fait l'application
 

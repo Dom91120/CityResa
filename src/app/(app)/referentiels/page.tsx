@@ -146,7 +146,7 @@ function ChampsValeur({
         name="color"
         id={`ref-color-${suffixe}`}
         type="color"
-        valeur={valeur?.color ?? "#e8336d"}
+        valeur={valeur?.color ?? "#006e46"}
         aide="Facultative ; laissez telle quelle si inutile."
       />
       <Interrupteur

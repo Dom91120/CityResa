@@ -370,7 +370,7 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
             <div className="card-header-custom">
               <h6>
                 Grille tarifaire
-                <span className="chip chip-rose ms-2">{aPartirDe(e.tarifs)}</span>
+                <span className="chip chip-primary ms-2">{aPartirDe(e.tarifs)}</span>
               </h6>
               {peutEditer ? (
                 <BoutonOuvrir

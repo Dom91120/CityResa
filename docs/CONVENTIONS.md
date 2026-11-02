@@ -2,7 +2,7 @@
 
 Application Next.js 16 (App Router) + Prisma 7 / PostgreSQL + Better Auth, sur le socle de
 sentinelle-next / culturesa-next. UI en français, multi-pages (pas de SPA), Bootstrap 5 +
-`public/css/cityresa.css` (charte rose : barre latérale blanche, accent rose,
+`public/css/cityresa.css` (thème Vert : barre latérale blanche, accent vert,
 cartes arrondies, pastilles pastel, Poppins). Icônes Lucide depuis le sprite
 `public/vendor/lucide.svg` (liste des noms disponibles dans `scripts/build-lucide-sprite.mjs`).
 

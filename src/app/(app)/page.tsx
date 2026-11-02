@@ -388,7 +388,7 @@ export default async function DashboardPage({
                         type: "bar",
                         label: "Demandes",
                         data: revenus.map((m) => m.demandes),
-                        backgroundColor: "rgba(232,51,109,.75)",
+                        backgroundColor: "rgba(0,110,70,.75)",
                         borderRadius: 6,
                         yAxisID: "y",
                       },
@@ -465,7 +465,7 @@ export default async function DashboardPage({
                 <Icone nom="bell" taille={16} classes="text-primary" /> Notifications
               </h6>
               {page.counts.notifications ? (
-                <span className="chip chip-rose">
+                <span className="chip chip-primary">
                   {page.counts.notifications} non lue{page.counts.notifications > 1 ? "s" : ""}
                 </span>
               ) : null}

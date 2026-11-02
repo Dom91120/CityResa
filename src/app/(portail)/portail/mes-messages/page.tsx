@@ -65,7 +65,7 @@ export default async function MesMessagesPage() {
                     <span className="titre">{d.title}</span>
                     <StatutResa status={d.status} />
                     {nonLus ? (
-                      <span className="chip chip-rose">
+                      <span className="chip chip-primary">
                         {nonLus} nouveau{nonLus > 1 ? "x" : ""}
                       </span>
                     ) : null}

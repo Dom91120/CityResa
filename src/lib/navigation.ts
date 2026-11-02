@@ -1,6 +1,6 @@
 /**
  * Le menu du back-office, en un seul endroit. Deux domaines : GÉNÉRAL (le quotidien des
- * agents, charte rose) et ADMINISTRATION (réservé aux administrateurs).
+ * agents, thème Vert) et ADMINISTRATION (réservé aux administrateurs).
  * Chaque entrée : chemin, libellé, icône Lucide, catégorie de droit (`perm`, null =
  * toujours visible), clé du compteur de la barre latérale, interrupteur de module.
  */

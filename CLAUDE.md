@@ -4,7 +4,7 @@
 matériel), des usagers (associations, entreprises, particuliers, services) et des demandes de
 subvention des associations, pour la Ville de Châtillon. Même socle technique que
 `../sentinelle-next` (Next.js 16, Prisma 7 / PostgreSQL 18, Better Auth, Bootstrap + feuille
-maison, formulaires POST réécrits vers `/envoi`, CSP à nonce). Charte rose.
+maison, formulaires POST réécrits vers `/envoi`, CSP à nonce). Thème Vert.
 Les conventions de code vivent dans `docs/CONVENTIONS.md`, le périmètre fonctionnel dans
 `docs/CAHIER-DES-CHARGES.md`.
 

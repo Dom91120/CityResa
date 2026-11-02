@@ -23,7 +23,7 @@ export type Courriel = {
 
 /** Habillage commun : en-tête à la couleur de la collectivité, pied de page. */
 export function habiller(cfg: AppSettings, corps: string): string {
-  const couleur = cfg.UI_PRIMARY_COLOR || "#e8336d";
+  const couleur = cfg.UI_PRIMARY_COLOR || "#006e46";
   return `<!doctype html><html lang="fr"><body style="margin:0;background:#f6f6f8;font-family:Poppins,Segoe UI,Arial,sans-serif;color:#1f2937">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px 12px">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(15,23,42,.06)">

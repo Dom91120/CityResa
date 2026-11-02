@@ -1,5 +1,5 @@
 /**
- * Sous-composants de la fiche d'une réservation (charte rose) : carte de décision
+ * Sous-composants de la fiche d'une réservation (thème Vert) : carte de décision
  * selon le statut, panneau d'approbation, modales, fil de discussion, sections de la
  * colonne droite (événement, demandeur, montants, documents, convention, factures,
  * historique).

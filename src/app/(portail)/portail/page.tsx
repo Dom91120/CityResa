@@ -235,7 +235,7 @@ export default async function CataloguePage({
           {ETAPES.map((e) => (
             <div key={e.titre} className="col-md-4">
               <div className="data-card p-4 h-100">
-                <span className="stat-ico chip-rose mb-3">
+                <span className="stat-ico chip-primary mb-3">
                   <Icone nom={e.icone} taille={20} />
                 </span>
                 <h3 className="h6">{e.titre}</h3>

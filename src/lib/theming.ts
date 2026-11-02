@@ -1,6 +1,6 @@
 /**
  * Couleur principale personnalisable de l'interface : une couleur hex stockée en
- * configuration (UI_PRIMARY_COLOR, vide = rose CityRésa).
+ * configuration (UI_PRIMARY_COLOR, vide = thème Vert).
  */
 
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;

@@ -288,7 +288,7 @@ export function VueMois({
             ) : evts.length || blocs.length ? (
               <>
                 {evts.length ? (
-                  <a href={urlJour(j)} className="chip chip-rose mt-1" title="Voir la journée">
+                  <a href={urlJour(j)} className="chip chip-primary mt-1" title="Voir la journée">
                     {evts.length} réservation{evts.length > 1 ? "s" : ""}
                   </a>
                 ) : null}
