@@ -2,7 +2,6 @@ import { Vignette } from "@/components/documents";
 import { Icone } from "@/components/icones";
 import { Barre, Filtre, PaginationBar, Th, trier, Vide } from "@/components/liste";
 import { Chip } from "@/components/macros";
-import { MATERIEL_UNITES } from "@/lib/constantes";
 import {
   categoriesMateriel,
   premieresPhotosMateriel,
@@ -188,12 +187,7 @@ export default async function MaterielPage({ searchParams }: { searchParams: Pro
                           {m.disponible}
                         </Chip>
                       </td>
-                      <td>
-                        <span className="cell2">
-                          <span>{m.tarif}</span>
-                          <small>{MATERIEL_UNITES[m.unite] ?? m.unite}</small>
-                        </span>
-                      </td>
+                      <td>{m.tarif}</td>
                       <td className="actions">
                         <div className="row-actions">
                           <a

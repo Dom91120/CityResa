@@ -1,11 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import { Icone } from "@/components/icones";
 import { Chip } from "@/components/macros";
-import { JOURS_ISO, MATERIEL_UNITES, OPTION_UNITES } from "@/lib/constantes";
+import { JOURS_ISO, OPTION_UNITES } from "@/lib/constantes";
 import { manquesDossier, phraseManques } from "@/lib/dossier-usager";
 import { duree, montant, nomCourt } from "@/lib/libelles";
 import { addParisDays, parisMidnight, todayParisISO } from "@/lib/paris-time";
-import { aPartirDe } from "@/lib/tarification";
+import { aPartirDe, tarifMateriel } from "@/lib/tarification";
 import {
   documentsPublics,
   espacePublic,
@@ -551,12 +551,7 @@ export default async function ReserverPage({
                                 <td className="text-muted small text-nowrap">
                                   stock : {m.stockTotal}
                                 </td>
-                                <td className="text-end small text-nowrap">
-                                  {m.montant ? montant(m.montant) : "Gratuit"}
-                                  <div className="text-muted">
-                                    {MATERIEL_UNITES[m.unite] ?? m.unite}
-                                  </div>
-                                </td>
+                                <td className="text-end small text-nowrap">{tarifMateriel(m)}</td>
                                 <td style={{ width: 100 }}>
                                   <input
                                     type="number"

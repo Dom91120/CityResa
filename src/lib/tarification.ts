@@ -8,6 +8,7 @@
  */
 import type { Intervalle } from "@/lib/creneaux";
 import { dureeMinutes } from "@/lib/creneaux";
+import { montant } from "@/lib/libelles";
 import { toParisWall } from "@/lib/paris-time";
 
 export type LigneTarif = {
@@ -246,4 +247,17 @@ export function aPartirDe(tarifs: LigneTarif[], profilId: number | null = null):
     ? String(min.montant)
     : min.montant.toFixed(2).replace(".", ",");
   return `À partir de ${m} €${min.unite === "heure" ? "/h" : ` / ${unite}`}`;
+}
+
+/**
+ * Le prix d'un matériel, mode compris : « 0,50 € par unité », « 2 € par unité et par
+ * jour », « 30 € (forfait) », « Gratuit ». Il se suffit : ne pas y ajouter le mode.
+ */
+export function tarifMateriel(m: { montant: number; unite: string }): string {
+  if (m.unite === "gratuit" || !m.montant) return "Gratuit";
+  const prix = montant(m.montant);
+  if (m.unite === "forfait") return `${prix} (forfait)`;
+  if (m.unite === "jour") return `${prix} par unité et par jour`;
+  if (m.unite === "unite") return `${prix} par unité`;
+  return `${prix} / ${m.unite}`;
 }
