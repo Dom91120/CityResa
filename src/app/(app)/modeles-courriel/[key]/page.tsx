@@ -44,7 +44,7 @@ export default async function ModeleCourrielPage({ params }: { params: Promise<{
           </>
         }
       />
-      <div className="fiche-colonnes">
+      <div className="fiche-colonnes fiche-colonnes--50-50">
         <div>
           <form method="POST" action={ici} id="form-principal" data-double-envoi>
             <input type="hidden" name="csrf_token" value={page.csrf} />
@@ -106,10 +106,11 @@ export default async function ModeleCourrielPage({ params }: { params: Promise<{
             </div>
           </form>
         </div>
-        <div>
+        <div className="data-card overflow-visible">
           <Section titre="Variables disponibles" icone="hash">
             <div className="coches mb-2">
-              {["collectivite", "base_url", ...variables].map((v) => (
+              {/* Sans doublon : la graine peut déjà citer collectivite ou base_url. */}
+              {[...new Set(["collectivite", "base_url", ...variables])].map((v) => (
                 <span key={v} className="chip chip-sky" title={exemples[v] ?? ""}>
                   {`{{${v}}}`}
                 </span>
