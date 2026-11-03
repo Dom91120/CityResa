@@ -100,7 +100,8 @@
             indicateur.hidden = !deux;
             numero.textContent = String(etape);
             if (titreEtape) titreEtape.textContent = etape === 1 ? 'Vous' : regle().etape2;
-            if (dejaInscrit) dejaInscrit.hidden = etape === 2;
+            // Masqué à l'étape 2 mais sa place est gardée : le bouton ne bouge pas d'une étape à l'autre.
+            if (dejaInscrit) dejaInscrit.style.visibility = etape === 2 ? 'hidden' : '';
             // Le bouton final et la case d'acceptation n'apparaissent qu'à la dernière étape.
             var derniere = !deux || etape === 2;
             cgu.hidden = !derniere;
