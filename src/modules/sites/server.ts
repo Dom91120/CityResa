@@ -120,3 +120,18 @@ export async function sitesPourSelect(): Promise<[string, string][]> {
   });
   return sites.map((s) => [String(s.id), s.isActive ? s.name : `${s.name} (inactif)`]);
 }
+
+/** La première photo de chaque site (id du document), dans l'ordre de la galerie. */
+export async function premieresPhotosSites(siteIds: number[]): Promise<Map<number, number>> {
+  const out = new Map<number, number>();
+  if (!siteIds.length) return out;
+  const docs = await prisma.document.findMany({
+    where: { siteId: { in: siteIds }, kind: "photo" },
+    orderBy: [{ position: "asc" }, { createdAt: "desc" }],
+    select: { id: true, siteId: true },
+  });
+  for (const d of docs) {
+    if (d.siteId && !out.has(d.siteId)) out.set(d.siteId, d.id);
+  }
+  return out;
+}

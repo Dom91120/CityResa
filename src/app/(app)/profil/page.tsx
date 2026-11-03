@@ -46,7 +46,7 @@ export default async function ProfilPage() {
         </div>
       </div>
 
-      <div className="fiche-colonnes">
+      <div className="fiche-colonnes fiche-colonnes--6-5">
         <div className="data-card overflow-visible">
           <Section titre="Identité" icone="circle-user">
             <form method="POST" action="/profil" data-double-envoi>

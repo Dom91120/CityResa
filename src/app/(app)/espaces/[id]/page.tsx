@@ -173,7 +173,7 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
       <div className="tab-content">
         {/* ── Synthèse ── */}
         <Volet id="synthese" premier>
-          <div className="fiche-colonnes fiche-colonnes--espace">
+          <div className="fiche-colonnes fiche-colonnes--6-5">
             <div className="data-card overflow-visible">
               <Section titre="Identité" icone="door-open">
                 <Lus>
