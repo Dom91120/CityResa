@@ -91,7 +91,7 @@ export default async function CataloguePage({
           alt=""
           className="hero-illustration"
           width={2240}
-          height={1260}
+          height={1320}
         />
         <div>
           <h1>{cfg.PORTAIL_TITRE}</h1>
