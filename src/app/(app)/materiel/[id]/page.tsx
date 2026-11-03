@@ -98,7 +98,7 @@ export default async function MaterielFichePage({ params }: { params: Promise<{ 
       </div>
 
       <div className="fiche-colonnes">
-        <div>
+        <div className="data-card overflow-visible">
           <Section titre="Synthèse" icone="package">
             <Lus>
               <Lu label="Catégorie" valeur={m.categorie?.label} tiret />
@@ -122,7 +122,7 @@ export default async function MaterielFichePage({ params }: { params: Promise<{ 
             />
           </Section>
         </div>
-        <div>
+        <div className="data-card overflow-visible">
           <Section
             titre="Réservations à venir qui le mobilisent"
             icone="clipboard-list"

@@ -152,11 +152,13 @@ a:focus-visible, button:focus-visible, .btn:focus-visible, [tabindex]:focus-visi
     background: var(--surface); border-right: 1px solid var(--line);
 }
 .sidebar-brand { padding: 18px 20px 10px; display: flex; flex-direction: column; gap: 10px; }
-.sidebar-logo { display: flex; align-items: center; gap: 8px; color: var(--primary); font-weight: 700; font-size: 1.35rem; letter-spacing: -0.02em; line-height: 1; }
+/* Marque : logo de la Ville, « CityRésa » et la collectivité dessous (comme la page de connexion). */
+.sidebar-logo { display: flex; align-items: center; gap: 12px; color: var(--strong); font-weight: 600; font-size: 1.3rem; line-height: 1.2; letter-spacing: -0.01em; }
+.sidebar-logo > span { min-width: 0; }
+.sidebar-logo small { display: block; margin-top: 2px; color: var(--muted); font-weight: 400; font-size: 0.8rem; letter-spacing: 0; }
+.sidebar-logo .blason { width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0; }
 .sidebar-logo .lucide { color: var(--primary); }
-.sidebar-logo:hover { color: var(--primary-dark); }
-.sidebar-collectivite { display: flex; align-items: center; gap: 8px; color: var(--strong); font-weight: 500; font-size: 0.85rem; }
-.sidebar-collectivite .blason { width: 26px; height: 26px; border-radius: 6px; background: var(--primary-soft); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sidebar-logo:hover { color: var(--strong); }
 .sidebar-nav { flex: 1; overflow-y: auto; padding: 6px 12px 12px; }
 .sidebar-section { margin-top: 10px; }
 .sidebar-section-title { font-size: 0.66rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); padding: 8px 8px 4px; display: flex; align-items: center; justify-content: space-between; cursor: default; }
@@ -170,10 +172,11 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
     color: var(--body); font-weight: 500; font-size: 0.86rem;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
-.sidebar-link .lucide { width: 18px; height: 18px; color: var(--muted); }
+/* Chaque icône a sa couleur (--ico, posée par l'entrée de menu), même sur le lien actif. */
+.sidebar-link .lucide { width: 18px; height: 18px; color: var(--ico, var(--muted)); }
 .sidebar-link:hover { background: var(--inset); color: var(--strong); }
 .sidebar-link.active { background: var(--primary-soft); color: var(--primary); }
-.sidebar-link.active .lucide { color: var(--primary); }
+.sidebar-link.active .lucide { color: var(--ico, var(--primary)); }
 .sidebar-link .nb { margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--radius-pill); background: var(--primary); color: #fff; font-size: 0.7rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; }
 .sidebar-link .nb.nb-muted { background: var(--slate-dim); color: var(--slate-text); }
 .sidebar-link .tag { margin-left: auto; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em; background: #fef08a; color: #713f12; border-radius: 6px; padding: 2px 6px; }
@@ -255,6 +258,8 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
 /* Cartes */
 .data-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-xs); overflow: hidden; }
 .data-card + .data-card { margin-top: 16px; }
+/* Côte à côte dans les colonnes d'une fiche : pas de marge, les deux cartes partent à la même hauteur. */
+.fiche-colonnes > .data-card + .data-card { margin-top: 0; }
 .card-header-custom { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
 .card-header-custom h6, .card-titre { margin: 0; font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
 .card-body-custom { padding: 18px; }
@@ -446,6 +451,8 @@ textarea.form-control { min-height: 90px; }
 .fiche-retour { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); display: inline-flex; align-items: center; justify-content: center; color: var(--body); background: var(--surface); flex-shrink: 0; }
 .fiche-retour:hover { background: var(--inset); color: var(--strong); }
 .fiche-colonnes { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px; align-items: start; }
+/* Variante fiche espace : colonne de gauche un peu plus large (6/5), l'identité y est dense. */
+.fiche-colonnes--espace { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
 @media (max-width: 991px) { .fiche-colonnes { grid-template-columns: 1fr; } }
 .decision { padding: 20px; }
 .decision h5 { font-size: 1rem; font-weight: 600; margin-bottom: 14px; }

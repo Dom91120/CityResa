@@ -47,7 +47,7 @@ export default async function ProfilPage() {
       </div>
 
       <div className="fiche-colonnes">
-        <div>
+        <div className="data-card overflow-visible">
           <Section titre="Identité" icone="circle-user">
             <form method="POST" action="/profil" data-double-envoi>
               <input type="hidden" name="csrf_token" value={csrf} />
@@ -168,7 +168,7 @@ export default async function ProfilPage() {
           ) : null}
         </div>
 
-        <div id="securite">
+        <div id="securite" className="data-card overflow-visible">
           <Section titre="Mot de passe" icone="lock">
             <form method="POST" action="/profil" data-double-envoi>
               <input type="hidden" name="csrf_token" value={csrf} />
