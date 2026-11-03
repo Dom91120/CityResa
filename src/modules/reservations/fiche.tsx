@@ -900,7 +900,15 @@ export function SectionEvenement({
           valeur={`${dateHeure(r.createdAt)} · ${RESERVATION_SOURCES[r.source] ?? r.source}`}
         />
         <Lu label="Statut" valeur={<StatutResa status={r.status} />} />
-        <Lu label="Espace" valeur={<a href={`/espaces/${r.espaceId}`}>{r.espace.name}</a>} />
+        <Lu
+          label="Espace"
+          valeur={
+            <a href={`/espaces/${r.espaceId}`} title={r.espace.name}>
+              {/* Le site est juste à côté : le libellé court suffit. */}
+              {r.espace.shortName || r.espace.name}
+            </a>
+          }
+        />
         <Lu label="Site" valeur={r.espace.site.name} />
         <Lu label="Nature" valeur={r.nature?.label} />
         <Lu label="Participants" valeur={r.participants ? String(r.participants) : null} />
@@ -908,11 +916,21 @@ export function SectionEvenement({
         <Lu label="Récurrence" valeur={decrireRecurrence(rec)} />
         <Lu
           label="Arrivée"
-          valeur={`${dateHeure(arrivee)}${r.setupMin ? ` (montage ${r.setupMin} min compris)` : ""}`}
+          valeur={
+            <span className="cell2">
+              <span>{dateHeure(arrivee)}</span>
+              {r.setupMin ? <small>montage {r.setupMin} min compris</small> : null}
+            </span>
+          }
         />
         <Lu
           label="Départ"
-          valeur={`${dateHeure(depart)}${r.teardownMin ? ` (démontage ${r.teardownMin} min compris)` : ""}`}
+          valeur={
+            <span className="cell2">
+              <span>{dateHeure(depart)}</span>
+              {r.teardownMin ? <small>démontage {r.teardownMin} min compris</small> : null}
+            </span>
+          }
         />
         <Lu label="Description" valeur={r.description} pleine pre />
       </Lus>
