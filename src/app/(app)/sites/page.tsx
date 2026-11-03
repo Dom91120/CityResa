@@ -1,7 +1,8 @@
+import { Vignette } from "@/components/documents";
 import { Icone } from "@/components/icones";
 import { Barre, Filtre, PaginationBar, Th, trier, Vide } from "@/components/liste";
 import { Chip } from "@/components/macros";
-import { adresseComplete } from "@/modules/sites/server";
+import { adresseComplete, premieresPhotosSites } from "@/modules/sites/server";
 import { prisma } from "@/server/db";
 import { contexteModule } from "@/server/module";
 import { type Params, paginate, param, resolvePerPage, textSearch } from "@/server/paging";
@@ -35,6 +36,7 @@ export default async function SitesPage({ searchParams }: { searchParams: Promis
   );
   const perPage = await resolvePerPage(params, page.user, "sites.list");
   const [rows, p] = paginate(items, params, perPage);
+  const vignettes = await premieresPhotosSites(rows.map((s) => s.id));
   const peutEditer = page.user.canEdit("espaces");
   return (
     <>
@@ -78,6 +80,7 @@ export default async function SitesPage({ searchParams }: { searchParams: Promis
           <table className="table table-hover">
             <thead>
               <tr>
+                <th />
                 <Th col="nom" label="Site" pathname={page.pathname} search={page.search} />
                 <Th col="ville" label="Adresse" pathname={page.pathname} search={page.search} />
                 <Th
@@ -95,6 +98,12 @@ export default async function SitesPage({ searchParams }: { searchParams: Promis
               {rows.length ? (
                 rows.map((s) => (
                   <tr key={s.id}>
+                    <td style={{ width: 56 }}>
+                      <Vignette
+                        photo={vignettes.has(s.id) ? { id: vignettes.get(s.id) as number } : null}
+                        alt={s.name}
+                      />
+                    </td>
                     <td>
                       <span className="cell2">
                         <a
@@ -149,7 +158,7 @@ export default async function SitesPage({ searchParams }: { searchParams: Promis
                 ))
               ) : (
                 <Vide
-                  colonnes={5}
+                  colonnes={6}
                   message={
                     q || etat
                       ? "Aucun site ne correspond à cette recherche."

@@ -85,7 +85,7 @@ export default async function SitePage({ params }: { params: Promise<{ id: strin
         ]}
       />
 
-      <div className="fiche-colonnes">
+      <div className="fiche-colonnes fiche-colonnes--50-50">
         <div className="data-card overflow-visible">
           <Section titre="Synthèse" icone="map-pin">
             <Lus>
@@ -140,13 +140,15 @@ export default async function SitePage({ params }: { params: Promise<{ id: strin
           >
             {site.espaces.length ? (
               <div className="table-responsive">
-                <table className="table table-hover">
+                <table className="table table-hover table-serree">
                   <thead>
                     <tr>
                       <th />
                       <th>Espace</th>
                       <th>Nature</th>
-                      <th className="text-end">Capacité</th>
+                      <th className="text-end">
+                        <abbr title="Capacité (personnes)">Cap.</abbr>
+                      </th>
                       <th>Statut</th>
                     </tr>
                   </thead>
@@ -178,8 +180,10 @@ export default async function SitePage({ params }: { params: Promise<{ id: strin
                                   href={`/espaces/${e.id}`}
                                   className="fw-medium"
                                   style={{ color: "var(--strong)" }}
+                                  title={e.name}
                                 >
-                                  {e.name}
+                                  {/* Le site est le titre de la page : le libellé court suffit. */}
+                                  {e.shortName || e.name}
                                 </a>
                                 <small>
                                   {e._count.reservations} réservation
@@ -189,7 +193,9 @@ export default async function SitePage({ params }: { params: Promise<{ id: strin
                               </span>
                             </span>
                           </td>
-                          <td>{e.nature?.label ?? <span className="text-faint">—</span>}</td>
+                          <td className="text-nowrap">
+                            {e.nature?.label ?? <span className="text-faint">—</span>}
+                          </td>
                           <td className="text-end tabular">
                             {e.capacityStanding ?? e.capacitySeated ?? (
                               <span className="text-faint">—</span>

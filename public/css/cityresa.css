@@ -397,6 +397,8 @@ textarea.form-control { min-height: 90px; }
 
 .table { color: var(--body); margin-bottom: 0; font-size: 0.84rem; }
 .table > :not(caption) > * > * { padding: 12px 14px; border-bottom-color: var(--line); background: transparent; color: inherit; vertical-align: middle; }
+/* Variante resserrée (tableau dans une colonne de fiche). */
+.table-serree > :not(caption) > * > * { padding: 10px 8px; }
 .table thead th { font-size: 0.7rem; font-weight: 500; color: var(--muted); letter-spacing: 0.02em; background: transparent; border-bottom: 1px solid var(--line); white-space: nowrap; }
 .table thead th a { color: var(--muted); display: inline-flex; align-items: center; gap: 4px; }
 .table thead th a:hover, .table thead th a.actif { color: var(--primary); }
@@ -451,8 +453,9 @@ textarea.form-control { min-height: 90px; }
 .fiche-retour { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); display: inline-flex; align-items: center; justify-content: center; color: var(--body); background: var(--surface); flex-shrink: 0; }
 .fiche-retour:hover { background: var(--inset); color: var(--strong); }
 .fiche-colonnes { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px; align-items: start; }
-/* Variante fiche espace : colonne de gauche un peu plus large (6/5), l'identité y est dense. */
-.fiche-colonnes--espace { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
+/* Variante : colonne de gauche un peu plus large (6/5), pour les fiches dont la gauche est dense (espace, profil). */
+.fiche-colonnes--6-5 { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
+.fiche-colonnes--50-50 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 @media (max-width: 991px) { .fiche-colonnes { grid-template-columns: 1fr; } }
 .decision { padding: 20px; }
 .decision h5 { font-size: 1rem; font-weight: 600; margin-bottom: 14px; }
