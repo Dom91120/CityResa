@@ -173,8 +173,8 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
       <div className="tab-content">
         {/* ── Synthèse ── */}
         <Volet id="synthese" premier>
-          <div className="fiche-colonnes">
-            <div>
+          <div className="fiche-colonnes fiche-colonnes--espace">
+            <div className="data-card overflow-visible">
               <Section titre="Identité" icone="door-open">
                 <Lus>
                   <Lu label="Site" valeur={<a href={`/sites/${e.siteId}`}>{e.site.name}</a>} />
@@ -198,7 +198,6 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
                     label="Surface"
                     valeur={e.surface ? `${String(e.surface).replace(".", ",")} m²` : null}
                   />
-                  <Lu label="Adresse courte" valeur={e.slug} />
                   <Lu
                     label="Visibilité"
                     valeur={
@@ -210,13 +209,25 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
                     }
                     pleine
                   />
+                  <Lu label="Tarif" valeur={aPartirDe(e.tarifs)} />
                   <Lu
                     label="Portail"
                     valeur={
                       urlPortail ? (
-                        <a href={urlPortail} target="_blank" rel="noopener">
-                          {urlPortail} <Icone nom="external-link" taille={12} />
-                        </a>
+                        <span className="d-inline-flex align-items-center gap-2 flex-wrap">
+                          <a href={urlPortail} target="_blank" rel="noopener">
+                            Voir sur le portail
+                          </a>
+                          <button
+                            type="button"
+                            className="btn btn-link btn-sm p-0 text-muted"
+                            data-copier={`${base}${urlPortail}`}
+                            title={`Copier le lien : ${base}${urlPortail}`}
+                            aria-label="Copier le lien du portail"
+                          >
+                            <Icone nom="copy" taille={14} />
+                          </button>
+                        </span>
                       ) : e.isPublic ? (
                         "Portail désactivé"
                       ) : (
@@ -224,8 +235,8 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
                       )
                     }
                     tiret
+                    pleine
                   />
-                  <Lu label="Tarif" valeur={aPartirDe(e.tarifs)} />
                   <Lu label="Description" valeur={e.description} pleine pre />
                   {e.enfants.length ? (
                     <Lu
@@ -245,14 +256,14 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
                   <Lu label="Créé le" valeur={dateCourte(e.createdAt)} />
                 </Lus>
               </Section>
-              <Section titre="Règlement et consignes" icone="scroll-text" ouverte={false}>
+              <Section titre="Règlement et consignes" icone="scroll-text">
                 <Lus colonnes={1}>
                   <Lu label="Règlement et conditions" valeur={e.rules} pre tiret />
                   <Lu label="Consignes pratiques" valeur={e.instructions} pre tiret />
                 </Lus>
               </Section>
             </div>
-            <div>
+            <div className="data-card overflow-visible">
               <Section titre="Règles de réservation" icone="clock">
                 <ul className="liste-simple">
                   {decrireRegles(e).map((r) => (

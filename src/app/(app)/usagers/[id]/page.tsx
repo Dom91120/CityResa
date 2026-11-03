@@ -179,7 +179,7 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
       ) : null}
 
       <div className="fiche-colonnes">
-        <div>
+        <div className="data-card overflow-visible">
           <Section titre="Organisation" icone="building-2">
             <Lus>
               <Lu label="Type" valeur={<TypeOrganisation type={org.type} />} />
@@ -474,7 +474,7 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
           ) : null}
         </div>
 
-        <div>
+        <div className="data-card overflow-visible">
           {features.documents ? (
             <Section titre="Pièces" icone="paperclip" nb={documents.length} id="documents">
               <PiecesAttendues

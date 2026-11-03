@@ -17,9 +17,16 @@ export type NavEntry = {
   admin?: boolean;
   /** Libellé « NOUV. » / « BÊTA » à droite. */
   tag?: string;
+  /** Couleur de l'icône : une teinte de la palette des pastilles (rose, amber, sky…). */
+  teinte?: string;
 };
 
 export type NavDomaine = { key: string; label: string; entries: NavEntry[] };
+
+/** Une entrée avec la couleur de son icône. */
+function t(teinte: string, entree: NavEntry): NavEntry {
+  return { ...entree, teinte };
+}
 
 function e(
   href: string,
@@ -36,25 +43,31 @@ export const GENERAL: NavDomaine = {
   key: "general",
   label: "Général",
   entries: [
-    e("/", "Tableau de bord", "layout-dashboard"),
-    e("/reservations", "Réservations", "clipboard-list", "reservations", "a_traiter"),
-    e("/planning", "Planning", "calendar-days", "planning"),
-    e("/sites", "Sites", "map-pin", "espaces"),
-    e("/espaces", "Espaces", "door-open", "espaces"),
-    e("/materiel", "Matériel", "boxes", "materiel", null, "materiel"),
-    e("/messages", "Messages", "message-circle", "messages", "messages"),
-    e("/usagers", "Usagers", "users", "usagers", "usagers_a_valider"),
-    e("/equipe", "Mon équipe", "contact-round", "equipe"),
-    e("/paiements", "Paiements", "credit-card", "paiements", "factures_a_payer", "paiements"),
-    e(
-      "/subventions",
-      "Subventions",
-      "hand-coins",
-      "subventions",
-      "subventions_a_traiter",
-      "subventions",
+    t("sky", e("/", "Tableau de bord", "layout-dashboard")),
+    t("emerald", e("/reservations", "Réservations", "clipboard-list", "reservations", "a_traiter")),
+    t("violet", e("/planning", "Planning", "calendar-days", "planning")),
+    t("red", e("/sites", "Sites", "map-pin", "espaces")),
+    t("amber", e("/espaces", "Espaces", "door-open", "espaces")),
+    t("lime", e("/materiel", "Matériel", "boxes", "materiel", null, "materiel")),
+    t("sky", e("/messages", "Messages", "message-circle", "messages", "messages")),
+    t("rose", e("/usagers", "Usagers", "users", "usagers", "usagers_a_valider")),
+    t("violet", e("/equipe", "Mon équipe", "contact-round", "equipe")),
+    t(
+      "emerald",
+      e("/paiements", "Paiements", "credit-card", "paiements", "factures_a_payer", "paiements"),
     ),
-    e("/statistiques", "Statistiques", "chart-column"),
+    t(
+      "amber",
+      e(
+        "/subventions",
+        "Subventions",
+        "hand-coins",
+        "subventions",
+        "subventions_a_traiter",
+        "subventions",
+      ),
+    ),
+    t("sky", e("/statistiques", "Statistiques", "chart-column")),
   ],
 };
 
@@ -62,15 +75,19 @@ export const ADMINISTRATION: NavDomaine = {
   key: "administration",
   label: "Administration",
   entries: [
-    { ...e("/parametres", "Paramètres", "settings"), admin: true },
-    { ...e("/utilisateurs", "Utilisateurs", "user-cog"), admin: true },
-    { ...e("/roles", "Rôles & permissions", "shield"), admin: true },
-    { ...e("/referentiels", "Référentiels", "list"), admin: true },
-    { ...e("/calendrier", "Calendrier des saisons", "calendar-range"), admin: true },
-    { ...e("/modeles-courriel", "Modèles de courriel", "mail"), admin: true },
-    { ...e("/audit", "Journal d'audit", "notebook-text"), admin: true },
-    { ...e("/taches", "Tâches planifiées", "calendar-clock"), admin: true },
-    { ...e("/sauvegardes", "Sauvegardes", "database"), admin: true },
+    { ...e("/parametres", "Paramètres", "settings"), admin: true, teinte: "slate" },
+    { ...e("/utilisateurs", "Utilisateurs", "user-cog"), admin: true, teinte: "sky" },
+    { ...e("/roles", "Rôles & permissions", "shield"), admin: true, teinte: "red" },
+    { ...e("/referentiels", "Référentiels", "list"), admin: true, teinte: "amber" },
+    {
+      ...e("/calendrier", "Calendrier des saisons", "calendar-range"),
+      admin: true,
+      teinte: "violet",
+    },
+    { ...e("/modeles-courriel", "Modèles de courriel", "mail"), admin: true, teinte: "rose" },
+    { ...e("/audit", "Journal d'audit", "notebook-text"), admin: true, teinte: "lime" },
+    { ...e("/taches", "Tâches planifiées", "calendar-clock"), admin: true, teinte: "emerald" },
+    { ...e("/sauvegardes", "Sauvegardes", "database"), admin: true, teinte: "slate" },
   ],
 };
 

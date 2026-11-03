@@ -119,7 +119,7 @@ export default async function UtilisateurPage({ params }: { params: Promise<{ id
       />
 
       <div className="fiche-colonnes">
-        <div>
+        <div className="data-card overflow-visible">
           <Section titre="Compte" icone="circle-user">
             <Lus>
               <Lu
@@ -197,7 +197,7 @@ export default async function UtilisateurPage({ params }: { params: Promise<{ id
           ) : null}
         </div>
 
-        <div>
+        <div className="data-card overflow-visible">
           <Section titre="Données liées" icone="database">
             {liees.length ? (
               <>

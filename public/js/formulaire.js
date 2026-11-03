@@ -104,9 +104,9 @@
             e.preventDefault();
             var texte = c.dataset.copier;
             if (navigator.clipboard) navigator.clipboard.writeText(texte).then(function () {
-                var ancien = c.textContent;
+                var ancien = c.innerHTML; // garde l'icône du bouton
                 c.textContent = 'Copié !';
-                setTimeout(function () { c.textContent = ancien; }, 1500);
+                setTimeout(function () { c.innerHTML = ancien; }, 1500);
             });
         });
 

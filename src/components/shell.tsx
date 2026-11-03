@@ -21,6 +21,11 @@ const FLASH_ICONS: Record<string, string> = {
   info: "info",
 };
 
+/** La couleur de l'icône d'une entrée de menu (variable CSS lue par .sidebar-link .lucide). */
+function teinte(nom?: string): React.CSSProperties | undefined {
+  return nom ? ({ "--ico": `var(--${nom}-text)` } as React.CSSProperties) : undefined;
+}
+
 export function FlashMessages({ flashes, nonce }: { flashes: Flash[]; nonce?: string }) {
   if (!flashes.length) return null;
   return (
@@ -194,13 +199,16 @@ export function Shell({
       <div className="sidebar">
         <div className="sidebar-brand">
           <a href="/" className="sidebar-logo">
-            <Icone nom="calendar-check" taille={24} />
-            CityRésa
+            {logo ? (
+              <Blason logo={logo} taille={44} nom={collectivite} />
+            ) : (
+              <Icone nom="calendar-check" taille={36} />
+            )}
+            <span>
+              CityRésa
+              <small className="text-truncate">{collectivite}</small>
+            </span>
           </a>
-          <div className="sidebar-collectivite">
-            <Blason logo={logo} nom={collectivite} />
-            <span className="text-truncate">{collectivite}</span>
-          </div>
         </div>
 
         <nav className="sidebar-nav">
@@ -213,6 +221,7 @@ export function Shell({
                   key={e.href}
                   href={e.href}
                   className={`sidebar-link${entreeActif?.href === e.href ? " active" : ""}`}
+                  style={teinte(e.teinte)}
                 >
                   <Icone nom={e.icon} />
                   <span>{e.label}</span>
@@ -243,6 +252,7 @@ export function Shell({
                   key={e.href}
                   href={e.href}
                   className={`sidebar-link${entreeActif?.href === e.href ? " active" : ""}`}
+                  style={teinte(e.teinte)}
                 >
                   <Icone nom={e.icon} />
                   <span>{e.label}</span>
