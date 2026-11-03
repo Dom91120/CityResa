@@ -55,7 +55,7 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
     await Promise.all([
       prisma.reservation.findMany({
         where: { organisationId: id },
-        include: { espace: { select: { name: true } } },
+        include: { espace: { select: { name: true, shortName: true } } },
         orderBy: { startAt: "desc" },
         take: 50,
       }),
@@ -178,39 +178,24 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
         </div>
       ) : null}
 
-      <div className="fiche-colonnes">
+      <div className="fiche-colonnes fiche-colonnes--50-50">
         <div className="data-card overflow-visible">
           <Section titre="Organisation" icone="building-2">
             <Lus>
+              {/* Valeurs courtes en deux colonnes, valeurs longues (adresse, courriel, site) sur
+                  toute la largeur pour ne pas être coupées en plein mot. */}
               <Lu label="Type" valeur={<TypeOrganisation type={org.type} />} />
               <Lu label="Profil tarifaire" valeur={org.profil?.label} tiret />
-              <Lu label="Adresse" valeur={adresse} tiret />
               <Lu label={qualiteRepresentant(org.type)} valeur={nomRepresentant(org)} tiret />
               {org.type === "association" ? (
                 <Lu label="AG de nomination" valeur={dateCourte(org.legalAppointedAt)} tiret />
               ) : null}
               <Lu
-                label="Courriel"
-                valeur={org.email ? <a href={`mailto:${org.email}`}>{org.email}</a> : null}
-                tiret
-              />
-              <Lu
                 label="Téléphone"
                 valeur={org.phone ? <a href={`tel:${org.phone}`}>{org.phone}</a> : null}
                 tiret
               />
-              <Lu
-                label="Site web"
-                valeur={
-                  org.website ? (
-                    <a href={org.website} target="_blank" rel="noopener">
-                      {org.website}
-                    </a>
-                  ) : null
-                }
-              />
-              <Lu label="SIRET" valeur={org.siret} />
-              <Lu label="RNA" valeur={org.rna} />
+              <Lu label="Statut" valeur={org.isActive ? "Active" : "Désactivée"} />
               <Lu
                 label="Validée le"
                 valeur={
@@ -221,7 +206,26 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
                   )
                 }
               />
-              <Lu label="Statut" valeur={org.isActive ? "Active" : "Désactivée"} />
+              <Lu label="SIRET" valeur={org.siret} />
+              <Lu label="RNA" valeur={org.rna} />
+              <Lu label="Adresse" valeur={adresse} tiret pleine />
+              <Lu
+                label="Courriel"
+                valeur={org.email ? <a href={`mailto:${org.email}`}>{org.email}</a> : null}
+                tiret
+                pleine
+              />
+              <Lu
+                label="Site web"
+                valeur={
+                  org.website ? (
+                    <a href={org.website} target="_blank" rel="noopener">
+                      {org.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                    </a>
+                  ) : null
+                }
+                pleine
+              />
               <Lu label="Notes internes" valeur={org.notes} pleine pre />
             </Lus>
           </Section>
@@ -244,13 +248,12 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
           >
             {org.users.length ? (
               <div className="table-responsive">
-                <table className="table align-middle mb-0">
+                <table className="table align-middle mb-0 table-serree">
                   <thead>
                     <tr>
                       <th>Nom</th>
                       <th>Contact</th>
-                      <th>Fonction</th>
-                      <th>Dernière connexion</th>
+                      <th>Connexion</th>
                       <th>Statut</th>
                       {peutEditer ? <th /> : null}
                     </tr>
@@ -261,7 +264,11 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
                         <td>
                           <span className="d-flex align-items-center gap-2">
                             <Avatar nom={nomComplet(u)} taille="sm" />
-                            <strong>{nomComplet(u)}</strong>
+                            {/* La fonction passe sous le nom : une colonne de moins. */}
+                            <span className="cell2">
+                              <strong className="text-nowrap">{nomComplet(u)}</strong>
+                              {u.fonction ? <small>{u.fonction}</small> : null}
+                            </span>
                           </span>
                         </td>
                         <td className="small">
@@ -269,9 +276,6 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
                             <a href={`mailto:${u.email}`}>{u.email}</a>
                             {u.phone ? <small>{u.phone}</small> : null}
                           </span>
-                        </td>
-                        <td className="small">
-                          {u.fonction ?? <span className="text-faint">—</span>}
                         </td>
                         <td className="small text-muted">
                           {u.lastLoginAt ? depuis(u.lastLoginAt) : "Jamais"}
@@ -343,12 +347,11 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
           >
             {reservations.length ? (
               <div className="table-responsive">
-                <table className="table align-middle mb-0">
+                <table className="table align-middle mb-0 table-serree">
                   <thead>
                     <tr>
                       <th>Dossier</th>
-                      <th>Espace</th>
-                      <th>Date</th>
+                      <th>Espace et date</th>
                       <th className="text-end">Montant</th>
                       <th>Statut</th>
                     </tr>
@@ -359,11 +362,17 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
                         <td>
                           <a href={`/reservations/${r.id}`} className="cell2">
                             <strong>{r.numero}</strong>
-                            <small>{r.title}</small>
+                            <small style={{ whiteSpace: "normal" }}>{r.title}</small>
                           </a>
                         </td>
-                        <td className="small">{r.espace.name}</td>
-                        <td className="small">{dateMoyenne(r.startAt)}</td>
+                        <td>
+                          <span className="cell2">
+                            <span className="small text-nowrap" title={r.espace.name}>
+                              {r.espace.shortName || r.espace.name}
+                            </span>
+                            <small title={dateMoyenne(r.startAt)}>{dateCourte(r.startAt)}</small>
+                          </span>
+                        </td>
                         <td className="text-end tabular small">
                           {r.gratuit ? "Gratuit" : montant(r.montantTtc)}
                         </td>
