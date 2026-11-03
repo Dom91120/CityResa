@@ -146,9 +146,7 @@ export default async function SitePage({ params }: { params: Promise<{ id: strin
                       <th />
                       <th>Espace</th>
                       <th>Nature</th>
-                      <th className="text-end">
-                        <abbr title="Capacité (personnes)">Cap.</abbr>
-                      </th>
+                      <th className="text-end pe-3">Capacité</th>
                       <th>Statut</th>
                     </tr>
                   </thead>
@@ -196,7 +194,7 @@ export default async function SitePage({ params }: { params: Promise<{ id: strin
                           <td className="text-nowrap">
                             {e.nature?.label ?? <span className="text-faint">—</span>}
                           </td>
-                          <td className="text-end tabular">
+                          <td className="text-end tabular pe-3">
                             {e.capacityStanding ?? e.capacitySeated ?? (
                               <span className="text-faint">—</span>
                             )}
