@@ -80,7 +80,7 @@ export async function reservationsAVenir(materielId: number, limite = 20) {
           status: true,
           startAt: true,
           endAt: true,
-          espace: { select: { name: true, color: true } },
+          espace: { select: { name: true, shortName: true, color: true } },
           organisation: { select: { name: true } },
           user: { select: { firstName: true, lastName: true } },
         },
@@ -126,11 +126,5 @@ export async function categoriesMateriel() {
   });
 }
 
-/** « 12 € / unité », « Gratuit ». */
-export function tarifMateriel(m: { montant: number; unite: string }): string {
-  if (m.unite === "gratuit" || !m.montant) return "Gratuit";
-  const entier = Number.isInteger(m.montant);
-  const v = entier ? String(m.montant) : m.montant.toFixed(2).replace(".", ",");
-  const u = { forfait: "forfait", unite: "unité", jour: "unité et par jour" }[m.unite] ?? m.unite;
-  return `${v} € / ${u}`;
-}
+/** Le prix d'un matériel : règle pure dans src/lib/tarification.ts. */
+export { tarifMateriel } from "@/lib/tarification";

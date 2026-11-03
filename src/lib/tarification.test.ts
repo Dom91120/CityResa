@@ -8,6 +8,7 @@ import {
   grillePour,
   type LigneTarif,
   prixCreneau,
+  tarifMateriel,
   UNITE_LIBELLES,
 } from "@/lib/tarification";
 
@@ -313,5 +314,18 @@ describe("aPartirDe", () => {
     expect(aPartirDe(tarifs, 3)).toBe("Gratuit");
     expect(aPartirDe(tarifs, 4)).toBe("À partir de 25 €/h");
     expect(aPartirDe([t("heure", 60, 5)], null)).toBe("Sur demande");
+  });
+});
+
+describe("tarifMateriel", () => {
+  it("donne le prix avec son mode, sans répétition", () => {
+    expect(tarifMateriel({ montant: 0.5, unite: "unite" })).toBe("0,50 € par unité");
+    expect(tarifMateriel({ montant: 2, unite: "jour" })).toBe("2 € par unité et par jour");
+    expect(tarifMateriel({ montant: 30, unite: "forfait" })).toBe("30 € (forfait)");
+    expect(tarifMateriel({ montant: 1200, unite: "forfait" })).toBe("1 200 € (forfait)");
+  });
+  it("affiche « Gratuit » sans montant ou en mode gratuit", () => {
+    expect(tarifMateriel({ montant: 0, unite: "unite" })).toBe("Gratuit");
+    expect(tarifMateriel({ montant: 5, unite: "gratuit" })).toBe("Gratuit");
   });
 });

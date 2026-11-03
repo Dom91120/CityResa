@@ -4,8 +4,7 @@ import { Entete, Lu, Lus, MenuPost, MenuSep, Section } from "@/components/fiche"
 import { Icone } from "@/components/icones";
 import { VideBloc } from "@/components/liste";
 import { Chip, PastilleEspace, StatutResa } from "@/components/macros";
-import { MATERIEL_UNITES } from "@/lib/constantes";
-import { dateCourte, plage } from "@/lib/libelles";
+import { dateCourte, dateMoyenne, heure, plageHoraire } from "@/lib/libelles";
 import {
   chargerMateriel,
   reservationsAVenir,
@@ -102,10 +101,7 @@ export default async function MaterielFichePage({ params }: { params: Promise<{ 
           <Section titre="Synthèse" icone="package">
             <Lus>
               <Lu label="Catégorie" valeur={m.categorie?.label} tiret />
-              <Lu
-                label="Tarification"
-                valeur={`${MATERIEL_UNITES[m.unite] ?? m.unite} · ${tarifMateriel(m)}`}
-              />
+              <Lu label="Tarification" valeur={tarifMateriel(m)} />
               <Lu label="Description" valeur={m.description} pleine pre />
               <Lu label="Créé le" valeur={dateCourte(m.createdAt)} />
               <Lu label="Modifié le" valeur={dateCourte(m.updatedAt)} />
@@ -130,7 +126,7 @@ export default async function MaterielFichePage({ params }: { params: Promise<{ 
           >
             {aVenir.length ? (
               <div className="table-responsive">
-                <table className="table table-hover">
+                <table className="table table-hover table-serree">
                   <thead>
                     <tr>
                       <th>Dates</th>
@@ -144,7 +140,7 @@ export default async function MaterielFichePage({ params }: { params: Promise<{ 
                     {aVenir.map((l) => (
                       <tr key={l.reservationId}>
                         <td className="text-nowrap">
-                          {plage(l.reservation.startAt, l.reservation.endAt)}
+                          <DatesCreneau debut={l.reservation.startAt} fin={l.reservation.endAt} />
                         </td>
                         <td>
                           <span className="cell2">
@@ -165,9 +161,12 @@ export default async function MaterielFichePage({ params }: { params: Promise<{ 
                           </span>
                         </td>
                         <td>
-                          <span className="d-flex align-items-center gap-2">
+                          <span
+                            className="d-flex align-items-center gap-2"
+                            title={l.reservation.espace.name}
+                          >
                             <PastilleEspace couleur={l.reservation.espace.color} />
-                            {l.reservation.espace.name}
+                            {l.reservation.espace.shortName || l.reservation.espace.name}
                           </span>
                         </td>
                         <td className="text-end tabular">{l.quantite}</td>
@@ -190,5 +189,18 @@ export default async function MaterielFichePage({ params }: { params: Promise<{ 
         </div>
       </div>
     </>
+  );
+}
+
+/** La date sur une ligne, les horaires dessous en petit (deux dates si le créneau déborde). */
+function DatesCreneau({ debut, fin }: { debut: Date; fin: Date }) {
+  const memeJour = dateMoyenne(debut) === dateMoyenne(fin);
+  return (
+    <span className="cell2">
+      <span>{memeJour ? dateMoyenne(debut) : `du ${dateMoyenne(debut)} à ${heure(debut)}`}</span>
+      <small>
+        {memeJour ? plageHoraire(debut, fin) : `au ${dateMoyenne(fin)} à ${heure(fin)}`}
+      </small>
+    </span>
   );
 }
