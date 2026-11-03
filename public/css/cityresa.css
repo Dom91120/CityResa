@@ -606,9 +606,12 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
    case d'acceptation et les boutons restent en bas de l'écran. Deux étapes pour une
    association, une entreprise ou « Autre » (public/js/inscription.js). */
 .login-page--long .login-form { margin: 0; flex: 1; display: flex; flex-direction: column; }
-.login-page--long .login-form form { flex: 1; display: flex; flex-direction: column; }
-.inscription-actions { margin-top: auto; padding-top: 4px; }
-.login-page--long .login-form h1 { margin-bottom: 16px; }
+/* Le formulaire s'efface (display: contents) pour que ses blocs se placent dans la
+   colonne : titre et champs centrés verticalement, case et boutons en bas. */
+.login-page--long .login-form form { display: contents; }
+.login-page--long .login-form h1 { margin-top: auto; margin-bottom: 16px; }
+.login-page--long [data-etape] { margin-bottom: auto; }
+.inscription-actions { padding-top: 24px; }
 .etape-indicateur { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 24px; font-size: 0.76rem; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: .04em; margin: -8px 0 10px; }
 .etape-indicateur .btn-link { padding: 0; font-size: 0.82rem; font-weight: 500; text-transform: none; letter-spacing: 0; text-decoration: none; }
 .login-visuel { position: sticky; top: 0; height: 100vh; align-self: start; background: linear-gradient(135deg, #006e46 0%, #268462 50%, #59a187 100%); overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; gap: 32px; padding: 56px; color: #fff; }
