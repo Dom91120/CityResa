@@ -9,10 +9,10 @@ export function VisuelConnexion({ titre, texte }: { titre: string; texte: string
     <div className="login-visuel">
       <img
         src="/img/illustration-cityresa.webp"
-        alt="Aperçu du portail CityRésa : catalogue des espaces, fiche d’une salle et suivi d’une réservation"
+        alt="Aperçu du portail CityRésa : catalogue des espaces, photos d’un gymnase et suivi d’une réservation"
         className="login-illustration"
         width={2240}
-        height={1260}
+        height={1320}
       />
       <div className="accroche">
         <h2>{titre}</h2>

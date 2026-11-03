@@ -1,11 +1,13 @@
 /**
  * Fabrique l'illustration des pages de connexion, d'inscription et du bandeau d'accueil
- * du portail (public/img/illustration-cityresa.webp) : trois écrans du portail usager
- * en cascade, sur fond transparent.
+ * du portail (public/img/illustration-cityresa.webp) : trois éléments du portail en
+ * cascade, coins arrondis, sur fond transparent.
  *
- *   1. capture des écrans sur le serveur de développement (pnpm dev), avec un compte
- *      usager de démonstration (pnpm db:demo) ;
- *   2. composition des écrans (coins arrondis, ombres) et export en WebP.
+ *   1. capture sur le serveur de développement (pnpm dev, jeu de démo pnpm db:demo) :
+ *      le catalogue des espaces, la galerie de photos d'un gymnase, et la carte d'une
+ *      réservation (vue par l'usager de démonstration qui en est titulaire) ;
+ *   2. composition : cadre blanc arrondi autour des éléments qui n'en ont pas, ombres,
+ *      export en WebP.
  *
  *   node scripts/illustration-connexion.mjs
  *
@@ -15,7 +17,7 @@
  *   ILLUSTRATION_MDP       mot de passe (défaut : celui des comptes de démo, lu dans le README)
  *   CHROME_PATH            navigateur à utiliser (défaut : Chrome installé, sinon celui de Puppeteer)
  *
- * Pour changer les écrans ou leur cadrage : PAGES et SCENE ci-dessous.
+ * Pour changer les éléments ou leur disposition : CAPTURES et SCENE ci-dessous.
  */
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
@@ -29,25 +31,44 @@ const SORTIE = path.join(racine, "public", "img", "illustration-cityresa.webp");
 const BASE = process.env.CITYRESA_URL ?? "http://localhost:3000";
 const COMPTE = process.env.ILLUSTRATION_COMPTE ?? "redouane.el-bennane@exemple.fr";
 
-/** Les écrans capturés (taille CSS 1440 × 900, rendus en ×2). */
-const W = 1440;
-const H = 900;
-const PAGES = {
-  catalogue: "/portail",
-  espace: "/portail/espaces/salle-gabriel-peri",
-  reservation: "/portail/mes-reservations/1",
-};
+/**
+ * Les captures (rendues en ×2). `selecteur` : un élément seul ; sinon la fenêtre, défilée
+ * de `defilement` px. `connecte` : capturée après connexion du compte usager.
+ */
+const CAPTURES = [
+  {
+    nom: "catalogue",
+    url: "/portail",
+    fenetre: [1192, 890],
+    defilement: 329,
+  },
+  {
+    nom: "galerie",
+    url: "/portail/espaces/gymnase-les-sablons",
+    fenetre: [1192, 830],
+    selecteur: ".galerie",
+  },
+  {
+    nom: "reservation",
+    url: "/portail/mes-reservations?onglet=passees",
+    fenetre: [843, 830],
+    selecteur: ".resa-carte",
+    bloc: ".data-card", // la carte avec son fond blanc et son contour
+    connecte: true,
+  },
+];
 
 /**
- * La scène : pour chaque fenêtre, l'écran, la zone découpée [x, y, largeur, hauteur]
- * en px CSS, l'échelle et la position [gauche, haut] dans la scène.
+ * La scène : largeur des éléments en px dans la scène, position [gauche, haut], et
+ * `cadre` = cadre blanc arrondi ajouté autour (pour les éléments sans contour propre).
  */
-const SCENE = { largeur: 1120, hauteur: 630 };
-const FENETRES = [
-  { ecran: "catalogue", zone: [0, 0, W, H], echelle: 0.6, pos: [0, 0] },
-  { ecran: "espace", zone: [150, 120, 1139, 416], echelle: 0.56, pos: [470, 250] },
-  { ecran: "reservation", zone: [150, 80, 760, 180], echelle: 0.74, pos: [70, 470], rayon: 16 },
+const SCENE = { largeur: 1120, hauteur: 660 };
+const ELEMENTS = [
+  { capture: "catalogue", largeur: 700, pos: [0, 0], cadre: true },
+  { capture: "galerie", largeur: 560, pos: [530, 170], cadre: true },
+  { capture: "reservation", largeur: 690, pos: [150, 470], cadre: false },
 ];
+const CADRE = 10; // épaisseur du cadre blanc (px dans la scène)
 
 function motDePasseDemo() {
   if (process.env.ILLUSTRATION_MDP) return process.env.ILLUSTRATION_MDP;
@@ -63,17 +84,7 @@ function cheminChrome() {
   return existsSync(windows) ? windows : undefined;
 }
 
-const dossier = mkdtempSync(path.join(os.tmpdir(), "cityresa-illustration-"));
-const browser = await puppeteer.launch({
-  executablePath: cheminChrome(),
-  headless: true,
-  args: ["--allow-file-access-from-files"],
-});
-try {
-  // 1. Captures du portail, connecté en usager.
-  const page = await browser.newPage();
-  await page.setViewport({ width: W, height: H, deviceScaleFactor: 2 });
-  await page.emulateMediaFeatures([{ name: "prefers-color-scheme", value: "light" }]);
+async function seConnecter(page) {
   await page.goto(`${BASE}/connexion`, { waitUntil: "networkidle0" });
   await page.type('input[name="email"]', COMPTE);
   await page.type('input[name="password"]', motDePasseDemo());
@@ -82,28 +93,65 @@ try {
     page.click('form button[type="submit"]'),
   ]);
   if (page.url().includes("/connexion")) throw new Error(`Connexion refusée pour ${COMPTE}.`);
-  for (const [nom, url] of Object.entries(PAGES)) {
-    await page.goto(`${BASE}${url}`, { waitUntil: "networkidle0" });
-    // Le bandeau d'accueil contient l'illustration elle-même ; le badge de Next.js est masqué.
+}
+
+const dossier = mkdtempSync(path.join(os.tmpdir(), "cityresa-illustration-"));
+const browser = await puppeteer.launch({
+  executablePath: cheminChrome(),
+  headless: true,
+  args: ["--allow-file-access-from-files"],
+});
+try {
+  // 1. Captures : d'abord en visiteur, puis connecté.
+  const page = await browser.newPage();
+  await page.emulateMediaFeatures([{ name: "prefers-color-scheme", value: "light" }]);
+  const tailles = {};
+  let connecte = false;
+  for (const c of [...CAPTURES].sort((a, b) => Number(a.connecte ?? 0) - Number(b.connecte ?? 0))) {
+    if (c.connecte && !connecte) {
+      await seConnecter(page);
+      connecte = true;
+    }
+    await page.setViewport({ width: c.fenetre[0], height: c.fenetre[1], deviceScaleFactor: 2 });
+    await page.goto(`${BASE}${c.url}`, { waitUntil: "networkidle0" });
     await page.addStyleTag({
-      content: "nextjs-portal{display:none!important} .hero{display:none!important}",
+      content: "nextjs-portal{display:none!important} html{scroll-behavior:auto!important}",
     });
-    await new Promise((r) => setTimeout(r, 1200));
-    await page.screenshot({ path: path.join(dossier, `${nom}.png`) });
-    console.log(`capturé : ${nom} (${url})`);
+    const fichier = path.join(dossier, `${c.nom}.png`);
+    if (c.selecteur) {
+      const el = await page.$(c.selecteur);
+      if (!el) throw new Error(`Élément ${c.selecteur} introuvable sur ${c.url}.`);
+      const cible = c.bloc ? await el.evaluateHandle((e, b) => e.closest(b) ?? e, c.bloc) : el;
+      await new Promise((r) => setTimeout(r, 1000));
+      await cible.screenshot({ path: fichier, omitBackground: true });
+    } else {
+      if (c.defilement) await page.evaluate((y) => window.scrollTo(0, y), c.defilement);
+      await new Promise((r) => setTimeout(r, 1000));
+      await page.screenshot({ path: fichier });
+    }
+    const meta = await sharp(fichier).metadata();
+    tailles[c.nom] = [meta.width, meta.height];
+    console.log(`capturé : ${c.nom} (${c.url})`);
   }
 
-  // 2. Composition : chaque fenêtre est un morceau de capture en image de fond.
-  const fenetre = ({ ecran, zone: [x, y, l, h], echelle: s, pos: [g, t], rayon = 14 }) =>
-    `<div class="fen" style="left:${g}px;top:${t}px;width:${l * s}px;height:${h * s}px;
-      border-radius:${rayon}px;background-image:url('${pathToFileURL(path.join(dossier, `${ecran}.png`)).href}');
-      background-size:${W * s}px ${H * s}px;background-position:-${x * s}px -${y * s}px"></div>`;
+  // 2. Composition.
+  const bloc = ({ capture, largeur, pos: [g, t], cadre }) => {
+    const [lw, lh] = tailles[capture];
+    const hauteur = Math.round((largeur * lh) / lw);
+    const src = pathToFileURL(path.join(dossier, `${capture}.png`)).href;
+    const style = `left:${g}px;top:${t}px;`;
+    return cadre
+      ? `<div class="el cadre" style="${style}"><img src="${src}" style="width:${largeur}px;height:${hauteur}px"></div>`
+      : `<div class="el" style="${style}"><img src="${src}" style="width:${largeur}px;height:${hauteur}px"></div>`;
+  };
   const html = `<!doctype html><html><head><style>
     html,body{margin:0;background:transparent}
     .scene{position:relative;width:${SCENE.largeur}px;height:${SCENE.hauteur}px}
-    .fen{position:absolute;background-repeat:no-repeat;
-         box-shadow:0 30px 60px -18px rgba(5,40,25,.45),0 0 0 1px rgba(15,23,42,.06)}
-  </style></head><body><div class="scene">${FENETRES.map(fenetre).join("")}</div></body></html>`;
+    .el{position:absolute;border-radius:16px;box-shadow:0 30px 60px -18px rgba(5,40,25,.45)}
+    .el img{display:block;border-radius:16px}
+    .cadre{background:#fff;padding:${CADRE}px;border-radius:${16 + CADRE}px}
+    .cadre img{border-radius:12px}
+  </style></head><body><div class="scene">${ELEMENTS.map(bloc).join("")}</div></body></html>`;
   const fichierHtml = path.join(dossier, "scene.html");
   writeFileSync(fichierHtml, html);
   const scene = await browser.newPage();
@@ -111,7 +159,7 @@ try {
   await scene.goto(pathToFileURL(fichierHtml).href, { waitUntil: "load" });
   await new Promise((r) => setTimeout(r, 500));
   const png = await scene.screenshot({ omitBackground: true, type: "png" });
-  await sharp(png).webp({ quality: 86 }).toFile(SORTIE);
+  await sharp(png).webp({ quality: 88 }).toFile(SORTIE);
   console.log(`illustration : ${path.relative(racine, SORTIE)}`);
 } finally {
   await browser.close();
