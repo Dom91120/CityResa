@@ -160,7 +160,7 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
         ]}
       />
 
-      <div className="fiche-colonnes">
+      <div className="fiche-colonnes fiche-colonnes--50-50">
         <div className="data-card">
           <Section titre="Demande" icone="hand-coins">
             <Lus>
