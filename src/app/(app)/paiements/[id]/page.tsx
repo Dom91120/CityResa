@@ -13,7 +13,7 @@ import {
 import { Icone } from "@/components/icones";
 import { Avatar, Chip, StatutFacture, StatutResa } from "@/components/macros";
 import { FACTURE_TYPES, PAIEMENT_MODES } from "@/lib/constantes";
-import { dateCourte, dateHeure, montant, nomCourt, plage, pluriel } from "@/lib/libelles";
+import { dateCourte, dateHeure, heure, montant, nomCourt, plage, pluriel } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
 import { aujourdhuiUtc, enRetard, payeDe, resteDe } from "@/modules/paiements/server";
 import { Echeance, TypeFacture } from "@/modules/paiements/vues";
@@ -128,7 +128,7 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
         ]}
       />
 
-      <div className="fiche-colonnes">
+      <div className="fiche-colonnes fiche-colonnes--50-50">
         <div className="data-card">
           <Section titre="Facture" icone="receipt">
             <Lus>
@@ -147,17 +147,27 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
                 }
                 tiret
               />
+              <Lu label="Créée par" valeur={f.createdBy} />
+              <Lu label="Payée le" valeur={f.paidAt ? dateHeure(f.paidAt) : null} pleine />
               <Lu
                 label="Contact"
                 valeur={
-                  contact
-                    ? `${contact.firstName} ${contact.lastName}`.trim() +
-                      (contact.email ? ` · ${contact.email}` : "")
-                    : (client?.email ?? null)
+                  contact ? (
+                    <>
+                      {`${contact.firstName} ${contact.lastName}`.trim()}
+                      {contact.email ? (
+                        <>
+                          {" · "}
+                          <a href={`mailto:${contact.email}`}>{contact.email}</a>
+                        </>
+                      ) : null}
+                    </>
+                  ) : client?.email ? (
+                    <a href={`mailto:${client.email}`}>{client.email}</a>
+                  ) : null
                 }
+                pleine
               />
-              <Lu label="Créée par" valeur={f.createdBy} />
-              <Lu label="Payée le" valeur={f.paidAt ? dateHeure(f.paidAt) : null} />
               <Lu label="Libellé" valeur={f.libelle} pleine />
             </Lus>
             <table className="montants w-100 mt-3">
@@ -205,11 +215,16 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
                         {r.numero} · {r.title}
                       </a>
                     }
+                    pleine
                   />
+                  <Lu
+                    label="Espace"
+                    valeur={`${nomCourt(r.espace)} · ${r.espace.site.name}`}
+                    pleine
+                  />
+                  <Lu label="Dates" valeur={plage(r.startAt, r.endAt)} pleine />
                   <Lu label="Statut" valeur={<StatutResa status={r.status} />} />
-                  <Lu label="Espace" valeur={`${nomCourt(r.espace)} · ${r.espace.site.name}`} />
-                  <Lu label="Dates" valeur={plage(r.startAt, r.endAt)} />
-                  <Lu label="Montant du dossier" valeur={montant(r.montantTtc)} />
+                  <Lu label="Montant" valeur={montant(r.montantTtc)} />
                   <Lu label="Acompte" valeur={r.acompte ? montant(r.acompte) : null} />
                   <Lu label="Caution" valeur={r.caution ? montant(r.caution) : null} />
                 </Lus>
@@ -262,32 +277,43 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
           >
             {f.paiements.length ? (
               <div className="table-responsive">
-                <table className="table">
+                <table className="table table-serree">
                   <thead>
                     <tr>
                       <th>Date</th>
                       <th className="text-end">Montant</th>
                       <th>Mode</th>
-                      <th>Référence</th>
                       <th>Saisi par</th>
                     </tr>
                   </thead>
                   <tbody>
                     {f.paiements.map((p) => (
                       <tr key={p.id}>
-                        <td className="text-nowrap">{dateHeure(p.paidAt)}</td>
+                        <td className="text-nowrap">
+                          <span className="cell2">
+                            <span>{dateCourte(p.paidAt)}</span>
+                            <small>{heure(p.paidAt)}</small>
+                          </span>
+                        </td>
                         <td className="text-end tabular fw-medium">{montant(p.montant)}</td>
-                        <td>{PAIEMENT_MODES[p.mode] ?? p.mode}</td>
-                        <td>{p.reference ?? <span className="text-faint">—</span>}</td>
+                        <td>
+                          {/* La référence (chèque, virement…) sous le mode : une colonne de moins. */}
+                          <span className="cell2">
+                            <span>{PAIEMENT_MODES[p.mode] ?? p.mode}</span>
+                            {p.reference ? <small>Réf. {p.reference}</small> : null}
+                          </span>
+                        </td>
                         <td>
                           {p.recordedBy ? (
-                            <span className="d-inline-flex align-items-center gap-2">
+                            <span
+                              className="d-inline-flex"
+                              title={`${p.recordedBy.firstName} ${p.recordedBy.lastName}`.trim()}
+                            >
                               <Avatar
                                 nom={`${p.recordedBy.firstName} ${p.recordedBy.lastName}`}
                                 taille="sm"
                                 agent
                               />
-                              {`${p.recordedBy.firstName} ${p.recordedBy.lastName}`.trim()}
                             </span>
                           ) : (
                             <span className="text-faint">—</span>
@@ -298,17 +324,17 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
                   </tbody>
                   <tfoot>
                     <tr>
-                      <td className="fw-medium">Total réglé</td>
+                      <td className="fw-medium text-nowrap">Total réglé</td>
                       <td className="text-end tabular fw-medium">{montant(paye)}</td>
-                      <td colSpan={3} className="text-muted">
+                      <td colSpan={2} className="text-muted">
                         {pluriel(f.paiements.length, "règlement")}
                       </td>
                     </tr>
                     {f.status === "a_payer" ? (
                       <tr>
-                        <td className="fw-medium">Reste dû</td>
+                        <td className="fw-medium text-nowrap">Reste dû</td>
                         <td className="text-end tabular fw-medium text-danger">{montant(reste)}</td>
-                        <td colSpan={3} />
+                        <td colSpan={2} />
                       </tr>
                     ) : null}
                   </tfoot>

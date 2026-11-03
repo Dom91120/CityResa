@@ -127,6 +127,8 @@ hr { border-color: var(--line); opacity: 1; }
 .fw-medium { font-weight: 500; }
 .min-w-0 { min-width: 0; }
 .tabular { font-variant-numeric: tabular-nums; }
+/* Un montant ou un nombre en cellule ne se coupe pas (« 555,75 » / « € »). */
+td.tabular, .montants td.text-end { white-space: nowrap; }
 
 a:focus-visible, button:focus-visible, .btn:focus-visible, [tabindex]:focus-visible {
     outline: none; box-shadow: var(--ring); border-radius: var(--radius-sm);
