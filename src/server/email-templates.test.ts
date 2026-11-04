@@ -98,6 +98,7 @@ describe("EMAIL_TEMPLATE_SEEDS", () => {
       "reservation_confirmee",
       "reservation_refusee",
       "reservation_annulee",
+      "fermeture_exceptionnelle",
       "message_recu",
       "rappel_j7",
       "rappel_j1",

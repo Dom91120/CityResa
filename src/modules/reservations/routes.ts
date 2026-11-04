@@ -5,7 +5,7 @@
  * (`user.gereEspace`) et transforme toute UserFacingError en message flash.
  */
 import { RESERVATION_STATUS, type ReservationStatus } from "@/lib/constantes";
-import { bornes, verifierRegles } from "@/lib/creneaux";
+import { verifierRegles } from "@/lib/creneaux";
 import { champ, champOuNull, coche, idOuNull, parseInt_ } from "@/lib/forms-util";
 import { montant, plage } from "@/lib/libelles";
 import { lireChoix, lireCreneau, lireDemande } from "@/modules/reservations/formulaire";
@@ -26,6 +26,7 @@ import {
   courrielUsager,
   creerReservation,
   historiser,
+  majBornes,
   type ReservationComplete,
   recalculerMontants,
   stockDisponible,
@@ -87,14 +88,6 @@ export async function creer(form: FormData): Promise<Response> {
 // ── Gestes sur un dossier ──
 
 type Contexte = { user: CurrentUser; r: ReservationComplete; fiche: string };
-
-/** Remet les bornes du dossier sur ses créneaux vivants. */
-async function majBornes(id: number): Promise<void> {
-  const prevus = await prisma.creneau.findMany({ where: { reservationId: id, status: "prevu" } });
-  if (!prevus.length) return;
-  const b = bornes(prevus);
-  await prisma.reservation.update({ where: { id }, data: { startAt: b.startAt, endAt: b.endAt } });
-}
 
 /** Remplace les options et le matériel du dossier, puis recalcule montants et lignes. */
 async function appliquerChoix(

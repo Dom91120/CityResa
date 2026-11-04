@@ -11,6 +11,7 @@ import {
   enregistrerEquipements,
   enregistrerOption,
   lireEspace,
+  lireIndisponibilite,
   lireOption,
   retirerGestionnaire,
   supprimerEspace,
@@ -23,8 +24,9 @@ import {
 import { auditRecord } from "@/server/audit";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
+import { apercuFermeture, urlApercuFermeture } from "@/server/fermetures";
 import { type CurrentUser, requireDelete, requireEdit } from "@/server/guards";
-import { pasTrouve, redirigerAvecMessage } from "@/server/http";
+import { pasTrouve, redirection, redirigerAvecMessage } from "@/server/http";
 import { nouveauJeton } from "@/server/ics";
 
 export const ACTIONS_ESPACE = [
@@ -144,7 +146,13 @@ async function sousRessource(
         await auditRecord("suppression blocage", `espace #${id}`, "espaces", user.email);
         return redirigerAvecMessage(`${fiche}#indisponibilites`, "Blocage supprimé.", "success");
       }
-      await ajouterIndisponibilite(id, form, user.email);
+      const blocage = lireIndisponibilite(form);
+      // Des réservations en place : on passe par l'aperçu de fermeture exceptionnelle.
+      if ((await apercuFermeture(id, blocage.startAt, blocage.endAt)).length)
+        return redirection(
+          urlApercuFermeture({ espaceId: id, ...blocage, next: `${fiche}#indisponibilites` }),
+        );
+      await ajouterIndisponibilite(id, blocage, user.email);
       await auditRecord("ajout blocage", `espace #${id}`, "espaces", user.email);
       return redirigerAvecMessage(`${fiche}#indisponibilites`, "Blocage ajouté.", "success");
     }

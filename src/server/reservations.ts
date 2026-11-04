@@ -503,6 +503,7 @@ export async function courrielUsager(
       reservation_annulee: `Réservation ${r.numero} annulée`,
       reservation_infos: `Précisions demandées sur ${r.numero}`,
       reservation_signee: `Convention ${r.numero} signée`,
+      fermeture_exceptionnelle: `Fermeture de ${r.espace.name} : ${r.numero} concerné`,
     };
     if (titres[key])
       await notifier(
@@ -513,6 +514,14 @@ export async function courrielUsager(
         `/portail/mes-reservations/${r.id}`,
       );
   }
+}
+
+/** Remet les bornes du dossier sur ses créneaux vivants. */
+export async function majBornes(id: number): Promise<void> {
+  const prevus = await prisma.creneau.findMany({ where: { reservationId: id, status: "prevu" } });
+  if (!prevus.length) return;
+  const b = bornes(prevus);
+  await prisma.reservation.update({ where: { id }, data: { startAt: b.startAt, endAt: b.endAt } });
 }
 
 export async function historiser(
