@@ -7,6 +7,7 @@ import { VisuelConnexion } from "@/components/visuel-connexion";
 import { ORGANISATION_TYPES } from "@/lib/constantes";
 import {
   type ChampInscription,
+  communeDeLAdresse,
   qualiteRepresentant,
   reglesInscription,
 } from "@/lib/dossier-usager";
@@ -36,6 +37,8 @@ export default async function InscriptionPage() {
     ([k]) => !["service_interne", "collectivite"].includes(k),
   ) as [string, string][];
   const initial = reglesInscription(TYPE_INITIAL);
+  // Code postal et ville pré-remplis avec la commune de la collectivité (modifiables).
+  const commune = communeDeLAdresse(cfg.COLLECTIVITE_ADRESSE);
   const champ = (c: ChampInscription) => ({
     label: initial[c].libelle,
     requis: initial[c].requis,
@@ -139,9 +142,15 @@ export default async function InscriptionPage() {
                     <Champ
                       name="postal_code"
                       autoComplete="postal-code"
+                      valeur={commune?.codePostal}
                       {...champ("postal_code")}
                     />
-                    <Champ name="city" autoComplete="address-level2" {...champ("city")} />
+                    <Champ
+                      name="city"
+                      autoComplete="address-level2"
+                      valeur={commune?.ville}
+                      {...champ("city")}
+                    />
                   </div>
                 </div>
               </div>
