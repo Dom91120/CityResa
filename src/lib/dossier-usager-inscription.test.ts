@@ -1,5 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { controlerInscription, reglesInscription } from "./dossier-usager";
+import { communeDeLAdresse, controlerInscription, reglesInscription } from "./dossier-usager";
+
+describe("communeDeLAdresse", () => {
+  it("tire le code postal et la ville (capitales, sans accents)", () => {
+    expect(communeDeLAdresse("1 place de la Libération, 92320 Châtillon")).toEqual({
+      codePostal: "92320",
+      ville: "CHATILLON",
+    });
+    expect(communeDeLAdresse("2 rue X, 92260 Fontenay-aux-Roses")).toEqual({
+      codePostal: "92260",
+      ville: "FONTENAY-AUX-ROSES",
+    });
+  });
+  it("renvoie null sans code postal suivi d'une ville", () => {
+    expect(communeDeLAdresse("")).toBeNull();
+    expect(communeDeLAdresse("Mairie de Châtillon")).toBeNull();
+    expect(communeDeLAdresse("Châtillon 92320")).toBeNull();
+  });
+});
 
 const visibles = (type: string) =>
   Object.entries(reglesInscription(type))

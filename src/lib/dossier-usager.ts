@@ -177,6 +177,22 @@ export function phraseManques(manques: Exigence[]): string {
 
 // ── Formulaire d'inscription ──
 
+/**
+ * Le code postal et la ville d'une adresse (« 1 place de la Libération, 92320 Châtillon »
+ * → 92320, CHATILLON), pour pré-remplir l'inscription avec la commune de la collectivité.
+ * Ville en capitales sans accents, comme sur une adresse postale. Null si introuvable.
+ */
+export function communeDeLAdresse(adresse: string): { codePostal: string; ville: string } | null {
+  const m = /\b(\d{5})\s+([^,\d][^,]*)$/.exec(adresse.trim());
+  if (!m) return null;
+  const ville = m[2]
+    .trim()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toUpperCase();
+  return ville ? { codePostal: m[1], ville } : null;
+}
+
 /** Les champs du formulaire d'inscription qui dépendent du type d'organisation. */
 export const CHAMPS_INSCRIPTION = [
   "phone",
