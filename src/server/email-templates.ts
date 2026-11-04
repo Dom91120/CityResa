@@ -103,6 +103,15 @@ export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
     aide: "Envoyé à l'usager, qu'il soit ou non à l'origine de l'annulation.",
   },
   {
+    key: "fermeture_exceptionnelle",
+    label: "Fermeture exceptionnelle (usager)",
+    subject: "Fermeture exceptionnelle de {{espace}} : votre réservation {{numero}}",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>{{espace}} sera exceptionnellement fermé ({{fermeture}}). Motif : {{motif}}.</p><p>Votre réservation <strong>{{numero}}</strong> est concernée : {{occurrences}}.</p><p>{{suite}}</p><p>Pour convenir d\'un report, répondez-nous depuis votre dossier : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Envoyé aux usagers dont des créneaux tombent pendant une fermeture exceptionnelle. {{occurrences}} liste les créneaux concernés, {{suite}} dit s'ils sont annulés.",
+  },
+  {
     key: "message_recu",
     label: "Nouveau message",
     subject: "Nouveau message sur la réservation {{numero}}",

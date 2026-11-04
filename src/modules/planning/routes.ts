@@ -1,16 +1,18 @@
 /**
- * Les gestes du planning : bloquer un créneau d'un espace (indisponibilité) et lever un
- * blocage. Réservés aux agents qui ont la main sur l'espace.
+ * Les gestes du planning : bloquer un créneau d'un espace (indisponibilité), le transformer en
+ * fermeture exceptionnelle quand des réservations sont en place, et lever un blocage.
+ * Réservés aux agents qui ont la main sur l'espace.
  */
-import { champ, champOuNull, idOuNull } from "@/lib/forms-util";
+import { phraseBilan } from "@/lib/fermetures";
+import { champ, champOuNull, coche, idOuNull } from "@/lib/forms-util";
 import { isoParis, plage } from "@/lib/libelles";
 import { lireCreneau } from "@/modules/reservations/formulaire";
 import { auditRecord } from "@/server/audit";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
+import { apercuFermeture, poserFermeture, urlApercuFermeture } from "@/server/fermetures";
 import { requireEdit } from "@/server/guards";
-import { pasTrouve, redirigerAvecMessage, suite } from "@/server/http";
-import { verifierDisponibilite } from "@/server/reservations";
+import { pasTrouve, redirection, redirigerAvecMessage, suite } from "@/server/http";
 
 export async function bloquer(form: FormData): Promise<Response> {
   const user = await requireEdit("reservations");
@@ -24,7 +26,10 @@ export async function bloquer(form: FormData): Promise<Response> {
     if (!espace) return pasTrouve();
     const i = lireCreneau(form);
     const motif = champOuNull(form, "motif");
-    const conflits = await verifierDisponibilite(espace, [i]);
+    const ou = `/planning?espace=${espaceId}&date=${isoParis(i.startAt).date}${champ(form, "vue") ? `&vue=${champ(form, "vue")}` : ""}`;
+    // Des réservations en place : on passe par l'aperçu de fermeture exceptionnelle.
+    if ((await apercuFermeture(espaceId, i.startAt, i.endAt)).length)
+      return redirection(urlApercuFermeture({ espaceId, ...i, motif, next: ou }));
     await prisma.indisponibilite.create({
       data: {
         espaceId,
@@ -40,18 +45,53 @@ export async function bloquer(form: FormData): Promise<Response> {
       "planning",
       user.email,
     );
-    const ou = `/planning?espace=${espaceId}&date=${isoParis(i.startAt).date}${champ(form, "vue") ? `&vue=${champ(form, "vue")}` : ""}`;
-    const resas = conflits.filter((c) => c.existant.genre === "reservation");
-    if (resas.length)
-      return redirigerAvecMessage(
-        ou,
-        `Blocage posé sur ${espace.name} (${plage(i.startAt, i.endAt)}). Attention : ${resas.length} réservation${resas.length > 1 ? "s" : ""} déjà en place sur ce créneau (${[...new Set(resas.map((c) => c.existant.libelle))].slice(0, 3).join(" ; ")}).`,
-        "warning",
-      );
     return redirigerAvecMessage(
       ou,
       `Blocage posé sur ${espace.name} : ${plage(i.startAt, i.endAt)}.`,
       "success",
+    );
+  } catch (e) {
+    if (e instanceof UserFacingError) return redirigerAvecMessage(retour, e.message, "danger");
+    throw e;
+  }
+}
+
+/** POST /planning/fermer : confirme une fermeture exceptionnelle vue dans l'aperçu. */
+export async function fermer(form: FormData): Promise<Response> {
+  const user = await requireEdit("reservations");
+  const retour = suite(form, "/planning");
+  try {
+    const espaceId = idOuNull(form, "espace_id");
+    if (!espaceId) throw new UserFacingError("Choisissez l'espace à fermer.");
+    if (!user.gereEspace(espaceId))
+      throw new UserFacingError("Cet espace n'est pas dans votre périmètre.");
+    const espace = await prisma.espace.findUnique({ where: { id: espaceId } });
+    if (!espace) return pasTrouve();
+    const startAt = new Date(champ(form, "debut"));
+    const endAt = new Date(champ(form, "fin"));
+    if (Number.isNaN(startAt.getTime()) || Number.isNaN(endAt.getTime()) || endAt <= startAt)
+      throw new UserFacingError("Période de fermeture invalide.");
+    const motif = champOuNull(form, "motif");
+    const b = await poserFermeture({
+      espace,
+      startAt,
+      endAt,
+      motif,
+      annuler: coche(form, "annuler"),
+      prevenir: coche(form, "prevenir"),
+      vus: form.getAll("creneau").map(Number).filter(Number.isInteger),
+      acteur: { email: user.email, name: user.name },
+    });
+    if (b === "apercu_perime")
+      return redirigerAvecMessage(
+        urlApercuFermeture({ espaceId, startAt, endAt, motif, next: retour }),
+        "Les réservations ont changé depuis l'aperçu : vérifiez la liste à jour avant de confirmer.",
+        "warning",
+      );
+    return redirigerAvecMessage(
+      retour,
+      phraseBilan(b, espace.name, plage(startAt, endAt)),
+      b.entiers ? "warning" : "success",
     );
   } catch (e) {
     if (e instanceof UserFacingError) return redirigerAvecMessage(retour, e.message, "danger");

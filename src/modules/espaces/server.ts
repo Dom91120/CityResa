@@ -508,23 +508,26 @@ export async function agentsDisponibles(dejaIds: string[]) {
   });
 }
 
-export async function ajouterIndisponibilite(
-  espaceId: number,
-  form: FormData,
-  acteur: string,
-): Promise<void> {
+/** Le blocage saisi sur la fiche d'un espace (heure de Paris). */
+export function lireIndisponibilite(form: FormData): {
+  startAt: Date;
+  endAt: Date;
+  motif: string | null;
+} {
   const debut = parisDateTimeToInstant(champ(form, "date_debut"), champ(form, "heure_debut"));
   const fin = parisDateTimeToInstant(champ(form, "date_fin"), champ(form, "heure_fin"));
   if (!debut || !fin) throw new UserFacingError("Indiquez les dates et heures de début et de fin.");
   if (fin <= debut) throw new UserFacingError("La fin du blocage doit être après son début.");
+  return { startAt: debut, endAt: fin, motif: champOuNull(form, "motif")?.slice(0, 200) ?? null };
+}
+
+export async function ajouterIndisponibilite(
+  espaceId: number,
+  b: { startAt: Date; endAt: Date; motif: string | null },
+  acteur: string,
+): Promise<void> {
   await prisma.indisponibilite.create({
-    data: {
-      espaceId,
-      startAt: debut,
-      endAt: fin,
-      motif: champOuNull(form, "motif")?.slice(0, 200) ?? null,
-      createdBy: acteur,
-    },
+    data: { espaceId, startAt: b.startAt, endAt: b.endAt, motif: b.motif, createdBy: acteur },
   });
 }
 

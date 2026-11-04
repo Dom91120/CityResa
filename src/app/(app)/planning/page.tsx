@@ -256,7 +256,7 @@ export default async function PlanningPage({
           csrf={page.csrf}
           bouton="Bloquer"
           icone="ban"
-          aide="Travaux, usage interne, fermeture : l'espace devient indisponible sur la période (les demandes existantes restent et sont signalées)."
+          aide="Travaux, usage interne, fermeture : l'espace devient indisponible sur la période. Si des réservations sont en place, un aperçu les liste avant de bloquer (annulation et courriel aux usagers au choix)."
         >
           <input type="hidden" name="next" value={retour} />
           {fen.vue !== "semaine" ? <input type="hidden" name="vue" value={fen.vue} /> : null}

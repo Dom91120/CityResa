@@ -1044,7 +1044,7 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
             csrf={csrf}
             bouton="Bloquer"
             icone="ban"
-            aide="Heure de Paris. Les demandes existantes ne sont pas annulées : vérifiez le planning."
+            aide="Heure de Paris. Si des réservations tombent sur la période, un aperçu les liste avant de bloquer : annulation des créneaux et courriel aux usagers au choix."
           >
             <Grille colonnes={2}>
               <Champ label="Début · date" name="date_debut" type="date" requis />
