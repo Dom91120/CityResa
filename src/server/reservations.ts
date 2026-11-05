@@ -24,7 +24,8 @@ import {
   verifierRegles,
 } from "@/lib/creneaux";
 import { manquesDossier, nomRepresentant, phraseManques } from "@/lib/dossier-usager";
-import { dateMoyenne, montant, plage } from "@/lib/libelles";
+import { dateHeure, dateMoyenne, montant, plage } from "@/lib/libelles";
+import { STATUTS_OPTION } from "@/lib/options";
 import { calculerDevis, type Devis } from "@/lib/tarification";
 import { auditRecord } from "@/server/audit";
 import { joursExclus } from "@/server/calendrier";
@@ -205,6 +206,8 @@ export type DemandeEntree = {
   statutInitial?: ReservationStatus;
   /** Création en lot (campagne) : ni courriel ni notification, l'appelant prévient groupé. */
   sansCourriel?: boolean;
+  /** Option : date limite au-delà de laquelle un dossier non acquis est libéré d'office. */
+  optionExpiresAt?: Date | null;
 };
 
 /** Le devis d'une demande (pur calcul, sans écriture). */
@@ -421,6 +424,10 @@ export async function creerReservation(
       caution: devis.caution,
       gratuit: devis.gratuit,
       gratuitMotif: devis.gratuit ? (e.gratuitMotif?.trim().slice(0, 300) ?? null) : null,
+      optionExpiresAt:
+        e.optionExpiresAt && (STATUTS_OPTION as readonly string[]).includes(statut)
+          ? e.optionExpiresAt
+          : null,
       source: e.source,
       decisionAt: statut === "confirmee" ? now : null,
       decisionBy: statut === "confirmee" ? "automatique" : null,
@@ -556,6 +563,7 @@ export async function courrielUsager(
       avenant_signe: `Avenant de ${r.numero} signé`,
       caution_restituee: `Caution de ${r.numero} restituée`,
       caution_retenue: `Caution de ${r.numero} : retenue`,
+      option_relance: `Option ${r.numero} : échéance proche`,
     };
     if (titres[key])
       await notifier(
@@ -566,6 +574,35 @@ export async function courrielUsager(
         `/portail/mes-reservations/${r.id}`,
       );
   }
+}
+
+/** Pose (ou déplace) l'échéance d'une option sur un dossier non acquis. */
+export async function poserOption(
+  r: ReservationComplete,
+  expiresAt: Date,
+  acteur: string,
+): Promise<void> {
+  if (!(STATUTS_OPTION as readonly string[]).includes(r.status))
+    throw new UserFacingError(
+      "Une option se pose sur un dossier à traiter, en traitement ou accepté.",
+    );
+  if (expiresAt <= new Date()) throw new UserFacingError("L'échéance de l'option est déjà passée.");
+  if (expiresAt > r.startAt)
+    throw new UserFacingError("L'échéance de l'option doit précéder le début de la réservation.");
+  await prisma.reservation.update({
+    where: { id: r.id },
+    data: { optionExpiresAt: expiresAt, optionRelanceAt: null },
+  });
+  await historiser(r.id, "Option posée", `jusqu'au ${dateHeure(expiresAt)}`, acteur);
+}
+
+export async function leverOption(r: ReservationComplete, acteur: string): Promise<void> {
+  if (!r.optionExpiresAt) throw new UserFacingError("Ce dossier n'est pas en option.");
+  await prisma.reservation.update({
+    where: { id: r.id },
+    data: { optionExpiresAt: null, optionRelanceAt: null },
+  });
+  await historiser(r.id, "Option levée", null, acteur);
 }
 
 /** Remet les bornes du dossier sur ses créneaux vivants. */
@@ -646,6 +683,8 @@ export async function changerStatut(
   if (effectif === "archivee") data.archivedAt = now;
   if (effectif === "annulee" || effectif === "refusee")
     data.creneaux = { updateMany: { where: {}, data: { status: "annule" } } };
+  // Un dossier acquis n'est plus une option.
+  if (["signee", "confirmee"].includes(effectif) && r.optionExpiresAt) data.optionExpiresAt = null;
   // Une caution demandée entre dans son cycle dès que le dossier est acquis.
   if (
     ["acceptee", "signee", "confirmee"].includes(effectif) &&
@@ -661,6 +700,14 @@ export async function changerStatut(
   await prisma.reservation.update({ where: { id }, data });
   const libelle = RESERVATION_STATUS[effectif].label;
   await historiser(id, libelle, opts.motif ?? opts.message ?? null, acteur.name);
+  // Les créneaux libérés intéressent la liste d'attente de l'espace.
+  if (effectif === "annulee" || effectif === "refusee") {
+    const { notifierLiberation } = await import("@/server/liste-attente");
+    await notifierLiberation(
+      r.espaceId,
+      r.creneaux.filter((c) => c.status === "prevu"),
+    ).catch((e) => console.error("[liste d'attente]", e));
+  }
   await auditRecord(`reservation ${effectif}`, r.numero, "reservations", acteur.name);
   invalidateNavCounts();
   const maj = (await chargerReservation(id)) as ReservationComplete;

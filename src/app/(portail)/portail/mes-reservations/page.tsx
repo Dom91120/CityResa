@@ -1,8 +1,11 @@
 import { Icone } from "@/components/icones";
 import { SegTabs } from "@/components/liste";
+import { Chip } from "@/components/macros";
+import { dateCourte, nomCourt, plage } from "@/lib/libelles";
 import { enCours, reservationsUsager } from "@/modules/portail/suivi";
 import { BlocVide, CarteReservation } from "@/modules/portail/vues";
 import { getSettings } from "@/server/config-store";
+import { entreesDe } from "@/server/liste-attente";
 import { contexteUsager } from "@/server/page";
 
 export const metadata = { title: "Mes réservations - CityRésa" };
@@ -13,10 +16,11 @@ export default async function MesReservationsPage({
   searchParams: Promise<{ onglet?: string }>;
 }) {
   const page = await contexteUsager();
-  const [cfg, sp, toutes] = await Promise.all([
+  const [cfg, sp, toutes, attente] = await Promise.all([
     getSettings(),
     searchParams,
     reservationsUsager(page.user),
+    entreesDe(page.user),
   ]);
   const passees = sp.onglet === "passees";
   const actives = toutes.filter((r) => enCours(r.status));
@@ -78,6 +82,50 @@ export default async function MesReservationsPage({
           />
         )}
       </div>
+
+      {attente.length ? (
+        <div className="data-card p-4 mt-3" id="attente">
+          <h2 className="h5 mb-2">
+            <Icone nom="bell" taille={18} /> Liste d'attente
+          </h2>
+          <p className="text-muted small">
+            Vous serez prévenu par courriel si l'un de ces créneaux se libère ; il faudra alors
+            déposer votre demande.
+          </p>
+          <table className="table align-middle mb-0">
+            <tbody>
+              {attente.map((a) => (
+                <tr key={a.id}>
+                  <td className="fw-medium">{plage(a.startAt, a.endAt)}</td>
+                  <td>{nomCourt(a.espace)}</td>
+                  <td className="text-muted">{a.title}</td>
+                  <td>
+                    {a.notifiedAt ? (
+                      <Chip teinte="emerald">
+                        Créneau libéré, prévenu le {dateCourte(a.notifiedAt)}
+                      </Chip>
+                    ) : (
+                      <Chip teinte="amber">En attente</Chip>
+                    )}
+                  </td>
+                  <td className="actions">
+                    <form
+                      method="POST"
+                      action={`/portail/liste-attente/${a.id}/retirer`}
+                      className="d-inline"
+                    >
+                      <input type="hidden" name="csrf_token" value={page.csrf} />
+                      <button type="submit" className="btn btn-ghost btn-ghost-danger btn-sm">
+                        <Icone nom="x" taille={14} /> Retirer
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
     </>
   );
 }

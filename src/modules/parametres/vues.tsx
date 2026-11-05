@@ -238,6 +238,14 @@ export function VoletReservations({ cfg }: { cfg: AppSettings }) {
           aide="Passé ce délai après la fin de l'événement, une caution encaissée ni restituée ni retenue apparaît dans les alertes."
         />
         <Champ
+          label="Option : relance avant l'échéance (jours)"
+          name="OPTION_RELANCE_JOURS"
+          type="number"
+          min={0}
+          valeur={cfg.OPTION_RELANCE_JOURS}
+          aide="Un dossier posé en option est relancé ce nombre de jours avant sa date limite, puis libéré d'office une fois l'échéance passée (les inscrits en liste d'attente sont prévenus)."
+        />
+        <Champ
           label="Valorisation : seuil de convention obligatoire (€)"
           name="VALORISATION_SEUIL_CONVENTION"
           type="number"

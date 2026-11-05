@@ -68,6 +68,7 @@ model User {
   reservations  Reservation[]        @relation("Demandeur")
   assignees     Reservation[]        @relation("AgentAssigne")
   voeux         Voeu[]
+  listeAttente  ListeAttente[]
   messages      Message[]
   notifications Notification[]
   espaces       EspaceGestionnaire[]
@@ -328,6 +329,7 @@ model Espace {
   horairesSaisons  HorairesSaison[]
   voeux            Voeu[]
   campagnes        CampagneEspace[]
+  listeAttente     ListeAttente[]
   indisponibilites Indisponibilite[]
   reservations     Reservation[]
   creneaux         Creneau[]
@@ -536,6 +538,7 @@ model Organisation {
   subventions  Subvention[]
   voeux        Voeu[]
   valorisations Valorisation[]
+  listeAttente ListeAttente[]
 
   @@index([type])
   @@map("organisation")
@@ -595,6 +598,12 @@ model Reservation {
   gratuit    Boolean @default(false)
   /// Fondement de la gratuité ou de la réduction (délibération, convention, intérêt général…).
   gratuitMotif String? @map("gratuit_motif") @db.VarChar(300)
+
+  // ── Option (pré-réservation) ──
+  /// Date limite d'une option : au-delà, un dossier non confirmé est libéré d'office.
+  optionExpiresAt DateTime? @map("option_expires_at") @db.Timestamptz
+  /// Relance d'expiration déjà envoyée.
+  optionRelanceAt DateTime? @map("option_relance_at") @db.Timestamptz
 
   // ── Cycle de la caution ──
   /// aucune | attendue | encaissee | restituee | retenue | retenue_a_valider
@@ -747,6 +756,27 @@ model Avenant {
 
   @@unique([reservationId, numero])
   @@map("avenant")
+}
+
+/// Liste d'attente : un usager souhaite être prévenu si un créneau occupé d'un espace se libère.
+model ListeAttente {
+  id             Int           @id @default(autoincrement())
+  espaceId       Int           @map("espace_id")
+  espace         Espace        @relation(fields: [espaceId], references: [id], onDelete: Cascade)
+  organisationId Int?          @map("organisation_id")
+  organisation   Organisation? @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  userId         String        @map("user_id")
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startAt        DateTime      @map("start_at") @db.Timestamptz
+  endAt          DateTime      @map("end_at") @db.Timestamptz
+  title          String?       @db.VarChar(160)
+  /// Prévenu d'une libération (l'inscription reste jusqu'à la réservation ou au retrait).
+  notifiedAt     DateTime?     @map("notified_at") @db.Timestamptz
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([espaceId, startAt])
+  @@index([userId])
+  @@map("liste_attente")
 }
 
 /// Valorisation des avantages en nature d'une organisation sur un exercice, figée à la clôture :

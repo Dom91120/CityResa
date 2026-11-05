@@ -335,6 +335,12 @@ export default async function NouvelleReservationPage({
                       aide={`Délai de l'espace : ${espace.delayMinDays} j, horizon ${espace.horizonMaxDays} j.`}
                     />
                   </div>
+                  <Champ
+                    label="Option jusqu'au"
+                    name="option_date"
+                    type="date"
+                    aide="Facultatif : le créneau est bloqué jusqu'à cette date (18 h) ; sans confirmation, le dossier est libéré d'office."
+                  />
                 </Grille>
               </SectionForm>
 

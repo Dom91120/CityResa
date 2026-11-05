@@ -46,6 +46,12 @@ export const TACHES: Tache[] = [
     minute: 30,
     actif: (c) => Boolean(c.PAIEMENTS_ENABLED),
   },
+  {
+    id: "options",
+    label: "Options : relance avant échéance et libération d'office",
+    heure: 7,
+    minute: 40,
+  },
   { id: "digest_agents", label: "Récapitulatif quotidien des agents", heure: 7, minute: 45 },
   {
     id: "alertes_pieces",

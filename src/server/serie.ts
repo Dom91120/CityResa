@@ -22,6 +22,7 @@ import { auditRecord } from "@/server/audit";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
 import { horairesSaisonDe } from "@/server/horaires";
+import { notifierLiberation } from "@/server/liste-attente";
 import { invalidateNavCounts } from "@/server/nav";
 import {
   chargerReservation,
@@ -126,6 +127,11 @@ export async function deplacerSerie(opts: {
   ]);
   await majBornes(r.id);
   const devis = await recalculerMontants(r.id);
+  // Les anciens créneaux sont libres : la liste d'attente de l'espace est prévenue.
+  await notifierLiberation(
+    r.espaceId,
+    deps.map((x) => x.creneau),
+  ).catch((e) => console.error("[liste d'attente]", e));
 
   let convention: BilanSerie["convention"] = null;
   if (r.conventionDocumentId) {

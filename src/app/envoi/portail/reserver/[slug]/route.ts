@@ -97,7 +97,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
           "success",
         );
       } catch (e) {
-        if (e instanceof UserFacingError) return redirigerAvecMessage(retour, e.message, "danger");
+        if (e instanceof UserFacingError) {
+          // Créneau occupé : la page propose l'inscription en liste d'attente.
+          const attente = e.message.startsWith("Créneau indisponible")
+            ? `${retour}${retour.includes("?") ? "&" : "?"}attente=1`
+            : retour;
+          return redirigerAvecMessage(attente, e.message, "danger");
+        }
         throw e;
       }
     },

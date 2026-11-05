@@ -35,6 +35,7 @@ describe("tachesActives", () => {
       "archivage_auto",
       "purge_notifications",
       "terminer_reservations",
+      "options",
       "digest_agents",
     ]);
     expect(tachesActives(cfg({ BACKUP_DB_DIR: "/backups" })).map((t) => t.id)).toContain(
@@ -99,6 +100,7 @@ describe("tachesDues sur une fenêtre de 5 minutes", () => {
       "rappels_usagers",
       "relances_signature",
       "relances_paiement",
+      "options",
       "digest_agents",
     ]);
   });

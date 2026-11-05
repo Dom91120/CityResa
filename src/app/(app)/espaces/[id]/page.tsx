@@ -33,6 +33,7 @@ import {
 import { Onglets, StatutEspace, Visibilite, Volet } from "@/modules/espaces/vues";
 import { forParent } from "@/server/documents";
 import { idDeRoute } from "@/server/guards";
+import { entreesEspace } from "@/server/liste-attente";
 import { contexteModule } from "@/server/module";
 
 export const metadata = { title: "Espace - CityRésa" };
@@ -43,6 +44,7 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
   const e = await chargerEspace(id);
   if (!e) notFound();
   const enVigueur = new Set(grilleEnVigueur(e.tarifs, new Date()).map((t) => t.id));
+  const attente = await entreesEspace(id);
   const [photos, refs, prochains, blocages, occupation] = await Promise.all([
     forParent("espace", id, { kinds: ["photo"] }),
     referentielsEspaces(),
@@ -842,6 +844,61 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
                   ) : null
                 }
               />
+            )}
+          </div>
+          <div className="data-card">
+            <div className="card-header-custom">
+              <h6>
+                Liste d'attente{" "}
+                {attente.length ? (
+                  <span className="chip chip-amber ms-1">{attente.length}</span>
+                ) : null}
+              </h6>
+            </div>
+            {attente.length ? (
+              <div className="table-responsive">
+                <table className="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Créneau souhaité</th>
+                      <th>Demandeur</th>
+                      <th>Inscrit le</th>
+                      <th>Prévenu</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {attente.map((a) => (
+                      <tr key={a.id}>
+                        <td>
+                          {plage(a.startAt, a.endAt)}
+                          {a.title ? <div className="text-muted small">{a.title}</div> : null}
+                        </td>
+                        <td>
+                          {a.organisation ? (
+                            <a href={`/usagers/${a.organisation.id}`}>{a.organisation.name}</a>
+                          ) : (
+                            `${a.user.firstName} ${a.user.lastName}`.trim()
+                          )}
+                          <div className="text-muted small">{a.user.email}</div>
+                        </td>
+                        <td>{dateCourte(a.createdAt)}</td>
+                        <td>
+                          {a.notifiedAt ? (
+                            <Chip teinte="emerald">le {dateCourte(a.notifiedAt)}</Chip>
+                          ) : (
+                            <span className="text-faint">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-muted small p-3 mb-0">
+                Personne n'attend un créneau de cet espace. Les usagers s'inscrivent depuis le
+                portail quand le créneau qu'ils demandent est occupé.
+              </p>
             )}
           </div>
         </Volet>
