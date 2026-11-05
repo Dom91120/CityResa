@@ -7,6 +7,7 @@
 import type { Prisma } from "@/generated/prisma/client";
 import { MATERIEL_UNITES, STATUTS_OCCUPANTS } from "@/lib/constantes";
 import { champ, champOuNull, coche, idOuNull, parseFloat_, parseInt_ } from "@/lib/forms-util";
+import { type Mobilisation, picMobilisation } from "@/lib/materiel-stock";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
 
@@ -40,7 +41,10 @@ export function lireMateriel(form: FormData): MaterielEntree {
   };
 }
 
-/** Quantité mobilisée par matériel : dossiers vivants dont la fin n'est pas passée. */
+/**
+ * Quantité mobilisée par matériel au plus fort, sur les dossiers vivants dont la fin n'est
+ * pas passée : seuls les dossiers qui se recouvrent s'additionnent.
+ */
 export async function stockMobilise(materielIds: number[]): Promise<Map<number, number>> {
   const out = new Map<number, number>();
   if (!materielIds.length) return out;
@@ -49,9 +53,19 @@ export async function stockMobilise(materielIds: number[]): Promise<Map<number, 
       materielId: { in: materielIds },
       reservation: { status: { in: STATUTS_OCCUPANTS }, endAt: { gte: new Date() } },
     },
-    select: { materielId: true, quantite: true },
+    select: {
+      materielId: true,
+      quantite: true,
+      reservation: { select: { startAt: true, endAt: true } },
+    },
   });
-  for (const l of lignes) out.set(l.materielId, (out.get(l.materielId) ?? 0) + l.quantite);
+  const parMateriel = new Map<number, Mobilisation[]>();
+  for (const l of lignes) {
+    const liste = parMateriel.get(l.materielId) ?? [];
+    liste.push({ debut: l.reservation.startAt, fin: l.reservation.endAt, quantite: l.quantite });
+    parMateriel.set(l.materielId, liste);
+  }
+  for (const [id, liste] of parMateriel) out.set(id, picMobilisation(liste));
   return out;
 }
 

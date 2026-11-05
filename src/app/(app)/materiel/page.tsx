@@ -131,7 +131,7 @@ export default async function MaterielPage({ searchParams }: { searchParams: Pro
                 />
                 <Th
                   col="mobilise"
-                  label="Mobilisé"
+                  label="Mobilisé (pic)"
                   pathname={page.pathname}
                   search={page.search}
                   classes="text-end"

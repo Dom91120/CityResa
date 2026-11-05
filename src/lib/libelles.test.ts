@@ -12,6 +12,7 @@ import {
   heure,
   initiales,
   isoParis,
+  libelleAction,
   moisAnnee,
   montant,
   montantOuGratuit,
@@ -186,5 +187,18 @@ describe("isoParis", () => {
       time: "00:30",
     });
     expect(isoParis(hiver)).toEqual({ date: "2026-11-08", time: "08:30" });
+  });
+});
+
+describe("libelleAction", () => {
+  it("rétablit les accents et la majuscule", () => {
+    expect(libelleAction("modification creneaux")).toBe("Modification créneaux");
+    expect(libelleAction("constat presence")).toBe("Constat présence");
+    expect(libelleAction("depot voeu")).toBe("Dépôt vœu");
+    expect(libelleAction("purge rgpd")).toBe("Purge RGPD");
+  });
+  it("laisse les mots inconnus tels quels", () => {
+    expect(libelleAction("connexion")).toBe("Connexion");
+    expect(libelleAction("caution retenue")).toBe("Caution retenue");
   });
 });

@@ -64,7 +64,19 @@ export async function navCounts(user: CurrentUser): Promise<Record<string, numbe
     }
   }
   const c = memo.cache.counts;
-  if (user.canView("reservations")) counts.a_traiter = c.a_traiter;
+  if (user.canView("reservations")) {
+    // Un agent rattaché à des espaces ne compte que leurs demandes, comme sa liste.
+    counts.a_traiter = user.espacesGeres.length
+      ? await prisma.reservation
+          .count({
+            where: {
+              status: { in: ["a_traiter", "en_traitement"] },
+              espaceId: { in: user.espacesGeres },
+            },
+          })
+          .catch(() => c.a_traiter)
+      : c.a_traiter;
+  }
   if (user.canView("messages")) counts.messages = c.messages;
   if (user.canView("usagers")) counts.usagers_a_valider = c.usagers_a_valider;
   if (user.canView("paiements")) counts.factures_a_payer = c.factures_a_payer;

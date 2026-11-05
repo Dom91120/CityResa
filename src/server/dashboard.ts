@@ -23,7 +23,8 @@ function heuresOuvertureHebdo(h: Horaires | null): number {
   return total || 14 * 7;
 }
 
-export async function indicateurs(p: Periode, prec: Periode) {
+/** `espacesGeres` : le périmètre de l'agent pour le compteur « à traiter » (vide = tous). */
+export async function indicateurs(p: Periode, prec: Periode, espacesGeres: number[] = []) {
   const compter = async (q: Periode) => {
     const [demandes, confirmees, annulees, revenus] = await Promise.all([
       prisma.reservation.count({ where: { createdAt: { gte: q.de, lt: q.a } } }),
@@ -48,7 +49,12 @@ export async function indicateurs(p: Periode, prec: Periode) {
       compter(p),
       compter(prec),
       prisma.espace.count({ where: { isActive: true, isPublic: true, status: "actif" } }),
-      prisma.reservation.count({ where: { status: { in: ["a_traiter", "en_traitement"] } } }),
+      prisma.reservation.count({
+        where: {
+          status: { in: ["a_traiter", "en_traitement"] },
+          ...(espacesGeres.length ? { espaceId: { in: espacesGeres } } : {}),
+        },
+      }),
       prisma.reservation.count({ where: { status: "acceptee", signedAt: null } }),
       prisma.facture.count({ where: { status: "a_payer" } }),
       prisma.message.count({ where: { readAt: null, authorKind: "usager", isInternal: false } }),
