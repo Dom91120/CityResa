@@ -13,7 +13,7 @@ import type { CurrentUser } from "@/server/guards";
 import type { Params } from "@/server/paging";
 import { param } from "@/server/paging";
 
-export type Vue = "semaine" | "mois" | "jour";
+export type Vue = "semaine" | "mois" | "jour" | "liste";
 
 export type Fenetre = {
   vue: Vue;
@@ -38,7 +38,7 @@ function cle(d: Date): string {
 }
 
 export function lireVue(v: string | undefined): Vue {
-  return v === "mois" || v === "jour" ? v : "semaine";
+  return v === "mois" || v === "jour" || v === "liste" ? v : "semaine";
 }
 
 export function lireDate(v: string | undefined): string {
@@ -132,6 +132,8 @@ export type EvtResa = {
   titre: string;
   status: string;
   qui: string;
+  /** Type de l'organisation demandeuse ; null = particulier sans organisation. */
+  typeUsager: string | null;
   espaceId: number;
   startAt: Date;
   endAt: Date;
@@ -195,7 +197,7 @@ export async function occupationsPlanning(
             numero: true,
             title: true,
             status: true,
-            organisation: { select: { name: true } },
+            organisation: { select: { name: true, type: true } },
             user: { select: { firstName: true, lastName: true } },
           },
         },
@@ -219,6 +221,7 @@ export async function occupationsPlanning(
         (c.reservation.user
           ? `${c.reservation.user.firstName} ${c.reservation.user.lastName}`.trim()
           : ""),
+      typeUsager: c.reservation.organisation?.type ?? null,
       espaceId: c.espaceId,
       startAt: c.startAt,
       endAt: c.endAt,

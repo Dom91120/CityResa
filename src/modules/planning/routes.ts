@@ -6,12 +6,18 @@
 import { phraseBilan } from "@/lib/fermetures";
 import { champ, champOuNull, coche, idOuNull } from "@/lib/forms-util";
 import { isoParis, plage } from "@/lib/libelles";
+import {
+  ajouterVue,
+  ecrireVuesEnregistrees,
+  lireVuesEnregistrees,
+  retirerVue,
+} from "@/lib/planning-vues";
 import { lireCreneau } from "@/modules/reservations/formulaire";
 import { auditRecord } from "@/server/audit";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
 import { apercuFermeture, poserFermeture, urlApercuFermeture } from "@/server/fermetures";
-import { requireEdit } from "@/server/guards";
+import { requireEdit, requireView } from "@/server/guards";
 import { pasTrouve, redirection, redirigerAvecMessage, suite } from "@/server/http";
 import { constaterPresence, heuresSaisies } from "@/server/presences";
 
@@ -147,4 +153,29 @@ export async function constater(form: FormData): Promise<Response> {
     if (e instanceof UserFacingError) return redirigerAvecMessage(retour, e.message, "danger");
     throw e;
   }
+}
+
+/** POST /planning/vues : enregistre (« enregistrer ») ou supprime (« supprimer ») une vue de l'agent. */
+export async function vuesPlanning(form: FormData): Promise<Response> {
+  const user = await requireView("planning");
+  const retour = suite(form, "/planning");
+  const vues = lireVuesEnregistrees(user.listPrefs);
+  const action = champ(form, "action");
+  const nom = champ(form, "nom");
+  let apres: ReturnType<typeof retirerVue>;
+  let message: string;
+  if (action === "supprimer") {
+    apres = retirerVue(vues, nom);
+    message = `Vue « ${nom} » supprimée.`;
+  } else {
+    const r = ajouterVue(vues, nom, champ(form, "qs"));
+    if (typeof r === "string") return redirigerAvecMessage(retour, r, "danger");
+    apres = r;
+    message = `Vue « ${nom.trim()} » enregistrée : retrouvez-la dans « Mes vues ».`;
+  }
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { listPrefs: ecrireVuesEnregistrees(user.listPrefs, apres) },
+  });
+  return redirigerAvecMessage(retour, message, "success");
 }

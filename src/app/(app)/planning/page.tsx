@@ -4,6 +4,8 @@ import { SegTabs, urlAvec, VideBloc } from "@/components/liste";
 import { ScriptDiffere } from "@/components/scripts";
 import { nomCourt } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
+import { COULEURS, legende, lireCouleur, lireVuesEnregistrees, qsVue } from "@/lib/planning-vues";
+import { VueListe } from "@/modules/planning/liste";
 import {
   espacesDuPerimetre,
   espacesPlanning,
@@ -24,6 +26,7 @@ const VUES: [Vue, string][] = [
   ["semaine", "Semaine"],
   ["mois", "Mois"],
   ["jour", "Jour"],
+  ["liste", "Liste"],
 ];
 
 export default async function PlanningPage({
@@ -37,6 +40,9 @@ export default async function PlanningPage({
   const date = lireDate(param(params, "date"));
   const fen = fenetre(vue, date);
   const filtres = lireFiltresPlanning(params);
+  const couleur = lireCouleur(param(params, "couleur"));
+  const vuesEnregistrees = lireVuesEnregistrees(page.user.listPrefs);
+  const qsActuelle = qsVue(page.search);
   const [espaces, tous] = await Promise.all([
     espacesPlanning(page.user, filtres),
     espacesDuPerimetre(page.user),
@@ -66,6 +72,7 @@ export default async function PlanningPage({
     peutEditer,
     aujourdhui,
     retour,
+    couleur,
   };
 
   return (
@@ -86,6 +93,67 @@ export default async function PlanningPage({
           </p>
         </div>
         <div className="page-actions">
+          <div className="dropdown d-inline-block">
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              data-bs-toggle="dropdown"
+              data-bs-auto-close="outside"
+              aria-expanded="false"
+            >
+              <Icone nom="bookmark" taille={14} /> Mes vues
+              {vuesEnregistrees.length ? ` (${vuesEnregistrees.length})` : ""}{" "}
+              <Icone nom="chevron-down" taille={12} />
+            </button>
+            <div className="dropdown-menu p-2" style={{ minWidth: 300 }}>
+              {vuesEnregistrees.map((v) => (
+                <div key={v.nom} className="d-flex align-items-center gap-1">
+                  <a
+                    href={`/planning${v.qs ? `?${v.qs}` : ""}`}
+                    className="dropdown-item flex-grow-1"
+                  >
+                    <Icone nom="bookmark" taille={13} /> {v.nom}
+                  </a>
+                  <form method="POST" action="/planning/vues" className="d-inline">
+                    <input type="hidden" name="csrf_token" value={page.csrf} />
+                    <input type="hidden" name="action" value="supprimer" />
+                    <input type="hidden" name="nom" value={v.nom} />
+                    <input type="hidden" name="next" value={retour} />
+                    <button
+                      type="submit"
+                      className="btn btn-ghost btn-icone btn-sm"
+                      title={`Supprimer la vue « ${v.nom} »`}
+                      aria-label={`Supprimer la vue ${v.nom}`}
+                    >
+                      <Icone nom="x" taille={12} />
+                    </button>
+                  </form>
+                </div>
+              ))}
+              {vuesEnregistrees.length ? <div className="dropdown-divider" /> : null}
+              <form method="POST" action="/planning/vues" className="px-2 py-1 d-flex gap-1">
+                <input type="hidden" name="csrf_token" value={page.csrf} />
+                <input type="hidden" name="action" value="enregistrer" />
+                <input type="hidden" name="qs" value={qsActuelle} />
+                <input type="hidden" name="next" value={retour} />
+                <input
+                  type="text"
+                  name="nom"
+                  className="form-control form-control-sm"
+                  placeholder="Nom de la vue actuelle"
+                  aria-label="Nom de la vue à enregistrer"
+                  maxLength={60}
+                  required
+                />
+                <button type="submit" className="btn btn-primary btn-sm text-nowrap">
+                  <Icone nom="save" taille={13} /> Enregistrer
+                </button>
+              </form>
+              <div className="px-2 small text-muted">
+                Mémorise la vue, les sites, les espaces et la couleur ; la date reste celle du jour.
+              </div>
+            </div>
+          </div>
           <a
             href={`/planning/semaine-type${filtresQs ? `?${filtresQs}` : ""}`}
             className="btn btn-ghost btn-sm"
@@ -273,6 +341,18 @@ export default async function PlanningPage({
               ) : null}
             </div>
           </div>
+          <select
+            name="couleur"
+            className="form-select form-select-sm filtre-select"
+            defaultValue={couleur === "espace" ? "" : couleur}
+            aria-label="Couleur des créneaux"
+          >
+            {Object.entries(COULEURS).map(([k, l]) => (
+              <option key={k} value={k === "espace" ? "" : k}>
+                Couleur : {l.toLowerCase()}
+              </option>
+            ))}
+          </select>
           <noscript>
             <button type="submit" className="btn btn-sm btn-outline-secondary">
               Afficher
@@ -280,6 +360,16 @@ export default async function PlanningPage({
           </noscript>
         </form>
       </div>
+      {legende(couleur).length ? (
+        <ul className="list-inline small text-muted mb-2" aria-label="Légende des couleurs">
+          {legende(couleur).map(([l, c]) => (
+            <li key={l} className="list-inline-item">
+              <span className="legende-liseré" style={{ background: c }} /> {l}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {peutEditer ? <span data-planning-csrf={page.csrf} hidden /> : null}
 
       {!espaces.length ? (
         <div className="data-card">
@@ -304,6 +394,8 @@ export default async function PlanningPage({
             }
           />
         </div>
+      ) : fen.vue === "liste" ? (
+        <VueListe espaces={espaces} creneaux={creneaux} blocages={blocages} />
       ) : fen.vue === "mois" ? (
         <VueMois {...props} urlJour={(j) => lien({ vue: "jour", date: j })} />
       ) : fen.vue === "jour" ? (
