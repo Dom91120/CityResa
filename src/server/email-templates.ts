@@ -112,6 +112,15 @@ export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
     aide: "Envoyé aux usagers dont des créneaux tombent pendant une fermeture exceptionnelle. {{occurrences}} liste les créneaux concernés, {{suite}} dit s'ils sont annulés.",
   },
   {
+    key: "creneaux_modifies",
+    label: "Créneaux modifiés (usager)",
+    subject: "Réservation {{numero}} : nouveaux horaires",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>Les horaires de votre réservation <strong>{{numero}}</strong> ({{titre}}, {{espace}}) ont été modifiés par nos services : {{modifications}}.</p><p>{{suite}}</p><p>Votre dossier à jour : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Envoyé à l'usager quand un agent déplace un ou plusieurs créneaux de son dossier. {{modifications}} liste les anciens et nouveaux horaires, {{suite}} dit si le montant change.",
+  },
+  {
     key: "message_recu",
     label: "Nouveau message",
     subject: "Nouveau message sur la réservation {{numero}}",
