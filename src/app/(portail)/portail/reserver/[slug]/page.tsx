@@ -23,6 +23,7 @@ import {
 import { Etapes } from "@/modules/portail/vues";
 import { CochesCalendrier } from "@/modules/reservations/champs";
 import { alternativesPour } from "@/server/alternatives";
+import { chargerBrouillon } from "@/server/brouillons";
 import { saisonActive } from "@/server/calendrier";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
@@ -47,7 +48,12 @@ export default async function ReserverPage({
   const page = await contexteUsager();
   const { user, csrf, features } = page;
   const cfg = await getSettings();
-  const sp = await searchParams;
+  const query = await searchParams;
+  // Un brouillon repris pré-remplit le formulaire ; l'adresse (saisie rendue après une erreur) prime.
+  const brouillonId = Number(query.brouillon ?? query.brouillon_id) || null;
+  const brouillon = brouillonId ? await chargerBrouillon(user, brouillonId) : null;
+  const sp: Record<string, string | string[] | undefined> =
+    brouillon && brouillon.espaceId === espace.id ? { ...brouillon.data, ...query } : query;
   const v = (k: string) => (typeof sp[k] === "string" ? String(sp[k]) : "");
   const [org, natures, options, materiels, profils, saison] = await Promise.all([
     organisationDe(user),
@@ -547,7 +553,7 @@ export default async function ReserverPage({
                               name={o.mandatory ? undefined : `option_${o.id}`}
                               value="1"
                               id={`f-option_${o.id}`}
-                              defaultChecked={o.mandatory}
+                              defaultChecked={o.mandatory || v(`option_${o.id}`) === "1"}
                               disabled={o.mandatory}
                             />
                             <label className="form-check-label" htmlFor={`f-option_${o.id}`}>
@@ -582,7 +588,7 @@ export default async function ReserverPage({
                               className="form-control"
                               style={{ width: 90 }}
                               min={o.mandatory ? 1 : 0}
-                              defaultValue={o.mandatory ? 1 : 0}
+                              defaultValue={Number(v(`option_${o.id}`)) || (o.mandatory ? 1 : 0)}
                               aria-label={`Quantité pour ${o.label}`}
                             />
                           </div>
@@ -638,7 +644,7 @@ export default async function ReserverPage({
                                     className="form-control form-control-sm"
                                     min={0}
                                     max={m.stockTotal}
-                                    defaultValue={0}
+                                    defaultValue={Number(v(`materiel_${m.id}`)) || 0}
                                     aria-label={`Quantité de ${m.name}`}
                                   />
                                 </td>
@@ -732,6 +738,19 @@ export default async function ReserverPage({
                 </div>
                 <button type="submit" className="btn btn-primary btn-lg w-100">
                   <Icone nom="send" taille={16} /> Envoyer ma demande
+                </button>
+                {brouillon && brouillon.espaceId === espace.id ? (
+                  <input type="hidden" name="brouillon_id" value={brouillon.id} />
+                ) : null}
+                <button
+                  type="submit"
+                  name="action"
+                  value="brouillon"
+                  className="btn btn-outline-secondary w-100 mt-2"
+                  formNoValidate
+                  title="Mettre la saisie de côté sans l'envoyer : retrouvez-la dans « Mes réservations »"
+                >
+                  <Icone nom="save" taille={14} /> Garder en brouillon
                 </button>
                 <a href={retourFiche} className="btn btn-ghost w-100 mt-2">
                   Annuler

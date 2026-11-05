@@ -16,6 +16,7 @@ import {
   profilAutorise,
   profilDe,
 } from "@/modules/portail/catalogue";
+import { Simulateur } from "@/modules/portail/simulateur";
 import { CalendrierDispo } from "@/modules/portail/vues";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
@@ -31,7 +32,7 @@ export default async function FicheEspacePage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ mois?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { slug } = await params;
   const espace = await espacePublic(slug);
@@ -46,7 +47,10 @@ export default async function FicheEspacePage({
     searchParams,
   ]);
   const profil = await profilDe(user);
-  const mois = await calendrierMois(espace, moisDemande(sp.mois));
+  const mois = await calendrierMois(
+    espace,
+    moisDemande(typeof sp.mois === "string" ? sp.mois : undefined),
+  );
   const imgs = photos(espace);
   const docs = documentsPublics(espace);
   const horaires = lireHoraires(espace.openHours);
@@ -224,6 +228,15 @@ export default async function FicheEspacePage({
                   </p>
                 ) : null}
               </Section>
+            ) : null}
+
+            {cfg.PORTAIL_AFFICHER_TARIFS && !user?.isAgent ? (
+              <Simulateur
+                espace={espace}
+                profils={profils.map((p) => ({ id: p.id, label: p.label }))}
+                profilConnecte={profil ? { id: profil.id, label: profil.label } : null}
+                params={sp}
+              />
             ) : null}
 
             <Section titre="Horaires d'ouverture" icone="clock">

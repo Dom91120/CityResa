@@ -2,8 +2,10 @@ import { Icone } from "@/components/icones";
 import { SegTabs } from "@/components/liste";
 import { Chip } from "@/components/macros";
 import { dateCourte, nomCourt, plage } from "@/lib/libelles";
+import { ListeBrouillons } from "@/modules/portail/brouillons";
 import { enCours, reservationsUsager } from "@/modules/portail/suivi";
 import { BlocVide, CarteReservation } from "@/modules/portail/vues";
+import { brouillonsDe } from "@/server/brouillons";
 import { getSettings } from "@/server/config-store";
 import { entreesDe } from "@/server/liste-attente";
 import { contexteUsager } from "@/server/page";
@@ -16,13 +18,15 @@ export default async function MesReservationsPage({
   searchParams: Promise<{ onglet?: string }>;
 }) {
   const page = await contexteUsager();
-  const [cfg, sp, toutes, attente] = await Promise.all([
+  const [cfg, sp, toutes, attente, brouillons] = await Promise.all([
     getSettings(),
     searchParams,
     reservationsUsager(page.user),
     entreesDe(page.user),
+    brouillonsDe(page.user),
   ]);
   const passees = sp.onglet === "passees";
+  const ongletBrouillons = sp.onglet === "brouillons";
   const actives = toutes.filter((r) => enCours(r.status));
   const closes = toutes
     .filter((r) => !enCours(r.status))
@@ -49,7 +53,7 @@ export default async function MesReservationsPage({
             href: "/portail/mes-reservations",
             label: "En cours",
             count: actives.length,
-            active: !passees,
+            active: !passees && !ongletBrouillons,
           },
           {
             href: "/portail/mes-reservations?onglet=passees",
@@ -58,10 +62,31 @@ export default async function MesReservationsPage({
             active: passees,
             teinte: "muted",
           },
+          ...(brouillons.length || ongletBrouillons
+            ? [
+                {
+                  href: "/portail/mes-reservations?onglet=brouillons",
+                  label: "Brouillons",
+                  count: brouillons.length,
+                  active: ongletBrouillons,
+                  teinte: "muted",
+                },
+              ]
+            : []),
         ]}
       />
       <div className="data-card">
-        {liste.length ? (
+        {ongletBrouillons ? (
+          brouillons.length ? (
+            <ListeBrouillons brouillons={brouillons} csrf={page.csrf} />
+          ) : (
+            <BlocVide
+              icone="save"
+              titre="Aucun brouillon"
+              texte="Sur le formulaire de demande, « Garder en brouillon » met votre saisie de côté pour la reprendre ici."
+            />
+          )
+        ) : liste.length ? (
           liste.map((r) => <CarteReservation key={r.id} r={r} cfg={cfg} />)
         ) : (
           <BlocVide
