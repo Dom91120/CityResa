@@ -121,6 +121,15 @@ export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
     aide: "Envoyé à l'usager quand un agent déplace un ou plusieurs créneaux de son dossier. {{modifications}} liste les anciens et nouveaux horaires, {{suite}} dit si le montant change.",
   },
   {
+    key: "priorite_municipale",
+    label: "Priorité municipale : créneau réquisitionné (usager)",
+    subject: "Réservation {{numero}} : la Ville a besoin de {{espace}} le {{creneau}}",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>La Ville organise <strong>{{evenement}}</strong> ({{motif}}) et doit disposer de {{espace}} le {{creneau}}, créneau de votre réservation <strong>{{numero}}</strong> ({{titre}}).</p><p>{{suite}}</p><p>Nous vous prions de nous excuser pour la gêne occasionnée. Votre dossier : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Envoyé à l'usager quand un agent réquisitionne un créneau de son dossier pour un événement de la Ville. {{suite}} dit si le créneau est déplacé (nouvel horaire, avenant) ou annulé sans frais.",
+  },
+  {
     key: "avenant_a_signer",
     label: "Avenant à signer (usager)",
     subject: "Avenant {{avenant}} à votre convention {{numero}}",

@@ -559,6 +559,7 @@ export async function courrielUsager(
       reservation_signee: `Convention ${r.numero} signée`,
       fermeture_exceptionnelle: `Fermeture de ${r.espace.name} : ${r.numero} concerné`,
       creneaux_modifies: `Réservation ${r.numero} : nouveaux horaires`,
+      priorite_municipale: `Réservation ${r.numero} : créneau réquisitionné par la Ville`,
       avenant_a_signer: `Avenant à signer pour ${r.numero}`,
       avenant_signe: `Avenant de ${r.numero} signé`,
       caution_restituee: `Caution de ${r.numero} restituée`,
@@ -642,7 +643,14 @@ export async function changerStatut(
   id: number,
   nouveau: ReservationStatus,
   acteur: CurrentUser | { name: string; isAgent: boolean },
-  opts: { motif?: string; message?: string; parSysteme?: boolean; sansFrais?: boolean } = {},
+  opts: {
+    motif?: string;
+    message?: string;
+    parSysteme?: boolean;
+    sansFrais?: boolean;
+    /** L'appelant prévient lui-même l'usager (réquisition municipale) : pas de courriel d'annulation. */
+    sansCourriel?: boolean;
+  } = {},
 ): Promise<ReservationComplete> {
   const r = await chargerReservation(id);
   if (!r) throw new UserFacingError("Réservation introuvable.");
@@ -771,10 +779,11 @@ export async function changerStatut(
         );
       }
     }
-    await courrielUsager(maj, "reservation_annulee", {
-      motif: opts.motif ?? "non précisé",
-      frais: texteFrais,
-    });
+    if (!opts.sansCourriel)
+      await courrielUsager(maj, "reservation_annulee", {
+        motif: opts.motif ?? "non précisé",
+        frais: texteFrais,
+      });
     if (!acteur.isAgent)
       await notifierAgents(
         r.espaceId,

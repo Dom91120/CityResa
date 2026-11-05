@@ -26,6 +26,7 @@ import {
   RESERVATION_SOURCES,
   RESERVATION_STATUS,
   type ReservationStatus,
+  STATUTS_FERMES,
 } from "@/lib/constantes";
 import { decrireRecurrence, lireRecurrence } from "@/lib/creneaux";
 import { nomRepresentant } from "@/lib/dossier-usager";
@@ -1101,6 +1102,19 @@ export function SectionEvenement({
                     aria-label="Modifier ce créneau"
                   >
                     <Icone nom="pencil" taille={14} />
+                  </a>
+                ) : null}
+                {peutDecider &&
+                c.status === "prevu" &&
+                c.startAt > new Date() &&
+                STATUTS_FERMES.includes(r.status as ReservationStatus) ? (
+                  <a
+                    href={`/reservations/${r.id}/creneaux/${c.id}/requisition`}
+                    className="btn btn-ghost btn-icone btn-sm"
+                    title="Priorité municipale : réquisitionner ce créneau pour un événement de la Ville"
+                    aria-label="Réquisitionner ce créneau pour la Ville"
+                  >
+                    <Icone nom="landmark" taille={14} />
                   </a>
                 ) : null}
                 {peutDecider && vivant && c.status === "prevu" && prevus.length > 1 ? (

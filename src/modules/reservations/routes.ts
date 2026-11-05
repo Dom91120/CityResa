@@ -8,6 +8,7 @@ import { RESERVATION_STATUS, type ReservationStatus } from "@/lib/constantes";
 import { reglesAuCreneau, verifierRegles } from "@/lib/creneaux";
 import { champ, champOuNull, coche, idOuNull, parseFloat_, parseInt_ } from "@/lib/forms-util";
 import { dateHeure, montant, plage } from "@/lib/libelles";
+import { lienSaisieVille, lireChoixRequisition, phraseBilan } from "@/lib/priorite";
 import { lirePortee, phraseDeplacement } from "@/lib/serie";
 import {
   lireChoix,
@@ -36,6 +37,7 @@ import { pasTrouve, redirigerAvecMessage } from "@/server/http";
 import { notifierLiberation } from "@/server/liste-attente";
 import { invalidateNavCounts } from "@/server/nav";
 import { notifier } from "@/server/notifications";
+import { requisitionner } from "@/server/priorite";
 import {
   ajouterMessage,
   changerStatut,
@@ -364,6 +366,57 @@ async function modifierCreneau(
   }
 }
 
+/**
+ * Priorité municipale : réquisitionne un créneau pour un événement de la Ville (déplacement ou
+ * annulation sans frais), puis enchaîne sur la saisie de la réservation de la Ville si demandé.
+ */
+async function requisitionCreneau(
+  { user, r, fiche }: Contexte,
+  cid: number,
+  form: FormData,
+): Promise<Response> {
+  const page = `${fiche}/creneaux/${cid}/requisition`;
+  const c = r.creneaux.find((x) => x.id === cid);
+  if (!c) return pasTrouve();
+  try {
+    let saisie: ReturnType<typeof lireCreneau> | null = null;
+    if (champ(form, "mode") === "deplacer" && !champ(form, "alternative")) {
+      try {
+        saisie = lireCreneau(form);
+      } catch {
+        saisie = null;
+      }
+    }
+    const choix = lireChoixRequisition({
+      mode: champ(form, "mode"),
+      alternative: champ(form, "alternative"),
+      saisie,
+    });
+    if (typeof choix === "string") throw new UserFacingError(choix);
+    const evenement = champ(form, "evenement").trim();
+    const b = await requisitionner({
+      r,
+      creneauId: cid,
+      evenement,
+      motif: champOuNull(form, "motif"),
+      choix,
+      prevenir: coche(form, "prevenir"),
+      acteur: { email: user.email, name: user.name },
+    });
+    const bilan = phraseBilan(c, choix, { dossierAnnule: b.dossierAnnule, prevenu: b.prevenu });
+    if (coche(form, "enchainer"))
+      return redirigerAvecMessage(
+        lienSaisieVille(r.espaceId, c, evenement),
+        `${bilan} Saisissez maintenant la réservation de la Ville sur le créneau libéré.`,
+        "success",
+      );
+    return redirigerAvecMessage(fiche, bilan, "success");
+  } catch (e) {
+    if (e instanceof UserFacingError) return redirigerAvecMessage(page, e.message, "danger");
+    throw e;
+  }
+}
+
 /** Relance l'usager pour la signature d'un avenant (courriel, PDF joint). */
 async function relancerAvenant({ user, r, fiche }: Contexte, aid: number): Promise<Response> {
   const a = r.avenants.find((x) => x.id === aid);
@@ -535,6 +588,7 @@ export async function actionReservation(
           if (!cid) return pasTrouve();
           if (segments[2] === "annuler") return await annulerCreneau(ctx, cid);
           if (segments[2] === "modifier") return await modifierCreneau(ctx, cid, form);
+          if (segments[2] === "requisition") return await requisitionCreneau(ctx, cid, form);
         }
         if (segments[0] === "option" && segments.length === 2) {
           if (segments[1] === "poser") {
