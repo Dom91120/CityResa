@@ -52,6 +52,10 @@ export default async function PlanningPage({
     urlAvec(page.pathname, page.search, modifs);
   const sites = [...new Map(tous.map((e) => [e.site.id, e.site])).values()];
   const unSeul = espaces.length === 1 ? espaces[0] : null;
+  const qsFiltres = new URLSearchParams();
+  if (filtres.site) qsFiltres.set("site", String(filtres.site));
+  for (const id of filtres.espaces) qsFiltres.append("espace", String(id));
+  const filtresQs = qsFiltres.toString();
   const nbEvts = creneaux.length;
   const props = {
     fen,
@@ -82,9 +86,60 @@ export default async function PlanningPage({
           </p>
         </div>
         <div className="page-actions">
-          <button type="button" className="btn btn-outline-secondary btn-sm" data-imprimer>
-            <Icone nom="printer" taille={14} /> Imprimer
-          </button>
+          <a
+            href={`/planning/semaine-type${filtresQs ? `?${filtresQs}` : ""}`}
+            className="btn btn-ghost btn-sm"
+          >
+            <Icone nom="repeat" taille={14} /> Semaine type
+          </a>
+          {unSeul ? (
+            <a
+              href={`/espaces/${unSeul.id}/feuille.pdf?date=${fen.date}`}
+              className="btn btn-outline-secondary btn-sm"
+              target="_blank"
+              rel="noopener"
+              title="Programme de la semaine à afficher à la porte, avec QR code vers la version en ligne"
+            >
+              <Icone nom="qr-code" taille={14} /> Feuille de salle
+            </a>
+          ) : null}
+          <div className="dropdown d-inline-block">
+            <button
+              type="button"
+              className="btn btn-outline-secondary btn-sm"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <Icone nom="printer" taille={14} /> Imprimer <Icone nom="chevron-down" taille={12} />
+            </button>
+            <ul className="dropdown-menu dropdown-menu-end">
+              <li>
+                <button type="button" className="dropdown-item" data-imprimer>
+                  <Icone nom="printer" taille={14} /> Cette page
+                </button>
+              </li>
+              <li>
+                <a
+                  className="dropdown-item"
+                  href={`/planning/semaine.pdf?date=${fen.date}${filtresQs ? `&${filtresQs}` : ""}&format=A4`}
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <Icone nom="file-text" taille={14} /> Semaine en PDF (A4, une page par espace)
+                </a>
+              </li>
+              <li>
+                <a
+                  className="dropdown-item"
+                  href={`/planning/semaine.pdf?date=${fen.date}${filtresQs ? `&${filtresQs}` : ""}&format=A3`}
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <Icone nom="file-text" taille={14} /> Semaine en PDF (A3)
+                </a>
+              </li>
+            </ul>
+          </div>
           {peutEditer ? (
             <>
               <BoutonOuvrir

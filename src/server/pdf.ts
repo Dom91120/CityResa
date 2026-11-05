@@ -26,17 +26,21 @@ async function obtenirNavigateur(): Promise<Browser> {
 
 export type MargesPdf = { top: string; right: string; bottom: string; left: string };
 
-/** Un document HTML complet → les octets du PDF (A4, portrait). */
+export type OptionsPdf = { format?: "A4" | "A3"; paysage?: boolean };
+
+/** Un document HTML complet → les octets du PDF (A4 portrait par défaut ; A3 et paysage pour les plannings). */
 export async function htmlVersPdf(
   html: string,
   marges: MargesPdf = { top: "18mm", right: "16mm", bottom: "18mm", left: "16mm" },
+  opts: OptionsPdf = {},
 ): Promise<Buffer> {
   const b = await obtenirNavigateur();
   const page = await b.newPage();
   try {
     await page.setContent(html, { waitUntil: "load", timeout: 30_000 });
     const pdf = await page.pdf({
-      format: "A4",
+      format: opts.format ?? "A4",
+      landscape: opts.paysage ?? false,
       printBackground: true,
       margin: marges,
       preferCSSPageSize: false,
