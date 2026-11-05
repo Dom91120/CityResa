@@ -11,6 +11,7 @@ import type { AppSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { allFlagsIn } from "@/server/features";
 import type { CurrentUser } from "@/server/guards";
+import { controlesEnRetard } from "@/server/materiel-stock";
 import { organisationsSansConvention } from "@/server/valorisation";
 
 export type Alerte = {
@@ -105,6 +106,20 @@ export async function alertes(
           "Avantages en nature et subventions de l'exercice : une convention d'objectifs est obligatoire.",
         nb: n,
         href: "/valorisation",
+      });
+  }
+
+  if (features.materiel && user.canView("materiel")) {
+    const n = (await controlesEnRetard(now)).length;
+    if (n)
+      out.push({
+        cle: "materiel_controles",
+        niveau: "warning",
+        icone: "clipboard-check",
+        titre: `${n} matériel${n > 1 ? "s" : ""} à contrôler`,
+        detail: "Contrôle périodique échu : à enregistrer depuis la fiche du matériel.",
+        nb: n,
+        href: "/materiel?etat=controle",
       });
   }
 

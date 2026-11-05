@@ -19,6 +19,7 @@ import {
   SectionHistorique,
   SectionMontants,
 } from "@/modules/reservations/fiche";
+import { SectionMateriel } from "@/modules/reservations/materiel-fiche";
 import { voitEspace } from "@/modules/reservations/requetes";
 import { agentsActifs, materielsPour, optionsPour } from "@/modules/reservations/saisie";
 import { prisma } from "@/server/db";
@@ -193,6 +194,9 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
             peutDecider={peutDecider}
           />
           <SectionDemandeur r={r} />
+          {features.materiel ? (
+            <SectionMateriel r={r} csrf={csrf} peutDecider={peutDecider} />
+          ) : null}
           <SectionMontants
             r={r}
             devis={devis}

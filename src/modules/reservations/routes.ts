@@ -35,6 +35,7 @@ import { type CurrentUser, requireAdmin, requireEdit } from "@/server/guards";
 import { horairesSaisonDe } from "@/server/horaires";
 import { pasTrouve, redirigerAvecMessage } from "@/server/http";
 import { notifierLiberation } from "@/server/liste-attente";
+import { retournerMateriel, sortirMateriel } from "@/server/materiel-stock";
 import { invalidateNavCounts } from "@/server/nav";
 import { notifier } from "@/server/notifications";
 import { requisitionner } from "@/server/priorite";
@@ -589,6 +590,24 @@ export async function actionReservation(
           if (segments[2] === "annuler") return await annulerCreneau(ctx, cid);
           if (segments[2] === "modifier") return await modifierCreneau(ctx, cid, form);
           if (segments[2] === "requisition") return await requisitionCreneau(ctx, cid, form);
+        }
+        if (segments[0] === "materiel" && segments.length === 3) {
+          const mid = parseInt_(segments[1], null, 1);
+          if (!mid) return pasTrouve();
+          if (segments[2] === "sortie")
+            return redirigerAvecMessage(fiche, await sortirMateriel(user, r.id, mid), "success");
+          if (segments[2] === "retour")
+            return redirigerAvecMessage(
+              fiche,
+              await retournerMateriel(
+                user,
+                r.id,
+                mid,
+                parseInt_(form.get("rendus"), -1, 0) ?? -1,
+                champOuNull(form, "note"),
+              ),
+              "success",
+            );
         }
         if (segments[0] === "option" && segments.length === 2) {
           if (segments[1] === "poser") {

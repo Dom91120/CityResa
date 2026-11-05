@@ -273,7 +273,7 @@ export async function stockDisponible(
       },
     },
   });
-  return m.stockTotal - mobilise.reduce((s, x) => s + x.quantite, 0);
+  return m.stockTotal - m.horsService - mobilise.reduce((s, x) => s + x.quantite, 0);
 }
 
 /** Crée un dossier complet. Lève une UserFacingError sur toute règle non respectée. */

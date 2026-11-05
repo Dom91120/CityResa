@@ -427,6 +427,11 @@
   <path d="M12 22V12" />
   <polyline points="3.29 7 12 12 20.71 7" />
   <path d="m7.5 4.27 9 5.15" /></symbol>
+<symbol id="package-check" viewBox="0 0 24 24"><path d="M12 22V12" />
+  <path d="m16 17 2 2 4-4" />
+  <path d="M21 11.127V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.729l7 4a2 2 0 0 0 2 .001l1.32-.753" />
+  <path d="M3.29 7 12 12l8.71-5" />
+  <path d="m7.5 4.27 8.997 5.148" /></symbol>
 <symbol id="palette" viewBox="0 0 24 24"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" />
   <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
   <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
