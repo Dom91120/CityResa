@@ -177,6 +177,8 @@ export type DemandeEntree = {
   /** Un agent peut passer outre délai et horizon. */
   ignorerDelai?: boolean;
   statutInitial?: ReservationStatus;
+  /** Création en lot (campagne) : ni courriel ni notification, l'appelant prévient groupé. */
+  sansCourriel?: boolean;
 };
 
 /** Le devis d'une demande (pur calcul, sans écriture). */
@@ -433,6 +435,7 @@ export async function creerReservation(
   });
   invalidateNavCounts();
   await auditRecord("creation reservation", `${r.numero} · ${r.title}`, "reservations", acteur);
+  if (e.sansCourriel) return r;
   const lienBo = `${cfg.APP_BASE_URL}/reservations/${r.id}`;
   const dates =
     plage(r.startAt, r.endAt) + (creneaux.length > 1 ? ` (${creneaux.length} créneaux)` : "");

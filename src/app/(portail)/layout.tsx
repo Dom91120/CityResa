@@ -51,6 +51,8 @@ export default async function PortailLayout({ children }: { children: React.Reac
       icone: "clipboard-list",
       nb: aSigner,
     });
+    if (features.campagnes && org)
+      liens.push({ href: "/portail/mes-voeux", label: "Mes vœux", icone: "calendar-check" });
     liens.push({
       href: "/portail/mes-messages",
       label: "Mes messages",

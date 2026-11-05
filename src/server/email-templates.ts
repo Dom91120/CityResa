@@ -148,6 +148,15 @@ export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
     aide: "Confirmation envoyée après la signature d'un avenant, en ligne ou sur papier.",
   },
   {
+    key: "campagne_decisions",
+    label: "Campagne de créneaux : décisions (usager)",
+    subject: "{{campagne}} : réponse à vos vœux de créneaux",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>La collectivité a arbitré les vœux de créneaux déposés par {{organisation}} pour la campagne <strong>{{campagne}}</strong>.</p><p style="white-space:pre-line">{{attribues}}</p><p style="white-space:pre-line">{{refuses}}</p><p>{{suite}}</p><p>Vos réservations : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Un seul courriel par organisation, envoyé depuis la campagne une fois les décisions prises. {{attribues}} et {{refuses}} listent les créneaux (une ligne par vœu, avec le dossier ou le motif), {{suite}} dit quoi faire ensuite.",
+  },
+  {
     key: "message_recu",
     label: "Nouveau message",
     subject: "Nouveau message sur la réservation {{numero}}",

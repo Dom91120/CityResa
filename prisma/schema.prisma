@@ -67,6 +67,7 @@ model User {
   twofactor     TwoFactor[]
   reservations  Reservation[]        @relation("Demandeur")
   assignees     Reservation[]        @relation("AgentAssigne")
+  voeux         Voeu[]
   messages      Message[]
   notifications Notification[]
   espaces       EspaceGestionnaire[]
@@ -321,6 +322,8 @@ model Espace {
   gestionnaires    EspaceGestionnaire[]
   documents        Document[]
   horairesSaisons  HorairesSaison[]
+  voeux            Voeu[]
+  campagnes        CampagneEspace[]
   indisponibilites Indisponibilite[]
   reservations     Reservation[]
   creneaux         Creneau[]
@@ -445,7 +448,8 @@ model Saison {
   isActive  Boolean  @default(false) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  horaires HorairesSaison[]
+  horaires  HorairesSaison[]
+  campagnes Campagne[]
 
   @@map("saison")
 }
@@ -511,6 +515,8 @@ model Organisation {
   /// Compte validé par la collectivité (accès aux tarifs et espaces réservés).
   validatedAt DateTime? @map("validated_at") @db.Timestamptz
   isActive    Boolean   @default(true) @map("is_active")
+  /// Association conventionnée avec la Ville : prioritaire dans les campagnes de créneaux.
+  conventionnee Boolean @default(false)
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -519,6 +525,7 @@ model Organisation {
   documents    Document[]
   factures     Facture[]
   subventions  Subvention[]
+  voeux        Voeu[]
 
   @@index([type])
   @@map("organisation")
@@ -602,6 +609,7 @@ model Reservation {
   factures  Facture[]
   histories ReservationHistory[]
   avenants  Avenant[]
+  voeu      Voeu?
 
   @@index([espaceId, startAt])
   @@index([organisationId])
@@ -714,6 +722,84 @@ model Avenant {
 
   @@unique([reservationId, numero])
   @@map("avenant")
+}
+
+// ============================================================
+//  Campagnes annuelles d'attribution des créneaux
+// ============================================================
+
+/// Une campagne : les usagers déposent leurs vœux de créneaux hebdomadaires sur une saison, la
+/// Ville instruit, arbitre les conflits par priorité et attribue en lot (un dossier par vœu).
+model Campagne {
+  id       Int    @id @default(autoincrement())
+  saisonId Int    @map("saison_id")
+  saison   Saison @relation(fields: [saisonId], references: [id])
+  label    String @db.VarChar(120)
+  /// brouillon | ouverte | instruction | cloturee
+  status   String @default("brouillon") @db.VarChar(12)
+  /// Date limite de dépôt des vœux, affichée aux usagers (indicative).
+  closeDate DateTime? @map("close_date") @db.Date
+  consignes String?
+
+  espaces CampagneEspace[]
+  voeux   Voeu[]
+
+  createdBy String?  @map("created_by") @db.VarChar(160)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("campagne")
+}
+
+/// Un espace ouvert aux vœux d'une campagne.
+model CampagneEspace {
+  id         Int      @id @default(autoincrement())
+  campagneId Int      @map("campagne_id")
+  campagne   Campagne @relation(fields: [campagneId], references: [id], onDelete: Cascade)
+  espaceId   Int      @map("espace_id")
+  espace     Espace   @relation(fields: [espaceId], references: [id], onDelete: Cascade)
+
+  @@unique([campagneId, espaceId])
+  @@map("campagne_espace")
+}
+
+/// Un vœu : un créneau hebdomadaire (jour, heures de Paris) souhaité sur un espace pour toute la saison.
+model Voeu {
+  id             Int          @id @default(autoincrement())
+  campagneId     Int          @map("campagne_id")
+  campagne       Campagne     @relation(fields: [campagneId], references: [id], onDelete: Cascade)
+  organisationId Int          @map("organisation_id")
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  userId         String?      @map("user_id")
+  user           User?        @relation(fields: [userId], references: [id])
+  espaceId       Int          @map("espace_id")
+  espace         Espace       @relation(fields: [espaceId], references: [id], onDelete: Cascade)
+
+  /// Activité (objet du dossier créé à l'attribution).
+  title        String  @db.VarChar(160)
+  participants Int?
+  description  String?
+  /// Jour ISO (1 = lundi … 7 = dimanche) et minutes depuis minuit, heure de Paris.
+  weekday      Int
+  startMin     Int     @map("start_min")
+  endMin       Int     @map("end_min")
+  horsVacances Boolean @default(true) @map("hors_vacances")
+
+  /// en_attente | attribue | refuse
+  status       String    @default("en_attente") @db.VarChar(12)
+  decisionNote String?   @map("decision_note")
+  decidedAt    DateTime? @map("decided_at") @db.Timestamptz
+  decidedBy    String?   @map("decided_by") @db.VarChar(160)
+  /// Décision communiquée au demandeur (courriel groupé de la campagne).
+  notifiedAt   DateTime? @map("notified_at") @db.Timestamptz
+  reservationId Int?        @unique @map("reservation_id")
+  reservation   Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([campagneId, espaceId, weekday])
+  @@index([organisationId])
+  @@map("voeu")
 }
 
 // ============================================================

@@ -91,7 +91,7 @@ Lecture des champs : `champ`, `champOuNull`, `parseInt_`, `parseFloat_`, `parseD
 `user.canView(cat)` / `canEdit(cat)` / `canDelete(cat)` / `isAdmin` / `isAgent` / `isUsager` /
 `gereEspace(espaceId)` (périmètre d'un agent) ; catégories : reservations, planning, espaces, materiel,
 usagers, messages, paiements, subventions, equipe. Modules débrayables (`page.features.x`) : portail,
-inscription, paiements, signature, materiel, subventions, documents. Un usager (portail) utilise
+inscription, paiements, signature, materiel, subventions, documents, campagnes. Un usager (portail) utilise
 `contexteUsager()` (src/server/page.ts) et ne voit que `whereUsager(user)` (src/server/reservations.ts).
 
 ## Services métier (src/server)
