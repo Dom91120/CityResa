@@ -3157,6 +3157,31 @@ async function creerReservations(ctx: Contexte): Promise<Map<ReservationStatus, 
   return parStatut;
 }
 
+/**
+ * La caution d'un dossier acquis entre dans son cycle, comme à l'acceptation dans
+ * l'application : attendue, ou encaissée quand sa facture de caution est payée.
+ */
+async function cyclerCautions(): Promise<void> {
+  await prisma.reservation.updateMany({
+    where: {
+      caution: { gt: 0 },
+      cautionStatus: "aucune",
+      status: { in: ["acceptee", "signee", "confirmee"] },
+    },
+    data: { cautionStatus: "attendue" },
+  });
+  const payees = await prisma.facture.findMany({
+    where: { type: "caution", status: "payee", reservation: { cautionStatus: "attendue" } },
+    select: { reservationId: true, paidAt: true },
+  });
+  for (const f of payees)
+    if (f.reservationId)
+      await prisma.reservation.update({
+        where: { id: f.reservationId },
+        data: { cautionStatus: "encaissee", cautionEncaisseeAt: f.paidAt ?? new Date() },
+      });
+}
+
 async function creerSubventions(ctx: Contexte): Promise<void> {
   console.log("→ Demandes de subvention…");
   const pierre = ctx.agents.get("pierre");
@@ -3536,6 +3561,7 @@ async function main(): Promise<void> {
     tva: cfg.TVA_TAUX || 0,
   };
   const parStatut = await creerReservations(ctx);
+  await cyclerCautions();
   await creerSubventions(ctx);
   await creerNotificationsEtJournal(ctx, parStatut);
 

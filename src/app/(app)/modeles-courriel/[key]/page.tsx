@@ -117,8 +117,8 @@ export default async function ModeleCourrielPage({ params }: { params: Promise<{
               ))}
             </div>
             <p className="small text-muted mb-0">
-              Déduites de la graine du modèle. Une variable absente est remplacée par une chaîne
-              vide à l'envoi.
+              Déduites du texte d'origine du modèle. Une variable absente est remplacée par une
+              chaîne vide à l'envoi.
             </p>
           </Section>
 
@@ -153,7 +153,7 @@ export default async function ModeleCourrielPage({ params }: { params: Promise<{
                     disabled={!personnalise}
                     data-confirm="Remplacer le sujet et le corps par le texte d'origine ?"
                   >
-                    <Icone nom="rotate-ccw" taille={14} /> Rétablir la graine
+                    <Icone nom="rotate-ccw" taille={14} /> Rétablir le texte d'origine
                   </button>
                 </form>
               ) : null}

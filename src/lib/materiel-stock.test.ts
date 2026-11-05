@@ -5,6 +5,7 @@ import {
   disponible,
   echeanceControle,
   etatLigne,
+  picMobilisation,
   stockUtilisable,
   verifierPanne,
   verifierRemise,
@@ -95,5 +96,39 @@ describe("contrôles périodiques", () => {
     expect(decrireControle({ ...ok, controleMois: null }, fmt, now)).toBe(
       "Pas de contrôle périodique.",
     );
+  });
+});
+
+describe("pic de mobilisation", () => {
+  const h = (heure: number, jour = "2027-01-09") =>
+    new Date(`${jour}T${String(heure).padStart(2, "0")}:00:00Z`);
+  it("additionne seulement les dossiers qui se recouvrent", () => {
+    expect(
+      picMobilisation([
+        { debut: h(8), fin: h(12), quantite: 100 },
+        { debut: h(10), fin: h(14), quantite: 50 },
+        { debut: h(8, "2027-02-01"), fin: h(12, "2027-02-01"), quantite: 200 },
+      ]),
+    ).toBe(200);
+  });
+  it("ne cumule pas deux dossiers bout à bout", () => {
+    expect(
+      picMobilisation([
+        { debut: h(8), fin: h(12), quantite: 30 },
+        { debut: h(12), fin: h(16), quantite: 40 },
+      ]),
+    ).toBe(40);
+  });
+  it("cumule trois dossiers simultanés", () => {
+    expect(
+      picMobilisation([
+        { debut: h(8), fin: h(18), quantite: 10 },
+        { debut: h(9), fin: h(11), quantite: 20 },
+        { debut: h(10), fin: h(12), quantite: 5 },
+      ]),
+    ).toBe(35);
+  });
+  it("vaut 0 sans dossier", () => {
+    expect(picMobilisation([])).toBe(0);
   });
 });

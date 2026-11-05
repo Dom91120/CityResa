@@ -114,7 +114,7 @@ export default async function MaterielFichePage({ params }: { params: Promise<{ 
           </div>
         </div>
         <div className="stat-card">
-          <div className="stat-label">Mobilisé (dossiers en cours)</div>
+          <div className="stat-label">Mobilisé au plus fort (à venir)</div>
           <div className="stat-number">{mob}</div>
         </div>
         <div className="stat-card">

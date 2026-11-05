@@ -82,7 +82,7 @@ export default async function ModelesCourrielPage() {
                     <a href={`/modeles-courriel/${r.key}`} className="cell2">
                       <strong>{r.label}</strong>
                       <small>
-                        <code>{r.key}</code> · modèle sans graine
+                        <code>{r.key}</code> · pas de texte d'origine
                       </small>
                     </a>
                   </td>

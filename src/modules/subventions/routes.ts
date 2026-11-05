@@ -11,6 +11,8 @@ import {
   lireSubvention,
   lireTransition,
   modifierSubvention,
+  peutDecider,
+  REFUS_ELU,
   supprimerSubvention,
 } from "@/modules/subventions/server";
 import { UserFacingError } from "@/server/errors";
@@ -39,6 +41,7 @@ export async function deposer(user: CurrentUser, form: FormData): Promise<Respon
 /** POST /subventions/[id]/modifier */
 export async function modifier(user: CurrentUser, id: number, form: FormData): Promise<Response> {
   try {
+    if (!peutDecider(user)) throw new UserFacingError(REFUS_ELU);
     await modifierSubvention(id, lireSubvention(form), user);
     return redirigerAvecMessage(`/subventions/${id}`, "Demande modifiée.", "success");
   } catch (e) {
@@ -61,6 +64,7 @@ export async function avis(user: CurrentUser, id: number, form: FormData): Promi
 export async function statut(user: CurrentUser, id: number, form: FormData): Promise<Response> {
   const retour = suite(form, `/subventions/${id}`);
   try {
+    if (!peutDecider(user)) throw new UserFacingError(REFUS_ELU);
     const { statut: nouveau, opts } = lireTransition(form);
     const s = await changerStatutSubvention(id, nouveau, user, opts);
     const messages: Record<string, string> = {

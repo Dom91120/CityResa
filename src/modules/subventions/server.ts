@@ -96,6 +96,17 @@ export function estModifiable(s: { status: string }): boolean {
   return !STATUTS_CLOS.includes(s.status);
 }
 
+/**
+ * Les élus donnent un avis ; instruire, modifier, voter, refuser et verser reviennent aux
+ * agents qui ont l'écriture sur les subventions.
+ */
+export function peutDecider(user: Pick<CurrentUser, "canEdit" | "role">): boolean {
+  return user.canEdit("subventions") && user.role !== "elu";
+}
+
+export const REFUS_ELU =
+  "Les élus donnent un avis ; la décision et le suivi sont enregistrés par les agents.";
+
 export function avisOuvert(s: { status: string }): boolean {
   return ["deposee", "instruction", "avis"].includes(s.status);
 }
