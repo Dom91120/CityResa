@@ -1,10 +1,16 @@
-import { decrireRecurrence, developperRecurrence, verifierRegles } from "@/lib/creneaux";
+import {
+  decrireRecurrence,
+  developperRecurrence,
+  reglesAuCreneau,
+  verifierRegles,
+} from "@/lib/creneaux";
 import { plage } from "@/lib/libelles";
 import { lireDemande } from "@/modules/reservations/formulaire";
 import { joursExclus } from "@/server/calendrier";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
 import { getCurrentUser } from "@/server/guards";
+import { horairesSaisonDe } from "@/server/horaires";
 import { json, verifierCsrf } from "@/server/http";
 import { deviser, verifierDisponibilite } from "@/server/reservations";
 
@@ -33,8 +39,11 @@ export async function POST(req: Request) {
       await joursExclus(d.premier, d.recurrence),
     );
     const erreurs = new Set<string>();
+    const periodes = await horairesSaisonDe(espace.id);
     for (const c of creneaux.slice(0, 50))
-      for (const e of verifierRegles(espace, c, new Date(), { ignorerDelai: d.ignorerDelai }))
+      for (const e of verifierRegles(reglesAuCreneau(espace, periodes, c), c, new Date(), {
+        ignorerDelai: d.ignorerDelai,
+      }))
         erreurs.add(e);
     const excl = Number(form.get("reservation_id")) || null;
     const conflits = (await verifierDisponibilite(espace, creneaux, excl))

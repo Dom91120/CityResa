@@ -16,6 +16,7 @@ import { Avatar, Chip } from "@/components/macros";
 import type { Espace, Referential } from "@/generated/prisma/client";
 import { COULEURS_ESPACE, ESPACE_STATUS, JOURS_ISO } from "@/lib/constantes";
 import { HORAIRES_DEFAUT, lireHoraires } from "@/lib/creneaux";
+import type { SaisonHoraires } from "@/server/horaires";
 
 /** La pastille de statut d'un espace (un espace désactivé est toujours « Inactif »). */
 export function StatutEspace({ status, isActive }: { status: string; isActive: boolean }) {
@@ -133,12 +134,22 @@ export function Volet({
   );
 }
 
-/** La grille des horaires d'ouverture (une plage par jour + case « Fermé »). */
-function GrilleHoraires({ openHours }: { openHours: unknown }) {
+/** La grille des horaires d'ouverture (une plage par jour + case « Fermé »). `prefixe` : grille d'une saison. */
+function GrilleHoraires({
+  openHours,
+  prefixe = "",
+  titre = "Horaires d'ouverture",
+  aide = true,
+}: {
+  openHours: unknown;
+  prefixe?: string;
+  titre?: string | null;
+  aide?: boolean;
+}) {
   const h = lireHoraires(openHours) ?? HORAIRES_DEFAUT;
   return (
     <div style={{ gridColumn: "1 / -1" }}>
-      <div className="form-label">Horaires d'ouverture</div>
+      {titre ? <div className="form-label">{titre}</div> : null}
       <div className="horaires-grille">
         <span className="jour text-muted">Jour</span>
         <span className="small text-muted">Ouverture</span>
@@ -156,14 +167,52 @@ function GrilleHoraires({ openHours }: { openHours: unknown }) {
               ouv={ouv}
               ferm={ferm}
               ferme={ferme}
+              prefixe={prefixe}
             />
           );
         })}
       </div>
-      <div className="form-text">
-        Une plage par jour. Une fermeture à 00:00 signifie minuit. Les demandes hors horaires sont
-        refusées.
+      {aide ? (
+        <div className="form-text">
+          Une plage par jour. Une fermeture à 00:00 signifie minuit. Les demandes hors horaires sont
+          refusées.
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * Les horaires particuliers par saison : pour chaque saison en cours ou à venir, un
+ * interrupteur et, s'il est coché, une grille propre à la saison (sinon ceux de l'espace).
+ */
+function HorairesSaisons({ saisons, base }: { saisons: SaisonHoraires[]; base: unknown }) {
+  if (!saisons.length) return null;
+  return (
+    <div style={{ gridColumn: "1 / -1" }}>
+      <div className="form-label">Horaires particuliers par saison</div>
+      <div className="form-text mb-2">
+        Pendant une saison cochée, ces horaires remplacent ceux de l'espace (période scolaire plus
+        longue, été réduit…). Les saisons se gèrent dans Administration › Calendrier des saisons.
       </div>
+      {saisons.map((s) => (
+        <div key={s.id} className="mb-2">
+          <Interrupteur
+            label={`Saison ${s.label}`}
+            name={`saison_${s.id}_actif`}
+            coche={s.openHours !== null}
+            attrs={{ "data-recurrence": `#horaires-saison-${s.id}` }}
+          />
+          <div id={`horaires-saison-${s.id}`} className="ms-4 mt-1">
+            <GrilleHoraires
+              openHours={s.openHours ?? base}
+              prefixe={`s${s.id}_`}
+              titre={null}
+              aide={false}
+            />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -174,22 +223,24 @@ function HoraireLigne({
   ouv,
   ferm,
   ferme,
+  prefixe = "",
 }: {
   iso: number;
   jour: string;
   ouv: string;
   ferm: string;
   ferme: boolean;
+  prefixe?: string;
 }) {
   return (
     <>
-      <label className="jour" htmlFor={`f-ouv_${iso}`}>
+      <label className="jour" htmlFor={`f-${prefixe}ouv_${iso}`}>
         {jour}
       </label>
       <input
         type="time"
-        name={`ouv_${iso}`}
-        id={`f-ouv_${iso}`}
+        name={`${prefixe}ouv_${iso}`}
+        id={`f-${prefixe}ouv_${iso}`}
         className="form-control form-control-sm"
         defaultValue={ouv}
         step={300}
@@ -197,8 +248,8 @@ function HoraireLigne({
       />
       <input
         type="time"
-        name={`ferm_${iso}`}
-        id={`f-ferm_${iso}`}
+        name={`${prefixe}ferm_${iso}`}
+        id={`f-${prefixe}ferm_${iso}`}
         className="form-control form-control-sm"
         defaultValue={ferm}
         step={300}
@@ -207,8 +258,8 @@ function HoraireLigne({
       <div className="form-check m-0">
         <input
           type="checkbox"
-          name={`ferme_${iso}`}
-          id={`f-ferme_${iso}`}
+          name={`${prefixe}ferme_${iso}`}
+          id={`f-${prefixe}ferme_${iso}`}
           className="form-check-input"
           defaultChecked={ferme}
           aria-label={`${jour} : fermé`}
@@ -255,6 +306,7 @@ export function FormulaireEspace({
   natures,
   profils,
   siteParDefaut,
+  saisons = [],
 }: {
   espace: Espace | null;
   action: string;
@@ -264,6 +316,8 @@ export function FormulaireEspace({
   natures: Referential[];
   profils: Referential[];
   siteParDefaut?: number | null;
+  /** Les saisons en cours ou à venir, avec leurs horaires particuliers éventuels. */
+  saisons?: SaisonHoraires[];
 }) {
   return (
     <form method="POST" id="form-principal" action={action} data-double-envoi>
@@ -389,6 +443,7 @@ export function FormulaireEspace({
       >
         <Grille colonnes={4}>
           <GrilleHoraires openHours={espace?.openHours} />
+          <HorairesSaisons saisons={saisons} base={espace?.openHours} />
           <Champ
             label="Pas des créneaux (min)"
             name="slot_step_min"

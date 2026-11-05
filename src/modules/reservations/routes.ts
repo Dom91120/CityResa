@@ -5,18 +5,20 @@
  * (`user.gereEspace`) et transforme toute UserFacingError en message flash.
  */
 import { RESERVATION_STATUS, type ReservationStatus } from "@/lib/constantes";
-import { verifierRegles } from "@/lib/creneaux";
+import { reglesAuCreneau, verifierRegles } from "@/lib/creneaux";
 import { champ, champOuNull, coche, idOuNull, parseInt_ } from "@/lib/forms-util";
 import { montant, plage } from "@/lib/libelles";
 import { lirePortee, phraseDeplacement } from "@/lib/serie";
 import { lireChoix, lireCreneau, lireDemande } from "@/modules/reservations/formulaire";
 import { auditRecord } from "@/server/audit";
+import { courrielAvenantASigner, libelleAvenant, signerAvenantPapier } from "@/server/avenant";
 import { genererConvention } from "@/server/convention";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
 import { creerFacture } from "@/server/factures";
 import { enabledIn } from "@/server/features";
 import { type CurrentUser, requireAdmin, requireEdit } from "@/server/guards";
+import { horairesSaisonDe } from "@/server/horaires";
 import { pasTrouve, redirigerAvecMessage } from "@/server/http";
 import { invalidateNavCounts } from "@/server/nav";
 import { notifier } from "@/server/notifications";
@@ -260,7 +262,8 @@ async function assigner({ user, r, fiche }: Contexte, form: FormData): Promise<R
 
 async function ajouterCreneau({ user, r, fiche }: Contexte, form: FormData): Promise<Response> {
   const i = lireCreneau(form);
-  const erreurs = verifierRegles(r.espace, i, new Date(), { ignorerDelai: true });
+  const regles = reglesAuCreneau(r.espace, await horairesSaisonDe(r.espaceId), i);
+  const erreurs = verifierRegles(regles, i, new Date(), { ignorerDelai: true });
   if (erreurs.length) throw new UserFacingError(erreurs.join(" "));
   const conflits = await verifierDisponibilite(r.espace, [i], r.id);
   if (conflits.length)
@@ -317,18 +320,55 @@ async function modifierCreneau(
     const suite =
       b.convention === "regeneree"
         ? " La convention a été régénérée."
-        : b.convention === "signee"
-          ? " La convention signée ne reflète plus ces horaires : prévoyez un avenant."
+        : b.convention === "avenant"
+          ? " La convention était signée : un avenant a été édité et envoyé à l'usager pour signature."
           : "";
     return redirigerAvecMessage(
       fiche,
       `${phraseDeplacement(b.nb, portee, prevenir)}${suite}`,
-      b.convention === "signee" ? "warning" : "success",
+      "success",
     );
   } catch (e) {
     if (e instanceof UserFacingError) return redirigerAvecMessage(page, e.message, "danger");
     throw e;
   }
+}
+
+/** Relance l'usager pour la signature d'un avenant (courriel, PDF joint). */
+async function relancerAvenant({ user, r, fiche }: Contexte, aid: number): Promise<Response> {
+  const a = r.avenants.find((x) => x.id === aid);
+  if (!a) return pasTrouve();
+  if (a.signedAt) throw new UserFacingError("Cet avenant est déjà signé.");
+  const to = r.user?.email ?? r.organisation?.email;
+  if (!to) throw new UserFacingError("Aucune adresse de courriel connue pour l'usager.");
+  await courrielAvenantASigner(r, a);
+  await historiser(
+    r.id,
+    `Relance pour signature (avenant ${libelleAvenant(a)})`,
+    `courriel à ${to}`,
+    user.name,
+  );
+  return redirigerAvecMessage(fiche, `Relance envoyée à ${to}.`, "success");
+}
+
+/** Un agent enregistre la signature papier d'un avenant. */
+async function avenantPapier(
+  { user, r, fiche }: Contexte,
+  aid: number,
+  form: FormData,
+): Promise<Response> {
+  const a = await signerAvenantPapier(r.id, aid, champ(form, "signer_name"), user.name);
+  await auditRecord(
+    "signature avenant (papier)",
+    `${r.numero} avenant ${libelleAvenant(a)} par ${a.signerName}`,
+    "reservations",
+    user.email,
+  );
+  return redirigerAvecMessage(
+    fiche,
+    `Avenant ${libelleAvenant(a)} marqué signé par ${a.signerName}.`,
+    "success",
+  );
 }
 
 async function regenererConvention({ user, r, fiche }: Contexte): Promise<Response> {
@@ -465,6 +505,12 @@ export async function actionReservation(
           if (!cid) return pasTrouve();
           if (segments[2] === "annuler") return await annulerCreneau(ctx, cid);
           if (segments[2] === "modifier") return await modifierCreneau(ctx, cid, form);
+        }
+        if (segments[0] === "avenants" && segments.length === 3) {
+          const aid = parseInt_(segments[1], null, 1);
+          if (!aid) return pasTrouve();
+          if (segments[2] === "relancer") return await relancerAvenant(ctx, aid);
+          if (segments[2] === "signature-manuelle") return await avenantPapier(ctx, aid, form);
         }
         return pasTrouve();
       }

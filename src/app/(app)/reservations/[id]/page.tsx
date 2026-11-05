@@ -209,7 +209,7 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
               peutSupprimer={user.canDelete("reservations")}
             />
           ) : null}
-          <SectionConvention r={r} features={features} />
+          <SectionConvention r={r} features={features} csrf={csrf} peutDecider={peutDecider} />
           {features.paiements && user.canView("paiements") ? (
             <SectionFactures
               r={r}

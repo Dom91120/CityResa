@@ -6,6 +6,7 @@
 import { Blason } from "@/components/blason";
 import { Champ, Grille, Interrupteur, Select, Zone } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
+import { lireReglePieces, REGLES_PIECES } from "@/lib/pieces";
 import { colorMix, contraste, normalizeColor } from "@/lib/theming";
 import type { AppSettings } from "@/server/config-store";
 import { FEATURES, type FeatureName } from "@/server/features";
@@ -201,6 +202,14 @@ export function VoletReservations({ cfg }: { cfg: AppSettings }) {
           min={0}
           valeur={cfg.ALERTE_PIECES_JOURS}
           aide="Une pièce datée (assurance…) qui expire dans ce délai apparaît dans les alertes et l'usager est prévenu par courriel."
+        />
+        <Select
+          label="Pièces attendues manquantes ou expirées"
+          name="PIECES_REGLE"
+          valeur={lireReglePieces(cfg.PIECES_REGLE)}
+          options={REGLES_PIECES.map((o) => [o.value, o.label])}
+          aide="Statuts et assurance pour une association, assurance pour une entreprise ou un particulier. Un dossier déjà accepté n'est jamais remis en cause."
+          pleine
         />
       </Grille>
       <div className="d-flex flex-column gap-2 mt-2 mb-3">

@@ -274,18 +274,34 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
                 </ul>
               </Section>
               <Section titre="Horaires d'ouverture" icone="calendar-clock">
-                <table className="table">
-                  <tbody>
-                    {horairesTableau(e.openHours).map((h) => (
-                      <tr key={h.jour}>
-                        <td className="fw-medium" style={{ width: 120 }}>
-                          {h.jour}
-                        </td>
-                        <td className={h.plages === "Fermé" ? "text-muted" : ""}>{h.plages}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                {[
+                  {
+                    cle: "base",
+                    titre: e.horairesSaisons.length ? "Hors saison particulière" : null,
+                    json: e.openHours,
+                  },
+                  ...e.horairesSaisons.map((h) => ({
+                    cle: `s${h.id}`,
+                    titre: `Saison ${h.saison.label}`,
+                    json: h.openHours,
+                  })),
+                ].map((bloc) => (
+                  <div key={bloc.cle}>
+                    {bloc.titre ? <div className="form-label mt-2">{bloc.titre}</div> : null}
+                    <table className="table">
+                      <tbody>
+                        {horairesTableau(bloc.json).map((h) => (
+                          <tr key={h.jour}>
+                            <td className="fw-medium" style={{ width: 120 }}>
+                              {h.jour}
+                            </td>
+                            <td className={h.plages === "Fermé" ? "text-muted" : ""}>{h.plages}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ))}
               </Section>
             </div>
           </div>

@@ -7,6 +7,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import {
   RESERVATION_STATUS,
   type ReservationStatus,
+  STATUTS_FERMES,
   STATUTS_OCCUPANTS,
   TRANSITIONS,
 } from "@/lib/constantes";
@@ -16,6 +17,7 @@ import {
   developperRecurrence,
   type Intervalle,
   type Recurrence,
+  reglesAuCreneau,
   utiliseCalendrier,
   verifierRegles,
 } from "@/lib/creneaux";
@@ -29,10 +31,12 @@ import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
 import { enabledIn } from "@/server/features";
 import type { CurrentUser } from "@/server/guards";
-import { envoyerDepuisModele } from "@/server/mailer";
+import { horairesSaisonDe } from "@/server/horaires";
+import { type Attachment, envoyerDepuisModele } from "@/server/mailer";
 import { invalidateNavCounts } from "@/server/nav";
 import { notifier, notifierAgents } from "@/server/notifications";
 import { prochainNumero } from "@/server/numerotation";
+import { verifierPieces } from "@/server/pieces";
 
 export const INCLUDE_RESERVATION = {
   espace: { include: { site: true, parent: true, enfants: true } },
@@ -44,6 +48,7 @@ export const INCLUDE_RESERVATION = {
   options: { include: { option: true } },
   materiels: { include: { materiel: true } },
   factures: { include: { paiements: true }, orderBy: { createdAt: "asc" as const } },
+  avenants: { orderBy: { numero: "asc" as const } },
 } satisfies Prisma.ReservationInclude;
 
 export type ReservationComplete = Prisma.ReservationGetPayload<{
@@ -263,8 +268,11 @@ export async function creerReservation(
         ? "Aucun créneau à réserver : toutes les dates tombent pendant les vacances ou un jour férié."
         : "Aucun créneau à réserver.",
     );
+  const periodes = await horairesSaisonDe(espace.id);
   for (const c of creneaux) {
-    const erreurs = verifierRegles(espace, c, now, { ignorerDelai: e.ignorerDelai });
+    const erreurs = verifierRegles(reglesAuCreneau(espace, periodes, c), c, now, {
+      ignorerDelai: e.ignorerDelai,
+    });
     if (erreurs.length)
       throw new UserFacingError(`${dateMoyenne(c.startAt)} : ${erreurs.join(" ")}`);
   }
@@ -317,6 +325,7 @@ export async function creerReservation(
         throw new UserFacingError(
           `Votre dossier est incomplet pour déposer une demande. ${phraseManques(manques)}`,
         );
+      await verifierPieces(org, "depot", cfg0);
     }
     if (!e.participants) throw new UserFacingError("Indiquez le nombre de participants prévus.");
   }
@@ -346,6 +355,9 @@ export async function creerReservation(
   const numero = await prochainNumero("RES");
   const statut: ReservationStatus =
     e.statutInitial ?? (espace.requiresValidation ? "a_traiter" : "confirmee");
+  // Un dossier acquis d'emblée (saisie d'un agent, espace sans validation) obéit à la règle des pièces.
+  if (org && e.source === "backoffice" && STATUTS_FERMES.includes(statut))
+    await verifierPieces(org, "acceptation", cfg);
   const [opts, mats] = await Promise.all([
     e.options.length
       ? prisma.option.findMany({ where: { id: { in: e.options.map((o) => o.optionId) } } })
@@ -480,6 +492,7 @@ export async function courrielUsager(
   r: ReservationComplete,
   key: string,
   extra: Record<string, string> = {},
+  attachments?: Attachment[],
 ): Promise<void> {
   const to = r.user?.email ?? r.organisation?.email;
   if (!to) return;
@@ -490,7 +503,7 @@ export async function courrielUsager(
       key,
       to,
       { ...(await variablesDossier(r)), ...extra },
-      { reservationId: r.id },
+      { reservationId: r.id, attachments },
     );
   }
   if (r.userId) {
@@ -505,6 +518,8 @@ export async function courrielUsager(
       reservation_signee: `Convention ${r.numero} signée`,
       fermeture_exceptionnelle: `Fermeture de ${r.espace.name} : ${r.numero} concerné`,
       creneaux_modifies: `Réservation ${r.numero} : nouveaux horaires`,
+      avenant_a_signer: `Avenant à signer pour ${r.numero}`,
+      avenant_signe: `Avenant de ${r.numero} signé`,
     };
     if (titres[key])
       await notifier(
@@ -579,6 +594,8 @@ export async function changerStatut(
       throw new UserFacingError(
         `Impossible d'accepter : ${plage(c[0].demande.startAt, c[0].demande.endAt)} est déjà occupé par « ${c[0].existant.libelle} ».`,
       );
+    if (r.organisation && !opts.parSysteme)
+      await verifierPieces(r.organisation, "acceptation", cfg);
   }
   // Acceptée sans signature électronique ni paiement attendu → directement confirmée.
   let effectif = nouveau;

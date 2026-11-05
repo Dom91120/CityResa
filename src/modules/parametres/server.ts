@@ -3,6 +3,7 @@
  * depuis son formulaire (booléens non cochés → "false", secret vide → inchangé).
  */
 import { coche } from "@/lib/forms-util";
+import { lireReglePieces } from "@/lib/pieces";
 import { normalizeColor } from "@/lib/theming";
 import { BOOL_KEYS, FLOAT_KEYS, INT_KEYS, SECRET_KEYS } from "@/server/config-store";
 import { FEATURES, type FeatureName } from "@/server/features";
@@ -56,6 +57,7 @@ export const ONGLETS: Onglet[] = [
       "RELANCE_SIGNATURE_JOURS",
       "SIGNATURE_VALIDITE_HEURES",
       "ALERTE_PIECES_JOURS",
+      "PIECES_REGLE",
       "RAPPEL_J7",
       "RAPPEL_J1",
       "AGENTS_NOTIFIES",
@@ -127,6 +129,10 @@ export function lireOnglet(form: FormData, o: Onglet): Record<string, string> {
     }
     if (key === "SMS_PROVIDER") {
       maj[key] = v === "http" ? "http" : "console";
+      continue;
+    }
+    if (key === "PIECES_REGLE") {
+      maj[key] = lireReglePieces(v);
       continue;
     }
     maj[key] = v;

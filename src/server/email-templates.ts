@@ -121,6 +121,33 @@ export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
     aide: "Envoyé à l'usager quand un agent déplace un ou plusieurs créneaux de son dossier. {{modifications}} liste les anciens et nouveaux horaires, {{suite}} dit si le montant change.",
   },
   {
+    key: "avenant_a_signer",
+    label: "Avenant à signer (usager)",
+    subject: "Avenant {{avenant}} à votre convention {{numero}}",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>Les créneaux de votre réservation <strong>{{numero}}</strong> ({{titre}}, {{espace}}) ont changé après la signature de la convention. L\'avenant {{avenant}} ci-joint formalise cette modification : {{objet}}.</p><p>{{suite}}</p><p>Votre dossier : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Envoyé avec le PDF de l'avenant quand les créneaux d'une convention signée sont modifiés, puis en relance. {{objet}} décrit la modification, {{suite}} explique comment signer.",
+  },
+  {
+    key: "avenant_code",
+    label: "Code de signature d'un avenant (usager)",
+    subject: "Votre code de signature : {{code}}",
+    body:
+      "<p>Bonjour {{prenom}},</p><p>Votre code pour signer l'avenant {{avenant}} à la convention <strong>{{numero}}</strong> est : <strong style=\"font-size:1.4em;letter-spacing:.2em\">{{code}}</strong></p><p>Il est valable {{validite}}. Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.</p>" +
+      SIGNATURE,
+    aide: "Code à usage unique pour un avenant, envoyé par courriel si le SMS n'est pas disponible.",
+  },
+  {
+    key: "avenant_signe",
+    label: "Avenant signé (usager)",
+    subject: "Avenant {{avenant}} à la convention {{numero}} signé",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>L\'avenant {{avenant}} à la convention <strong>{{numero}}</strong> est signé le {{date_signature}}. Le document signé est disponible dans votre dossier : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Confirmation envoyée après la signature d'un avenant, en ligne ou sur papier.",
+  },
+  {
     key: "message_recu",
     label: "Nouveau message",
     subject: "Nouveau message sur la réservation {{numero}}",

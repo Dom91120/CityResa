@@ -300,6 +300,7 @@ export const DOCUMENT_KINDS: Record<string, string> = {
   plan: "Plan",
   piece: "Pièce justificative",
   convention: "Convention",
+  avenant: "Avenant",
   facture: "Facture",
   statuts: "Statuts",
   assurance: "Attestation d'assurance",
