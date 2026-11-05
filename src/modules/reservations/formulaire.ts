@@ -103,6 +103,7 @@ export function lireDemande(form: FormData, ctx: LectureDemande): DemandeEntree 
     userId: ctx.userId,
     source: ctx.source,
     gratuit: ctx.agent ? coche(form, "gratuit") : false,
+    gratuitMotif: ctx.agent ? champOuNull(form, "gratuit_motif") : null,
     ignorerDelai: ctx.agent ? coche(form, "ignorer_delai") : false,
     statutInitial:
       ctx.agent && (statut === "confirmee" || statut === "a_traiter" || statut === "acceptee")

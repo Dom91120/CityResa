@@ -17,7 +17,7 @@ import { VideBloc } from "@/components/liste";
 import { Avatar, Chip, OuiNon, PastilleEspace, StatutResa } from "@/components/macros";
 import { OPTION_UNITES, TARIF_UNITES } from "@/lib/constantes";
 import { dateCourte, montantOuGratuit, plage } from "@/lib/libelles";
-import { aPartirDe } from "@/lib/tarification";
+import { aPartirDe, grilleEnVigueur } from "@/lib/tarification";
 import {
   agentsDisponibles,
   chargerEspace,
@@ -42,6 +42,7 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
   const id = idDeRoute((await params).id);
   const e = await chargerEspace(id);
   if (!e) notFound();
+  const enVigueur = new Set(grilleEnVigueur(e.tarifs, new Date()).map((t) => t.id));
   const [photos, refs, prochains, blocages, occupation] = await Promise.all([
     forParent("espace", id, { kinds: ["photo"] }),
     referentielsEspaces(),
@@ -424,12 +425,14 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
                       <th>Unité</th>
                       <th className="text-end">Montant</th>
                       <th>Libellé</th>
+                      <th>En vigueur</th>
+                      <th>Délibération</th>
                       <th />
                     </tr>
                   </thead>
                   <tbody>
                     {e.tarifs.map((t) => (
-                      <tr key={t.id}>
+                      <tr key={t.id} className={enVigueur.has(t.id) ? undefined : "text-muted"}>
                         <td>
                           {t.profil ? (
                             <Chip teinte="violet">{t.profil.label}</Chip>
@@ -442,6 +445,17 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
                           {montantOuGratuit(t.montant)}
                         </td>
                         <td>{t.label ?? <span className="text-faint">—</span>}</td>
+                        <td className="text-nowrap">
+                          {t.validFrom ? `dès le ${dateCourte(t.validFrom)}` : "depuis toujours"}{" "}
+                          {enVigueur.has(t.id) ? (
+                            <Chip teinte="emerald">En vigueur</Chip>
+                          ) : t.validFrom && t.validFrom > new Date() ? (
+                            <Chip teinte="amber">À venir</Chip>
+                          ) : (
+                            <Chip teinte="slate">Remplacé</Chip>
+                          )}
+                        </td>
+                        <td>{t.deliberation ?? <span className="text-faint">—</span>}</td>
                         <td className="actions">
                           {peutEditer ? (
                             <form method="POST" action={`${fiche}/tarifs`} className="d-inline">
@@ -995,6 +1009,19 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
                 valeur={0}
               />
               <Champ label="Libellé" name="label" id="tarif-label" placeholder="facultatif" />
+              <Champ
+                label="Date d'effet"
+                name="valid_from"
+                id="tarif-valid-from"
+                type="date"
+                aide="Vide = applicable dès maintenant. Une date future prépare la grille de l'année suivante : elle s'applique aux créneaux à partir de ce jour."
+              />
+              <Champ
+                label="Délibération"
+                name="deliberation"
+                id="tarif-deliberation"
+                placeholder="Ex. : DEL-2026-042 du 15/06/2026"
+              />
             </Grille>
           </ModalAction>
 

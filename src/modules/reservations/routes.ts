@@ -107,7 +107,12 @@ async function appliquerChoix(
   options: { id: number; quantite: number }[],
   materiels: { id: number; quantite: number }[],
   gratuit: boolean,
+  gratuitMotif: string | null = null,
 ): Promise<void> {
+  if (gratuit && !gratuitMotif?.trim())
+    throw new UserFacingError(
+      "Indiquez le fondement de la gratuité (délibération, convention, intérêt général…).",
+    );
   const [opts, mats] = await Promise.all([
     options.length
       ? prisma.option.findMany({ where: { id: { in: options.map((o) => o.id) } } })
@@ -141,7 +146,7 @@ async function appliquerChoix(
         }),
       ),
   ]);
-  const devis = await recalculerMontants(r.id, gratuit);
+  const devis = await recalculerMontants(r.id, gratuit, gratuitMotif);
   await Promise.all([
     ...opts.map((o) =>
       prisma.reservationOption.updateMany({
@@ -218,6 +223,7 @@ async function statut({ user, r, fiche }: Contexte, form: FormData): Promise<Res
       lireChoix(form, "option"),
       lireChoix(form, "materiel"),
       coche(form, "gratuit"),
+      champOuNull(form, "gratuit_motif"),
     );
   }
   const maj = await changerStatut(r.id, nouveau, user, {

@@ -363,6 +363,11 @@ model Tarif {
   montant  Float        @default(0)
   label    String?      @db.VarChar(120)
   position Int          @default(0)
+  /// Date d'effet (grille votée) ; vide = applicable depuis toujours. À la date d'occupation,
+  /// la ligne en vigueur est la plus récente dont la date d'effet est atteinte.
+  validFrom DateTime? @map("valid_from") @db.Date
+  /// Référence de la délibération qui a voté ce tarif.
+  deliberation String? @db.VarChar(120)
 
   @@index([espaceId])
   @@map("tarif")
@@ -588,6 +593,8 @@ model Reservation {
   caution    Float   @default(0)
   /// Gratuité accordée (mise à disposition à titre gracieux).
   gratuit    Boolean @default(false)
+  /// Fondement de la gratuité ou de la réduction (délibération, convention, intérêt général…).
+  gratuitMotif String? @map("gratuit_motif") @db.VarChar(300)
 
   // ── Cycle de la caution ──
   /// aucune | attendue | encaissee | restituee | retenue | retenue_a_valider

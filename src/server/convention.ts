@@ -74,7 +74,7 @@ ${creneaux.map((c) => `<tr><td>${plage(c.startAt, c.endAt)}</td><td class="num">
 </tbody></table>
 
 <h2>Conditions financières</h2>
-${r.gratuit ? "<p><strong>Mise à disposition à titre gracieux.</strong></p>" : ""}
+${r.gratuit ? `<p><strong>Mise à disposition à titre gracieux.</strong>${r.gratuitMotif ? ` Fondement : ${p(r.gratuitMotif)}.` : ""}</p>` : ""}
 <table><thead><tr><th>Désignation</th><th class="num">Qté</th><th class="num">Prix unitaire</th><th class="num">Montant</th></tr></thead><tbody>
 ${devis.lignes.map((l) => `<tr><td>${p(l.libelle)}</td><td class="num">${l.quantite}</td><td class="num">${montant(l.unitaire)}</td><td class="num">${montant(l.montant)}</td></tr>`).join("")}
 ${devis.lignes.length ? "" : `<tr><td colspan="4" class="muted">Aucune redevance.</td></tr>`}
