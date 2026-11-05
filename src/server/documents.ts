@@ -233,11 +233,11 @@ export async function deposerDocument(e: DepotEntree): Promise<Document> {
 
 /** Enregistre un PDF produit par l'application (convention, facture). */
 export async function enregistrerPdf(
-  kind: "reservation" | "subvention",
+  kind: "reservation" | "subvention" | "organisation",
   parentIdValue: number,
   filename: string,
   octets: Buffer,
-  docKind: "convention" | "facture" | "autre",
+  docKind: "convention" | "avenant" | "facture" | "attestation" | "autre",
   title?: string,
 ): Promise<Document> {
   const col = DOCUMENT_PARENTS[kind][0];
@@ -274,6 +274,17 @@ export async function peutLire(user: CurrentUser | null, doc: Document): Promise
     );
   }
   if (doc.organisationId) return doc.organisationId === user.organisationId;
+  if (doc.etatDesLieuxId) {
+    const e = await prisma.etatDesLieux.findUnique({
+      where: { id: doc.etatDesLieuxId },
+      select: { reservation: { select: { userId: true, organisationId: true } } },
+    });
+    return Boolean(
+      e &&
+        (e.reservation.userId === user.id ||
+          (user.organisationId && e.reservation.organisationId === user.organisationId)),
+    );
+  }
   if (doc.subventionId) {
     const s = await prisma.subvention.findUnique({
       where: { id: doc.subventionId },

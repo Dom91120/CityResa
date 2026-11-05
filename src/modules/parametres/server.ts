@@ -2,7 +2,9 @@
  * Paramètres : les onglets, les clés que chacun enregistre, et la lecture d'un onglet
  * depuis son formulaire (booléens non cochés → "false", secret vide → inchangé).
  */
+import { ecrireBareme, lireBareme } from "@/lib/annulation";
 import { coche } from "@/lib/forms-util";
+import { lireReglePieces } from "@/lib/pieces";
 import { normalizeColor } from "@/lib/theming";
 import { BOOL_KEYS, FLOAT_KEYS, INT_KEYS, SECRET_KEYS } from "@/server/config-store";
 import { FEATURES, type FeatureName } from "@/server/features";
@@ -42,6 +44,12 @@ export const ONGLETS: Onglet[] = [
       "PORTAIL_AFFICHER_TARIFS",
       "INSCRIPTION_ENABLED",
       "VALIDATION_COMPTE_USAGER",
+      "ACCESSIBILITE_ETAT",
+      "ACCESSIBILITE_TAUX",
+      "ACCESSIBILITE_DATE",
+      "ACCESSIBILITE_TEXTE",
+      "MENTIONS_LEGALES_TEXTE",
+      "DONNEES_PERSONNELLES_TEXTE",
     ],
   },
   {
@@ -56,8 +64,17 @@ export const ONGLETS: Onglet[] = [
       "RELANCE_SIGNATURE_JOURS",
       "SIGNATURE_VALIDITE_HEURES",
       "ALERTE_PIECES_JOURS",
+      "PIECES_REGLE",
+      "ANNULATION_BAREME",
+      "CAUTION_SEUIL_VALIDATION",
+      "CAUTION_DELAI_RESTITUTION_JOURS",
+      "OPTION_RELANCE_JOURS",
+      "VALORISATION_SEUIL_CONVENTION",
+      "VALORISATION_SEUIL_CERTIFICATION",
       "RAPPEL_J7",
       "RAPPEL_J1",
+      "PLANNING_HEBDO_ENABLED",
+      "PLANNING_HEBDO_JOUR",
       "AGENTS_NOTIFIES",
     ],
   },
@@ -90,6 +107,12 @@ export const ONGLETS: Onglet[] = [
     cles: ["DOCUMENTS_ENABLED", "DOCUMENT_MAX_MB"],
   },
   { cle: "apparence", label: "Apparence", icone: "palette", cles: ["UI_PRIMARY_COLOR"] },
+  {
+    cle: "rgpd",
+    label: "Données personnelles",
+    icone: "shield-check",
+    cles: ["RGPD_INACTIVITE_MOIS", "RGPD_PREAVIS_JOURS", "RGPD_CONSERVATION_ANNEES"],
+  },
   { cle: "sauvegardes", label: "Sauvegardes", icone: "database", cles: ["BACKUP_DB_KEEP"] },
 ];
 
@@ -127,6 +150,14 @@ export function lireOnglet(form: FormData, o: Onglet): Record<string, string> {
     }
     if (key === "SMS_PROVIDER") {
       maj[key] = v === "http" ? "http" : "console";
+      continue;
+    }
+    if (key === "PIECES_REGLE") {
+      maj[key] = lireReglePieces(v);
+      continue;
+    }
+    if (key === "ANNULATION_BAREME") {
+      maj[key] = ecrireBareme(lireBareme(v));
       continue;
     }
     maj[key] = v;

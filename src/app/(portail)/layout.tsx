@@ -3,6 +3,7 @@ import { Blason } from "@/components/blason";
 import { Icone } from "@/components/icones";
 import { ConfirmModal, ScriptDiffere, ScriptsPage } from "@/components/scripts";
 import { FlashMessages } from "@/components/shell";
+import { ETATS_ACCESSIBILITE } from "@/lib/accessibilite";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { allFlagsIn } from "@/server/features";
@@ -51,6 +52,8 @@ export default async function PortailLayout({ children }: { children: React.Reac
       icone: "clipboard-list",
       nb: aSigner,
     });
+    if (features.campagnes && org)
+      liens.push({ href: "/portail/mes-voeux", label: "Mes vœux", icone: "calendar-check" });
     liens.push({
       href: "/portail/mes-messages",
       label: "Mes messages",
@@ -189,6 +192,16 @@ export default async function PortailLayout({ children }: { children: React.Reac
             </>
           ) : null}
         </div>
+        <nav className="mt-2" aria-label="Pages réglementaires">
+          <a href="/portail/accessibilite">
+            Accessibilité :{" "}
+            {(ETATS_ACCESSIBILITE[cfg.ACCESSIBILITE_ETAT] ?? "non évalué").toLowerCase()}
+          </a>
+          {" · "}
+          <a href="/portail/mentions-legales">Mentions légales</a>
+          {" · "}
+          <a href="/portail/donnees-personnelles">Données personnelles</a>
+        </nav>
         <div className="mt-2 text-faint">Propulsé par CityRésa</div>
       </footer>
 

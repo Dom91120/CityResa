@@ -50,6 +50,15 @@ export function FormulaireMateriel({
             valeur={materiel?.stockTotal ?? 0}
             requis
           />
+          <Champ
+            label="Contrôle périodique (mois)"
+            name="controle_mois"
+            type="number"
+            min={1}
+            max={120}
+            valeur={materiel?.controleMois ?? ""}
+            aide="Vide : pas de contrôle. Sinon, une alerte signale les contrôles échus."
+          />
           <Select
             label="Tarification"
             name="unite"

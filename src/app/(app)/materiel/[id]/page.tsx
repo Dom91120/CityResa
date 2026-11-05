@@ -1,18 +1,21 @@
 import { notFound } from "next/navigation";
 import { Galerie } from "@/components/documents";
-import { Entete, Lu, Lus, MenuPost, MenuSep, Section } from "@/components/fiche";
+import { BoutonOuvrir, Entete, Lu, Lus, MenuPost, MenuSep, Section } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { VideBloc } from "@/components/liste";
 import { Chip, PastilleEspace, StatutResa } from "@/components/macros";
 import { dateCourte, dateMoyenne, heure, plageHoraire } from "@/lib/libelles";
+import { decrireControle, stockUtilisable } from "@/lib/materiel-stock";
 import {
   chargerMateriel,
   reservationsAVenir,
   stockMobilise,
   tarifMateriel,
 } from "@/modules/materiel/server";
+import { ModalsStock, SectionJournal } from "@/modules/materiel/stock-vues";
 import { forParent } from "@/server/documents";
 import { idDeRoute } from "@/server/guards";
+import { mouvementsDe } from "@/server/materiel-stock";
 import { contexteModule } from "@/server/module";
 
 export const metadata = { title: "Matériel - CityRésa" };
@@ -22,13 +25,15 @@ export default async function MaterielFichePage({ params }: { params: Promise<{ 
   const id = idDeRoute((await params).id);
   const m = await chargerMateriel(id);
   if (!m) notFound();
-  const [photos, aVenir, mobilise] = await Promise.all([
+  const [photos, aVenir, mobilise, mouvements] = await Promise.all([
     forParent("materiel", id, { kinds: ["photo"] }),
     reservationsAVenir(id),
     stockMobilise([id]),
+    mouvementsDe(id),
   ]);
   const mob = mobilise.get(id) ?? 0;
-  const disponible = Math.max(0, m.stockTotal - mob);
+  const utilisable = stockUtilisable(m);
+  const disponible = Math.max(0, utilisable - mob);
   const peutEditer = page.user.canEdit("materiel");
   const peutSupprimer = page.user.canDelete("materiel");
   const fiche = `/materiel/${id}`;
@@ -47,9 +52,31 @@ export default async function MaterielFichePage({ params }: { params: Promise<{ 
         }
         actions={
           peutEditer ? (
-            <a href={`${fiche}/modifier`} className="btn btn-primary js-modifier">
-              <Icone nom="pencil" taille={14} /> Modifier
-            </a>
+            <>
+              <BoutonOuvrir
+                cible="modal-controle"
+                libelle="Contrôle effectué"
+                icone="clipboard-check"
+                classe="btn-outline-secondary"
+              />
+              <BoutonOuvrir
+                cible="modal-panne"
+                libelle="Panne / perte"
+                icone="wrench"
+                classe="btn-outline-danger"
+              />
+              {m.horsService ? (
+                <BoutonOuvrir
+                  cible="modal-remise"
+                  libelle="Remettre en service"
+                  icone="wrench"
+                  classe="btn-outline-success"
+                />
+              ) : null}
+              <a href={`${fiche}/modifier`} className="btn btn-primary js-modifier">
+                <Icone nom="pencil" taille={14} /> Modifier
+              </a>
+            </>
           ) : null
         }
         menu={[
@@ -78,6 +105,15 @@ export default async function MaterielFichePage({ params }: { params: Promise<{ 
           <div className="stat-number">{m.stockTotal}</div>
         </div>
         <div className="stat-card">
+          <div className="stat-label">Hors service</div>
+          <div
+            className="stat-number"
+            style={{ color: m.horsService ? "var(--danger)" : undefined }}
+          >
+            {m.horsService}
+          </div>
+        </div>
+        <div className="stat-card">
           <div className="stat-label">Mobilisé (dossiers en cours)</div>
           <div className="stat-number">{mob}</div>
         </div>
@@ -102,6 +138,7 @@ export default async function MaterielFichePage({ params }: { params: Promise<{ 
             <Lus>
               <Lu label="Catégorie" valeur={m.categorie?.label} tiret />
               <Lu label="Tarification" valeur={tarifMateriel(m)} />
+              <Lu label="Contrôle périodique" valeur={decrireControle(m, dateCourte)} pleine />
               <Lu label="Description" valeur={m.description} pleine pre />
               <Lu label="Créé le" valeur={dateCourte(m.createdAt)} />
               <Lu label="Modifié le" valeur={dateCourte(m.updatedAt)} />
@@ -186,8 +223,17 @@ export default async function MaterielFichePage({ params }: { params: Promise<{ 
               />
             )}
           </Section>
+          <SectionJournal mouvements={mouvements} />
         </div>
       </div>
+      {peutEditer ? (
+        <ModalsStock
+          fiche={fiche}
+          csrf={page.csrf}
+          stockUtilisable={utilisable}
+          horsService={m.horsService}
+        />
+      ) : null}
     </>
   );
 }

@@ -254,6 +254,30 @@ export function dansHoraires(horaires: Horaires | null, i: Intervalle): boolean 
   });
 }
 
+/** Des horaires valables sur une période de jours « YYYY-MM-DD » (bornes incluses) : ceux d'une saison. */
+export type HorairesPeriode = { debut: string; fin: string; openHours: unknown };
+
+/** Les horaires applicables à un instant : ceux de la période qui contient ce jour (Paris), sinon `base`. */
+export function horairesA(
+  base: unknown,
+  periodes: readonly HorairesPeriode[],
+  instant: Date,
+): unknown {
+  const jour = parisParts(instant).dateKey;
+  const p = periodes.find((x) => x.debut <= jour && jour <= x.fin);
+  return p ? p.openHours : base;
+}
+
+/** Les règles de l'espace telles qu'elles s'appliquent à ce créneau : horaires de sa saison s'il y en a. */
+export function reglesAuCreneau<T extends ReglesEspace>(
+  espace: T,
+  periodes: readonly HorairesPeriode[],
+  i: Intervalle,
+): T {
+  if (!periodes.length) return espace;
+  return { ...espace, openHours: horairesA(espace.openHours, periodes, i.startAt) };
+}
+
 /** Horaires par défaut : tous les jours 8h-22h. */
 export const HORAIRES_DEFAUT: Horaires = Object.fromEntries(
   [1, 2, 3, 4, 5, 6, 7].map((j) => [String(j), [["08:00", "22:00"]]]),
@@ -321,6 +345,42 @@ export function conflits<T extends Intervalle>(
     const dm = avecMarges(d, marges.avantMin, marges.apresMin);
     for (const e of existants) {
       if (chevauche(dm, e)) out.push({ demande: d, existant: e });
+    }
+  }
+  return out;
+}
+
+/**
+ * Conflits d'un espace partageable : une demande n'est en conflit que si, à un instant de son
+ * créneau (marges comprises), `capacite` occupations sont déjà en place. Capacité 1 = `conflits`.
+ * L'existant rapporté est celui qui porte l'occupation au plafond.
+ */
+export function conflitsCapacite<T extends Intervalle>(
+  demandes: Intervalle[],
+  existants: T[],
+  marges: { avantMin: number; apresMin: number } = { avantMin: 0, apresMin: 0 },
+  capacite = 1,
+): { demande: Intervalle; existant: T }[] {
+  if (capacite <= 1) return conflits(demandes, existants, marges);
+  const out: { demande: Intervalle; existant: T }[] = [];
+  for (const d of demandes) {
+    const dm = avecMarges(d, marges.avantMin, marges.apresMin);
+    const dedans = existants.filter((e) => chevauche(dm, e));
+    if (dedans.length < capacite) continue;
+    // Balayage des bornes : combien d'occupations se recouvrent à chaque instant du créneau.
+    const evenements = dedans
+      .flatMap((e) => [
+        { t: Math.max(e.startAt.getTime(), dm.startAt.getTime()), delta: 1, e },
+        { t: Math.min(e.endAt.getTime(), dm.endAt.getTime()), delta: -1, e },
+      ])
+      .sort((a, b) => a.t - b.t || a.delta - b.delta);
+    let courant = 0;
+    for (const ev of evenements) {
+      courant += ev.delta;
+      if (courant >= capacite) {
+        out.push({ demande: d, existant: ev.e });
+        break;
+      }
     }
   }
   return out;

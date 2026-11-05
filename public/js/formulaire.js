@@ -119,7 +119,10 @@
 
         document.querySelectorAll('form[data-double-envoi]').forEach(function (form) {
             form.addEventListener('submit', function () {
-                form.querySelectorAll('button[type="submit"]').forEach(function (b) { b.disabled = true; });
+                // Après la collecte des données du formulaire : le bouton cliqué garde son nom et sa valeur.
+                setTimeout(function () {
+                    form.querySelectorAll('button[type="submit"]').forEach(function (b) { b.disabled = true; });
+                }, 0);
             });
         });
     });

@@ -1,4 +1,12 @@
-import { Champ, EnteteForm, Grille, PiedForm, SectionForm, Select } from "@/components/formulaire";
+import {
+  Champ,
+  EnteteForm,
+  Grille,
+  Interrupteur,
+  PiedForm,
+  SectionForm,
+  Select,
+} from "@/components/formulaire";
 import { ORGANISATION_TYPES } from "@/lib/constantes";
 import { profils } from "@/modules/usagers/server";
 import { redirigerAvecFlashDepuisRendu } from "@/server/flash";
@@ -76,6 +84,14 @@ export default async function NouvelUsagerPage() {
               type="date"
               aide="Associations seulement"
             />
+            <div style={{ gridColumn: "1 / -1" }}>
+              <Interrupteur
+                label="Association conventionnée avec la Ville"
+                name="conventionnee"
+                coche={false}
+                aide="Prioritaire dans les campagnes annuelles de créneaux, après les services de la Ville et les autres collectivités."
+              />
+            </div>
           </Grille>
         </SectionForm>
         <SectionForm

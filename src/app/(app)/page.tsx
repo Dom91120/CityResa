@@ -107,6 +107,7 @@ export default async function DashboardPage({
   ];
   return (
     <>
+      <h1 className="visually-hidden">Tableau de bord</h1>
       <div className="page-header">
         <div>
           <div

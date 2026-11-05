@@ -2,16 +2,20 @@
  * Les tâches planifiées, et leur exécution tracée (scheduler_run).
  */
 import { DOCUMENT_KINDS, STATUTS_FERMES } from "@/lib/constantes";
-import { dateCourte, montant } from "@/lib/libelles";
+import { dateCourte, dateHeure, montant } from "@/lib/libelles";
+import { STATUTS_OPTION, trierOptions } from "@/lib/options";
 import { addParisDays, parisMidnight, todayParisISO } from "@/lib/paris-time";
 import { joursRestants } from "@/lib/pieces";
+import { courrielAvenantASigner } from "@/server/avenant";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { backupDatabase } from "@/server/db-backup";
 import { TACHES as REGISTRE } from "@/server/jobs-registre";
 import { envoyerDepuisModele } from "@/server/mailer";
 import { notifier, notifierAgents } from "@/server/notifications";
+import { envoyerPlanningsHebdo } from "@/server/planning-hebdo";
 import { changerStatut, chargerReservation, courrielUsager } from "@/server/reservations";
+import { executerRgpd } from "@/server/rgpd";
 
 type Resultat = { ok: boolean; message: string };
 
@@ -72,7 +76,33 @@ async function relancesSignature(): Promise<Resultat> {
     await courrielUsager(r, "convention_a_signer");
     n += 1;
   }
-  return { ok: true, message: `${n} relance(s) de signature` };
+  // Les avenants non signés sont relancés au même rythme.
+  const avenants = await prisma.avenant.findMany({
+    where: {
+      signedAt: null,
+      createdAt: { lt: seuil },
+      reservation: { startAt: { gt: new Date() } },
+    },
+  });
+  let na = 0;
+  for (const a of avenants) {
+    const deja = await prisma.mailLog.findFirst({
+      where: {
+        templateKey: "avenant_a_signer",
+        reservationId: a.reservationId,
+        sentAt: { gte: seuil },
+      },
+    });
+    if (deja) continue;
+    const r = await chargerReservation(a.reservationId);
+    if (!r) continue;
+    await courrielAvenantASigner(r, a);
+    na += 1;
+  }
+  return {
+    ok: true,
+    message: `${n} relance(s) de signature${na ? `, ${na} relance(s) d'avenant` : ""}`,
+  };
 }
 
 async function relancesPaiement(): Promise<Resultat> {
@@ -259,6 +289,74 @@ async function alertesPieces(): Promise<Resultat> {
   return { ok: true, message: `${n} alerte(s) de pièce envoyée(s)` };
 }
 
+/** Options : relance avant l'échéance, puis libération d'office (annulation sans frais). */
+async function options(): Promise<Resultat> {
+  const cfg = await getSettings();
+  const now = new Date();
+  const dossiers = await prisma.reservation.findMany({
+    where: { optionExpiresAt: { not: null }, status: { in: [...STATUTS_OPTION] } },
+    select: { id: true, status: true, optionExpiresAt: true, optionRelanceAt: true },
+  });
+  const { aRelancer, expirees } = trierOptions(dossiers, now, cfg.OPTION_RELANCE_JOURS || 3);
+  for (const id of aRelancer) {
+    const r = await chargerReservation(id);
+    if (!r?.optionExpiresAt) continue;
+    await courrielUsager(r, "option_relance", {
+      echeance: dateHeure(r.optionExpiresAt),
+      suite:
+        r.status === "acceptee"
+          ? "Il vous reste à signer la convention depuis votre espace pour confirmer la réservation."
+          : "La collectivité attend votre réponse ou les précisions demandées pour confirmer la réservation.",
+    });
+    await prisma.reservation.update({ where: { id }, data: { optionRelanceAt: now } });
+    await notifierAgents(
+      r.espaceId,
+      "reservation",
+      `Option ${r.numero} : échéance le ${dateHeure(r.optionExpiresAt)}`,
+      r.espace.name,
+      `/reservations/${r.id}`,
+    );
+  }
+  for (const id of expirees) {
+    const r = await chargerReservation(id);
+    if (!r?.optionExpiresAt) continue;
+    await changerStatut(
+      id,
+      "annulee",
+      { name: "système", isAgent: true },
+      {
+        parSysteme: true,
+        sansFrais: true,
+        motif: `Option expirée le ${dateHeure(r.optionExpiresAt)} sans confirmation.`,
+      },
+    );
+    await notifierAgents(
+      r.espaceId,
+      "reservation",
+      `Option ${r.numero} expirée : créneau libéré`,
+      r.espace.name,
+      `/reservations/${r.id}`,
+    );
+  }
+  return {
+    ok: true,
+    message: `${aRelancer.length} relance(s) d'option, ${expirees.length} option(s) libérée(s)`,
+  };
+}
+
+async function rgpd(): Promise<Resultat> {
+  const b = await executerRgpd();
+  return {
+    ok: true,
+    message: `${b.prevenus} préavis envoyé(s), ${b.anonymises} compte(s) anonymisé(s), ${b.purges} dossier(s) purgé(s)`,
+  };
+}
+
+async function planningHebdo(): Promise<Resultat> {
+  const b = await envoyerPlanningsHebdo();
+  return { ok: true, message: b };
+}
+
 async function sauvegarde(): Promise<Resultat> {
   const cfg = await getSettings();
   const chemin = await backupDatabase(cfg);
@@ -269,11 +367,14 @@ export const TACHES: Record<string, () => Promise<Resultat>> = {
   backup_database: sauvegarde,
   archivage_auto: archiver,
   purge_notifications: purgeNotifications,
+  rgpd: rgpd,
   terminer_reservations: terminer,
   rappels_usagers: rappels,
   relances_signature: relancesSignature,
   relances_paiement: relancesPaiement,
+  options: options,
   digest_agents: digest,
+  planning_hebdo: planningHebdo,
   alertes_pieces: alertesPieces,
 };
 

@@ -24,6 +24,13 @@ export const TACHES: Tache[] = [
   },
   { id: "archivage_auto", label: "Archivage des dossiers terminés", heure: 2, minute: 0 },
   { id: "purge_notifications", label: "Purge des vieilles notifications", heure: 3, minute: 0 },
+  {
+    id: "rgpd",
+    label: "RGPD : préavis et anonymisation des comptes inactifs, purge des dossiers",
+    heure: 3,
+    minute: 30,
+    actif: (c) => Boolean(c.RGPD_INACTIVITE_MOIS || c.RGPD_CONSERVATION_ANNEES),
+  },
   { id: "terminer_reservations", label: "Clôture des réservations passées", intervalleMinutes: 60 },
   {
     id: "rappels_usagers",
@@ -46,7 +53,20 @@ export const TACHES: Tache[] = [
     minute: 30,
     actif: (c) => Boolean(c.PAIEMENTS_ENABLED),
   },
+  {
+    id: "options",
+    label: "Options : relance avant échéance et libération d'office",
+    heure: 7,
+    minute: 40,
+  },
   { id: "digest_agents", label: "Récapitulatif quotidien des agents", heure: 7, minute: 45 },
+  {
+    id: "planning_hebdo",
+    label: "Planning hebdomadaire envoyé aux gestionnaires (le jour configuré)",
+    heure: 6,
+    minute: 30,
+    actif: (c) => Boolean(c.PLANNING_HEBDO_ENABLED),
+  },
   {
     id: "alertes_pieces",
     label: "Alertes d'expiration des pièces justificatives",

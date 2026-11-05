@@ -21,8 +21,10 @@ export const BOOL_KEYS = new Set([
   "MATERIEL_ENABLED",
   "SUBVENTIONS_ENABLED",
   "DOCUMENTS_ENABLED",
+  "CAMPAGNES_ENABLED",
   "RAPPEL_J7",
   "RAPPEL_J1",
+  "PLANNING_HEBDO_ENABLED",
   "VALIDATION_COMPTE_USAGER",
   "PORTAIL_AFFICHER_TARIFS",
 ]);
@@ -35,8 +37,21 @@ export const INT_KEYS = new Set([
   "DELAI_ANNULATION_JOURS",
   "SIGNATURE_VALIDITE_HEURES",
   "ALERTE_PIECES_JOURS",
+  "CAUTION_DELAI_RESTITUTION_JOURS",
+  "OPTION_RELANCE_JOURS",
+  "PLANNING_HEBDO_JOUR",
+  "ACCESSIBILITE_TAUX",
+  "RGPD_INACTIVITE_MOIS",
+  "RGPD_PREAVIS_JOURS",
+  "RGPD_CONSERVATION_ANNEES",
 ]);
-export const FLOAT_KEYS = new Set(["TVA_TAUX", "ACOMPTE_PCT"]);
+export const FLOAT_KEYS = new Set([
+  "TVA_TAUX",
+  "ACOMPTE_PCT",
+  "CAUTION_SEUIL_VALIDATION",
+  "VALORISATION_SEUIL_CONVENTION",
+  "VALORISATION_SEUIL_CERTIFICATION",
+]);
 
 /** Ensemble des clés gérées en base (= celles écrites par la page Paramètres). */
 export const MANAGED = new Set<string>([
@@ -46,6 +61,8 @@ export const MANAGED = new Set<string>([
   "COLLECTIVITE_NOM",
   "COLLECTIVITE_ADRESSE",
   "COLLECTIVITE_EMAIL",
+  "PIECES_REGLE",
+  "ANNULATION_BAREME",
   "COLLECTIVITE_TELEPHONE",
   "COLLECTIVITE_SITE_WEB",
   "COLLECTIVITE_SIGNATAIRE",
@@ -114,11 +131,16 @@ export type AppSettings = EnvOnly & {
   MATERIEL_ENABLED: boolean;
   SUBVENTIONS_ENABLED: boolean;
   DOCUMENTS_ENABLED: boolean;
+  CAMPAGNES_ENABLED: boolean;
   DOCUMENT_MAX_MB: number;
   TVA_TAUX: number;
   ACOMPTE_PCT: number;
   RAPPEL_J7: boolean;
   RAPPEL_J1: boolean;
+  /** Planning hebdomadaire (PDF) envoyé aux gestionnaires de chaque espace. */
+  PLANNING_HEBDO_ENABLED: boolean;
+  /** Jour ISO de l'envoi (1 = lundi … 7 = dimanche). */
+  PLANNING_HEBDO_JOUR: number;
   VALIDATION_COMPTE_USAGER: boolean;
   PORTAIL_AFFICHER_TARIFS: boolean;
   RELANCE_SIGNATURE_JOURS: number;
@@ -126,7 +148,39 @@ export type AppSettings = EnvOnly & {
   DELAI_ANNULATION_JOURS: number;
   SIGNATURE_VALIDITE_HEURES: number;
   ALERTE_PIECES_JOURS: number;
+  /** avertir | depot | acceptation : effet des pièces attendues manquantes ou expirées. */
+  PIECES_REGLE: string;
+  /** Barème de frais d'annulation « 30:0;7:50;0:100 » (jours avant : % du TTC) ; vide = aucun. */
+  ANNULATION_BAREME: string;
+  /** Au-delà de ce montant (€), une retenue sur caution attend la validation d'un administrateur. */
+  CAUTION_SEUIL_VALIDATION: number;
+  /** Jours après la fin de l'événement avant qu'une caution non restituée soit en alerte. */
+  CAUTION_DELAI_RESTITUTION_JOURS: number;
+  /** Jours avant l'échéance d'une option où l'usager est relancé. */
+  OPTION_RELANCE_JOURS: number;
+  /** Total d'aides (avantages en nature + subventions) à partir duquel une convention est obligatoire. */
+  VALORISATION_SEUIL_CONVENTION: number;
+  /** Total d'aides à partir duquel les comptes de l'association doivent être certifiés. */
+  VALORISATION_SEUIL_CERTIFICATION: number;
+  /** Mois sans connexion après lesquels un compte usager est anonymisé (0 = jamais). */
+  RGPD_INACTIVITE_MOIS: number;
+  /** Jours entre le courriel de préavis et l’anonymisation. */
+  RGPD_PREAVIS_JOURS: number;
+  /** Années de conservation d’un dossier archivé avant purge de ses données personnelles (0 = jamais). */
+  RGPD_CONSERVATION_ANNEES: number;
   CONVENTION_TEXTE: string;
+  /** Déclaration d'accessibilité : non_evalue | non_conforme | partiellement_conforme | totalement_conforme. */
+  ACCESSIBILITE_ETAT: string;
+  /** Taux de conformité RGAA (%) ; -1 = non renseigné. */
+  ACCESSIBILITE_TAUX: number;
+  /** Date de l'audit (texte libre, « 12 mars 2026 »). */
+  ACCESSIBILITE_DATE: string;
+  /** Non-conformités, dérogations, plan d'amélioration (texte libre). */
+  ACCESSIBILITE_TEXTE: string;
+  /** Mentions légales (texte libre) : éditeur, directeur de publication, hébergeur. */
+  MENTIONS_LEGALES_TEXTE: string;
+  /** Compléments de la page « Données personnelles » (délégué à la protection des données…). */
+  DONNEES_PERSONNELLES_TEXTE: string;
   AGENTS_NOTIFIES: string;
   BACKUP_DB_KEEP: number;
   [key: string]: unknown;
@@ -209,12 +263,15 @@ export function envDefaults(): AppSettings {
     SIGNATURE_ENABLED: envBool("SIGNATURE_ENABLED", true),
     MATERIEL_ENABLED: envBool("MATERIEL_ENABLED", true),
     SUBVENTIONS_ENABLED: envBool("SUBVENTIONS_ENABLED", true),
+    CAMPAGNES_ENABLED: envBool("CAMPAGNES_ENABLED", true),
     DOCUMENTS_ENABLED: envBool("DOCUMENTS_ENABLED", true),
     DOCUMENT_MAX_MB: envInt("DOCUMENT_MAX_MB", 10),
     TVA_TAUX: envFloat("TVA_TAUX", 0),
     ACOMPTE_PCT: envFloat("ACOMPTE_PCT", 30),
     RAPPEL_J7: envBool("RAPPEL_J7", true),
     RAPPEL_J1: envBool("RAPPEL_J1", true),
+    PLANNING_HEBDO_ENABLED: envBool("PLANNING_HEBDO_ENABLED", false),
+    PLANNING_HEBDO_JOUR: envInt("PLANNING_HEBDO_JOUR", 1),
     VALIDATION_COMPTE_USAGER: envBool("VALIDATION_COMPTE_USAGER", false),
     PORTAIL_AFFICHER_TARIFS: envBool("PORTAIL_AFFICHER_TARIFS", true),
     RELANCE_SIGNATURE_JOURS: envInt("RELANCE_SIGNATURE_JOURS", 3),
@@ -222,6 +279,22 @@ export function envDefaults(): AppSettings {
     DELAI_ANNULATION_JOURS: envInt("DELAI_ANNULATION_JOURS", 7),
     SIGNATURE_VALIDITE_HEURES: envInt("SIGNATURE_VALIDITE_HEURES", 72),
     ALERTE_PIECES_JOURS: envInt("ALERTE_PIECES_JOURS", 30),
+    PIECES_REGLE: envStr("PIECES_REGLE", "avertir"),
+    ANNULATION_BAREME: envStr("ANNULATION_BAREME", ""),
+    CAUTION_SEUIL_VALIDATION: envFloat("CAUTION_SEUIL_VALIDATION", 500),
+    CAUTION_DELAI_RESTITUTION_JOURS: envInt("CAUTION_DELAI_RESTITUTION_JOURS", 30),
+    OPTION_RELANCE_JOURS: envInt("OPTION_RELANCE_JOURS", 3),
+    VALORISATION_SEUIL_CONVENTION: envFloat("VALORISATION_SEUIL_CONVENTION", 23000),
+    VALORISATION_SEUIL_CERTIFICATION: envFloat("VALORISATION_SEUIL_CERTIFICATION", 153000),
+    RGPD_INACTIVITE_MOIS: envInt("RGPD_INACTIVITE_MOIS", 36),
+    RGPD_PREAVIS_JOURS: envInt("RGPD_PREAVIS_JOURS", 30),
+    RGPD_CONSERVATION_ANNEES: envInt("RGPD_CONSERVATION_ANNEES", 5),
+    ACCESSIBILITE_ETAT: envStr("ACCESSIBILITE_ETAT", "non_evalue"),
+    ACCESSIBILITE_TAUX: envInt("ACCESSIBILITE_TAUX", -1),
+    ACCESSIBILITE_DATE: envStr("ACCESSIBILITE_DATE", ""),
+    ACCESSIBILITE_TEXTE: envStr("ACCESSIBILITE_TEXTE", ""),
+    MENTIONS_LEGALES_TEXTE: envStr("MENTIONS_LEGALES_TEXTE", ""),
+    DONNEES_PERSONNELLES_TEXTE: envStr("DONNEES_PERSONNELLES_TEXTE", ""),
     CONVENTION_TEXTE: envStr("CONVENTION_TEXTE", CONVENTION_TEXTE_DEFAUT),
     AGENTS_NOTIFIES: envStr("AGENTS_NOTIFIES", ""),
     BACKUP_DB_KEEP: envInt("BACKUP_DB_KEEP", 14),

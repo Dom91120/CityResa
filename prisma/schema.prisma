@@ -48,6 +48,10 @@ model User {
   isActive      Boolean   @default(true) @map("is_active")
   lastLoginAt   DateTime? @map("last_login_at") @db.Timestamptz
   acceptedCguAt DateTime? @map("accepted_cgu_at") @db.Timestamptz
+  /// RGPD : courriel de préavis envoyé (compte inactif), remis à zéro à la connexion.
+  inactivitePreavisAt DateTime? @map("inactivite_preavis_at") @db.Timestamptz
+  /// RGPD : identité effacée (compte inactif ou suppression demandée) ; le compte reste pour l’historique.
+  anonymiseAt DateTime? @map("anonymise_at") @db.Timestamptz
 
   // ── Second facteur (plugin twoFactor) ──
   twoFactorEnabled Boolean   @default(false) @map("two_factor_enabled")
@@ -67,6 +71,9 @@ model User {
   twofactor     TwoFactor[]
   reservations  Reservation[]        @relation("Demandeur")
   assignees     Reservation[]        @relation("AgentAssigne")
+  voeux         Voeu[]
+  listeAttente  ListeAttente[]
+  brouillons    BrouillonDemande[]
   messages      Message[]
   notifications Notification[]
   espaces       EspaceGestionnaire[]
@@ -304,6 +311,10 @@ model Espace {
   bufferAfterMin  Int @default(0) @map("buffer_after_min")
   /// Caution demandée (€), 0 = aucune.
   cautionAmount Float   @default(0) @map("caution_amount")
+  /// Réservations admises en même temps (1 = exclusif ; > 1 = espace partageable : pistes, bassin…).
+  capaciteSimultanee Int @default(1) @map("capacite_simultanee")
+  /// Valeur de référence horaire (€/h) pour la valorisation des avantages en nature ; vide = grille « tous profils ».
+  valorisationHoraire Float? @map("valorisation_horaire")
   rules         String?
   instructions  String?
   /// actif | inactif | maintenance
@@ -320,6 +331,11 @@ model Espace {
   options          Option[]
   gestionnaires    EspaceGestionnaire[]
   documents        Document[]
+  horairesSaisons  HorairesSaison[]
+  brouillons       BrouillonDemande[]
+  voeux            Voeu[]
+  campagnes        CampagneEspace[]
+  listeAttente     ListeAttente[]
   indisponibilites Indisponibilite[]
   reservations     Reservation[]
   creneaux         Creneau[]
@@ -355,6 +371,11 @@ model Tarif {
   montant  Float        @default(0)
   label    String?      @db.VarChar(120)
   position Int          @default(0)
+  /// Date d'effet (grille votée) ; vide = applicable depuis toujours. À la date d'occupation,
+  /// la ligne en vigueur est la plus récente dont la date d'effet est atteinte.
+  validFrom DateTime? @map("valid_from") @db.Date
+  /// Référence de la délibération qui a voté ce tarif.
+  deliberation String? @db.VarChar(120)
 
   @@index([espaceId])
   @@map("tarif")
@@ -392,11 +413,17 @@ model Materiel {
   /// gratuit | forfait | unite | jour
   unite       String       @default("gratuit") @db.VarChar(16)
   isActive    Boolean      @default(true) @map("is_active")
+  /// Unités indisponibles (en panne, perdues) : retirées du stock utilisable.
+  horsService Int          @default(0) @map("hors_service")
+  /// Périodicité du contrôle (mois) ; null = pas de contrôle périodique.
+  controleMois      Int?      @map("controle_mois")
+  dernierControleAt DateTime? @map("dernier_controle_at") @db.Timestamptz
   createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   reservations ReservationMateriel[]
   documents    Document[]
+  mouvements   MouvementMateriel[]
 
   @@map("materiel")
 }
@@ -444,7 +471,24 @@ model Saison {
   isActive  Boolean  @default(false) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
+  horaires  HorairesSaison[]
+  campagnes Campagne[]
+
   @@map("saison")
+}
+
+/// Horaires d'ouverture particuliers d'un espace pendant une saison ; à défaut, ceux de l'espace.
+model HorairesSaison {
+  id        Int    @id @default(autoincrement())
+  espaceId  Int    @map("espace_id")
+  espace    Espace @relation(fields: [espaceId], references: [id], onDelete: Cascade)
+  saisonId  Int    @map("saison_id")
+  saison    Saison @relation(fields: [saisonId], references: [id], onDelete: Cascade)
+  /// Même forme que Espace.openHours : {"1":[["08:00","22:00"]], …}.
+  openHours Json   @map("open_hours")
+
+  @@unique([espaceId, saisonId])
+  @@map("horaires_saison")
 }
 
 /// Une période du calendrier, bornes incluses : vacances scolaires (zone C) ou jour férié.
@@ -494,6 +538,8 @@ model Organisation {
   /// Compte validé par la collectivité (accès aux tarifs et espaces réservés).
   validatedAt DateTime? @map("validated_at") @db.Timestamptz
   isActive    Boolean   @default(true) @map("is_active")
+  /// Association conventionnée avec la Ville : prioritaire dans les campagnes de créneaux.
+  conventionnee Boolean @default(false)
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -502,6 +548,9 @@ model Organisation {
   documents    Document[]
   factures     Facture[]
   subventions  Subvention[]
+  voeux        Voeu[]
+  valorisations Valorisation[]
+  listeAttente ListeAttente[]
 
   @@index([type])
   @@map("organisation")
@@ -559,6 +608,26 @@ model Reservation {
   caution    Float   @default(0)
   /// Gratuité accordée (mise à disposition à titre gracieux).
   gratuit    Boolean @default(false)
+  /// Fondement de la gratuité ou de la réduction (délibération, convention, intérêt général…).
+  gratuitMotif String? @map("gratuit_motif") @db.VarChar(300)
+
+  // ── Option (pré-réservation) ──
+  /// Date limite d'une option : au-delà, un dossier non confirmé est libéré d'office.
+  optionExpiresAt DateTime? @map("option_expires_at") @db.Timestamptz
+  /// Relance d'expiration déjà envoyée.
+  optionRelanceAt DateTime? @map("option_relance_at") @db.Timestamptz
+
+  // ── Cycle de la caution ──
+  /// aucune | attendue | encaissee | restituee | retenue | retenue_a_valider
+  cautionStatus      String    @default("aucune") @map("caution_status") @db.VarChar(20)
+  cautionEncaisseeAt DateTime? @map("caution_encaissee_at") @db.Timestamptz
+  cautionClotureeAt  DateTime? @map("caution_cloturee_at") @db.Timestamptz
+  /// Part retenue (€) ; le reste est restitué.
+  cautionRetenue     Float     @default(0) @map("caution_retenue")
+  cautionMotif       String?   @map("caution_motif")
+  cautionDecideePar  String?   @map("caution_decidee_par") @db.VarChar(160)
+  /// Seconde validation (administrateur) d'une retenue au-delà du seuil.
+  cautionValideePar  String?   @map("caution_validee_par") @db.VarChar(160)
 
   // ── Convention et signature électronique ──
   conventionDocumentId Int?      @map("convention_document_id")
@@ -574,6 +643,8 @@ model Reservation {
   /// portail | backoffice
   source     String    @default("backoffice") @db.VarChar(16)
   archivedAt DateTime? @map("archived_at") @db.Timestamptz
+  /// RGPD : données personnelles du dossier purgées (messages, pièces, notes) au-delà de la durée de conservation.
+  purgeAt    DateTime? @map("purge_at") @db.Timestamptz
   createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -584,6 +655,10 @@ model Reservation {
   documents Document[]
   factures  Facture[]
   histories ReservationHistory[]
+  avenants  Avenant[]
+  mouvementsMateriel MouvementMateriel[]
+  voeu      Voeu?
+  etatsDesLieux EtatDesLieux[]
 
   @@index([espaceId, startAt])
   @@index([organisationId])
@@ -606,6 +681,14 @@ model Creneau {
   /// prevu | annule
   status        String      @default("prevu") @db.VarChar(10)
   note          String?     @db.VarChar(200)
+  /// Présence constatée après coup : presente | absente (absence non signalée) ; null = non renseignée.
+  presence     String?   @db.VarChar(10)
+  /// Heures réellement occupées, si elles diffèrent du créneau prévu.
+  realStartAt  DateTime? @map("real_start_at") @db.Timestamptz
+  realEndAt    DateTime? @map("real_end_at") @db.Timestamptz
+  presenceNote String?   @map("presence_note") @db.VarChar(200)
+  presenceBy   String?   @map("presence_by") @db.VarChar(160)
+  presenceAt   DateTime? @map("presence_at") @db.Timestamptz
 
   @@index([espaceId, startAt])
   @@index([reservationId])
@@ -631,9 +714,31 @@ model ReservationMateriel {
   materiel      Materiel    @relation(fields: [materielId], references: [id])
   quantite      Int         @default(1)
   montant       Float       @default(0)
+  /// Sortie du stock remise à l’usager, retour constaté, unités manquantes au retour.
+  sortieAt      DateTime?   @map("sortie_at") @db.Timestamptz
+  retourAt      DateTime?   @map("retour_at") @db.Timestamptz
+  manquants     Int         @default(0)
 
   @@id([reservationId, materielId])
   @@map("reservation_materiel")
+}
+
+/// Journal des mouvements d’un matériel : sortie et retour pour un dossier, perte, panne, remise en service, contrôle.
+model MouvementMateriel {
+  id            Int          @id @default(autoincrement())
+  materielId    Int          @map("materiel_id")
+  materiel      Materiel     @relation(fields: [materielId], references: [id], onDelete: Cascade)
+  reservationId Int?         @map("reservation_id")
+  reservation   Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+  /// sortie | retour | perte | panne | reparation | controle
+  kind          String       @db.VarChar(12)
+  quantite      Int          @default(0)
+  note          String?      @db.VarChar(300)
+  createdBy     String       @map("created_by") @db.VarChar(160)
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([materielId, createdAt])
+  @@map("mouvement_materiel")
 }
 
 /// Fil de discussion d'une réservation ; `isInternal` = note interne aux agents.
@@ -669,6 +774,198 @@ model ReservationHistory {
   @@map("reservation_history")
 }
 
+/// Avenant à une convention signée (créneaux modifiés après signature) : PDF accroché au
+/// dossier, signé à son tour par l'usager (code à usage unique) ou sur papier.
+model Avenant {
+  id            Int         @id @default(autoincrement())
+  reservationId Int         @map("reservation_id")
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  /// 1, 2, 3… par dossier.
+  numero        Int
+  /// Ce qui change, en une phrase (« Créneaux modifiés : … »).
+  objet         String
+  documentId    Int?        @map("document_id")
+  document      Document?   @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  signatureChannel   String?   @map("signature_channel") @db.VarChar(10)
+  signatureSentAt    DateTime? @map("signature_sent_at") @db.Timestamptz
+  signatureCodeHash  String?   @map("signature_code_hash") @db.VarChar(128)
+  signatureExpiresAt DateTime? @map("signature_expires_at") @db.Timestamptz
+  signatureAttempts  Int       @default(0) @map("signature_attempts")
+  signedAt           DateTime? @map("signed_at") @db.Timestamptz
+  signerName         String?   @map("signer_name") @db.VarChar(160)
+  signerIp           String?   @map("signer_ip") @db.VarChar(64)
+
+  createdBy String?  @map("created_by") @db.VarChar(160)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([reservationId, numero])
+  @@map("avenant")
+}
+
+/// Liste d'attente : un usager souhaite être prévenu si un créneau occupé d'un espace se libère.
+/// Brouillon de demande du portail : la saisie du formulaire, mise de côté pour être reprise plus tard.
+model BrouillonDemande {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  espaceId  Int      @map("espace_id")
+  espace    Espace   @relation(fields: [espaceId], references: [id], onDelete: Cascade)
+  /// Les champs du formulaire de demande, clé -> valeur (ou liste de valeurs).
+  data      Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([userId])
+  @@map("brouillon_demande")
+}
+
+model ListeAttente {
+  id             Int           @id @default(autoincrement())
+  espaceId       Int           @map("espace_id")
+  espace         Espace        @relation(fields: [espaceId], references: [id], onDelete: Cascade)
+  organisationId Int?          @map("organisation_id")
+  organisation   Organisation? @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  userId         String        @map("user_id")
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startAt        DateTime      @map("start_at") @db.Timestamptz
+  endAt          DateTime      @map("end_at") @db.Timestamptz
+  title          String?       @db.VarChar(160)
+  /// Prévenu d'une libération (l'inscription reste jusqu'à la réservation ou au retrait).
+  notifiedAt     DateTime?     @map("notified_at") @db.Timestamptz
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([espaceId, startAt])
+  @@index([userId])
+  @@map("liste_attente")
+}
+
+/// Valorisation des avantages en nature d'une organisation sur un exercice, figée à la clôture :
+/// heures mises à disposition, valeur de référence, redevance perçue, avantage, subventions
+/// en numéraire et total (seuils de convention et de certification des comptes).
+model Valorisation {
+  id             Int          @id @default(autoincrement())
+  organisationId Int          @map("organisation_id")
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  exercice       Int
+  nbDossiers     Int          @default(0) @map("nb_dossiers")
+  heures         Float        @default(0)
+  valeurReference Float       @default(0) @map("valeur_reference")
+  redevance      Float        @default(0)
+  avantage       Float        @default(0)
+  subventions    Float        @default(0)
+  total          Float        @default(0)
+  figeeAt        DateTime     @default(now()) @map("figee_at") @db.Timestamptz
+  figeePar       String?      @map("figee_par") @db.VarChar(160)
+  /// L'attestation annuelle déposée sur la fiche de l'organisation.
+  documentId     Int?         @map("document_id")
+  document       Document?    @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  @@unique([organisationId, exercice])
+  @@index([exercice])
+  @@map("valorisation")
+}
+
+/// État des lieux d'entrée ou de sortie d'une réservation : observations, dégâts, photos
+/// (pièces rattachées), usager présent. La restitution de la caution attend celui de sortie.
+model EtatDesLieux {
+  id            Int         @id @default(autoincrement())
+  reservationId Int         @map("reservation_id")
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  /// entree | sortie
+  kind          String      @db.VarChar(8)
+  doneAt        DateTime    @default(now()) @map("done_at") @db.Timestamptz
+  agent         String      @db.VarChar(160)
+  observations  String?
+  degats        Boolean     @default(false)
+  /// Nom de l'usager présent, s'il a contresigné sur place.
+  signataire    String?     @db.VarChar(160)
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz
+
+  documents Document[]
+
+  @@unique([reservationId, kind])
+  @@map("etat_des_lieux")
+}
+
+// ============================================================
+//  Campagnes annuelles d'attribution des créneaux
+// ============================================================
+
+/// Une campagne : les usagers déposent leurs vœux de créneaux hebdomadaires sur une saison, la
+/// Ville instruit, arbitre les conflits par priorité et attribue en lot (un dossier par vœu).
+model Campagne {
+  id       Int    @id @default(autoincrement())
+  saisonId Int    @map("saison_id")
+  saison   Saison @relation(fields: [saisonId], references: [id])
+  label    String @db.VarChar(120)
+  /// brouillon | ouverte | instruction | cloturee
+  status   String @default("brouillon") @db.VarChar(12)
+  /// Date limite de dépôt des vœux, affichée aux usagers (indicative).
+  closeDate DateTime? @map("close_date") @db.Date
+  consignes String?
+
+  espaces CampagneEspace[]
+  voeux   Voeu[]
+
+  createdBy String?  @map("created_by") @db.VarChar(160)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("campagne")
+}
+
+/// Un espace ouvert aux vœux d'une campagne.
+model CampagneEspace {
+  id         Int      @id @default(autoincrement())
+  campagneId Int      @map("campagne_id")
+  campagne   Campagne @relation(fields: [campagneId], references: [id], onDelete: Cascade)
+  espaceId   Int      @map("espace_id")
+  espace     Espace   @relation(fields: [espaceId], references: [id], onDelete: Cascade)
+
+  @@unique([campagneId, espaceId])
+  @@map("campagne_espace")
+}
+
+/// Un vœu : un créneau hebdomadaire (jour, heures de Paris) souhaité sur un espace pour toute la saison.
+model Voeu {
+  id             Int          @id @default(autoincrement())
+  campagneId     Int          @map("campagne_id")
+  campagne       Campagne     @relation(fields: [campagneId], references: [id], onDelete: Cascade)
+  organisationId Int          @map("organisation_id")
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  userId         String?      @map("user_id")
+  user           User?        @relation(fields: [userId], references: [id])
+  espaceId       Int          @map("espace_id")
+  espace         Espace       @relation(fields: [espaceId], references: [id], onDelete: Cascade)
+
+  /// Activité (objet du dossier créé à l'attribution).
+  title        String  @db.VarChar(160)
+  participants Int?
+  description  String?
+  /// Jour ISO (1 = lundi … 7 = dimanche) et minutes depuis minuit, heure de Paris.
+  weekday      Int
+  startMin     Int     @map("start_min")
+  endMin       Int     @map("end_min")
+  horsVacances Boolean @default(true) @map("hors_vacances")
+
+  /// en_attente | attribue | refuse
+  status       String    @default("en_attente") @db.VarChar(12)
+  decisionNote String?   @map("decision_note")
+  decidedAt    DateTime? @map("decided_at") @db.Timestamptz
+  decidedBy    String?   @map("decided_by") @db.VarChar(160)
+  /// Décision communiquée au demandeur (courriel groupé de la campagne).
+  notifiedAt   DateTime? @map("notified_at") @db.Timestamptz
+  reservationId Int?        @unique @map("reservation_id")
+  reservation   Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([campagneId, espaceId, weekday])
+  @@index([organisationId])
+  @@map("voeu")
+}
+
 // ============================================================
 //  Pièces jointes (octets à part)
 // ============================================================
@@ -702,12 +999,16 @@ model Document {
   reservation    Reservation?  @relation(fields: [reservationId], references: [id], onDelete: Cascade)
   subventionId   Int?          @map("subvention_id")
   subvention     Subvention?   @relation(fields: [subventionId], references: [id], onDelete: Cascade)
+  etatDesLieuxId Int?          @map("etat_des_lieux_id")
+  etatDesLieux   EtatDesLieux? @relation(fields: [etatDesLieuxId], references: [id], onDelete: Cascade)
 
   uploadedById String?  @map("uploaded_by_id")
   uploadedBy   User?    @relation(fields: [uploadedById], references: [id])
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  content DocumentContent?
+  content       DocumentContent?
+  avenants      Avenant[]
+  valorisations Valorisation[]
 
   @@index([espaceId])
   @@index([siteId])

@@ -6,6 +6,10 @@
 import { Blason } from "@/components/blason";
 import { Champ, Grille, Interrupteur, Select, Zone } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
+import { ETATS_ACCESSIBILITE } from "@/lib/accessibilite";
+import { decrireBareme, lireBareme } from "@/lib/annulation";
+import { JOURS_ISO } from "@/lib/constantes";
+import { lireReglePieces, REGLES_PIECES } from "@/lib/pieces";
 import { colorMix, contraste, normalizeColor } from "@/lib/theming";
 import type { AppSettings } from "@/server/config-store";
 import { FEATURES, type FeatureName } from "@/server/features";
@@ -137,6 +141,55 @@ export function VoletPortail({ cfg }: { cfg: AppSettings }) {
           aide="Texte affiché à l'inscription (CGU). Vide : aucune condition particulière."
         />
       </Grille>
+      <p className="form-section-aide mt-3">
+        Pages réglementaires du portail (liens en pied de page) : déclaration d'accessibilité,
+        mentions légales, données personnelles. Les durées de conservation de la page « Données
+        personnelles » viennent de l'onglet du même nom.
+      </p>
+      <Grille colonnes={3}>
+        <Select
+          label="État de conformité RGAA"
+          name="ACCESSIBILITE_ETAT"
+          valeur={cfg.ACCESSIBILITE_ETAT}
+          options={Object.entries(ETATS_ACCESSIBILITE)}
+        />
+        <Champ
+          label="Taux de conformité (%)"
+          name="ACCESSIBILITE_TAUX"
+          type="number"
+          min={-1}
+          max={100}
+          valeur={cfg.ACCESSIBILITE_TAUX < 0 ? "" : cfg.ACCESSIBILITE_TAUX}
+          aide="Vide ou -1 : non renseigné."
+        />
+        <Champ
+          label="Date de l'audit"
+          name="ACCESSIBILITE_DATE"
+          valeur={cfg.ACCESSIBILITE_DATE}
+          placeholder="12 mars 2026"
+        />
+        <Zone
+          label="Déclaration : non-conformités, dérogations, plan d'amélioration"
+          name="ACCESSIBILITE_TEXTE"
+          valeur={cfg.ACCESSIBILITE_TEXTE}
+          rows={5}
+          aide="Complète les mentions obligatoires générées (état, voies de recours). Audit automatisé : pnpm tsx scripts/audit-accessibilite.ts."
+        />
+        <Zone
+          label="Mentions légales"
+          name="MENTIONS_LEGALES_TEXTE"
+          valeur={cfg.MENTIONS_LEGALES_TEXTE}
+          rows={5}
+          aide="Éditeur, directeur de publication, hébergeur. Vide : éditeur et contact repris de l'onglet Collectivité."
+        />
+        <Zone
+          label="Données personnelles : compléments"
+          name="DONNEES_PERSONNELLES_TEXTE"
+          valeur={cfg.DONNEES_PERSONNELLES_TEXTE}
+          rows={5}
+          aide="Délégué à la protection des données, base légale, destinataires… ajoutés sous les mentions générées."
+        />
+      </Grille>
     </>
   );
 }
@@ -202,6 +255,65 @@ export function VoletReservations({ cfg }: { cfg: AppSettings }) {
           valeur={cfg.ALERTE_PIECES_JOURS}
           aide="Une pièce datée (assurance…) qui expire dans ce délai apparaît dans les alertes et l'usager est prévenu par courriel."
         />
+        <Select
+          label="Pièces attendues manquantes ou expirées"
+          name="PIECES_REGLE"
+          valeur={lireReglePieces(cfg.PIECES_REGLE)}
+          options={REGLES_PIECES.map((o) => [o.value, o.label])}
+          aide="Statuts et assurance pour une association, assurance pour une entreprise ou un particulier. Un dossier déjà accepté n'est jamais remis en cause."
+          pleine
+        />
+        <Champ
+          label="Barème de frais d'annulation"
+          name="ANNULATION_BAREME"
+          valeur={cfg.ANNULATION_BAREME}
+          placeholder="30:20;7:50;2:100"
+          pleine
+          aide={`Tranches « à moins de N jours du début : % du montant TTC », séparées par des points-virgules ; au-delà de la plus large, aucun frais. Actuellement : ${decrireBareme(lireBareme(cfg.ANNULATION_BAREME))} Facturés à l'annulation d'un dossier accepté, signé ou confirmé ; un agent peut annuler sans frais.`}
+        />
+        <Champ
+          label="Retenue sur caution : seuil de double validation (€)"
+          name="CAUTION_SEUIL_VALIDATION"
+          type="number"
+          min={0}
+          step="0.01"
+          valeur={cfg.CAUTION_SEUIL_VALIDATION}
+          aide="Au-delà, la retenue décidée par un agent attend la validation d'un administrateur."
+        />
+        <Champ
+          label="Restitution de la caution : délai d'alerte (jours)"
+          name="CAUTION_DELAI_RESTITUTION_JOURS"
+          type="number"
+          min={0}
+          valeur={cfg.CAUTION_DELAI_RESTITUTION_JOURS}
+          aide="Passé ce délai après la fin de l'événement, une caution encaissée ni restituée ni retenue apparaît dans les alertes."
+        />
+        <Champ
+          label="Option : relance avant l'échéance (jours)"
+          name="OPTION_RELANCE_JOURS"
+          type="number"
+          min={0}
+          valeur={cfg.OPTION_RELANCE_JOURS}
+          aide="Un dossier posé en option est relancé ce nombre de jours avant sa date limite, puis libéré d'office une fois l'échéance passée (les inscrits en liste d'attente sont prévenus)."
+        />
+        <Champ
+          label="Valorisation : seuil de convention obligatoire (€)"
+          name="VALORISATION_SEUIL_CONVENTION"
+          type="number"
+          min={0}
+          step="0.01"
+          valeur={cfg.VALORISATION_SEUIL_CONVENTION}
+          aide="Total des aides d'un exercice (avantages en nature + subventions) au-delà duquel une convention avec l'association est obligatoire (23 000 € par défaut)."
+        />
+        <Champ
+          label="Valorisation : seuil de certification des comptes (€)"
+          name="VALORISATION_SEUIL_CERTIFICATION"
+          type="number"
+          min={0}
+          step="0.01"
+          valeur={cfg.VALORISATION_SEUIL_CERTIFICATION}
+          aide="Au-delà, l'association doit faire certifier ses comptes (153 000 € par défaut)."
+        />
       </Grille>
       <div className="d-flex flex-column gap-2 mt-2 mb-3">
         <Interrupteur
@@ -210,8 +322,21 @@ export function VoletReservations({ cfg }: { cfg: AppSettings }) {
           coche={cfg.RAPPEL_J7}
         />
         <Interrupteur label="Rappel aux usagers la veille" name="RAPPEL_J1" coche={cfg.RAPPEL_J1} />
+        <Interrupteur
+          label="Planning hebdomadaire par courriel aux gestionnaires"
+          name="PLANNING_HEBDO_ENABLED"
+          coche={cfg.PLANNING_HEBDO_ENABLED}
+          aide="Chaque semaine, les gestionnaires et agents notifiés d'un espace reçoivent son planning en PDF, avec le résumé des créneaux."
+        />
       </div>
       <Grille colonnes={2}>
+        <Select
+          label="Jour d'envoi du planning hebdomadaire"
+          name="PLANNING_HEBDO_JOUR"
+          valeur={String(cfg.PLANNING_HEBDO_JOUR)}
+          options={JOURS_ISO.map((j) => [String(j.iso), j.long])}
+          aide="Du lundi au jeudi, la semaine en cours est envoyée ; du vendredi au dimanche, la semaine suivante."
+        />
         <Champ
           label="Adresses supplémentaires à notifier"
           name="AGENTS_NOTIFIES"
@@ -506,6 +631,48 @@ export function VoletApparence({ cfg }: { cfg: AppSettings }) {
           CR
         </span>
       </div>
+    </>
+  );
+}
+
+export function VoletRgpd({ cfg }: { cfg: AppSettings }) {
+  return (
+    <>
+      <p className="form-section-aide">
+        La tâche planifiée de 3 h 30 prévient par courriel les usagers inactifs, anonymise leur
+        compte à l'échéance du préavis (coordonnées effacées, dossiers conservés sans identité) et
+        purge les messages, pièces et notes des dossiers dont la conservation est échue. Les usagers
+        téléchargent leurs données et demandent la suppression de leur compte depuis « Mon compte ».
+      </p>
+      <Grille colonnes={3}>
+        <Champ
+          label="Anonymisation après inactivité (mois)"
+          name="RGPD_INACTIVITE_MOIS"
+          type="number"
+          min={0}
+          max={240}
+          valeur={cfg.RGPD_INACTIVITE_MOIS}
+          aide="Mois sans connexion. 0 : jamais automatiquement."
+        />
+        <Champ
+          label="Préavis avant anonymisation (jours)"
+          name="RGPD_PREAVIS_JOURS"
+          type="number"
+          min={1}
+          max={365}
+          valeur={cfg.RGPD_PREAVIS_JOURS}
+          aide="Une connexion pendant le préavis annule l'anonymisation."
+        />
+        <Champ
+          label="Conservation des dossiers terminés (années)"
+          name="RGPD_CONSERVATION_ANNEES"
+          type="number"
+          min={0}
+          max={30}
+          valeur={cfg.RGPD_CONSERVATION_ANNEES}
+          aide="Au-delà, les données personnelles du dossier sont purgées. 0 : jamais."
+        />
+      </Grille>
     </>
   );
 }

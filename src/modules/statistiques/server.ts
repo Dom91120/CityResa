@@ -14,6 +14,7 @@ import {
 import { dateCourte, dateHeure, NOMS_JOURS_COURTS } from "@/lib/libelles";
 import { addParisDays, parisMidnight, parisParts, toParisWall } from "@/lib/paris-time";
 import { type Periode, periode, precedente } from "@/lib/periodes";
+import { type ResumePresences, resumePresences } from "@/lib/presences";
 import {
   indicateurs,
   occupationParEspace,
@@ -22,6 +23,7 @@ import {
 } from "@/server/dashboard";
 import { prisma } from "@/server/db";
 import { type Params, param } from "@/server/paging";
+import { STATUTS_CONSTATABLES } from "@/server/presences";
 import { deviser } from "@/server/reservations";
 
 /** Statuts comptés comme « réservation effective » (l'espace a été ou sera occupé). */
@@ -68,7 +70,16 @@ export const INCLUDE_STATS = {
   organisation: { select: { id: true, name: true, type: true, profilId: true } },
   user: { select: { firstName: true, lastName: true } },
   nature: { select: { label: true } },
-  creneaux: { select: { startAt: true, endAt: true, status: true } },
+  creneaux: {
+    select: {
+      startAt: true,
+      endAt: true,
+      status: true,
+      presence: true,
+      realStartAt: true,
+      realEndAt: true,
+    },
+  },
   options: { select: { optionId: true, quantite: true } },
   materiels: { select: { materielId: true, quantite: true } },
 } satisfies Prisma.ReservationInclude;
@@ -86,7 +97,7 @@ export type PaiementStat = {
 
 export async function chargerStatistiques(p: Periode, now = new Date()) {
   const prec = precedente(p);
-  const [kpi, occupation, usagers, mois, reservations, paiements] = await Promise.all([
+  const [kpi, occupation, usagers, mois, reservations, paiements, presences] = await Promise.all([
     indicateurs(p, prec),
     occupationParEspace(p),
     repartitionUsagers(p),
@@ -109,9 +120,10 @@ export async function chargerStatistiques(p: Periode, now = new Date()) {
         },
       },
     }),
+    chargerPresences(p, now),
   ]);
   const gracieux = await valeurGracieuse(reservations);
-  return { p, prec, kpi, occupation, usagers, mois, reservations, paiements, gracieux };
+  return { p, prec, kpi, occupation, usagers, mois, reservations, paiements, gracieux, presences };
 }
 
 export type Stats = Awaited<ReturnType<typeof chargerStatistiques>>;
@@ -194,6 +206,26 @@ export function delaiMoyen(
     0,
   );
   return Math.round((total / d.length) * 10) / 10;
+}
+
+/** Le bilan des présences constatées sur les créneaux passés de la période (dossiers acquis). */
+export async function chargerPresences(p: Periode, now = new Date()): Promise<ResumePresences> {
+  const creneaux = await prisma.creneau.findMany({
+    where: {
+      status: "prevu",
+      startAt: { gte: p.de, lt: p.a },
+      reservation: { status: { in: STATUTS_CONSTATABLES } },
+    },
+    select: {
+      startAt: true,
+      endAt: true,
+      status: true,
+      presence: true,
+      realStartAt: true,
+      realEndAt: true,
+    },
+  });
+  return resumePresences(creneaux, now);
 }
 
 export function heuresReservees(rows: ResaStat[], p: Periode): number {

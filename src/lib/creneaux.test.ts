@@ -5,15 +5,18 @@ import {
   bornesRecurrence,
   chevauche,
   conflits,
+  conflitsCapacite,
   dansHoraires,
   decrireRecurrence,
   developperRecurrence,
   dureeMinutes,
   HORAIRES_DEFAUT,
+  horairesA,
   type Intervalle,
   lireHoraires,
   lireRecurrence,
   MAX_OCCURRENCES,
+  reglesAuCreneau,
   utiliseCalendrier,
   verifierRegles,
 } from "@/lib/creneaux";
@@ -515,5 +518,86 @@ describe("bornes", () => {
     ]);
     expect(paris(b.startAt)).toBe("2026-11-04 18:00");
     expect(paris(b.endAt)).toBe("2026-11-10 12:00");
+  });
+});
+
+describe("horaires par saison", () => {
+  const base = { "2": [["08:00", "22:00"]] };
+  const ete = { "2": [["09:00", "18:00"]] };
+  const periodes = [{ debut: "2027-07-01", fin: "2027-08-31", openHours: ete }];
+
+  it("prend les horaires de la saison qui contient le jour, sinon ceux de l'espace", () => {
+    expect(horairesA(base, periodes, cr("2027-07-06", "10:00", "12:00").startAt)).toBe(ete);
+    expect(horairesA(base, periodes, cr("2027-06-29", "10:00", "12:00").startAt)).toBe(base);
+    expect(horairesA(base, periodes, cr("2027-08-31", "10:00", "12:00").startAt)).toBe(ete);
+    expect(horairesA(base, [], cr("2027-07-06", "10:00", "12:00").startAt)).toBe(base);
+  });
+
+  it("les règles d'un créneau d'été refusent 20h, celles d'hiver l'acceptent", () => {
+    const regles = {
+      slotStepMin: 30,
+      minDurationMin: 60,
+      maxDurationMin: null,
+      delayMinDays: 0,
+      horizonMaxDays: 365,
+      openHours: base,
+    };
+    const soirEte = cr("2027-07-06", "19:00", "21:00");
+    const soirHiver = cr("2027-01-05", "19:00", "21:00");
+    expect(
+      verifierRegles(reglesAuCreneau(regles, periodes, soirEte), soirEte, new Date(), {
+        ignorerDelai: true,
+      }),
+    ).toEqual(["Le créneau sort des horaires d'ouverture de l'espace."]);
+    expect(
+      verifierRegles(reglesAuCreneau(regles, periodes, soirHiver), soirHiver, new Date(), {
+        ignorerDelai: true,
+      }),
+    ).toEqual([]);
+    expect(reglesAuCreneau(regles, [], soirEte)).toBe(regles);
+  });
+});
+
+describe("conflitsCapacite (espace partageable)", () => {
+  const occ = (id: number, de: string, a: string) => ({
+    id,
+    libelle: `R${id}`,
+    ...cr("2026-11-04", de, a),
+  });
+  const demande = [cr("2026-11-04", "10:00", "12:00")];
+
+  it("capacité 1 : tout chevauchement est un conflit", () => {
+    expect(conflitsCapacite(demande, [occ(1, "11:00", "13:00")], undefined, 1)).toHaveLength(1);
+  });
+
+  it("capacité 2 : une seule occupation en place laisse passer", () => {
+    expect(conflitsCapacite(demande, [occ(1, "11:00", "13:00")], undefined, 2)).toHaveLength(0);
+  });
+
+  it("capacité 2 : deux occupations qui se recouvrent pendant la demande bloquent", () => {
+    const c = conflitsCapacite(
+      demande,
+      [occ(1, "09:00", "11:00"), occ(2, "10:30", "13:00")],
+      undefined,
+      2,
+    );
+    expect(c).toHaveLength(1);
+    expect(c[0].existant.id).toBe(2);
+  });
+
+  it("capacité 2 : deux occupations qui se succèdent sans se recouvrir laissent passer", () => {
+    expect(
+      conflitsCapacite(demande, [occ(1, "09:00", "11:00"), occ(2, "11:00", "13:00")], undefined, 2),
+    ).toHaveLength(0);
+  });
+
+  it("tient compte des marges de montage et démontage", () => {
+    const c = conflitsCapacite(
+      demande,
+      [occ(1, "08:00", "09:45"), occ(2, "09:30", "11:00")],
+      { avantMin: 30, apresMin: 0 },
+      2,
+    );
+    expect(c).toHaveLength(1);
   });
 });

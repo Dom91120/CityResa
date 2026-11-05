@@ -17,7 +17,7 @@ import { VideBloc } from "@/components/liste";
 import { Avatar, Chip, OuiNon, PastilleEspace, StatutResa } from "@/components/macros";
 import { OPTION_UNITES, TARIF_UNITES } from "@/lib/constantes";
 import { dateCourte, montantOuGratuit, plage } from "@/lib/libelles";
-import { aPartirDe } from "@/lib/tarification";
+import { aPartirDe, grilleEnVigueur } from "@/lib/tarification";
 import {
   agentsDisponibles,
   chargerEspace,
@@ -33,6 +33,7 @@ import {
 import { Onglets, StatutEspace, Visibilite, Volet } from "@/modules/espaces/vues";
 import { forParent } from "@/server/documents";
 import { idDeRoute } from "@/server/guards";
+import { entreesEspace } from "@/server/liste-attente";
 import { contexteModule } from "@/server/module";
 
 export const metadata = { title: "Espace - CityRésa" };
@@ -42,6 +43,8 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
   const id = idDeRoute((await params).id);
   const e = await chargerEspace(id);
   if (!e) notFound();
+  const enVigueur = new Set(grilleEnVigueur(e.tarifs, new Date()).map((t) => t.id));
+  const attente = await entreesEspace(id);
   const [photos, refs, prochains, blocages, occupation] = await Promise.all([
     forParent("espace", id, { kinds: ["photo"] }),
     referentielsEspaces(),
@@ -101,6 +104,13 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
           </>
         }
         menu={[
+          <MenuLien
+            key="feuille"
+            url={`${fiche}/feuille.pdf`}
+            libelle="Feuille de salle (PDF, QR code)"
+            icone="qr-code"
+            cible="_blank"
+          />,
           peutEditer && !bloque ? (
             <MenuLien
               key="resa"
@@ -274,18 +284,34 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
                 </ul>
               </Section>
               <Section titre="Horaires d'ouverture" icone="calendar-clock">
-                <table className="table">
-                  <tbody>
-                    {horairesTableau(e.openHours).map((h) => (
-                      <tr key={h.jour}>
-                        <td className="fw-medium" style={{ width: 120 }}>
-                          {h.jour}
-                        </td>
-                        <td className={h.plages === "Fermé" ? "text-muted" : ""}>{h.plages}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                {[
+                  {
+                    cle: "base",
+                    titre: e.horairesSaisons.length ? "Hors saison particulière" : null,
+                    json: e.openHours,
+                  },
+                  ...e.horairesSaisons.map((h) => ({
+                    cle: `s${h.id}`,
+                    titre: `Saison ${h.saison.label}`,
+                    json: h.openHours,
+                  })),
+                ].map((bloc) => (
+                  <div key={bloc.cle}>
+                    {bloc.titre ? <div className="form-label mt-2">{bloc.titre}</div> : null}
+                    <table className="table">
+                      <tbody>
+                        {horairesTableau(bloc.json).map((h) => (
+                          <tr key={h.jour}>
+                            <td className="fw-medium" style={{ width: 120 }}>
+                              {h.jour}
+                            </td>
+                            <td className={h.plages === "Fermé" ? "text-muted" : ""}>{h.plages}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ))}
               </Section>
             </div>
           </div>
@@ -401,12 +427,14 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
                       <th>Unité</th>
                       <th className="text-end">Montant</th>
                       <th>Libellé</th>
+                      <th>En vigueur</th>
+                      <th>Délibération</th>
                       <th />
                     </tr>
                   </thead>
                   <tbody>
                     {e.tarifs.map((t) => (
-                      <tr key={t.id}>
+                      <tr key={t.id} className={enVigueur.has(t.id) ? undefined : "text-muted"}>
                         <td>
                           {t.profil ? (
                             <Chip teinte="violet">{t.profil.label}</Chip>
@@ -419,6 +447,17 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
                           {montantOuGratuit(t.montant)}
                         </td>
                         <td>{t.label ?? <span className="text-faint">—</span>}</td>
+                        <td className="text-nowrap">
+                          {t.validFrom ? `dès le ${dateCourte(t.validFrom)}` : "depuis toujours"}{" "}
+                          {enVigueur.has(t.id) ? (
+                            <Chip teinte="emerald">En vigueur</Chip>
+                          ) : t.validFrom && t.validFrom > new Date() ? (
+                            <Chip teinte="amber">À venir</Chip>
+                          ) : (
+                            <Chip teinte="slate">Remplacé</Chip>
+                          )}
+                        </td>
+                        <td>{t.deliberation ?? <span className="text-faint">—</span>}</td>
                         <td className="actions">
                           {peutEditer ? (
                             <form method="POST" action={`${fiche}/tarifs`} className="d-inline">
@@ -807,6 +846,61 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
               />
             )}
           </div>
+          <div className="data-card">
+            <div className="card-header-custom">
+              <h6>
+                Liste d'attente{" "}
+                {attente.length ? (
+                  <span className="chip chip-amber ms-1">{attente.length}</span>
+                ) : null}
+              </h6>
+            </div>
+            {attente.length ? (
+              <div className="table-responsive">
+                <table className="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Créneau souhaité</th>
+                      <th>Demandeur</th>
+                      <th>Inscrit le</th>
+                      <th>Prévenu</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {attente.map((a) => (
+                      <tr key={a.id}>
+                        <td>
+                          {plage(a.startAt, a.endAt)}
+                          {a.title ? <div className="text-muted small">{a.title}</div> : null}
+                        </td>
+                        <td>
+                          {a.organisation ? (
+                            <a href={`/usagers/${a.organisation.id}`}>{a.organisation.name}</a>
+                          ) : (
+                            `${a.user.firstName} ${a.user.lastName}`.trim()
+                          )}
+                          <div className="text-muted small">{a.user.email}</div>
+                        </td>
+                        <td>{dateCourte(a.createdAt)}</td>
+                        <td>
+                          {a.notifiedAt ? (
+                            <Chip teinte="emerald">le {dateCourte(a.notifiedAt)}</Chip>
+                          ) : (
+                            <span className="text-faint">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-muted small p-3 mb-0">
+                Personne n'attend un créneau de cet espace. Les usagers s'inscrivent depuis le
+                portail quand le créneau qu'ils demandent est occupé.
+              </p>
+            )}
+          </div>
         </Volet>
 
         {/* ── Flux ICS ── */}
@@ -972,6 +1066,19 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
                 valeur={0}
               />
               <Champ label="Libellé" name="label" id="tarif-label" placeholder="facultatif" />
+              <Champ
+                label="Date d'effet"
+                name="valid_from"
+                id="tarif-valid-from"
+                type="date"
+                aide="Vide = applicable dès maintenant. Une date future prépare la grille de l'année suivante : elle s'applique aux créneaux à partir de ce jour."
+              />
+              <Champ
+                label="Délibération"
+                name="deliberation"
+                id="tarif-deliberation"
+                placeholder="Ex. : DEL-2026-042 du 15/06/2026"
+              />
             </Grille>
           </ModalAction>
 
@@ -1044,7 +1151,7 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
             csrf={csrf}
             bouton="Bloquer"
             icone="ban"
-            aide="Heure de Paris. Les demandes existantes ne sont pas annulées : vérifiez le planning."
+            aide="Heure de Paris. Si des réservations tombent sur la période, un aperçu les liste avant de bloquer : annulation des créneaux et courriel aux usagers au choix."
           >
             <Grille colonnes={2}>
               <Champ label="Début · date" name="date_debut" type="date" requis />

@@ -4,6 +4,7 @@ import { FormulaireEspace } from "@/modules/espaces/vues";
 import { sitesPourSelect } from "@/modules/sites/server";
 import { prisma } from "@/server/db";
 import { requireEdit } from "@/server/guards";
+import { saisonsPourFormulaire } from "@/server/horaires";
 import { contexteModule } from "@/server/module";
 import { type Params, param } from "@/server/paging";
 
@@ -18,7 +19,7 @@ export default async function NouvelEspacePage({
   await requireEdit("espaces");
   const params = await searchParams;
   const siteParDefaut = Number.parseInt(param(params, "site") ?? "", 10) || null;
-  const [sites, refs, parents] = await Promise.all([
+  const [sites, refs, parents, saisons] = await Promise.all([
     sitesPourSelect(),
     referentielsEspaces(),
     prisma.espace.findMany({
@@ -26,6 +27,7 @@ export default async function NouvelEspacePage({
       orderBy: [{ site: { name: "asc" } }, { name: "asc" }],
       select: { id: true, name: true, site: { select: { name: true } } },
     }),
+    saisonsPourFormulaire(null),
   ]);
   return (
     <>
@@ -44,6 +46,7 @@ export default async function NouvelEspacePage({
         natures={refs.natures}
         profils={refs.profils}
         siteParDefaut={siteParDefaut}
+        saisons={saisons}
       />
     </>
   );

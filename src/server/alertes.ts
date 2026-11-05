@@ -4,12 +4,15 @@
  * correspondante ; elle n'est montrée qu'aux agents qui ont le droit de voir le domaine.
  */
 import { parseYmdUtc } from "@/lib/date-utc";
+import { STATUTS_OPTION } from "@/lib/options";
 import { addParisDays, parisMidnight, todayParisISO } from "@/lib/paris-time";
 import { etatValidite, type PieceJugee } from "@/lib/pieces";
 import type { AppSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { allFlagsIn } from "@/server/features";
 import type { CurrentUser } from "@/server/guards";
+import { controlesEnRetard } from "@/server/materiel-stock";
+import { organisationsSansConvention } from "@/server/valorisation";
 
 export type Alerte = {
   cle: string;
@@ -91,6 +94,35 @@ export async function alertes(
       });
   }
 
+  if (features.subventions && user.canView("subventions")) {
+    const n = await organisationsSansConvention(cfg).catch(() => 0);
+    if (n)
+      out.push({
+        cle: "valorisation_convention",
+        niveau: "warning",
+        icone: "handshake",
+        titre: `${n} association${n > 1 ? "s" : ""} dépasse${n > 1 ? "nt" : ""} ${Math.round(cfg.VALORISATION_SEUIL_CONVENTION).toLocaleString("fr-FR")} € d'aides sans convention`,
+        detail:
+          "Avantages en nature et subventions de l'exercice : une convention d'objectifs est obligatoire.",
+        nb: n,
+        href: "/valorisation",
+      });
+  }
+
+  if (features.materiel && user.canView("materiel")) {
+    const n = (await controlesEnRetard(now)).length;
+    if (n)
+      out.push({
+        cle: "materiel_controles",
+        niveau: "warning",
+        icone: "clipboard-check",
+        titre: `${n} matériel${n > 1 ? "s" : ""} à contrôler`,
+        detail: "Contrôle périodique échu : à enregistrer depuis la fiche du matériel.",
+        nb: n,
+        href: "/materiel?etat=controle",
+      });
+  }
+
   if (features.paiements && user.canView("paiements")) {
     const n = await prisma.facture.count({
       where: { status: "a_payer", dueAt: { lt: parseYmdUtc(today) } },
@@ -122,6 +154,64 @@ export async function alertes(
         nb: n,
         href: "/reservations?statut=acceptee",
       });
+  }
+
+  if (user.canView("reservations")) {
+    const horizon = addParisDays(minuit, (cfg.OPTION_RELANCE_JOURS || 3) + 1);
+    const options = await prisma.reservation.count({
+      where: {
+        optionExpiresAt: { lte: horizon },
+        status: { in: [...STATUTS_OPTION] },
+        ...(user.espacesGeres.length ? { espaceId: { in: user.espacesGeres } } : {}),
+      },
+    });
+    if (options)
+      out.push({
+        cle: "options_echeance",
+        niveau: "warning",
+        icone: "hourglass",
+        titre: `${options} option${options > 1 ? "s" : ""} arrive${options > 1 ? "nt" : ""} à échéance`,
+        detail: "Sans confirmation à la date limite, le créneau est libéré d'office.",
+        nb: options,
+        href: "/reservations?statut=a_traiter",
+      });
+  }
+
+  if (user.canView("reservations")) {
+    const delai = cfg.CAUTION_DELAI_RESTITUTION_JOURS || 30;
+    const retard = await prisma.reservation.count({
+      where: {
+        cautionStatus: "encaissee",
+        endAt: { lt: addParisDays(minuit, -delai) },
+        ...(user.espacesGeres.length ? { espaceId: { in: user.espacesGeres } } : {}),
+      },
+    });
+    if (retard)
+      out.push({
+        cle: "cautions_retard",
+        niveau: "warning",
+        icone: "piggy-bank",
+        titre: `${retard} caution${retard > 1 ? "s" : ""} à restituer ou retenir depuis plus de ${delai} jours`,
+        detail: "État des lieux de sortie, puis restitution ou retenue motivée.",
+        nb: retard,
+        href: "/reservations?caution=retard",
+      });
+    if (user.isAdmin) {
+      const aValider = await prisma.reservation.count({
+        where: { cautionStatus: "retenue_a_valider" },
+      });
+      if (aValider)
+        out.push({
+          cle: "cautions_a_valider",
+          niveau: "warning",
+          icone: "shield-check",
+          titre: `${aValider} retenue${aValider > 1 ? "s" : ""} sur caution à valider`,
+          detail:
+            "Au-delà du seuil, un administrateur confirme la retenue avant l'envoi à l'usager.",
+          nb: aValider,
+          href: "/reservations?caution=a_valider",
+        });
+    }
   }
 
   if (user.canView("reservations")) {

@@ -11,6 +11,7 @@ import {
   VoletPieces,
   VoletPortail,
   VoletReservations,
+  VoletRgpd,
   VoletSauvegardes,
   VoletSms,
 } from "@/modules/parametres/vues";
@@ -32,6 +33,7 @@ export default async function ParametresPage() {
     modules: <VoletModules cfg={cfg} cles={ONGLETS.find((o) => o.cle === "modules")?.cles ?? []} />,
     pieces: <VoletPieces cfg={cfg} />,
     apparence: <VoletApparence cfg={cfg} />,
+    rgpd: <VoletRgpd cfg={cfg} />,
     sauvegardes: <VoletSauvegardes cfg={cfg} />,
   };
   return (

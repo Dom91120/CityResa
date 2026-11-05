@@ -23,7 +23,10 @@ export default async function ConnexionPage({
   const next = sp.next ?? "";
   return (
     <>
-      <div className="login-page">
+      <a href="#main-content" className="skip-link">
+        Aller au contenu
+      </a>
+      <main id="main-content" className="login-page">
         <div className="login-panel">
           <div className="login-entete">
             <div className="login-brand">
@@ -104,7 +107,7 @@ export default async function ConnexionPage({
           </div>
         </div>
         <VisuelConnexion titre={cfg.PORTAIL_TITRE} texte={cfg.PORTAIL_ACCROCHE} />
-      </div>
+      </main>
       <ScriptsPage nonce={nonce} />
     </>
   );

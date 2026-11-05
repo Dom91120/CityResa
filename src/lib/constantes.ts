@@ -255,6 +255,7 @@ export const FACTURE_TYPES: Record<string, string> = {
   solde: "Solde",
   caution: "Caution",
   avoir: "Avoir",
+  frais: "Frais d'annulation",
 };
 export const FACTURE_STATUS: Record<string, { label: string; teinte: string }> = {
   a_payer: { label: "À payer", teinte: "amber" },
@@ -300,7 +301,10 @@ export const DOCUMENT_KINDS: Record<string, string> = {
   plan: "Plan",
   piece: "Pièce justificative",
   convention: "Convention",
+  avenant: "Avenant",
   facture: "Facture",
+  etat_des_lieux: "État des lieux",
+  attestation: "Attestation de valorisation",
   statuts: "Statuts",
   assurance: "Attestation d'assurance",
   autre: "Autre",
@@ -313,6 +317,7 @@ export const DOCUMENT_PARENTS: Record<string, [string, PermissionCategory]> = {
   organisation: ["organisationId", "usagers"],
   reservation: ["reservationId", "reservations"],
   subvention: ["subventionId", "subventions"],
+  etat_des_lieux: ["etatDesLieuxId", "reservations"],
 };
 
 // ── Espaces ──

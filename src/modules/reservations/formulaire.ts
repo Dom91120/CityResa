@@ -26,6 +26,15 @@ export function lireCreneau(form: FormData): Intervalle {
   return { startAt: debut, endAt: finReelle };
 }
 
+/** L'échéance d'une option « option_date » (+ « option_heure », 18:00 à défaut), heure de Paris ; null si vide. */
+export function lireEcheanceOption(form: FormData): Date | null {
+  const date = champ(form, "option_date");
+  if (!date) return null;
+  const d = parisDateTimeToInstant(date, champ(form, "option_heure") || "18:00");
+  if (!d) throw new UserFacingError("Échéance de l'option invalide.");
+  return d;
+}
+
 export function lireRecurrenceForm(form: FormData): Recurrence | null {
   if (!coche(form, "recurrence")) return null;
   const freq = champ(form, "freq");
@@ -103,6 +112,8 @@ export function lireDemande(form: FormData, ctx: LectureDemande): DemandeEntree 
     userId: ctx.userId,
     source: ctx.source,
     gratuit: ctx.agent ? coche(form, "gratuit") : false,
+    gratuitMotif: ctx.agent ? champOuNull(form, "gratuit_motif") : null,
+    optionExpiresAt: ctx.agent ? lireEcheanceOption(form) : null,
     ignorerDelai: ctx.agent ? coche(form, "ignorer_delai") : false,
     statutInitial:
       ctx.agent && (statut === "confirmee" || statut === "a_traiter" || statut === "acceptee")
