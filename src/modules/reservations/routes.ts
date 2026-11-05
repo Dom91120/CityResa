@@ -5,20 +5,40 @@
  * (`user.gereEspace`) et transforme toute UserFacingError en message flash.
  */
 import { RESERVATION_STATUS, type ReservationStatus } from "@/lib/constantes";
-import { bornes, verifierRegles } from "@/lib/creneaux";
-import { champ, champOuNull, coche, idOuNull, parseInt_ } from "@/lib/forms-util";
-import { montant, plage } from "@/lib/libelles";
-import { lireChoix, lireCreneau, lireDemande } from "@/modules/reservations/formulaire";
+import { reglesAuCreneau, verifierRegles } from "@/lib/creneaux";
+import { champ, champOuNull, coche, idOuNull, parseFloat_, parseInt_ } from "@/lib/forms-util";
+import { dateHeure, montant, plage } from "@/lib/libelles";
+import { lienSaisieVille, lireChoixRequisition, phraseBilan } from "@/lib/priorite";
+import { lirePortee, phraseDeplacement } from "@/lib/serie";
+import {
+  lireChoix,
+  lireCreneau,
+  lireDemande,
+  lireEcheanceOption,
+} from "@/modules/reservations/formulaire";
 import { auditRecord } from "@/server/audit";
+import { courrielAvenantASigner, libelleAvenant, signerAvenantPapier } from "@/server/avenant";
+import {
+  enregistrerEtatDesLieux,
+  marquerCautionEncaissee,
+  restituerCaution,
+  retenirCaution,
+  validerRetenue,
+} from "@/server/caution";
 import { genererConvention } from "@/server/convention";
 import { prisma } from "@/server/db";
+import { type FichierLu, lireFichier } from "@/server/documents";
 import { UserFacingError } from "@/server/errors";
 import { creerFacture } from "@/server/factures";
 import { enabledIn } from "@/server/features";
 import { type CurrentUser, requireAdmin, requireEdit } from "@/server/guards";
+import { horairesSaisonDe } from "@/server/horaires";
 import { pasTrouve, redirigerAvecMessage } from "@/server/http";
+import { notifierLiberation } from "@/server/liste-attente";
+import { retournerMateriel, sortirMateriel } from "@/server/materiel-stock";
 import { invalidateNavCounts } from "@/server/nav";
 import { notifier } from "@/server/notifications";
+import { requisitionner } from "@/server/priorite";
 import {
   ajouterMessage,
   changerStatut,
@@ -26,11 +46,15 @@ import {
   courrielUsager,
   creerReservation,
   historiser,
+  leverOption,
+  majBornes,
+  poserOption,
   type ReservationComplete,
   recalculerMontants,
   stockDisponible,
   verifierDisponibilite,
 } from "@/server/reservations";
+import { deplacerSerie } from "@/server/serie";
 
 // ── Création ──
 
@@ -79,7 +103,13 @@ export async function creer(form: FormData): Promise<Response> {
       "success",
     );
   } catch (e) {
-    if (e instanceof UserFacingError) return redirigerAvecMessage(retour, e.message, "danger");
+    if (e instanceof UserFacingError) {
+      // Créneau occupé : la page de saisie propose des alternatives libres.
+      const conflit = e.message.startsWith("Créneau indisponible")
+        ? `${retour}${retour.includes("?") ? "&" : "?"}conflit=1`
+        : retour;
+      return redirigerAvecMessage(conflit, e.message, "danger");
+    }
     throw e;
   }
 }
@@ -88,21 +118,18 @@ export async function creer(form: FormData): Promise<Response> {
 
 type Contexte = { user: CurrentUser; r: ReservationComplete; fiche: string };
 
-/** Remet les bornes du dossier sur ses créneaux vivants. */
-async function majBornes(id: number): Promise<void> {
-  const prevus = await prisma.creneau.findMany({ where: { reservationId: id, status: "prevu" } });
-  if (!prevus.length) return;
-  const b = bornes(prevus);
-  await prisma.reservation.update({ where: { id }, data: { startAt: b.startAt, endAt: b.endAt } });
-}
-
 /** Remplace les options et le matériel du dossier, puis recalcule montants et lignes. */
 async function appliquerChoix(
   r: ReservationComplete,
   options: { id: number; quantite: number }[],
   materiels: { id: number; quantite: number }[],
   gratuit: boolean,
+  gratuitMotif: string | null = null,
 ): Promise<void> {
+  if (gratuit && !gratuitMotif?.trim())
+    throw new UserFacingError(
+      "Indiquez le fondement de la gratuité (délibération, convention, intérêt général…).",
+    );
   const [opts, mats] = await Promise.all([
     options.length
       ? prisma.option.findMany({ where: { id: { in: options.map((o) => o.id) } } })
@@ -136,7 +163,7 @@ async function appliquerChoix(
         }),
       ),
   ]);
-  const devis = await recalculerMontants(r.id, gratuit);
+  const devis = await recalculerMontants(r.id, gratuit, gratuitMotif);
   await Promise.all([
     ...opts.map((o) =>
       prisma.reservationOption.updateMany({
@@ -213,11 +240,13 @@ async function statut({ user, r, fiche }: Contexte, form: FormData): Promise<Res
       lireChoix(form, "option"),
       lireChoix(form, "materiel"),
       coche(form, "gratuit"),
+      champOuNull(form, "gratuit_motif"),
     );
   }
   const maj = await changerStatut(r.id, nouveau, user, {
     motif: motif ?? undefined,
     message: message ?? undefined,
+    sansFrais: coche(form, "sans_frais"),
   });
   if (nouveau === "acceptee" && message) await ajouterMessage(r.id, user, message, false);
   const label = RESERVATION_STATUS[maj.status as ReservationStatus].label;
@@ -265,7 +294,8 @@ async function assigner({ user, r, fiche }: Contexte, form: FormData): Promise<R
 
 async function ajouterCreneau({ user, r, fiche }: Contexte, form: FormData): Promise<Response> {
   const i = lireCreneau(form);
-  const erreurs = verifierRegles(r.espace, i, new Date(), { ignorerDelai: true });
+  const regles = reglesAuCreneau(r.espace, await horairesSaisonDe(r.espaceId), i);
+  const erreurs = verifierRegles(regles, i, new Date(), { ignorerDelai: true });
   if (erreurs.length) throw new UserFacingError(erreurs.join(" "));
   const conflits = await verifierDisponibilite(r.espace, [i], r.id);
   if (conflits.length)
@@ -294,7 +324,135 @@ async function annulerCreneau({ user, r, fiche }: Contexte, cid: number): Promis
   await majBornes(r.id);
   await recalculerMontants(r.id);
   await historiser(r.id, "Créneau annulé", plage(c.startAt, c.endAt), user.name);
+  await notifierLiberation(r.espaceId, [c]).catch((e) => console.error("[liste d'attente]", e));
   return redirigerAvecMessage(fiche, `Créneau du ${plage(c.startAt, c.endAt)} annulé.`, "success");
+}
+
+/**
+ * Déplace un créneau (et, selon la portée, les suivants ou toute la série). Une erreur ramène
+ * à la page de modification, pas à la fiche, pour corriger la saisie.
+ */
+async function modifierCreneau(
+  { user, r, fiche }: Contexte,
+  cid: number,
+  form: FormData,
+): Promise<Response> {
+  const page = `${fiche}/creneaux/${cid}/modifier`;
+  if (!r.creneaux.some((c) => c.id === cid)) return pasTrouve();
+  try {
+    const portee = lirePortee(champ(form, "portee"));
+    const prevenir = coche(form, "prevenir");
+    const b = await deplacerSerie({
+      r,
+      cibleId: cid,
+      nouveau: lireCreneau(form),
+      portee,
+      prevenir,
+      acteur: { email: user.email, name: user.name },
+    });
+    const suite =
+      b.convention === "regeneree"
+        ? " La convention a été régénérée."
+        : b.convention === "avenant"
+          ? " La convention était signée : un avenant a été édité et envoyé à l'usager pour signature."
+          : "";
+    return redirigerAvecMessage(
+      fiche,
+      `${phraseDeplacement(b.nb, portee, prevenir)}${suite}`,
+      "success",
+    );
+  } catch (e) {
+    if (e instanceof UserFacingError) return redirigerAvecMessage(page, e.message, "danger");
+    throw e;
+  }
+}
+
+/**
+ * Priorité municipale : réquisitionne un créneau pour un événement de la Ville (déplacement ou
+ * annulation sans frais), puis enchaîne sur la saisie de la réservation de la Ville si demandé.
+ */
+async function requisitionCreneau(
+  { user, r, fiche }: Contexte,
+  cid: number,
+  form: FormData,
+): Promise<Response> {
+  const page = `${fiche}/creneaux/${cid}/requisition`;
+  const c = r.creneaux.find((x) => x.id === cid);
+  if (!c) return pasTrouve();
+  try {
+    let saisie: ReturnType<typeof lireCreneau> | null = null;
+    if (champ(form, "mode") === "deplacer" && !champ(form, "alternative")) {
+      try {
+        saisie = lireCreneau(form);
+      } catch {
+        saisie = null;
+      }
+    }
+    const choix = lireChoixRequisition({
+      mode: champ(form, "mode"),
+      alternative: champ(form, "alternative"),
+      saisie,
+    });
+    if (typeof choix === "string") throw new UserFacingError(choix);
+    const evenement = champ(form, "evenement").trim();
+    const b = await requisitionner({
+      r,
+      creneauId: cid,
+      evenement,
+      motif: champOuNull(form, "motif"),
+      choix,
+      prevenir: coche(form, "prevenir"),
+      acteur: { email: user.email, name: user.name },
+    });
+    const bilan = phraseBilan(c, choix, { dossierAnnule: b.dossierAnnule, prevenu: b.prevenu });
+    if (coche(form, "enchainer"))
+      return redirigerAvecMessage(
+        lienSaisieVille(r.espaceId, c, evenement),
+        `${bilan} Saisissez maintenant la réservation de la Ville sur le créneau libéré.`,
+        "success",
+      );
+    return redirigerAvecMessage(fiche, bilan, "success");
+  } catch (e) {
+    if (e instanceof UserFacingError) return redirigerAvecMessage(page, e.message, "danger");
+    throw e;
+  }
+}
+
+/** Relance l'usager pour la signature d'un avenant (courriel, PDF joint). */
+async function relancerAvenant({ user, r, fiche }: Contexte, aid: number): Promise<Response> {
+  const a = r.avenants.find((x) => x.id === aid);
+  if (!a) return pasTrouve();
+  if (a.signedAt) throw new UserFacingError("Cet avenant est déjà signé.");
+  const to = r.user?.email ?? r.organisation?.email;
+  if (!to) throw new UserFacingError("Aucune adresse de courriel connue pour l'usager.");
+  await courrielAvenantASigner(r, a);
+  await historiser(
+    r.id,
+    `Relance pour signature (avenant ${libelleAvenant(a)})`,
+    `courriel à ${to}`,
+    user.name,
+  );
+  return redirigerAvecMessage(fiche, `Relance envoyée à ${to}.`, "success");
+}
+
+/** Un agent enregistre la signature papier d'un avenant. */
+async function avenantPapier(
+  { user, r, fiche }: Contexte,
+  aid: number,
+  form: FormData,
+): Promise<Response> {
+  const a = await signerAvenantPapier(r.id, aid, champ(form, "signer_name"), user.name);
+  await auditRecord(
+    "signature avenant (papier)",
+    `${r.numero} avenant ${libelleAvenant(a)} par ${a.signerName}`,
+    "reservations",
+    user.email,
+  );
+  return redirigerAvecMessage(
+    fiche,
+    `Avenant ${libelleAvenant(a)} marqué signé par ${a.signerName}.`,
+    "success",
+  );
 }
 
 async function regenererConvention({ user, r, fiche }: Contexte): Promise<Response> {
@@ -426,10 +584,132 @@ export async function actionReservation(
       case "supprimer":
         return await supprimer(ctx);
       default: {
-        if (segments[0] === "creneaux" && segments[2] === "annuler") {
+        if (segments[0] === "creneaux" && segments.length === 3) {
           const cid = parseInt_(segments[1], null, 1);
           if (!cid) return pasTrouve();
-          return await annulerCreneau(ctx, cid);
+          if (segments[2] === "annuler") return await annulerCreneau(ctx, cid);
+          if (segments[2] === "modifier") return await modifierCreneau(ctx, cid, form);
+          if (segments[2] === "requisition") return await requisitionCreneau(ctx, cid, form);
+        }
+        if (segments[0] === "materiel" && segments.length === 3) {
+          const mid = parseInt_(segments[1], null, 1);
+          if (!mid) return pasTrouve();
+          if (segments[2] === "sortie")
+            return redirigerAvecMessage(fiche, await sortirMateriel(user, r.id, mid), "success");
+          if (segments[2] === "retour")
+            return redirigerAvecMessage(
+              fiche,
+              await retournerMateriel(
+                user,
+                r.id,
+                mid,
+                parseInt_(form.get("rendus"), -1, 0) ?? -1,
+                champOuNull(form, "note"),
+              ),
+              "success",
+            );
+        }
+        if (segments[0] === "option" && segments.length === 2) {
+          if (segments[1] === "poser") {
+            const echeance = lireEcheanceOption(form);
+            if (!echeance) throw new UserFacingError("Indiquez la date limite de l'option.");
+            await poserOption(r, echeance, user.name);
+            return redirigerAvecMessage(
+              fiche,
+              `Option posée jusqu'au ${dateHeure(echeance)} : relance ${user.settings.OPTION_RELANCE_JOURS} jour(s) avant, libération d'office ensuite.`,
+              "success",
+            );
+          }
+          if (segments[1] === "lever") {
+            await leverOption(r, user.name);
+            return redirigerAvecMessage(
+              fiche,
+              "Option levée : le dossier suit son cours sans échéance.",
+              "success",
+            );
+          }
+          return pasTrouve();
+        }
+        if (segments[0] === "etat-des-lieux" && segments.length === 2) {
+          const kind = segments[1];
+          if (kind !== "entree" && kind !== "sortie") return pasTrouve();
+          const photos: FichierLu[] = [];
+          for (const f of form.getAll("photos")) {
+            if (typeof f === "string" || !(f.name || "").trim()) continue;
+            const lu = await lireFichier(user.settings, f, { imagesSeulement: true });
+            if (typeof lu === "string") throw new UserFacingError(lu);
+            photos.push(lu);
+          }
+          await enregistrerEtatDesLieux(
+            r,
+            kind,
+            {
+              observations: champOuNull(form, "observations"),
+              degats: coche(form, "degats"),
+              signataire: champOuNull(form, "signataire"),
+            },
+            photos,
+            { name: user.name, email: user.email, id: user.id },
+          );
+          return redirigerAvecMessage(
+            `${fiche}#caution`,
+            `État des lieux ${kind === "entree" ? "d'entrée" : "de sortie"} enregistré${photos.length ? ` avec ${photos.length} photo(s)` : ""}.`,
+            "success",
+          );
+        }
+        if (segments[0] === "caution" && segments.length === 2) {
+          const acteur = { name: user.name, email: user.email };
+          switch (segments[1]) {
+            case "encaisser":
+              await marquerCautionEncaissee(r, acteur);
+              return redirigerAvecMessage(
+                `${fiche}#caution`,
+                "Caution marquée encaissée.",
+                "success",
+              );
+            case "restituer":
+              await restituerCaution(r, acteur);
+              return redirigerAvecMessage(
+                `${fiche}#caution`,
+                "Caution restituée ; l'usager est prévenu.",
+                "success",
+              );
+            case "retenir": {
+              const statutCaution = await retenirCaution(
+                r,
+                parseFloat_(form.get("montant"), 0) ?? 0,
+                champOuNull(form, "motif"),
+                acteur,
+                user.settings,
+              );
+              return redirigerAvecMessage(
+                `${fiche}#caution`,
+                statutCaution === "retenue"
+                  ? "Retenue enregistrée ; l'usager est prévenu."
+                  : "Retenue enregistrée : au-delà du seuil, elle attend la validation d'un administrateur avant l'envoi à l'usager.",
+                statutCaution === "retenue" ? "success" : "warning",
+              );
+            }
+            case "valider":
+              if (!user.isAdmin)
+                throw new UserFacingError(
+                  "La validation d'une retenue est réservée aux administrateurs.",
+                );
+              await validerRetenue(r, acteur);
+              return redirigerAvecMessage(
+                `${fiche}#caution`,
+                "Retenue validée ; l'usager est prévenu.",
+                "success",
+              );
+            default:
+              return pasTrouve();
+          }
+        }
+        if (segments[0] === "avenants" && segments.length === 3) {
+          const aid = parseInt_(segments[1], null, 1);
+          if (!aid) return pasTrouve();
+          if (segments[2] === "relancer") return await relancerAvenant(ctx, aid);
+          if (segments[2] === "signature-manuelle") return await avenantPapier(ctx, aid, form);
         }
         return pasTrouve();
       }

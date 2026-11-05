@@ -4,6 +4,8 @@ import { SegTabs, urlAvec, VideBloc } from "@/components/liste";
 import { ScriptDiffere } from "@/components/scripts";
 import { nomCourt } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
+import { COULEURS, legende, lireCouleur, lireVuesEnregistrees, qsVue } from "@/lib/planning-vues";
+import { VueListe } from "@/modules/planning/liste";
 import {
   espacesDuPerimetre,
   espacesPlanning,
@@ -24,6 +26,7 @@ const VUES: [Vue, string][] = [
   ["semaine", "Semaine"],
   ["mois", "Mois"],
   ["jour", "Jour"],
+  ["liste", "Liste"],
 ];
 
 export default async function PlanningPage({
@@ -37,6 +40,9 @@ export default async function PlanningPage({
   const date = lireDate(param(params, "date"));
   const fen = fenetre(vue, date);
   const filtres = lireFiltresPlanning(params);
+  const couleur = lireCouleur(param(params, "couleur"));
+  const vuesEnregistrees = lireVuesEnregistrees(page.user.listPrefs);
+  const qsActuelle = qsVue(page.search);
   const [espaces, tous] = await Promise.all([
     espacesPlanning(page.user, filtres),
     espacesDuPerimetre(page.user),
@@ -52,6 +58,10 @@ export default async function PlanningPage({
     urlAvec(page.pathname, page.search, modifs);
   const sites = [...new Map(tous.map((e) => [e.site.id, e.site])).values()];
   const unSeul = espaces.length === 1 ? espaces[0] : null;
+  const qsFiltres = new URLSearchParams();
+  if (filtres.site) qsFiltres.set("site", String(filtres.site));
+  for (const id of filtres.espaces) qsFiltres.append("espace", String(id));
+  const filtresQs = qsFiltres.toString();
   const nbEvts = creneaux.length;
   const props = {
     fen,
@@ -62,6 +72,7 @@ export default async function PlanningPage({
     peutEditer,
     aujourdhui,
     retour,
+    couleur,
   };
 
   return (
@@ -82,9 +93,130 @@ export default async function PlanningPage({
           </p>
         </div>
         <div className="page-actions">
-          <button type="button" className="btn btn-outline-secondary btn-sm" data-imprimer>
-            <Icone nom="printer" taille={14} /> Imprimer
-          </button>
+          <div className="dropdown d-inline-block">
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              data-bs-toggle="dropdown"
+              data-bs-auto-close="outside"
+              aria-expanded="false"
+            >
+              <Icone nom="bookmark" taille={14} /> Mes vues
+              {vuesEnregistrees.length ? ` (${vuesEnregistrees.length})` : ""}{" "}
+              <Icone nom="chevron-down" taille={12} />
+            </button>
+            <div className="dropdown-menu p-2" style={{ minWidth: 300 }}>
+              {vuesEnregistrees.map((v) => (
+                <div key={v.nom} className="d-flex align-items-center gap-1">
+                  <a
+                    href={`/planning${v.qs ? `?${v.qs}` : ""}`}
+                    className="dropdown-item flex-grow-1"
+                  >
+                    <Icone nom="bookmark" taille={13} /> {v.nom}
+                  </a>
+                  <form method="POST" action="/planning/vues" className="d-inline">
+                    <input type="hidden" name="csrf_token" value={page.csrf} />
+                    <input type="hidden" name="action" value="supprimer" />
+                    <input type="hidden" name="nom" value={v.nom} />
+                    <input type="hidden" name="next" value={retour} />
+                    <button
+                      type="submit"
+                      className="btn btn-ghost btn-icone btn-sm"
+                      title={`Supprimer la vue « ${v.nom} »`}
+                      aria-label={`Supprimer la vue ${v.nom}`}
+                    >
+                      <Icone nom="x" taille={12} />
+                    </button>
+                  </form>
+                </div>
+              ))}
+              {vuesEnregistrees.length ? <div className="dropdown-divider" /> : null}
+              <form method="POST" action="/planning/vues" className="px-2 py-1 d-flex gap-1">
+                <input type="hidden" name="csrf_token" value={page.csrf} />
+                <input type="hidden" name="action" value="enregistrer" />
+                <input type="hidden" name="qs" value={qsActuelle} />
+                <input type="hidden" name="next" value={retour} />
+                <input
+                  type="text"
+                  name="nom"
+                  className="form-control form-control-sm"
+                  placeholder="Nom de la vue actuelle"
+                  aria-label="Nom de la vue à enregistrer"
+                  maxLength={60}
+                  required
+                />
+                <button type="submit" className="btn btn-primary btn-sm text-nowrap">
+                  <Icone nom="save" taille={13} /> Enregistrer
+                </button>
+              </form>
+              <div className="px-2 small text-muted">
+                Mémorise la vue, les sites, les espaces et la couleur ; la date reste celle du jour.
+              </div>
+            </div>
+          </div>
+          <a
+            href={`/planning/semaine-type${filtresQs ? `?${filtresQs}` : ""}`}
+            className="btn btn-ghost btn-sm"
+          >
+            <Icone nom="repeat" taille={14} /> Semaine type
+          </a>
+          {peutEditer ? (
+            <a
+              href={`/planning/presences?date=${fen.date}${filtresQs ? `&${filtresQs}` : ""}`}
+              className="btn btn-ghost btn-sm"
+              title="Constater les présences et les heures réelles des créneaux passés"
+            >
+              <Icone nom="calendar-check" taille={14} /> Présences
+            </a>
+          ) : null}
+          {unSeul ? (
+            <a
+              href={`/espaces/${unSeul.id}/feuille.pdf?date=${fen.date}`}
+              className="btn btn-outline-secondary btn-sm"
+              target="_blank"
+              rel="noopener"
+              title="Programme de la semaine à afficher à la porte, avec QR code vers la version en ligne"
+            >
+              <Icone nom="qr-code" taille={14} /> Feuille de salle
+            </a>
+          ) : null}
+          <div className="dropdown d-inline-block">
+            <button
+              type="button"
+              className="btn btn-outline-secondary btn-sm"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <Icone nom="printer" taille={14} /> Imprimer <Icone nom="chevron-down" taille={12} />
+            </button>
+            <ul className="dropdown-menu dropdown-menu-end">
+              <li>
+                <button type="button" className="dropdown-item" data-imprimer>
+                  <Icone nom="printer" taille={14} /> Cette page
+                </button>
+              </li>
+              <li>
+                <a
+                  className="dropdown-item"
+                  href={`/planning/semaine.pdf?date=${fen.date}${filtresQs ? `&${filtresQs}` : ""}&format=A4`}
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <Icone nom="file-text" taille={14} /> Semaine en PDF (A4, une page par espace)
+                </a>
+              </li>
+              <li>
+                <a
+                  className="dropdown-item"
+                  href={`/planning/semaine.pdf?date=${fen.date}${filtresQs ? `&${filtresQs}` : ""}&format=A3`}
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <Icone nom="file-text" taille={14} /> Semaine en PDF (A3)
+                </a>
+              </li>
+            </ul>
+          </div>
           {peutEditer ? (
             <>
               <BoutonOuvrir
@@ -209,6 +341,18 @@ export default async function PlanningPage({
               ) : null}
             </div>
           </div>
+          <select
+            name="couleur"
+            className="form-select form-select-sm filtre-select"
+            defaultValue={couleur === "espace" ? "" : couleur}
+            aria-label="Couleur des créneaux"
+          >
+            {Object.entries(COULEURS).map(([k, l]) => (
+              <option key={k} value={k === "espace" ? "" : k}>
+                Couleur : {l.toLowerCase()}
+              </option>
+            ))}
+          </select>
           <noscript>
             <button type="submit" className="btn btn-sm btn-outline-secondary">
               Afficher
@@ -216,6 +360,16 @@ export default async function PlanningPage({
           </noscript>
         </form>
       </div>
+      {legende(couleur).length ? (
+        <ul className="list-inline small text-muted mb-2" aria-label="Légende des couleurs">
+          {legende(couleur).map(([l, c]) => (
+            <li key={l} className="list-inline-item">
+              <span className="legende-liseré" style={{ background: c }} /> {l}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {peutEditer ? <span data-planning-csrf={page.csrf} hidden /> : null}
 
       {!espaces.length ? (
         <div className="data-card">
@@ -240,6 +394,8 @@ export default async function PlanningPage({
             }
           />
         </div>
+      ) : fen.vue === "liste" ? (
+        <VueListe espaces={espaces} creneaux={creneaux} blocages={blocages} />
       ) : fen.vue === "mois" ? (
         <VueMois {...props} urlJour={(j) => lien({ vue: "jour", date: j })} />
       ) : fen.vue === "jour" ? (
@@ -256,7 +412,7 @@ export default async function PlanningPage({
           csrf={page.csrf}
           bouton="Bloquer"
           icone="ban"
-          aide="Travaux, usage interne, fermeture : l'espace devient indisponible sur la période (les demandes existantes restent et sont signalées)."
+          aide="Travaux, usage interne, fermeture : l'espace devient indisponible sur la période. Si des réservations sont en place, un aperçu les liste avant de bloquer (annulation et courriel aux usagers au choix)."
         >
           <input type="hidden" name="next" value={retour} />
           {fen.vue !== "semaine" ? <input type="hidden" name="vue" value={fen.vue} /> : null}

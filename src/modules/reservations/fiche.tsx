@@ -18,11 +18,15 @@ import {
   TypeOrganisation,
 } from "@/components/macros";
 import type { Option, Prisma, Referential, ReservationHistory } from "@/generated/prisma/client";
+import type { FraisPrevus } from "@/lib/annulation";
+import { CAUTION_STATUS, lireStatutCaution } from "@/lib/caution";
 import {
+  FACTURE_STATUS,
   FACTURE_TYPES,
   RESERVATION_SOURCES,
   RESERVATION_STATUS,
   type ReservationStatus,
+  STATUTS_FERMES,
 } from "@/lib/constantes";
 import { decrireRecurrence, lireRecurrence } from "@/lib/creneaux";
 import { nomRepresentant } from "@/lib/dossier-usager";
@@ -38,11 +42,14 @@ import {
   nomCourt,
   plage,
 } from "@/lib/libelles";
+import { decrireOption, estOption, STATUTS_OPTION } from "@/lib/options";
+import { decrirePresence, resumePresences } from "@/lib/presences";
 import type { Devis } from "@/lib/tarification";
 import { ChoixMateriel, ChoixOptions } from "@/modules/reservations/champs";
 import { contactDe } from "@/modules/reservations/requetes";
 import type { MaterielDispo } from "@/modules/reservations/saisie";
-import type { DocumentAvecCategorie } from "@/server/documents";
+import { libelleAvenant } from "@/server/avenant";
+import { type DocumentAvecCategorie, estImage } from "@/server/documents";
 import type { FeatureFlags } from "@/server/features";
 import type { ReservationComplete } from "@/server/reservations";
 
@@ -577,6 +584,19 @@ export function PanneauApprobation({
               Mise à disposition gratuite (aucune redevance ni caution)
             </label>
           </div>
+          <input
+            type="text"
+            name="gratuit_motif"
+            className="form-control form-control-sm mb-2"
+            placeholder="Fondement de la gratuité : délibération, convention, intérêt général…"
+            aria-label="Fondement de la gratuité"
+            defaultValue={r.gratuitMotif ?? ""}
+            maxLength={300}
+          />
+          <div className="form-text mb-2">
+            Obligatoire si la gratuité est accordée ; figure sur la convention et l'attestation de
+            valorisation.
+          </div>
           <div id="approuver-devis" className="small">
             <p className="text-muted mb-0">Calcul du montant…</p>
           </div>
@@ -613,7 +633,16 @@ export function PanneauApprobation({
 
 // ── Modales ──
 
-export function ModalesDecision({ r, csrf }: { r: ReservationComplete; csrf: string }) {
+export function ModalesDecision({
+  r,
+  csrf,
+  frais = null,
+}: {
+  r: ReservationComplete;
+  csrf: string;
+  /** Les frais d'annulation qu'entraînerait une annulation maintenant (barème). */
+  frais?: FraisPrevus | null;
+}) {
   const action = `/reservations/${r.id}/statut`;
   return (
     <>
@@ -665,6 +694,44 @@ export function ModalesDecision({ r, csrf }: { r: ReservationComplete; csrf: str
       </ModalAction>
 
       <ModalAction
+        id="modal-option"
+        titre="Poser une option"
+        action={`/reservations/${r.id}/option/poser`}
+        csrf={csrf}
+        bouton="Poser l'option"
+        icone="hourglass"
+        aide="Le créneau reste bloqué jusqu'à la date limite ; l'usager est relancé peu avant, puis le dossier est libéré d'office (annulé sans frais) si rien n'a été confirmé. Les inscrits en liste d'attente sont alors prévenus."
+      >
+        <div className="grille grille-2">
+          <div>
+            <label className="form-label" htmlFor="option-date">
+              Date limite <span className="req">*</span>
+            </label>
+            <input
+              type="date"
+              name="option_date"
+              id="option-date"
+              className="form-control"
+              required
+              defaultValue={r.optionExpiresAt ? isoParis(r.optionExpiresAt).date : ""}
+            />
+          </div>
+          <div>
+            <label className="form-label" htmlFor="option-heure">
+              Heure
+            </label>
+            <input
+              type="time"
+              name="option_heure"
+              id="option-heure"
+              className="form-control"
+              defaultValue={r.optionExpiresAt ? isoParis(r.optionExpiresAt).time : "18:00"}
+            />
+          </div>
+        </div>
+      </ModalAction>
+
+      <ModalAction
         id="modal-annuler"
         titre="Annuler la réservation"
         action={action}
@@ -679,6 +746,27 @@ export function ModalesDecision({ r, csrf }: { r: ReservationComplete; csrf: str
           Motif <span className="req">*</span>
         </label>
         <textarea name="motif" id="annul-motif" className="form-control" rows={3} required />
+        {frais ? (
+          <>
+            <div className="alert alert-warning small mt-3 mb-2">
+              <Icone nom="triangle-alert" taille={14} /> Annulation à {frais.jours} jour
+              {frais.jours > 1 ? "s" : ""} du début : le barème prévoit des frais de{" "}
+              <strong>{montant(frais.montant)}</strong> ({frais.taux} % du montant), facturés à
+              l'usager.
+            </div>
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                name="sans_frais"
+                id="annul-sans-frais"
+              />
+              <label className="form-check-label" htmlFor="annul-sans-frais">
+                Annuler sans frais (geste commercial, annulation du fait de la Ville…)
+              </label>
+            </div>
+          </>
+        ) : null}
       </ModalAction>
 
       <ModalAction
@@ -914,6 +1002,45 @@ export function SectionEvenement({
         <Lu label="Participants" valeur={r.participants ? String(r.participants) : null} />
         <Lu label="Public" valeur={<OuiNon v={r.isPublicEvent} />} />
         <Lu label="Récurrence" valeur={decrireRecurrence(rec)} />
+        {estOption(r) || (peutDecider && vivant && STATUTS_OPTION.includes(r.status as never)) ? (
+          <Lu
+            label="Option"
+            valeur={
+              <span className="d-flex align-items-center gap-2 flex-wrap">
+                {r.optionExpiresAt ? (
+                  <Chip teinte={r.optionExpiresAt < new Date() ? "red" : "amber"}>
+                    {decrireOption(r)}
+                  </Chip>
+                ) : (
+                  <span className="text-muted">Pas d'échéance</span>
+                )}
+                {peutDecider && vivant ? (
+                  <>
+                    <BoutonOuvrir
+                      cible="modal-option"
+                      libelle={r.optionExpiresAt ? "Modifier" : "Poser une option"}
+                      icone="hourglass"
+                      classe="btn-ghost btn-sm"
+                    />
+                    {r.optionExpiresAt ? (
+                      <form
+                        method="POST"
+                        action={`/reservations/${r.id}/option/lever`}
+                        className="d-inline"
+                      >
+                        <input type="hidden" name="csrf_token" value={csrf} />
+                        <button type="submit" className="btn btn-ghost btn-sm">
+                          <Icone nom="x" taille={14} /> Lever
+                        </button>
+                      </form>
+                    ) : null}
+                  </>
+                ) : null}
+              </span>
+            }
+            pleine
+          />
+        ) : null}
         <Lu
           label="Arrivée"
           valeur={
@@ -937,14 +1064,25 @@ export function SectionEvenement({
 
       <div className="d-flex align-items-center justify-content-between mt-3 mb-1">
         <span className="form-label mb-0">Créneaux ({prevus.length})</span>
-        {peutDecider && vivant ? (
-          <BoutonOuvrir
-            cible="modal-creneau"
-            libelle="Ajouter un créneau"
-            icone="calendar-plus"
-            classe="btn-ghost btn-sm"
-          />
-        ) : null}
+        <span className="d-flex gap-1">
+          {peutDecider && resumePresences(r.creneaux).passes > 0 ? (
+            <a
+              href={`/planning/presences?dossier=${r.id}`}
+              className="btn btn-ghost btn-sm"
+              title="Constater la présence et les heures réelles des créneaux passés"
+            >
+              <Icone nom="calendar-check" taille={14} /> Présences
+            </a>
+          ) : null}
+          {peutDecider && vivant ? (
+            <BoutonOuvrir
+              cible="modal-creneau"
+              libelle="Ajouter un créneau"
+              icone="calendar-plus"
+              classe="btn-ghost btn-sm"
+            />
+          ) : null}
+        </span>
       </div>
       <table className="table table-sm mb-3">
         <tbody>
@@ -957,13 +1095,49 @@ export function SectionEvenement({
                 {duree((c.endAt.getTime() - c.startAt.getTime()) / 60_000)}
               </td>
               <td>
-                {c.status === "prevu" ? (
-                  <Chip teinte="emerald">Prévu</Chip>
-                ) : (
+                {c.status !== "prevu" ? (
                   <Chip teinte="slate">Annulé</Chip>
+                ) : c.presence ? (
+                  <Chip
+                    teinte={c.presence === "presente" ? "emerald" : "red"}
+                    titre={c.presenceNote ?? undefined}
+                  >
+                    {decrirePresence(c)}
+                  </Chip>
+                ) : c.endAt <= new Date() ? (
+                  <Chip teinte="slate">Passé</Chip>
+                ) : (
+                  <Chip teinte="emerald">Prévu</Chip>
                 )}
               </td>
-              <td className="actions">
+              <td className="actions text-nowrap">
+                {peutDecider && vivant && c.status === "prevu" ? (
+                  <a
+                    href={`/reservations/${r.id}/creneaux/${c.id}/modifier`}
+                    className="btn btn-ghost btn-icone btn-sm"
+                    title={
+                      prevus.length > 1
+                        ? "Modifier ce créneau, les suivants ou toute la série"
+                        : "Modifier ce créneau"
+                    }
+                    aria-label="Modifier ce créneau"
+                  >
+                    <Icone nom="pencil" taille={14} />
+                  </a>
+                ) : null}
+                {peutDecider &&
+                c.status === "prevu" &&
+                c.startAt > new Date() &&
+                STATUTS_FERMES.includes(r.status as ReservationStatus) ? (
+                  <a
+                    href={`/reservations/${r.id}/creneaux/${c.id}/requisition`}
+                    className="btn btn-ghost btn-icone btn-sm"
+                    title="Priorité municipale : réquisitionner ce créneau pour un événement de la Ville"
+                    aria-label="Réquisitionner ce créneau pour la Ville"
+                  >
+                    <Icone nom="landmark" taille={14} />
+                  </a>
+                ) : null}
                 {peutDecider && vivant && c.status === "prevu" && prevus.length > 1 ? (
                   <form
                     method="POST"
@@ -1114,7 +1288,12 @@ export function SectionMontants({
       icone="euro"
       droite={
         r.gratuit ? (
-          <Chip teinte="emerald">Gratuité</Chip>
+          <span className="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+            <Chip teinte="emerald" titre={r.gratuitMotif ?? undefined}>
+              Gratuité
+            </Chip>
+            {r.gratuitMotif ? <small className="text-muted">{r.gratuitMotif}</small> : null}
+          </span>
         ) : (
           <strong>{montant(r.montantTtc)}</strong>
         )
@@ -1222,7 +1401,9 @@ export function SectionDocuments({
         documents={documents}
         csrf={csrf}
         next={next}
-        peutSupprimer={(d) => peutSupprimer && d.kind !== "convention" && d.kind !== "facture"}
+        peutSupprimer={(d) =>
+          peutSupprimer && !["convention", "avenant", "facture"].includes(d.kind)
+        }
         vide="Aucune pièce sur ce dossier."
       />
       {documentsUsager.length ? (
@@ -1269,14 +1450,338 @@ export function SectionDocuments({
   );
 }
 
+/** Un état des lieux (entrée ou sortie) : constat, photos. */
+function BlocEtatDesLieux({
+  edl,
+  kind,
+  peutDecider,
+  r,
+}: {
+  edl: ReservationComplete["etatsDesLieux"][number] | undefined;
+  kind: "entree" | "sortie";
+  peutDecider: boolean;
+  r: ReservationComplete;
+}) {
+  const libelle = kind === "entree" ? "État des lieux d'entrée" : "État des lieux de sortie";
+  return (
+    <div className="mb-3">
+      <div className="d-flex align-items-center justify-content-between mb-1">
+        <span className="form-label mb-0">{libelle}</span>
+        {peutDecider ? (
+          <BoutonOuvrir
+            cible={`modal-edl-${kind}`}
+            libelle={edl ? "Compléter" : "Faire l'état des lieux"}
+            icone={edl ? "pencil" : "clipboard-check"}
+            classe="btn-ghost btn-sm"
+          />
+        ) : null}
+      </div>
+      {edl ? (
+        <div className="small">
+          <div>
+            {dateHeure(edl.doneAt)} par {edl.agent}
+            {edl.signataire ? ` · en présence de ${edl.signataire}` : ""}
+            {" · "}
+            {edl.degats ? (
+              <Chip teinte="red">Dégâts constatés</Chip>
+            ) : (
+              <Chip teinte="emerald">Sans dégât</Chip>
+            )}
+          </div>
+          {edl.observations ? (
+            <div className="text-muted" style={{ whiteSpace: "pre-wrap" }}>
+              {edl.observations}
+            </div>
+          ) : null}
+          {edl.documents.length ? (
+            <div className="d-flex flex-wrap gap-2 mt-2">
+              {edl.documents.map((d) => (
+                <a
+                  key={d.id}
+                  href={`/documents/${d.id}/view`}
+                  target="_blank"
+                  rel="noopener"
+                  title={d.filename}
+                >
+                  {estImage(d) ? (
+                    <img
+                      src={`/documents/${d.id}/thumb`}
+                      alt={d.filename}
+                      className="vignette"
+                      style={{ width: 96, height: 72, objectFit: "cover", borderRadius: 6 }}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span className="btn btn-ghost btn-sm">
+                      <Icone nom="paperclip" taille={14} /> {d.filename}
+                    </span>
+                  )}
+                </a>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <p className="text-muted small mb-0">
+          {kind === "entree"
+            ? "À faire à la remise des clés : point de départ en cas de litige."
+            : `Indispensable avant de restituer ou retenir la caution${r.caution > 0 ? ` (${montant(r.caution)})` : ""}.`}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** Caution et états des lieux : cycle de la caution, constats d'entrée et de sortie, décisions. */
+export function SectionCaution({
+  r,
+  csrf,
+  peutDecider,
+  isAdmin,
+  seuil,
+}: {
+  r: ReservationComplete;
+  csrf: string;
+  peutDecider: boolean;
+  isAdmin: boolean;
+  seuil: number;
+}) {
+  const statut = lireStatutCaution(r.cautionStatus);
+  const s = CAUTION_STATUS[statut];
+  const entree = r.etatsDesLieux.find((e) => e.kind === "entree");
+  const sortie = r.etatsDesLieux.find((e) => e.kind === "sortie");
+  const acquis = ["acceptee", "signee", "confirmee", "terminee"].includes(r.status);
+  const factureCaution = r.factures.find((f) => f.type === "caution" && f.status !== "annulee");
+  const peutCloturer = statut === "encaissee" && Boolean(sortie);
+  const ouverte = r.caution > 0 && statut !== "restituee" && statut !== "retenue";
+  const ici = `/reservations/${r.id}`;
+  return (
+    <Section
+      titre="Caution & états des lieux"
+      icone="piggy-bank"
+      id="caution"
+      ouverte={ouverte && acquis}
+    >
+      <Lus intitule="110px">
+        <Lu
+          label="Caution"
+          valeur={
+            r.caution > 0 ? (
+              <span className="d-flex align-items-center gap-2 flex-wrap">
+                <strong>{montant(r.caution)}</strong>
+                <Chip teinte={s.teinte} titre={s.aide}>
+                  {s.label}
+                </Chip>
+              </span>
+            ) : (
+              <span className="text-muted">Aucune caution demandée</span>
+            )
+          }
+        />
+        {r.caution > 0 ? (
+          <Lu
+            label="Facture"
+            valeur={
+              factureCaution ? (
+                <a href={`/paiements/${factureCaution.id}`}>
+                  {factureCaution.numero} ·{" "}
+                  {FACTURE_STATUS[factureCaution.status]?.label ?? factureCaution.status}
+                </a>
+              ) : null
+            }
+            tiret
+          />
+        ) : null}
+        <Lu label="Encaissée le" valeur={dateHeure(r.cautionEncaisseeAt)} tiret />
+        {statut === "retenue" || statut === "retenue_a_valider" ? (
+          <>
+            <Lu
+              label="Retenue"
+              valeur={`${montant(r.cautionRetenue)} par ${r.cautionDecideePar ?? "—"}`}
+            />
+            <Lu label="Motif" valeur={r.cautionMotif} pleine pre />
+            <Lu label="Validée par" valeur={r.cautionValideePar} tiret />
+          </>
+        ) : null}
+        {statut === "restituee" ? (
+          <Lu label="Restituée le" valeur={dateHeure(r.cautionClotureeAt)} />
+        ) : null}
+      </Lus>
+
+      {acquis ? (
+        <div className="mt-3">
+          <BlocEtatDesLieux edl={entree} kind="entree" peutDecider={peutDecider} r={r} />
+          <BlocEtatDesLieux edl={sortie} kind="sortie" peutDecider={peutDecider} r={r} />
+        </div>
+      ) : (
+        <p className="text-muted small mt-2 mb-0">
+          Les états des lieux se font une fois la réservation acquise.
+        </p>
+      )}
+
+      {peutDecider && r.caution > 0 ? (
+        <div className="d-flex flex-wrap gap-2 mt-2">
+          {statut === "attendue" || statut === "aucune" ? (
+            <form method="POST" action={`${ici}/caution/encaisser`} className="d-inline">
+              <input type="hidden" name="csrf_token" value={csrf} />
+              <button type="submit" className="btn btn-outline-secondary btn-sm">
+                <Icone nom="banknote" taille={14} /> Marquer encaissée
+              </button>
+            </form>
+          ) : null}
+          {statut === "encaissee" ? (
+            <>
+              <form method="POST" action={`${ici}/caution/restituer`} className="d-inline">
+                <input type="hidden" name="csrf_token" value={csrf} />
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-sm"
+                  disabled={!peutCloturer}
+                  title={peutCloturer ? undefined : "Faites d'abord l'état des lieux de sortie"}
+                  data-confirm={`Restituer la caution de ${montant(r.caution)} en totalité ? L'usager est prévenu par courriel.`}
+                >
+                  <Icone nom="check" taille={14} /> Restituer
+                </button>
+              </form>
+              <BoutonOuvrir
+                cible="modal-retenir"
+                libelle="Retenir tout ou partie"
+                icone="octagon-alert"
+                classe="btn-outline-danger btn-sm"
+              />
+            </>
+          ) : null}
+          {statut === "retenue_a_valider" && isAdmin ? (
+            <form method="POST" action={`${ici}/caution/valider`} className="d-inline">
+              <input type="hidden" name="csrf_token" value={csrf} />
+              <button
+                type="submit"
+                className="btn btn-primary btn-sm"
+                data-confirm={`Valider la retenue de ${montant(r.cautionRetenue)} ? L'usager est alors prévenu.`}
+              >
+                <Icone nom="shield-check" taille={14} /> Valider la retenue
+              </button>
+            </form>
+          ) : null}
+        </div>
+      ) : null}
+
+      {peutDecider
+        ? (["entree", "sortie"] as const).map((kind) => (
+            <ModalAction
+              key={kind}
+              id={`modal-edl-${kind}`}
+              titre={kind === "entree" ? "État des lieux d'entrée" : "État des lieux de sortie"}
+              action={`${ici}/etat-des-lieux/${kind}`}
+              csrf={csrf}
+              bouton="Enregistrer"
+              icone="clipboard-check"
+              multipart
+              aide="Les photos sont jointes au constat et visibles par l'usager depuis son dossier."
+            >
+              <label className="form-label" htmlFor={`edl-${kind}-obs`}>
+                Observations
+              </label>
+              <textarea
+                name="observations"
+                id={`edl-${kind}-obs`}
+                className="form-control"
+                rows={4}
+                defaultValue={(kind === "entree" ? entree : sortie)?.observations ?? ""}
+                placeholder="État des sols, du matériel, propreté, clés rendues…"
+              />
+              <div className="form-check mt-2">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  name="degats"
+                  id={`edl-${kind}-degats`}
+                  defaultChecked={(kind === "entree" ? entree : sortie)?.degats ?? false}
+                />
+                <label className="form-check-label" htmlFor={`edl-${kind}-degats`}>
+                  Dégâts ou manquements constatés
+                </label>
+              </div>
+              <label className="form-label mt-2" htmlFor={`edl-${kind}-sig`}>
+                Usager présent (nom)
+              </label>
+              <input
+                type="text"
+                name="signataire"
+                id={`edl-${kind}-sig`}
+                className="form-control"
+                defaultValue={(kind === "entree" ? entree : sortie)?.signataire ?? ""}
+              />
+              <label className="form-label mt-2" htmlFor={`edl-${kind}-photos`}>
+                Photos
+              </label>
+              <input
+                type="file"
+                name="photos"
+                id={`edl-${kind}-photos`}
+                className="form-control"
+                accept="image/*"
+                multiple
+              />
+            </ModalAction>
+          ))
+        : null}
+
+      {peutDecider && r.caution > 0 ? (
+        <ModalAction
+          id="modal-retenir"
+          titre="Retenir tout ou partie de la caution"
+          action={`${ici}/caution/retenir`}
+          csrf={csrf}
+          bouton="Retenir"
+          icone="octagon-alert"
+          danger
+          aide={`Le motif et le montant sont transmis à l'usager avec les constats de l'état des lieux de sortie.${seuil > 0 ? ` Au-delà de ${montant(seuil)}, la retenue attend la validation d'un administrateur.` : ""}`}
+        >
+          <label className="form-label" htmlFor="ret-montant">
+            Montant retenu (€) <span className="req">*</span>
+          </label>
+          <input
+            type="number"
+            name="montant"
+            id="ret-montant"
+            className="form-control"
+            min={0.01}
+            max={r.caution}
+            step="0.01"
+            defaultValue={r.caution}
+            required
+          />
+          <label className="form-label mt-2" htmlFor="ret-motif">
+            Motif <span className="req">*</span>
+          </label>
+          <textarea
+            name="motif"
+            id="ret-motif"
+            className="form-control"
+            rows={3}
+            required
+            placeholder="Dégradation du parquet constatée à l'état des lieux de sortie, remise en état facturée…"
+          />
+        </ModalAction>
+      ) : null}
+    </Section>
+  );
+}
+
 export function SectionConvention({
   r,
   features,
+  csrf,
+  peutDecider,
 }: {
   r: ReservationComplete;
   features: FeatureFlags;
+  csrf: string;
+  peutDecider: boolean;
 }) {
   const sansObjet = ["brouillon", "a_traiter", "en_traitement"].includes(r.status);
+  const aSigner = r.avenants.filter((a) => !a.signedAt);
   return (
     <Section titre="Convention & signature" icone="file-signature" ouverte={!sansObjet}>
       {sansObjet && !r.conventionDocumentId ? (
@@ -1361,6 +1866,98 @@ export function SectionConvention({
           ) : null}
         </Lus>
       )}
+      {r.avenants.length ? (
+        <>
+          <div className="form-label mt-3 mb-1">Avenants ({r.avenants.length})</div>
+          <table className="table table-sm mb-0">
+            <tbody>
+              {r.avenants.map((a) => (
+                <tr key={a.id}>
+                  <td>
+                    Avenant {libelleAvenant(a)}
+                    <div className="text-muted small">{a.objet}</div>
+                  </td>
+                  <td className="text-nowrap">{dateCourte(a.createdAt)}</td>
+                  <td>
+                    {a.signedAt ? (
+                      <Chip teinte="emerald">Signé le {dateCourte(a.signedAt)}</Chip>
+                    ) : (
+                      <Chip teinte="amber">À signer</Chip>
+                    )}
+                  </td>
+                  <td className="actions text-nowrap">
+                    {a.documentId ? (
+                      <a
+                        href={`/documents/${a.documentId}/view`}
+                        target="_blank"
+                        rel="noopener"
+                        className="btn btn-ghost btn-icone btn-sm"
+                        title="Voir le PDF"
+                        aria-label="Voir le PDF"
+                      >
+                        <Icone nom="file-text" taille={14} />
+                      </a>
+                    ) : null}
+                    {peutDecider && !a.signedAt ? (
+                      <>
+                        <form
+                          method="POST"
+                          action={`/reservations/${r.id}/avenants/${a.id}/relancer`}
+                          className="d-inline"
+                        >
+                          <input type="hidden" name="csrf_token" value={csrf} />
+                          <button
+                            type="submit"
+                            className="btn btn-ghost btn-icone btn-sm"
+                            title="Relancer l'usager pour la signature"
+                            aria-label="Relancer l'usager pour la signature"
+                          >
+                            <Icone nom="send" taille={14} />
+                          </button>
+                        </form>
+                        <BoutonOuvrir
+                          cible={`modal-avenant-${a.id}`}
+                          libelle="Signature sur papier"
+                          icone="pen-line"
+                          classe="btn-ghost btn-icone btn-sm"
+                          sansTexte
+                        />
+                      </>
+                    ) : null}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {peutDecider
+            ? aSigner.map((a) => (
+                <ModalAction
+                  key={a.id}
+                  id={`modal-avenant-${a.id}`}
+                  titre={`Avenant ${libelleAvenant(a)} signé sur papier`}
+                  action={`/reservations/${r.id}/avenants/${a.id}/signature-manuelle`}
+                  csrf={csrf}
+                  bouton="Enregistrer la signature"
+                  icone="pen-line"
+                  aide="L'usager a retourné l'avenant signé : le PDF est réédité avec la mention de signature et l'usager reçoit une confirmation."
+                >
+                  <label className="form-label" htmlFor={`av-nom-${a.id}`}>
+                    Nom du signataire <span className="req">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="signer_name"
+                    id={`av-nom-${a.id}`}
+                    className="form-control"
+                    required
+                    minLength={3}
+                    defaultValue={r.signerName ?? ""}
+                  />
+                </ModalAction>
+              ))
+            : null}
+        </>
+      ) : null}
     </Section>
   );
 }

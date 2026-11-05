@@ -8,14 +8,17 @@
  */
 import type { Intervalle } from "@/lib/creneaux";
 import { dureeMinutes } from "@/lib/creneaux";
+import { ymdUtc } from "@/lib/date-utc";
 import { montant } from "@/lib/libelles";
-import { toParisWall } from "@/lib/paris-time";
+import { parisParts, toParisWall } from "@/lib/paris-time";
 
 export type LigneTarif = {
   profilId: number | null;
   unite: string;
   montant: number;
   label?: string | null;
+  /** Date d'effet (grille votée) ; absente = applicable depuis toujours. */
+  validFrom?: Date | null;
 };
 
 export type Ligne = {
@@ -41,6 +44,26 @@ export type Devis = {
 
 function arrondi(n: number): number {
   return Math.round(n * 100) / 100;
+}
+
+/**
+ * La grille en vigueur à un instant : pour chaque profil et unité, la ligne la plus récente
+ * dont la date d'effet (jour de Paris) est atteinte ; une ligne sans date vaut depuis
+ * toujours ; une ligne à date future est ignorée. Permet de voter les tarifs de l'année
+ * suivante à l'avance sans toucher aux dossiers en cours.
+ */
+export function grilleEnVigueur<T extends LigneTarif>(tarifs: T[], instant: Date): T[] {
+  const jour = parisParts(instant).dateKey;
+  const retenues = new Map<string, T>();
+  for (const t of tarifs) {
+    const effet = t.validFrom ? ymdUtc(t.validFrom) : "";
+    if (effet > jour) continue;
+    const cle = `${t.profilId ?? "tous"}|${t.unite}`;
+    const actuelle = retenues.get(cle);
+    const effetActuel = actuelle?.validFrom ? ymdUtc(actuelle.validFrom) : "";
+    if (!actuelle || effet > effetActuel) retenues.set(cle, t);
+  }
+  return tarifs.filter((t) => retenues.get(`${t.profilId ?? "tous"}|${t.unite}`) === t);
 }
 
 /** La grille applicable à un profil : ses lignes propres, sinon celles « tous profils ». */
@@ -145,7 +168,9 @@ export type EntreeDevis = {
 /** Le devis complet d'une demande. */
 export function calculerDevis(e: EntreeDevis): Devis {
   const lignes: Ligne[] = [];
-  const grille = grillePour(e.tarifs, e.profilId);
+  // Chaque créneau est tarifé à la grille en vigueur à sa date d'occupation.
+  const grilleA = (instant: Date) => grillePour(grilleEnVigueur(e.tarifs, instant), e.profilId);
+  const grille = grilleA(e.creneaux[0]?.startAt ?? new Date());
   let espace = 0;
   const forfait = grille.find((t) => t.unite === "forfait");
   const horaires = grille.filter((t) => t.unite !== "forfait");
@@ -154,7 +179,10 @@ export function calculerDevis(e: EntreeDevis): Devis {
       let i = 0;
       for (const c of e.creneaux) {
         i += 1;
-        const p = prixCreneau(horaires, c);
+        const p = prixCreneau(
+          grilleA(c.startAt).filter((t) => t.unite !== "forfait"),
+          c,
+        );
         if (!p) continue;
         lignes.push({
           libelle: `Créneau ${e.creneaux.length > 1 ? `${i} ` : ""}· ${p.unite === "heure" ? `${p.quantite} h` : UNITE_LIBELLES[p.unite]}`,
@@ -237,8 +265,12 @@ export function calculerDevis(e: EntreeDevis): Devis {
 }
 
 /** « À partir de 25 €/h », « Gratuit », pour la vignette d'un espace sur le portail. */
-export function aPartirDe(tarifs: LigneTarif[], profilId: number | null = null): string {
-  const grille = grillePour(tarifs, profilId);
+export function aPartirDe(
+  tarifs: LigneTarif[],
+  profilId: number | null = null,
+  a: Date = new Date(),
+): string {
+  const grille = grillePour(grilleEnVigueur(tarifs, a), profilId);
   if (!grille.length) return "Sur demande";
   const min = grille.reduce((m, t) => (t.montant < m.montant ? t : m), grille[0]);
   if (min.montant === 0) return "Gratuit";

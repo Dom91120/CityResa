@@ -192,6 +192,12 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 - **Options** : prestations d'un espace ou globales (ménage, montage / démontage, régisseur,
   tables et chaises, sono…), au forfait, à l'heure ou à l'unité, éventuellement obligatoires.
 - Indisponibilités : blocage d'un espace sur une période avec motif.
+- **Fermeture exceptionnelle** : un blocage qui tombe sur des réservations en place (espace,
+  parent ou sous-espaces) passe par un aperçu des dossiers et créneaux touchés ; l'agent choisit
+  d'annuler ces créneaux (retirés du montant dû) et de prévenir les usagers (courriel
+  « Fermeture exceptionnelle » par dossier, notification, lien pour convenir d'un report). Un
+  dossier dont tous les créneaux sont couverts n'est pas vidé : il reste à annuler ou reporter
+  depuis sa fiche. Chaque dossier touché garde la trace dans son historique.
 
 ### Matériel
 

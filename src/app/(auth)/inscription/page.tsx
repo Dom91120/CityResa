@@ -57,7 +57,11 @@ export default async function InscriptionPage() {
   );
   return (
     <>
-      <div
+      <a href="#main-content" className="skip-link">
+        Aller au contenu
+      </a>
+      <main
+        id="main-content"
         className="login-page login-page--long"
         style={{ gridTemplateColumns: "minmax(360px, 640px) 1fr" }}
       >
@@ -220,7 +224,7 @@ export default async function InscriptionPage() {
           titre="Un compte, toutes vos demandes"
           texte="Déposez vos demandes en ligne, échangez avec les services, signez vos conventions et retrouvez vos documents au même endroit."
         />
-      </div>
+      </main>
       <DonneesGraphique id="regles-inscription" config={regles} />
       <ScriptsPage nonce={nonce} extra={<ScriptDiffere src="/js/inscription.js" nonce={nonce} />} />
     </>

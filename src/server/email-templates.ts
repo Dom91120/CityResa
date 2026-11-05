@@ -98,9 +98,117 @@ export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
     label: "Réservation annulée",
     subject: "Réservation {{numero}} annulée",
     body:
-      "<p>Bonjour {{prenom}},</p><p>La réservation <strong>{{numero}}</strong> ({{espace}}, {{dates}}) est annulée.</p><p>Motif : {{motif}}</p>" +
+      "<p>Bonjour {{prenom}},</p><p>La réservation <strong>{{numero}}</strong> ({{espace}}, {{dates}}) est annulée.</p><p>Motif : {{motif}}</p><p>{{frais}}</p>" +
       SIGNATURE,
-    aide: "Envoyé à l'usager, qu'il soit ou non à l'origine de l'annulation.",
+    aide: "Envoyé à l'usager, qu'il soit ou non à l'origine de l'annulation. {{frais}} annonce les frais d'annulation facturés selon le barème, s'il y en a.",
+  },
+  {
+    key: "fermeture_exceptionnelle",
+    label: "Fermeture exceptionnelle (usager)",
+    subject: "Fermeture exceptionnelle de {{espace}} : votre réservation {{numero}}",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>{{espace}} sera exceptionnellement fermé ({{fermeture}}). Motif : {{motif}}.</p><p>Votre réservation <strong>{{numero}}</strong> est concernée : {{occurrences}}.</p><p>{{suite}}</p><p>Pour convenir d\'un report, répondez-nous depuis votre dossier : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Envoyé aux usagers dont des créneaux tombent pendant une fermeture exceptionnelle. {{occurrences}} liste les créneaux concernés, {{suite}} dit s'ils sont annulés.",
+  },
+  {
+    key: "creneaux_modifies",
+    label: "Créneaux modifiés (usager)",
+    subject: "Réservation {{numero}} : nouveaux horaires",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>Les horaires de votre réservation <strong>{{numero}}</strong> ({{titre}}, {{espace}}) ont été modifiés par nos services : {{modifications}}.</p><p>{{suite}}</p><p>Votre dossier à jour : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Envoyé à l'usager quand un agent déplace un ou plusieurs créneaux de son dossier. {{modifications}} liste les anciens et nouveaux horaires, {{suite}} dit si le montant change.",
+  },
+  {
+    key: "priorite_municipale",
+    label: "Priorité municipale : créneau réquisitionné (usager)",
+    subject: "Réservation {{numero}} : la Ville a besoin de {{espace}} le {{creneau}}",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>La Ville organise <strong>{{evenement}}</strong> ({{motif}}) et doit disposer de {{espace}} le {{creneau}}, créneau de votre réservation <strong>{{numero}}</strong> ({{titre}}).</p><p>{{suite}}</p><p>Nous vous prions de nous excuser pour la gêne occasionnée. Votre dossier : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Envoyé à l'usager quand un agent réquisitionne un créneau de son dossier pour un événement de la Ville. {{suite}} dit si le créneau est déplacé (nouvel horaire, avenant) ou annulé sans frais.",
+  },
+  {
+    key: "avenant_a_signer",
+    label: "Avenant à signer (usager)",
+    subject: "Avenant {{avenant}} à votre convention {{numero}}",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>Les créneaux de votre réservation <strong>{{numero}}</strong> ({{titre}}, {{espace}}) ont changé après la signature de la convention. L\'avenant {{avenant}} ci-joint formalise cette modification : {{objet}}.</p><p>{{suite}}</p><p>Votre dossier : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Envoyé avec le PDF de l'avenant quand les créneaux d'une convention signée sont modifiés, puis en relance. {{objet}} décrit la modification, {{suite}} explique comment signer.",
+  },
+  {
+    key: "avenant_code",
+    label: "Code de signature d'un avenant (usager)",
+    subject: "Votre code de signature : {{code}}",
+    body:
+      "<p>Bonjour {{prenom}},</p><p>Votre code pour signer l'avenant {{avenant}} à la convention <strong>{{numero}}</strong> est : <strong style=\"font-size:1.4em;letter-spacing:.2em\">{{code}}</strong></p><p>Il est valable {{validite}}. Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.</p>" +
+      SIGNATURE,
+    aide: "Code à usage unique pour un avenant, envoyé par courriel si le SMS n'est pas disponible.",
+  },
+  {
+    key: "avenant_signe",
+    label: "Avenant signé (usager)",
+    subject: "Avenant {{avenant}} à la convention {{numero}} signé",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>L\'avenant {{avenant}} à la convention <strong>{{numero}}</strong> est signé le {{date_signature}}. Le document signé est disponible dans votre dossier : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Confirmation envoyée après la signature d'un avenant, en ligne ou sur papier.",
+  },
+  {
+    key: "caution_restituee",
+    label: "Caution restituée (usager)",
+    subject: "Restitution de votre caution · réservation {{numero}}",
+    body:
+      "<p>Bonjour {{prenom}},</p><p>L'état des lieux de sortie de la réservation <strong>{{numero}}</strong> ({{espace}}, {{dates}}) n'appelle aucune remarque : votre caution de <strong>{{montant_caution}}</strong> vous est restituée en totalité ({{date}}).</p>" +
+      SIGNATURE,
+    aide: "Envoyé quand un agent restitue la caution après l'état des lieux de sortie.",
+  },
+  {
+    key: "caution_retenue",
+    label: "Caution retenue (usager)",
+    subject: "Retenue sur votre caution · réservation {{numero}}",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>À la suite de l\'état des lieux de sortie de la réservation <strong>{{numero}}</strong> ({{espace}}, {{dates}}), la collectivité retient <strong>{{montant_retenu}}</strong> sur votre caution de {{montant_caution}}.</p><p>Motif : {{motif}}</p><p>{{reste}} Les constats et photos sont consultables depuis votre dossier : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Envoyé quand une retenue sur caution est décidée (ou validée, au-delà du seuil). {{reste}} précise le solde restitué.",
+  },
+  {
+    key: "option_relance",
+    label: "Option : relance avant échéance (usager)",
+    subject: "Votre option sur {{espace}} expire le {{echeance}}",
+    body:
+      "<p>Bonjour {{prenom}},</p><p>Votre réservation <strong>{{numero}}</strong> ({{titre}}, {{espace}}, {{dates}}) est posée en option jusqu'au <strong>{{echeance}}</strong>. {{suite}}</p><p>Passé ce délai, le créneau est libéré d'office pour d'autres demandeurs.</p><p>Votre dossier : <a href=\"{{lien}}\">{{lien}}</a></p>" +
+      SIGNATURE,
+    aide: "Envoyé quelques jours avant l'échéance d'une option (réglage OPTION_RELANCE_JOURS). {{suite}} dit ce qui est attendu de l'usager (signer, répondre).",
+  },
+  {
+    key: "liste_attente_liberee",
+    label: "Liste d'attente : créneau libéré (usager)",
+    subject: "{{espace}} : le créneau du {{creneau}} se libère",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>Vous souhaitiez être prévenu si <strong>{{espace}}</strong> se libérait le {{creneau}} : c\'est le cas. Déposez votre demande dès maintenant, le créneau reste ouvert à tous : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Envoyé une seule fois aux inscrits en liste d'attente dont le créneau souhaité se libère (annulation, refus, option expirée, créneau déplacé).",
+  },
+  {
+    key: "campagne_decisions",
+    label: "Campagne de créneaux : décisions (usager)",
+    subject: "{{campagne}} : réponse à vos vœux de créneaux",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>La collectivité a arbitré les vœux de créneaux déposés par {{organisation}} pour la campagne <strong>{{campagne}}</strong>.</p><p style="white-space:pre-line">{{attribues}}</p><p style="white-space:pre-line">{{refuses}}</p><p>{{suite}}</p><p>Vos réservations : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Un seul courriel par organisation, envoyé depuis la campagne une fois les décisions prises. {{attribues}} et {{refuses}} listent les créneaux (une ligne par vœu, avec le dossier ou le motif), {{suite}} dit quoi faire ensuite.",
+  },
+  {
+    key: "compte_inactif",
+    label: "Compte inactif : préavis avant anonymisation (usager)",
+    subject: "Votre compte CityRésa sera anonymisé le {{date}}",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>Vous ne vous êtes pas connecté à votre compte depuis plus de {{mois}} mois. Conformément à notre politique de conservation des données, il sera <strong>anonymisé le {{date}}</strong> : vos coordonnées seront effacées et vous ne pourrez plus vous y connecter ; vos réservations passées resteront dans nos archives, sans votre identité.</p><p>Pour conserver votre compte, il vous suffit de vous connecter avant cette date : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Envoyé une fois par la tâche RGPD quand un compte usager dépasse la durée d’inactivité ; une connexion annule l’anonymisation.",
   },
   {
     key: "message_recu",
@@ -189,6 +297,13 @@ export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
     subject: "CityRésa · {{date}} : {{nb_a_traiter}} demande(s) à traiter",
     body: '<p>Bonjour,</p><p>Au {{date}} :</p><ul><li>{{nb_a_traiter}} demande(s) à traiter</li><li>{{nb_messages}} message(s) sans réponse</li><li>{{nb_signatures}} convention(s) en attente de signature</li><li>{{nb_factures}} facture(s) à encaisser</li><li>{{nb_aujourdhui}} réservation(s) aujourd\'hui</li></ul><p><a href="{{lien}}">Ouvrir le tableau de bord</a></p>',
     aide: "Envoyé chaque matin aux agents qui ont choisi de le recevoir.",
+  },
+  {
+    key: "planning_hebdo",
+    label: "Planning hebdomadaire (gestionnaires)",
+    subject: "Planning de la semaine du {{semaine}} : {{espaces}}",
+    body: '<p>Bonjour {{prenom}},</p><p>Voici le planning de la semaine du <strong>{{semaine}}</strong> pour les espaces dont vous avez la charge, en pièce jointe (PDF, une page par espace).</p><p style="white-space:pre-line">{{resume}}</p><p><a href="{{lien}}">Ouvrir le planning</a></p>',
+    aide: "Envoyé chaque semaine (réglage « Planning hebdomadaire ») aux gestionnaires et agents notifiés de chaque espace. {{resume}} liste les créneaux par espace, {{espaces}} les nomme.",
   },
   {
     key: "piece_expiration",

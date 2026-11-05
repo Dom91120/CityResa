@@ -14,6 +14,7 @@ const cfg = (extra: Partial<AppSettings> = {}): AppSettings =>
     RAPPEL_J1: true,
     SIGNATURE_ENABLED: true,
     PAIEMENTS_ENABLED: true,
+    RGPD_INACTIVITE_MOIS: 36,
     ...extra,
   }) as unknown as AppSettings;
 
@@ -34,11 +35,20 @@ describe("tachesActives", () => {
     expect(sans).toEqual([
       "archivage_auto",
       "purge_notifications",
+      "rgpd",
       "terminer_reservations",
+      "options",
       "digest_agents",
     ]);
     expect(tachesActives(cfg({ BACKUP_DB_DIR: "/backups" })).map((t) => t.id)).toContain(
       "backup_database",
+    );
+    expect(
+      tachesActives(cfg({ RGPD_INACTIVITE_MOIS: 0, RGPD_CONSERVATION_ANNEES: 0 })).map((t) => t.id),
+    ).not.toContain("rgpd");
+    expect(tachesActives(cfg()).map((t) => t.id)).not.toContain("planning_hebdo");
+    expect(tachesActives(cfg({ PLANNING_HEBDO_ENABLED: true })).map((t) => t.id)).toContain(
+      "planning_hebdo",
     );
   });
 
@@ -99,6 +109,7 @@ describe("tachesDues sur une fenêtre de 5 minutes", () => {
       "rappels_usagers",
       "relances_signature",
       "relances_paiement",
+      "options",
       "digest_agents",
     ]);
   });

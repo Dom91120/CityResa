@@ -29,6 +29,7 @@ import {
   optionsPour,
   organisationsSaisie,
 } from "@/modules/reservations/saisie";
+import { alternativesPour } from "@/server/alternatives";
 import { saisonActive } from "@/server/calendrier";
 import { redirigerAvecFlashDepuisRendu } from "@/server/flash";
 import { contexteModule } from "@/server/module";
@@ -86,6 +87,20 @@ export default async function NouvelleReservationPage({
     : [[], []];
   const pas = espace ? espace.slotStepMin * 60 : 900;
   const retour = "/reservations";
+  // Créneau refusé car occupé : les alternatives libres, avec les valeurs saisies reprises.
+  const alternatives =
+    espace && debut && fin && param(params, "conflit") === "1"
+      ? await alternativesPour({
+          espaceId: espace.id,
+          i: { startAt: debut, endAt: fin },
+          participants: parseInt_(participants, null, 1),
+          ignorerDelai: true,
+        })
+      : [];
+  const reprise = new URLSearchParams();
+  if (organisationId) reprise.set("organisation_id", String(organisationId));
+  if (titre) reprise.set("title", titre);
+  if (participants) reprise.set("participants", participants);
 
   return (
     <>
@@ -95,6 +110,22 @@ export default async function NouvelleReservationPage({
         sousTitre="Saisie par un agent : la demande est créée au nom de l'usager choisi."
         libelle="Créer la réservation"
       />
+
+      {alternatives.length ? (
+        <div className="astuce mb-3">
+          <Icone nom="calendar-check" taille={16} />
+          <div>
+            <strong>Créneaux équivalents libres :</strong>
+            <ul className="mb-0 mt-1 ps-3">
+              {alternatives.map((a) => (
+                <li key={`${a.espaceId}-${a.startAt.toISOString()}`}>
+                  <a href={reprise.size ? `${a.lienSaisie}&${reprise}` : a.lienSaisie}>{a.texte}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ) : null}
 
       <div className="row g-3">
         <div className="col-lg-8">
@@ -316,7 +347,15 @@ export default async function NouvelleReservationPage({
                       label="Mise à disposition gratuite"
                       name="gratuit"
                       coche={false}
-                      aide="Aucune redevance ni caution."
+                      aide="Aucune redevance ni caution ; le fondement est alors obligatoire."
+                    />
+                    <input
+                      type="text"
+                      name="gratuit_motif"
+                      className="form-control form-control-sm mt-1"
+                      placeholder="Fondement : délibération, convention…"
+                      aria-label="Fondement de la gratuité"
+                      maxLength={300}
                     />
                   </div>
                   <div className="pt-4">
@@ -327,6 +366,12 @@ export default async function NouvelleReservationPage({
                       aide={`Délai de l'espace : ${espace.delayMinDays} j, horizon ${espace.horizonMaxDays} j.`}
                     />
                   </div>
+                  <Champ
+                    label="Option jusqu'au"
+                    name="option_date"
+                    type="date"
+                    aide="Facultatif : le créneau est bloqué jusqu'à cette date (18 h) ; sans confirmation, le dossier est libéré d'office."
+                  />
                 </Grille>
               </SectionForm>
 

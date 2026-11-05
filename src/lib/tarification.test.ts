@@ -5,6 +5,7 @@ import {
   aPartirDe,
   calculerDevis,
   type EntreeDevis,
+  grilleEnVigueur,
   grillePour,
   type LigneTarif,
   prixCreneau,
@@ -327,5 +328,51 @@ describe("tarifMateriel", () => {
   it("affiche « Gratuit » sans montant ou en mode gratuit", () => {
     expect(tarifMateriel({ montant: 0, unite: "unite" })).toBe("Gratuit");
     expect(tarifMateriel({ montant: 5, unite: "gratuit" })).toBe("Gratuit");
+  });
+});
+
+describe("grilleEnVigueur (tarifs datés)", () => {
+  const d = (ymd: string) => new Date(`${ymd}T00:00:00.000Z`);
+  const tarifs: LigneTarif[] = [
+    { profilId: null, unite: "heure", montant: 20 },
+    { profilId: null, unite: "heure", montant: 25, validFrom: d("2027-01-01") },
+    { profilId: null, unite: "heure", montant: 30, validFrom: d("2028-01-01") },
+    { profilId: 4, unite: "heure", montant: 10, validFrom: d("2026-09-01") },
+  ];
+
+  it("retient, par profil et unité, la ligne la plus récente dont la date d'effet est atteinte", () => {
+    const avant = grilleEnVigueur(tarifs, cr("2026-11-05", "10:00", "12:00").startAt);
+    expect(avant.map((t) => [t.profilId, t.montant])).toEqual([
+      [null, 20],
+      [4, 10],
+    ]);
+    const apres = grilleEnVigueur(tarifs, cr("2027-01-01", "10:00", "12:00").startAt);
+    expect(apres.map((t) => [t.profilId, t.montant])).toEqual([
+      [null, 25],
+      [4, 10],
+    ]);
+  });
+
+  it("ignore une ligne à date future et compare en jour de Paris", () => {
+    const veille = grilleEnVigueur(tarifs, cr("2026-12-31", "23:30", "23:59").startAt);
+    expect(veille.find((t) => t.profilId === null)?.montant).toBe(20);
+    expect(grilleEnVigueur(tarifs, cr("2026-11-05", "10:00", "12:00").startAt)).not.toContainEqual(
+      expect.objectContaining({ montant: 30 }),
+    );
+  });
+
+  it("tarifie chaque créneau à la grille en vigueur à sa date", () => {
+    const devis = calculerDevis({
+      ...base,
+      tarifs,
+      creneaux: [cr("2026-12-15", "10:00", "12:00"), cr("2027-01-15", "10:00", "12:00")],
+    });
+    expect(devis.lignes.map((l) => l.montant)).toEqual([40, 50]);
+    expect(devis.ht).toBe(90);
+  });
+
+  it("« À partir de » suit la grille du jour", () => {
+    expect(aPartirDe(tarifs, null, d("2026-11-05"))).toBe("À partir de 20 €/h");
+    expect(aPartirDe(tarifs, null, d("2027-06-01"))).toBe("À partir de 25 €/h");
   });
 });

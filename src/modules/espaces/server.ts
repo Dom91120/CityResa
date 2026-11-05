@@ -24,6 +24,7 @@ import {
   champOuNull,
   coche,
   idOuNull,
+  parseDate,
   parseFloat_,
   parseInt_,
   slugifier,
@@ -61,22 +62,24 @@ export type EspaceEntree = {
   bufferBeforeMin: number;
   bufferAfterMin: number;
   cautionAmount: number;
+  capaciteSimultanee: number;
+  valorisationHoraire: number | null;
   status: string;
   isActive: boolean;
   rules: string | null;
   instructions: string | null;
 };
 
-/** La grille des horaires saisie : une plage par jour, « Fermé » = pas de plage. */
-export function lireHorairesForm(form: FormData): Horaires {
+/** La grille des horaires saisie : une plage par jour, « Fermé » = pas de plage. `prefixe` : grille d'une saison. */
+export function lireHorairesForm(form: FormData, prefixe = ""): Horaires {
   const out: Horaires = {};
   for (const j of JOURS_ISO) {
-    if (coche(form, `ferme_${j.iso}`)) {
+    if (coche(form, `${prefixe}ferme_${j.iso}`)) {
       out[String(j.iso)] = [];
       continue;
     }
-    const ouv = champ(form, `ouv_${j.iso}`);
-    const ferm = champ(form, `ferm_${j.iso}`);
+    const ouv = champ(form, `${prefixe}ouv_${j.iso}`);
+    const ferm = champ(form, `${prefixe}ferm_${j.iso}`);
     const o = minutesDe(ouv);
     const f = minutesDe(ferm);
     if (o === null || f === null)
@@ -88,6 +91,23 @@ export function lireHorairesForm(form: FormData): Horaires {
     out[String(j.iso)] = [[ouv, ferm]];
   }
   return out;
+}
+
+/** Les horaires particuliers par saison : la grille de chaque saison dont la case est cochée, null sinon. */
+export function lireHorairesSaisonsForm(
+  form: FormData,
+  saisons: { id: number; label: string }[],
+): { saisonId: number; openHours: Horaires | null }[] {
+  return saisons.map((s) => {
+    if (!coche(form, `saison_${s.id}_actif`)) return { saisonId: s.id, openHours: null };
+    try {
+      return { saisonId: s.id, openHours: lireHorairesForm(form, `s${s.id}_`) };
+    } catch (e) {
+      if (e instanceof UserFacingError)
+        throw new UserFacingError(`Saison ${s.label} · ${e.message}`);
+      throw e;
+    }
+  });
 }
 
 export function lireEspace(form: FormData, profilsConnus: string[]): EspaceEntree {
@@ -139,6 +159,8 @@ export function lireEspace(form: FormData, profilsConnus: string[]): EspaceEntre
     bufferBeforeMin: parseInt_(form.get("buffer_before_min"), 0, 0) ?? 0,
     bufferAfterMin: parseInt_(form.get("buffer_after_min"), 0, 0) ?? 0,
     cautionAmount: Math.max(0, parseFloat_(form.get("caution_amount"), 0) ?? 0),
+    capaciteSimultanee: parseInt_(form.get("capacite_simultanee"), 1, 1) ?? 1,
+    valorisationHoraire: parseFloat_(form.get("valorisation_horaire"), null),
     status,
     isActive: status !== "inactif",
     rules: champOuNull(form, "rules"),
@@ -179,6 +201,10 @@ export async function verifierParent(parentId: number | null, id: number | null)
 
 export const INCLUDE_ESPACE = {
   site: true,
+  horairesSaisons: {
+    include: { saison: true },
+    orderBy: { saison: { startDate: "asc" as const } },
+  },
   parent: { select: { id: true, name: true } },
   enfants: { select: { id: true, name: true, color: true, status: true, isActive: true } },
   nature: true,
@@ -246,6 +272,7 @@ export type EspaceRegles = {
   bufferBeforeMin: number;
   bufferAfterMin: number;
   cautionAmount: number;
+  capaciteSimultanee?: number;
   requiresValidation: boolean;
 };
 
@@ -267,6 +294,10 @@ export function decrireRegles(e: EspaceRegles): string[] {
       `Montage ${e.bufferBeforeMin} min avant, démontage ${e.bufferAfterMin} min après chaque créneau`,
     );
   out.push(e.cautionAmount ? `Caution de ${montant(e.cautionAmount)}` : "Aucune caution");
+  if ((e.capaciteSimultanee ?? 1) > 1)
+    out.push(
+      `Espace partageable : jusqu'à ${e.capaciteSimultanee} réservations en même temps (pistes, bassin, terrain partagé)`,
+    );
   out.push(
     e.requiresValidation
       ? "Chaque demande est validée par un agent"
@@ -386,10 +417,13 @@ export async function ajouterTarif(espaceId: number, form: FormData): Promise<vo
     const p = await prisma.referential.findFirst({ where: { id: profilId, kind: "profil" } });
     if (!p) throw new UserFacingError("Profil introuvable.");
   }
-  const doublon = await prisma.tarif.findFirst({ where: { espaceId, profilId, unite } });
+  const validFrom = parseDate(form.get("valid_from"));
+  const doublon = await prisma.tarif.findFirst({
+    where: { espaceId, profilId, unite, validFrom },
+  });
   if (doublon)
     throw new UserFacingError(
-      "Un tarif existe déjà pour ce profil et cette unité : supprimez-le d'abord.",
+      "Un tarif existe déjà pour ce profil, cette unité et cette date d'effet : supprimez-le d'abord, ou donnez une date d'effet à la nouvelle ligne.",
     );
   const dernier = await prisma.tarif.aggregate({ where: { espaceId }, _max: { position: true } });
   await prisma.tarif.create({
@@ -400,6 +434,8 @@ export async function ajouterTarif(espaceId: number, form: FormData): Promise<vo
       montant: Math.round(m * 100) / 100,
       label: champOuNull(form, "label")?.slice(0, 120) ?? null,
       position: (dernier._max.position ?? -1) + 1,
+      validFrom,
+      deliberation: champOuNull(form, "deliberation")?.slice(0, 120) ?? null,
     },
   });
 }
@@ -508,23 +544,26 @@ export async function agentsDisponibles(dejaIds: string[]) {
   });
 }
 
-export async function ajouterIndisponibilite(
-  espaceId: number,
-  form: FormData,
-  acteur: string,
-): Promise<void> {
+/** Le blocage saisi sur la fiche d'un espace (heure de Paris). */
+export function lireIndisponibilite(form: FormData): {
+  startAt: Date;
+  endAt: Date;
+  motif: string | null;
+} {
   const debut = parisDateTimeToInstant(champ(form, "date_debut"), champ(form, "heure_debut"));
   const fin = parisDateTimeToInstant(champ(form, "date_fin"), champ(form, "heure_fin"));
   if (!debut || !fin) throw new UserFacingError("Indiquez les dates et heures de début et de fin.");
   if (fin <= debut) throw new UserFacingError("La fin du blocage doit être après son début.");
+  return { startAt: debut, endAt: fin, motif: champOuNull(form, "motif")?.slice(0, 200) ?? null };
+}
+
+export async function ajouterIndisponibilite(
+  espaceId: number,
+  b: { startAt: Date; endAt: Date; motif: string | null },
+  acteur: string,
+): Promise<void> {
   await prisma.indisponibilite.create({
-    data: {
-      espaceId,
-      startAt: debut,
-      endAt: fin,
-      motif: champOuNull(form, "motif")?.slice(0, 200) ?? null,
-      createdBy: acteur,
-    },
+    data: { espaceId, startAt: b.startAt, endAt: b.endAt, motif: b.motif, createdBy: acteur },
   });
 }
 

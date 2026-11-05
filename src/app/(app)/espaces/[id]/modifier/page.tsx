@@ -5,6 +5,7 @@ import { FormulaireEspace } from "@/modules/espaces/vues";
 import { sitesPourSelect } from "@/modules/sites/server";
 import { prisma } from "@/server/db";
 import { idDeRoute, requireEdit } from "@/server/guards";
+import { saisonsPourFormulaire } from "@/server/horaires";
 import { contexteModule } from "@/server/module";
 
 export const metadata = { title: "Modifier un espace - CityRésa" };
@@ -18,7 +19,7 @@ export default async function ModifierEspacePage({ params }: { params: Promise<{
     include: { _count: { select: { reservations: true } } },
   });
   if (!espace) notFound();
-  const [sites, refs, parents] = await Promise.all([
+  const [sites, refs, parents, saisons] = await Promise.all([
     sitesPourSelect(),
     referentielsEspaces(),
     prisma.espace.findMany({
@@ -26,6 +27,7 @@ export default async function ModifierEspacePage({ params }: { params: Promise<{
       orderBy: [{ site: { name: "asc" } }, { name: "asc" }],
       select: { id: true, name: true, site: { select: { name: true } } },
     }),
+    saisonsPourFormulaire(id),
   ]);
   return (
     <>
@@ -38,6 +40,7 @@ export default async function ModifierEspacePage({ params }: { params: Promise<{
         parents={parents.map((p) => ({ id: p.id, name: p.name, siteName: p.site.name }))}
         natures={refs.natures}
         profils={refs.profils}
+        saisons={saisons}
       />
       <PiedForm
         retour={`/espaces/${id}`}

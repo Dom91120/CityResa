@@ -3,12 +3,14 @@ import { Entete, MenuLien, MenuPost, MenuSep } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { StatutResa } from "@/components/macros";
 import { ScriptDiffere } from "@/components/scripts";
+import { fraisPrevus, lireBareme } from "@/lib/annulation";
 import { isoParis, nomCourt, plage } from "@/lib/libelles";
 import {
   CarteDecision,
   FilDiscussion,
   ModalesDecision,
   PanneauApprobation,
+  SectionCaution,
   SectionConvention,
   SectionDemandeur,
   SectionDocuments,
@@ -17,6 +19,7 @@ import {
   SectionHistorique,
   SectionMontants,
 } from "@/modules/reservations/fiche";
+import { SectionMateriel } from "@/modules/reservations/materiel-fiche";
 import { voitEspace } from "@/modules/reservations/requetes";
 import { agentsActifs, materielsPour, optionsPour } from "@/modules/reservations/saisie";
 import { prisma } from "@/server/db";
@@ -191,6 +194,9 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
             peutDecider={peutDecider}
           />
           <SectionDemandeur r={r} />
+          {features.materiel ? (
+            <SectionMateriel r={r} csrf={csrf} peutDecider={peutDecider} />
+          ) : null}
           <SectionMontants
             r={r}
             devis={devis}
@@ -209,7 +215,14 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
               peutSupprimer={user.canDelete("reservations")}
             />
           ) : null}
-          <SectionConvention r={r} features={features} />
+          <SectionConvention r={r} features={features} csrf={csrf} peutDecider={peutDecider} />
+          <SectionCaution
+            r={r}
+            csrf={csrf}
+            peutDecider={peutDecider}
+            isAdmin={user.isAdmin}
+            seuil={user.settings.CAUTION_SEUIL_VALIDATION}
+          />
           {features.paiements && user.canView("paiements") ? (
             <SectionFactures
               r={r}
@@ -221,7 +234,13 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
         </div>
       </div>
 
-      {peutDecider ? <ModalesDecision r={r} csrf={csrf} /> : null}
+      {peutDecider ? (
+        <ModalesDecision
+          r={r}
+          csrf={csrf}
+          frais={fraisPrevus(r, lireBareme(user.settings.ANNULATION_BAREME))}
+        />
+      ) : null}
       {peutDecider && aTraiter ? (
         <PanneauApprobation
           r={r}

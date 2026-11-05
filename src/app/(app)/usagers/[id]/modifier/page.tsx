@@ -3,6 +3,7 @@ import {
   Champ,
   EnteteForm,
   Grille,
+  Interrupteur,
   PiedForm,
   SectionForm,
   Select,
@@ -84,6 +85,14 @@ export default async function ModifierUsagerPage({ params }: { params: Promise<{
               valeur={isoDate(org.legalAppointedAt)}
               aide="Associations seulement"
             />
+            <div style={{ gridColumn: "1 / -1" }}>
+              <Interrupteur
+                label="Association conventionnée avec la Ville"
+                name="conventionnee"
+                coche={org.conventionnee}
+                aide="Prioritaire dans les campagnes annuelles de créneaux, après les services de la Ville et les autres collectivités."
+              />
+            </div>
           </Grille>
         </SectionForm>
         <SectionForm

@@ -3,10 +3,14 @@ import { FormDocument, ListeDocuments } from "@/components/documents";
 import { BoutonOuvrir, Lu, Lus, ModalAction, Section } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { Chip, Frise, StatutFacture, StatutResa } from "@/components/macros";
+import { fraisPrevus, lireBareme } from "@/lib/annulation";
+import { decrireCaution } from "@/lib/caution";
 import { FACTURE_TYPES, RESERVATION_SOURCES } from "@/lib/constantes";
 import { decrireRecurrence, lireRecurrence } from "@/lib/creneaux";
 import { dateCourte, dateHeure, montant, nomCourt, plage, pluriel } from "@/lib/libelles";
+import { decrireOption, estOption } from "@/lib/options";
 import {
+  type Etape,
   historiqueVisible,
   marquerMessagesLus,
   messagesVisibles,
@@ -14,7 +18,7 @@ import {
   prochaineEtape,
   reservationUsager,
 } from "@/modules/portail/suivi";
-import { EncartEtape, FilMessages, Montants } from "@/modules/portail/vues";
+import { BlocSignature, EncartEtape, FilMessages, Montants } from "@/modules/portail/vues";
 import { getSettings } from "@/server/config-store";
 import { forParent } from "@/server/documents";
 import { idDeRoute } from "@/server/guards";
@@ -46,8 +50,17 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
     ),
   ]);
   const ici = `/portail/mes-reservations/${r.id}`;
-  const etape = prochaineEtape(r, cfg);
+  const avenantASigner = features.signature ? (r.avenants.find((a) => !a.signedAt) ?? null) : null;
+  const etape: Etape = avenantASigner
+    ? {
+        texte: "Les créneaux de votre réservation ont changé : il vous reste à signer l'avenant.",
+        icone: "pen-line",
+        teinte: "rose",
+        action: "avenant",
+      }
+    : prochaineEtape(r, cfg);
   const annulable = peutAnnuler(r, cfg);
+  const frais = fraisPrevus(r, lireBareme(cfg.ANNULATION_BAREME));
   const aSigner = r.status === "acceptee" && features.signature;
   const codeEnCours = Boolean(
     r.signatureCodeHash && r.signatureExpiresAt && r.signatureExpiresAt > new Date(),
@@ -55,7 +68,8 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
   const convention = r.conventionDocumentId
     ? pieces.find((d) => d.id === r.conventionDocumentId)
     : null;
-  const documentsUsager = pieces.filter((d) => d.kind !== "convention" && d.kind !== "facture");
+  const OFFICIELS = ["convention", "avenant", "facture"];
+  const documentsUsager = pieces.filter((d) => !OFFICIELS.includes(d.kind));
   const recurrence = lireRecurrence(r.recurrence);
   const vivant = ["a_traiter", "en_traitement", "acceptee", "signee", "confirmee"].includes(
     r.status,
@@ -103,128 +117,53 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
       <EncartEtape etape={etape} lien={etape.action ? `#${etape.action}` : undefined} />
 
       {aSigner ? (
-        <div className="data-card p-4 mb-3" id="signature">
-          <h2 className="h5 mb-2">
-            <Icone nom="pen-line" taille={18} /> Signer la convention
-          </h2>
-          <p className="text-muted">
-            Lisez la convention de mise à disposition, puis signez-la en deux étapes : recevez un
-            code, saisissez-le avec votre nom. La signature vaut engagement.
-          </p>
-          {convention ? (
-            <a
-              href={`/documents/${convention.id}/view`}
-              target="_blank"
-              rel="noopener"
-              className="btn btn-outline-primary mb-3"
-            >
-              <Icone nom="file-signature" taille={14} /> Lire la convention (PDF)
-            </a>
-          ) : (
-            <p className="text-muted small">La convention est en cours de préparation.</p>
+        <BlocSignature
+          id="signature"
+          titre="Signer la convention"
+          intro="Lisez la convention de mise à disposition, puis signez-la en deux étapes : recevez un code, saisissez-le avec votre nom. La signature vaut engagement."
+          documentId={convention?.id ?? null}
+          documentLibelle="Lire la convention (PDF)"
+          enPreparation="La convention est en cours de préparation."
+          codeEnCours={codeEnCours}
+          canal={r.signatureChannel}
+          sentAt={r.signatureSentAt}
+          expiresAt={r.signatureExpiresAt}
+          actionCode={`${ici}/signature/code`}
+          actionSigner={`${ici}/signature/signer`}
+          csrf={csrf}
+          telephone={user.phone ?? r.organisation?.phone ?? ""}
+          email={user.email}
+          nom={user.name}
+          libelleLu="J'ai lu la convention et j'en accepte les termes"
+          libelleSigner="Signer la convention"
+        />
+      ) : null}
+
+      {avenantASigner ? (
+        <BlocSignature
+          id="avenant"
+          titre={`Signer l'avenant n°${avenantASigner.numero}`}
+          intro="Les créneaux de votre réservation ont changé après la signature de la convention. Lisez l'avenant, puis signez-le en deux étapes : recevez un code, saisissez-le avec votre nom."
+          documentId={avenantASigner.documentId}
+          documentLibelle="Lire l'avenant (PDF)"
+          enPreparation="L'avenant est en cours de préparation."
+          codeEnCours={Boolean(
+            avenantASigner.signatureCodeHash &&
+              avenantASigner.signatureExpiresAt &&
+              avenantASigner.signatureExpiresAt > new Date(),
           )}
-          <div className="row g-3">
-            <div className="col-md-6">
-              <div className="form-section h-100">
-                <div className="form-section-titre">
-                  <Icone nom="smartphone" taille={14} /> Étape 1 · Recevoir mon code
-                </div>
-                {codeEnCours ? (
-                  <div className="alert alert-success small">
-                    <Icone nom="check" taille={14} /> Un code vous a été envoyé{" "}
-                    {r.signatureChannel === "sms" ? "par SMS" : "par courriel"}
-                    {r.signatureSentAt ? ` le ${dateHeure(r.signatureSentAt)}` : ""}. Il reste
-                    valable jusqu'au {r.signatureExpiresAt ? dateHeure(r.signatureExpiresAt) : ""}.
-                  </div>
-                ) : null}
-                <form method="POST" action={`${ici}/signature/code`} data-double-envoi>
-                  <input type="hidden" name="csrf_token" value={csrf} />
-                  <label className="form-label" htmlFor="f-telephone">
-                    Téléphone mobile (pour le SMS)
-                  </label>
-                  <input
-                    type="tel"
-                    name="telephone"
-                    id="f-telephone"
-                    className="form-control"
-                    defaultValue={user.phone ?? r.organisation?.phone ?? ""}
-                    autoComplete="tel"
-                    placeholder="06 12 34 56 78"
-                  />
-                  <div className="form-text mb-2">
-                    Sans numéro ou si le SMS n'est pas disponible, le code arrive par courriel à{" "}
-                    {user.email}.
-                  </div>
-                  <button
-                    type="submit"
-                    className={`btn ${codeEnCours ? "btn-outline-secondary" : "btn-primary"}`}
-                  >
-                    <Icone nom="send" taille={14} />{" "}
-                    {codeEnCours ? "Renvoyer un code" : "Recevoir mon code"}
-                  </button>
-                </form>
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-section h-100">
-                <div className="form-section-titre">
-                  <Icone nom="signature" taille={14} /> Étape 2 · Signer
-                </div>
-                <form method="POST" action={`${ici}/signature/signer`} data-double-envoi>
-                  <input type="hidden" name="csrf_token" value={csrf} />
-                  <label className="form-label" htmlFor="f-code">
-                    Code reçu (6 chiffres)
-                  </label>
-                  <input
-                    type="text"
-                    name="code"
-                    id="f-code"
-                    className="form-control form-control-lg"
-                    inputMode="numeric"
-                    pattern="[0-9 ]{6,7}"
-                    maxLength={7}
-                    required
-                    autoComplete="one-time-code"
-                    disabled={!codeEnCours}
-                    placeholder="123456"
-                  />
-                  <label className="form-label mt-2" htmlFor="f-nom">
-                    Votre nom complet
-                  </label>
-                  <input
-                    type="text"
-                    name="nom"
-                    id="f-nom"
-                    className="form-control"
-                    defaultValue={user.name}
-                    required
-                    minLength={3}
-                    disabled={!codeEnCours}
-                  />
-                  <div className="form-check mt-2 mb-3">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      name="lu"
-                      id="f-lu"
-                      required
-                      disabled={!codeEnCours}
-                    />
-                    <label className="form-check-label" htmlFor="f-lu">
-                      J'ai lu la convention et j'en accepte les termes
-                    </label>
-                  </div>
-                  <button type="submit" className="btn btn-primary" disabled={!codeEnCours}>
-                    <Icone nom="pen-line" taille={14} /> Signer la convention
-                  </button>
-                  {!codeEnCours ? (
-                    <div className="form-text">Demandez d'abord votre code (étape 1).</div>
-                  ) : null}
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
+          canal={avenantASigner.signatureChannel}
+          sentAt={avenantASigner.signatureSentAt}
+          expiresAt={avenantASigner.signatureExpiresAt}
+          actionCode={`${ici}/avenant/${avenantASigner.id}/code`}
+          actionSigner={`${ici}/avenant/${avenantASigner.id}/signer`}
+          csrf={csrf}
+          telephone={user.phone ?? r.organisation?.phone ?? ""}
+          email={user.email}
+          nom={user.name}
+          libelleLu="J'ai lu l'avenant et j'en accepte les termes"
+          libelleSigner="Signer l'avenant"
+        />
       ) : null}
 
       <div className="data-card">
@@ -246,6 +185,22 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
             <Lu label="Précisions" valeur={r.description} pleine pre />
             {recurrence ? (
               <Lu label="Récurrence" valeur={decrireRecurrence(recurrence)} pleine />
+            ) : null}
+            {estOption(r) ? (
+              <Lu
+                label="Option"
+                pleine
+                valeur={
+                  <>
+                    <Chip teinte="amber">{decrireOption(r)}</Chip>{" "}
+                    <span className="text-muted small">
+                      {r.status === "acceptee"
+                        ? "Signez la convention avant cette date, sinon le créneau est libéré."
+                        : "Sans confirmation à cette date, le créneau est libéré pour d'autres demandeurs."}
+                    </span>
+                  </>
+                }
+              />
             ) : null}
             <Lu
               label="Créneaux"
@@ -297,6 +252,60 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
           ) : null}
         </Section>
 
+        {r.caution > 0 && r.cautionStatus !== "aucune" ? (
+          <Section titre="Caution & états des lieux" icone="piggy-bank" ouverte={false}>
+            <Lus>
+              <Lu label="Caution" valeur={decrireCaution(r)} pleine />
+              {r.cautionMotif && ["retenue", "retenue_a_valider"].includes(r.cautionStatus) ? (
+                <Lu label="Motif de la retenue" valeur={r.cautionMotif} pleine pre />
+              ) : null}
+              {r.etatsDesLieux.map((e) => (
+                <Lu
+                  key={e.id}
+                  label={
+                    e.kind === "entree" ? "État des lieux d'entrée" : "État des lieux de sortie"
+                  }
+                  pleine
+                  valeur={
+                    <>
+                      {dateHeure(e.doneAt)} · {e.degats ? "dégâts constatés" : "sans dégât"}
+                      {e.observations ? (
+                        <div className="text-muted" style={{ whiteSpace: "pre-wrap" }}>
+                          {e.observations}
+                        </div>
+                      ) : null}
+                      {e.documents.length ? (
+                        <div className="d-flex flex-wrap gap-2 mt-1">
+                          {e.documents.map((d) => (
+                            <a
+                              key={d.id}
+                              href={`/documents/${d.id}/view`}
+                              target="_blank"
+                              rel="noopener"
+                            >
+                              <img
+                                src={`/documents/${d.id}/thumb`}
+                                alt={d.filename}
+                                style={{
+                                  width: 96,
+                                  height: 72,
+                                  objectFit: "cover",
+                                  borderRadius: 6,
+                                }}
+                                loading="lazy"
+                              />
+                            </a>
+                          ))}
+                        </div>
+                      ) : null}
+                    </>
+                  }
+                />
+              ))}
+            </Lus>
+          </Section>
+        ) : null}
+
         <Section titre="Messages" icone="message-circle" id="messages" nb={messages.length || null}>
           <FilMessages
             messages={messages}
@@ -307,11 +316,11 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
         </Section>
 
         <Section titre="Documents" icone="paperclip" id="documents" nb={pieces.length || null}>
-          {convention || pieces.some((d) => d.kind === "facture") ? (
+          {pieces.some((d) => OFFICIELS.includes(d.kind)) ? (
             <>
-              <div className="form-label">Convention et factures</div>
+              <div className="form-label">Convention, avenants et factures</div>
               <ListeDocuments
-                documents={pieces.filter((d) => d.kind === "convention" || d.kind === "facture")}
+                documents={pieces.filter((d) => OFFICIELS.includes(d.kind))}
                 csrf={csrf}
                 next={`${ici}#documents`}
               />
@@ -424,7 +433,11 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
           bouton="Confirmer l'annulation"
           icone="calendar-x"
           danger
-          aide="L'annulation est définitive. La collectivité en sera informée."
+          aide={
+            frais
+              ? `L'annulation est définitive. À ${frais.jours} jour${frais.jours > 1 ? "s" : ""} du début, le barème de la collectivité prévoit des frais de ${montant(frais.montant)} (${frais.taux} % du montant), qui vous seront facturés.`
+              : "L'annulation est définitive. La collectivité en sera informée."
+          }
         >
           <label className="form-label" htmlFor="f-motif">
             Motif (facultatif)

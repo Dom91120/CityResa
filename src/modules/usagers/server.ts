@@ -4,7 +4,7 @@
  */
 import type { Referential } from "@/generated/prisma/client";
 import { ORGANISATION_TYPES } from "@/lib/constantes";
-import { champ, champOuNull, idOuNull, parseDate } from "@/lib/forms-util";
+import { champ, champOuNull, coche, idOuNull, parseDate } from "@/lib/forms-util";
 import { lireEmailLibre, lireIdentite, motDePasseAleatoire } from "@/modules/utilisateurs/server";
 import { poserMotDePasse } from "@/server/amorcage";
 import { auditRecord } from "@/server/audit";
@@ -47,6 +47,8 @@ export type OrganisationEntree = {
   legalFirstName: string | null;
   legalLastName: string | null;
   legalAppointedAt: Date | null;
+  /** Association conventionnée avec la Ville (priorité dans les campagnes de créneaux). */
+  conventionnee: boolean;
   profilId: number | null;
   notes: string | null;
 };
@@ -72,6 +74,7 @@ export function lireOrganisation(form: FormData): OrganisationEntree {
     legalFirstName: borne("legal_first_name", 80),
     legalLastName: borne("legal_last_name", 80),
     legalAppointedAt: parseDate(form.get("legal_appointed_at")),
+    conventionnee: type === "association" && coche(form, "conventionnee"),
     profilId: idOuNull(form, "profil_id"),
     notes: champOuNull(form, "notes"),
   };

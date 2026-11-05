@@ -1,8 +1,13 @@
 import { Icone } from "@/components/icones";
 import { SegTabs } from "@/components/liste";
+import { Chip } from "@/components/macros";
+import { dateCourte, nomCourt, plage } from "@/lib/libelles";
+import { ListeBrouillons } from "@/modules/portail/brouillons";
 import { enCours, reservationsUsager } from "@/modules/portail/suivi";
 import { BlocVide, CarteReservation } from "@/modules/portail/vues";
+import { brouillonsDe } from "@/server/brouillons";
 import { getSettings } from "@/server/config-store";
+import { entreesDe } from "@/server/liste-attente";
 import { contexteUsager } from "@/server/page";
 
 export const metadata = { title: "Mes réservations - CityRésa" };
@@ -13,12 +18,15 @@ export default async function MesReservationsPage({
   searchParams: Promise<{ onglet?: string }>;
 }) {
   const page = await contexteUsager();
-  const [cfg, sp, toutes] = await Promise.all([
+  const [cfg, sp, toutes, attente, brouillons] = await Promise.all([
     getSettings(),
     searchParams,
     reservationsUsager(page.user),
+    entreesDe(page.user),
+    brouillonsDe(page.user),
   ]);
   const passees = sp.onglet === "passees";
+  const ongletBrouillons = sp.onglet === "brouillons";
   const actives = toutes.filter((r) => enCours(r.status));
   const closes = toutes
     .filter((r) => !enCours(r.status))
@@ -45,7 +53,7 @@ export default async function MesReservationsPage({
             href: "/portail/mes-reservations",
             label: "En cours",
             count: actives.length,
-            active: !passees,
+            active: !passees && !ongletBrouillons,
           },
           {
             href: "/portail/mes-reservations?onglet=passees",
@@ -54,10 +62,31 @@ export default async function MesReservationsPage({
             active: passees,
             teinte: "muted",
           },
+          ...(brouillons.length || ongletBrouillons
+            ? [
+                {
+                  href: "/portail/mes-reservations?onglet=brouillons",
+                  label: "Brouillons",
+                  count: brouillons.length,
+                  active: ongletBrouillons,
+                  teinte: "muted",
+                },
+              ]
+            : []),
         ]}
       />
       <div className="data-card">
-        {liste.length ? (
+        {ongletBrouillons ? (
+          brouillons.length ? (
+            <ListeBrouillons brouillons={brouillons} csrf={page.csrf} />
+          ) : (
+            <BlocVide
+              icone="save"
+              titre="Aucun brouillon"
+              texte="Sur le formulaire de demande, « Garder en brouillon » met votre saisie de côté pour la reprendre ici."
+            />
+          )
+        ) : liste.length ? (
           liste.map((r) => <CarteReservation key={r.id} r={r} cfg={cfg} />)
         ) : (
           <BlocVide
@@ -78,6 +107,50 @@ export default async function MesReservationsPage({
           />
         )}
       </div>
+
+      {attente.length ? (
+        <div className="data-card p-4 mt-3" id="attente">
+          <h2 className="h5 mb-2">
+            <Icone nom="bell" taille={18} /> Liste d'attente
+          </h2>
+          <p className="text-muted small">
+            Vous serez prévenu par courriel si l'un de ces créneaux se libère ; il faudra alors
+            déposer votre demande.
+          </p>
+          <table className="table align-middle mb-0">
+            <tbody>
+              {attente.map((a) => (
+                <tr key={a.id}>
+                  <td className="fw-medium">{plage(a.startAt, a.endAt)}</td>
+                  <td>{nomCourt(a.espace)}</td>
+                  <td className="text-muted">{a.title}</td>
+                  <td>
+                    {a.notifiedAt ? (
+                      <Chip teinte="emerald">
+                        Créneau libéré, prévenu le {dateCourte(a.notifiedAt)}
+                      </Chip>
+                    ) : (
+                      <Chip teinte="amber">En attente</Chip>
+                    )}
+                  </td>
+                  <td className="actions">
+                    <form
+                      method="POST"
+                      action={`/portail/liste-attente/${a.id}/retirer`}
+                      className="d-inline"
+                    >
+                      <input type="hidden" name="csrf_token" value={page.csrf} />
+                      <button type="submit" className="btn btn-ghost btn-ghost-danger btn-sm">
+                        <Icone nom="x" taille={14} /> Retirer
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
     </>
   );
 }

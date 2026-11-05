@@ -5,6 +5,10 @@ import {
   etatValidite,
   joursRestants,
   libelleValidite,
+  lireReglePieces,
+  phrasePiecesBloquantes,
+  piecesBloquantes,
+  piecesBloquent,
   pireEtat,
 } from "@/lib/pieces";
 
@@ -92,5 +96,56 @@ describe("pièces attendues", () => {
         30,
       ),
     ).toBe("expiree");
+  });
+});
+
+describe("règle de blocage des pièces", () => {
+  it("lit la règle, « avertir » par défaut", () => {
+    expect(lireReglePieces("acceptation")).toBe("acceptation");
+    expect(lireReglePieces("depot")).toBe("depot");
+    expect(lireReglePieces("bidule")).toBe("avertir");
+    expect(lireReglePieces(undefined)).toBe("avertir");
+  });
+
+  it("bloque le dépôt dès « depot », l'acceptation seulement avec « acceptation »", () => {
+    expect(piecesBloquent("avertir", "depot")).toBe(false);
+    expect(piecesBloquent("depot", "depot")).toBe(true);
+    expect(piecesBloquent("depot", "acceptation")).toBe(false);
+    expect(piecesBloquent("acceptation", "depot")).toBe(true);
+    expect(piecesBloquent("acceptation", "acceptation")).toBe(true);
+  });
+
+  it("retient les pièces attendues manquantes ou expirées, pas celles qui expirent bientôt", () => {
+    const b = piecesBloquantes(
+      "association",
+      [{ kind: "assurance", validUntil: d("2026-10-01") }],
+      TODAY,
+      30,
+    );
+    expect(b.map((p) => `${p.kind}:${p.etat}`)).toEqual(["statuts:manquante", "assurance:expiree"]);
+    expect(
+      piecesBloquantes(
+        "association",
+        [
+          { kind: "assurance", validUntil: d("2026-11-20") },
+          { kind: "statuts", validUntil: null },
+        ],
+        TODAY,
+        30,
+      ),
+    ).toEqual([]);
+    expect(piecesBloquantes("service_interne", [], TODAY, 30)).toEqual([]);
+  });
+
+  it("phrase les manques en français", () => {
+    const b = piecesBloquantes(
+      "association",
+      [{ kind: "assurance", validUntil: d("2026-10-01") }],
+      TODAY,
+      30,
+    );
+    expect(phrasePiecesBloquantes(b)).toBe(
+      "statuts de l'association manquants, attestation d'assurance responsabilité civile expirée le 01/10/2026",
+    );
   });
 });

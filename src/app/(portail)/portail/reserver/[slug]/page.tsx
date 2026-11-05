@@ -4,7 +4,13 @@ import { Chip } from "@/components/macros";
 import { JOURS_ISO, OPTION_UNITES } from "@/lib/constantes";
 import { manquesDossier, phraseManques } from "@/lib/dossier-usager";
 import { duree, montant, nomCourt } from "@/lib/libelles";
-import { addParisDays, parisMidnight, todayParisISO } from "@/lib/paris-time";
+import {
+  addParisDays,
+  parisDateTimeToInstant,
+  parisMidnight,
+  todayParisISO,
+} from "@/lib/paris-time";
+import { lireReglePieces, phrasePiecesBloquantes, piecesBloquent } from "@/lib/pieces";
 import { aPartirDe, tarifMateriel } from "@/lib/tarification";
 import {
   documentsPublics,
@@ -16,11 +22,14 @@ import {
 } from "@/modules/portail/catalogue";
 import { Etapes } from "@/modules/portail/vues";
 import { CochesCalendrier } from "@/modules/reservations/champs";
+import { alternativesPour } from "@/server/alternatives";
+import { chargerBrouillon } from "@/server/brouillons";
 import { saisonActive } from "@/server/calendrier";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { getCurrentUser } from "@/server/guards";
 import { contexteUsager } from "@/server/page";
+import { piecesBloquantesDe } from "@/server/pieces";
 
 export const metadata = { title: "Demander une réservation - CityRésa" };
 
@@ -39,7 +48,12 @@ export default async function ReserverPage({
   const page = await contexteUsager();
   const { user, csrf, features } = page;
   const cfg = await getSettings();
-  const sp = await searchParams;
+  const query = await searchParams;
+  // Un brouillon repris pré-remplit le formulaire ; l'adresse (saisie rendue après une erreur) prime.
+  const brouillonId = Number(query.brouillon ?? query.brouillon_id) || null;
+  const brouillon = brouillonId ? await chargerBrouillon(user, brouillonId) : null;
+  const sp: Record<string, string | string[] | undefined> =
+    brouillon && brouillon.espaceId === espace.id ? { ...brouillon.data, ...query } : query;
   const v = (k: string) => (typeof sp[k] === "string" ? String(sp[k]) : "");
   const [org, natures, options, materiels, profils, saison] = await Promise.all([
     organisationDe(user),
@@ -65,8 +79,28 @@ export default async function ReserverPage({
   const photo = photoPrincipale(espace);
   const docs = documentsPublics(espace);
   const retourFiche = `/portail/espaces/${espace.slug}`;
+  // Créneau refusé car occupé : les alternatives libres (même espace, autre horaire ou jour ; espace équivalent).
+  const debutDemande = parisDateTimeToInstant(v("date"), v("heure_debut"));
+  const finDemande = parisDateTimeToInstant(v("date"), v("heure_fin"));
+  const alternatives =
+    v("attente") === "1" && debutDemande && finDemande && finDemande > debutDemande
+      ? await alternativesPour({
+          espaceId: espace.id,
+          i: { startAt: debutDemande, endAt: finDemande },
+          participants: Number(v("participants")) || null,
+          portail: true,
+        })
+      : [];
+  const reprise = new URLSearchParams();
+  for (const k of ["title", "participants", "nature_id", "description"])
+    if (v(k)) reprise.set(k, v(k));
+  const lienAlternative = (lien: string) => (reprise.size ? `${lien}&${reprise}` : lien);
 
   // Blocages.
+  const piecesEnDefaut =
+    org && piecesBloquent(lireReglePieces(cfg.PIECES_REGLE), "depot")
+      ? await piecesBloquantesDe(org, cfg)
+      : [];
   let blocage: React.ReactNode = null;
   if (cfg.VALIDATION_COMPTE_USAGER && org && !org.validatedAt)
     blocage = (
@@ -95,6 +129,18 @@ export default async function ReserverPage({
               <Icone nom="circle-user" taille={14} /> Compléter mon compte
             </a>
           ) : null}
+        </div>
+      </>
+    );
+  else if (piecesEnDefaut.length)
+    blocage = (
+      <>
+        <strong>Vos pièces justificatives ne sont pas à jour.</strong> Avant de déposer une demande,
+        la collectivité attend : {phrasePiecesBloquantes(piecesEnDefaut)}.
+        <div className="mt-2">
+          <a href="/portail/mon-organisation" className="btn btn-primary btn-sm">
+            <Icone nom="paperclip" taille={14} /> Déposer mes pièces
+          </a>
         </div>
       </>
     );
@@ -161,6 +207,44 @@ export default async function ReserverPage({
           ) : null}
         </div>
       </div>
+
+      {!blocage && v("attente") === "1" && v("date") && v("heure_debut") && v("heure_fin") ? (
+        <div className="astuce mb-3">
+          <Icone nom="bell" taille={18} />
+          <div>
+            <strong>Ce créneau est occupé.</strong> Inscrivez-vous sur la liste d'attente : vous
+            serez prévenu par courriel s'il se libère, et vous pourrez alors déposer votre demande.
+            <form
+              method="POST"
+              action="/portail/liste-attente/inscrire"
+              className="mt-2 d-flex align-items-center gap-2 flex-wrap"
+              data-double-envoi
+            >
+              <input type="hidden" name="csrf_token" value={csrf} />
+              <input type="hidden" name="espace_id" value={espace.id} />
+              <input type="hidden" name="date" value={v("date")} />
+              <input type="hidden" name="heure_debut" value={v("heure_debut")} />
+              <input type="hidden" name="heure_fin" value={v("heure_fin")} />
+              <input type="hidden" name="title" value={v("title")} />
+              <button type="submit" className="btn btn-primary btn-sm">
+                <Icone nom="bell" taille={14} /> Me prévenir si le créneau se libère
+              </button>
+            </form>
+            {alternatives.length ? (
+              <div className="mt-3">
+                <strong>Créneaux équivalents libres :</strong>
+                <ul className="mb-0 mt-1 ps-3">
+                  {alternatives.map((a) => (
+                    <li key={`${a.espaceId}-${a.startAt.toISOString()}`}>
+                      <a href={lienAlternative(a.lienPortail)}>{a.texte}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       {blocage ? (
         <div className="data-card p-4">
@@ -469,7 +553,7 @@ export default async function ReserverPage({
                               name={o.mandatory ? undefined : `option_${o.id}`}
                               value="1"
                               id={`f-option_${o.id}`}
-                              defaultChecked={o.mandatory}
+                              defaultChecked={o.mandatory || v(`option_${o.id}`) === "1"}
                               disabled={o.mandatory}
                             />
                             <label className="form-check-label" htmlFor={`f-option_${o.id}`}>
@@ -504,7 +588,7 @@ export default async function ReserverPage({
                               className="form-control"
                               style={{ width: 90 }}
                               min={o.mandatory ? 1 : 0}
-                              defaultValue={o.mandatory ? 1 : 0}
+                              defaultValue={Number(v(`option_${o.id}`)) || (o.mandatory ? 1 : 0)}
                               aria-label={`Quantité pour ${o.label}`}
                             />
                           </div>
@@ -560,7 +644,7 @@ export default async function ReserverPage({
                                     className="form-control form-control-sm"
                                     min={0}
                                     max={m.stockTotal}
-                                    defaultValue={0}
+                                    defaultValue={Number(v(`materiel_${m.id}`)) || 0}
                                     aria-label={`Quantité de ${m.name}`}
                                   />
                                 </td>
@@ -654,6 +738,19 @@ export default async function ReserverPage({
                 </div>
                 <button type="submit" className="btn btn-primary btn-lg w-100">
                   <Icone nom="send" taille={16} /> Envoyer ma demande
+                </button>
+                {brouillon && brouillon.espaceId === espace.id ? (
+                  <input type="hidden" name="brouillon_id" value={brouillon.id} />
+                ) : null}
+                <button
+                  type="submit"
+                  name="action"
+                  value="brouillon"
+                  className="btn btn-outline-secondary w-100 mt-2"
+                  formNoValidate
+                  title="Mettre la saisie de côté sans l'envoyer : retrouvez-la dans « Mes réservations »"
+                >
+                  <Icone nom="save" taille={14} /> Garder en brouillon
                 </button>
                 <a href={retourFiche} className="btn btn-ghost w-100 mt-2">
                   Annuler

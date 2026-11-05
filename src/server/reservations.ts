@@ -4,23 +4,28 @@
  * courriels, fil de discussion, historique.
  */
 import type { Prisma } from "@/generated/prisma/client";
+import { fraisPrevus, lireBareme } from "@/lib/annulation";
 import {
   RESERVATION_STATUS,
   type ReservationStatus,
+  STATUTS_FERMES,
   STATUTS_OCCUPANTS,
   TRANSITIONS,
 } from "@/lib/constantes";
 import {
   bornes,
   conflits,
+  conflitsCapacite,
   developperRecurrence,
   type Intervalle,
   type Recurrence,
+  reglesAuCreneau,
   utiliseCalendrier,
   verifierRegles,
 } from "@/lib/creneaux";
 import { manquesDossier, nomRepresentant, phraseManques } from "@/lib/dossier-usager";
-import { dateMoyenne, plage } from "@/lib/libelles";
+import { dateHeure, dateMoyenne, montant, plage } from "@/lib/libelles";
+import { STATUTS_OPTION } from "@/lib/options";
 import { calculerDevis, type Devis } from "@/lib/tarification";
 import { auditRecord } from "@/server/audit";
 import { joursExclus } from "@/server/calendrier";
@@ -29,10 +34,12 @@ import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
 import { enabledIn } from "@/server/features";
 import type { CurrentUser } from "@/server/guards";
-import { envoyerDepuisModele } from "@/server/mailer";
+import { horairesSaisonDe } from "@/server/horaires";
+import { type Attachment, envoyerDepuisModele } from "@/server/mailer";
 import { invalidateNavCounts } from "@/server/nav";
 import { notifier, notifierAgents } from "@/server/notifications";
 import { prochainNumero } from "@/server/numerotation";
+import { verifierPieces } from "@/server/pieces";
 
 export const INCLUDE_RESERVATION = {
   espace: { include: { site: true, parent: true, enfants: true } },
@@ -44,6 +51,11 @@ export const INCLUDE_RESERVATION = {
   options: { include: { option: true } },
   materiels: { include: { materiel: true } },
   factures: { include: { paiements: true }, orderBy: { createdAt: "asc" as const } },
+  avenants: { orderBy: { numero: "asc" as const } },
+  etatsDesLieux: {
+    include: { documents: { orderBy: { position: "asc" as const } } },
+    orderBy: { kind: "asc" as const },
+  },
 } satisfies Prisma.ReservationInclude;
 
 export type ReservationComplete = Prisma.ReservationGetPayload<{
@@ -133,9 +145,17 @@ export async function occupants(
 
 export type Conflit = { demande: Intervalle; existant: Occupant };
 
-/** Les conflits d'une liste de créneaux demandés sur un espace. */
+/**
+ * Les conflits d'une liste de créneaux demandés sur un espace. Un blocage bloque toujours ;
+ * les réservations en place ne bloquent qu'à partir de la capacité simultanée de l'espace.
+ */
 export async function verifierDisponibilite(
-  espace: { id: number; bufferBeforeMin: number; bufferAfterMin: number },
+  espace: {
+    id: number;
+    bufferBeforeMin: number;
+    bufferAfterMin: number;
+    capaciteSimultanee?: number;
+  },
   creneaux: Intervalle[],
   excludeReservationId: number | null = null,
 ): Promise<Conflit[]> {
@@ -148,10 +168,20 @@ export async function verifierDisponibilite(
     new Date(b.endAt.getTime() + marge),
     excludeReservationId,
   );
-  return conflits(creneaux, exist, {
-    avantMin: espace.bufferBeforeMin,
-    apresMin: espace.bufferAfterMin,
-  });
+  const marges = { avantMin: espace.bufferBeforeMin, apresMin: espace.bufferAfterMin };
+  return [
+    ...conflits(
+      creneaux,
+      exist.filter((o) => o.genre === "blocage"),
+      marges,
+    ),
+    ...conflitsCapacite(
+      creneaux,
+      exist.filter((o) => o.genre === "reservation"),
+      marges,
+      espace.capaciteSimultanee ?? 1,
+    ),
+  ];
 }
 
 export type DemandeEntree = {
@@ -169,9 +199,15 @@ export type DemandeEntree = {
   userId: string | null;
   source: "portail" | "backoffice";
   gratuit?: boolean;
+  /** Fondement de la gratuité, obligatoire quand elle est accordée. */
+  gratuitMotif?: string | null;
   /** Un agent peut passer outre délai et horizon. */
   ignorerDelai?: boolean;
   statutInitial?: ReservationStatus;
+  /** Création en lot (campagne) : ni courriel ni notification, l'appelant prévient groupé. */
+  sansCourriel?: boolean;
+  /** Option : date limite au-delà de laquelle un dossier non acquis est libéré d'office. */
+  optionExpiresAt?: Date | null;
 };
 
 /** Le devis d'une demande (pur calcul, sans écriture). */
@@ -237,7 +273,7 @@ export async function stockDisponible(
       },
     },
   });
-  return m.stockTotal - mobilise.reduce((s, x) => s + x.quantite, 0);
+  return m.stockTotal - m.horsService - mobilise.reduce((s, x) => s + x.quantite, 0);
 }
 
 /** Crée un dossier complet. Lève une UserFacingError sur toute règle non respectée. */
@@ -251,6 +287,10 @@ export async function creerReservation(
   });
   if (!espace?.isActive) throw new UserFacingError("Cet espace n'est pas disponible.");
   if (!e.title.trim()) throw new UserFacingError("Indiquez l'objet de la réservation.");
+  if (e.gratuit && !e.gratuitMotif?.trim())
+    throw new UserFacingError(
+      "Indiquez le fondement de la gratuité (délibération, convention, intérêt général…).",
+    );
   const now = new Date();
   const creneaux = developperRecurrence(
     e.premier,
@@ -263,8 +303,11 @@ export async function creerReservation(
         ? "Aucun créneau à réserver : toutes les dates tombent pendant les vacances ou un jour férié."
         : "Aucun créneau à réserver.",
     );
+  const periodes = await horairesSaisonDe(espace.id);
   for (const c of creneaux) {
-    const erreurs = verifierRegles(espace, c, now, { ignorerDelai: e.ignorerDelai });
+    const erreurs = verifierRegles(reglesAuCreneau(espace, periodes, c), c, now, {
+      ignorerDelai: e.ignorerDelai,
+    });
     if (erreurs.length)
       throw new UserFacingError(`${dateMoyenne(c.startAt)} : ${erreurs.join(" ")}`);
   }
@@ -317,6 +360,7 @@ export async function creerReservation(
         throw new UserFacingError(
           `Votre dossier est incomplet pour déposer une demande. ${phraseManques(manques)}`,
         );
+      await verifierPieces(org, "depot", cfg0);
     }
     if (!e.participants) throw new UserFacingError("Indiquez le nombre de participants prévus.");
   }
@@ -346,6 +390,9 @@ export async function creerReservation(
   const numero = await prochainNumero("RES");
   const statut: ReservationStatus =
     e.statutInitial ?? (espace.requiresValidation ? "a_traiter" : "confirmee");
+  // Un dossier acquis d'emblée (saisie d'un agent, espace sans validation) obéit à la règle des pièces.
+  if (org && e.source === "backoffice" && STATUTS_FERMES.includes(statut))
+    await verifierPieces(org, "acceptation", cfg);
   const [opts, mats] = await Promise.all([
     e.options.length
       ? prisma.option.findMany({ where: { id: { in: e.options.map((o) => o.optionId) } } })
@@ -376,6 +423,11 @@ export async function creerReservation(
       acompte: devis.acompte,
       caution: devis.caution,
       gratuit: devis.gratuit,
+      gratuitMotif: devis.gratuit ? (e.gratuitMotif?.trim().slice(0, 300) ?? null) : null,
+      optionExpiresAt:
+        e.optionExpiresAt && (STATUTS_OPTION as readonly string[]).includes(statut)
+          ? e.optionExpiresAt
+          : null,
       source: e.source,
       decisionAt: statut === "confirmee" ? now : null,
       decisionBy: statut === "confirmee" ? "automatique" : null,
@@ -421,6 +473,7 @@ export async function creerReservation(
   });
   invalidateNavCounts();
   await auditRecord("creation reservation", `${r.numero} · ${r.title}`, "reservations", acteur);
+  if (e.sansCourriel) return r;
   const lienBo = `${cfg.APP_BASE_URL}/reservations/${r.id}`;
   const dates =
     plage(r.startAt, r.endAt) + (creneaux.length > 1 ? ` (${creneaux.length} créneaux)` : "");
@@ -480,6 +533,7 @@ export async function courrielUsager(
   r: ReservationComplete,
   key: string,
   extra: Record<string, string> = {},
+  attachments?: Attachment[],
 ): Promise<void> {
   const to = r.user?.email ?? r.organisation?.email;
   if (!to) return;
@@ -490,7 +544,7 @@ export async function courrielUsager(
       key,
       to,
       { ...(await variablesDossier(r)), ...extra },
-      { reservationId: r.id },
+      { reservationId: r.id, attachments },
     );
   }
   if (r.userId) {
@@ -503,6 +557,14 @@ export async function courrielUsager(
       reservation_annulee: `Réservation ${r.numero} annulée`,
       reservation_infos: `Précisions demandées sur ${r.numero}`,
       reservation_signee: `Convention ${r.numero} signée`,
+      fermeture_exceptionnelle: `Fermeture de ${r.espace.name} : ${r.numero} concerné`,
+      creneaux_modifies: `Réservation ${r.numero} : nouveaux horaires`,
+      priorite_municipale: `Réservation ${r.numero} : créneau réquisitionné par la Ville`,
+      avenant_a_signer: `Avenant à signer pour ${r.numero}`,
+      avenant_signe: `Avenant de ${r.numero} signé`,
+      caution_restituee: `Caution de ${r.numero} restituée`,
+      caution_retenue: `Caution de ${r.numero} : retenue`,
+      option_relance: `Option ${r.numero} : échéance proche`,
     };
     if (titres[key])
       await notifier(
@@ -513,6 +575,43 @@ export async function courrielUsager(
         `/portail/mes-reservations/${r.id}`,
       );
   }
+}
+
+/** Pose (ou déplace) l'échéance d'une option sur un dossier non acquis. */
+export async function poserOption(
+  r: ReservationComplete,
+  expiresAt: Date,
+  acteur: string,
+): Promise<void> {
+  if (!(STATUTS_OPTION as readonly string[]).includes(r.status))
+    throw new UserFacingError(
+      "Une option se pose sur un dossier à traiter, en traitement ou accepté.",
+    );
+  if (expiresAt <= new Date()) throw new UserFacingError("L'échéance de l'option est déjà passée.");
+  if (expiresAt > r.startAt)
+    throw new UserFacingError("L'échéance de l'option doit précéder le début de la réservation.");
+  await prisma.reservation.update({
+    where: { id: r.id },
+    data: { optionExpiresAt: expiresAt, optionRelanceAt: null },
+  });
+  await historiser(r.id, "Option posée", `jusqu'au ${dateHeure(expiresAt)}`, acteur);
+}
+
+export async function leverOption(r: ReservationComplete, acteur: string): Promise<void> {
+  if (!r.optionExpiresAt) throw new UserFacingError("Ce dossier n'est pas en option.");
+  await prisma.reservation.update({
+    where: { id: r.id },
+    data: { optionExpiresAt: null, optionRelanceAt: null },
+  });
+  await historiser(r.id, "Option levée", null, acteur);
+}
+
+/** Remet les bornes du dossier sur ses créneaux vivants. */
+export async function majBornes(id: number): Promise<void> {
+  const prevus = await prisma.creneau.findMany({ where: { reservationId: id, status: "prevu" } });
+  if (!prevus.length) return;
+  const b = bornes(prevus);
+  await prisma.reservation.update({ where: { id }, data: { startAt: b.startAt, endAt: b.endAt } });
 }
 
 export async function historiser(
@@ -544,7 +643,14 @@ export async function changerStatut(
   id: number,
   nouveau: ReservationStatus,
   acteur: CurrentUser | { name: string; isAgent: boolean },
-  opts: { motif?: string; message?: string; parSysteme?: boolean } = {},
+  opts: {
+    motif?: string;
+    message?: string;
+    parSysteme?: boolean;
+    sansFrais?: boolean;
+    /** L'appelant prévient lui-même l'usager (réquisition municipale) : pas de courriel d'annulation. */
+    sansCourriel?: boolean;
+  } = {},
 ): Promise<ReservationComplete> {
   const r = await chargerReservation(id);
   if (!r) throw new UserFacingError("Réservation introuvable.");
@@ -569,6 +675,8 @@ export async function changerStatut(
       throw new UserFacingError(
         `Impossible d'accepter : ${plage(c[0].demande.startAt, c[0].demande.endAt)} est déjà occupé par « ${c[0].existant.libelle} ».`,
       );
+    if (r.organisation && !opts.parSysteme)
+      await verifierPieces(r.organisation, "acceptation", cfg);
   }
   // Acceptée sans signature électronique ni paiement attendu → directement confirmée.
   let effectif = nouveau;
@@ -583,9 +691,31 @@ export async function changerStatut(
   if (effectif === "archivee") data.archivedAt = now;
   if (effectif === "annulee" || effectif === "refusee")
     data.creneaux = { updateMany: { where: {}, data: { status: "annule" } } };
+  // Un dossier acquis n'est plus une option.
+  if (["signee", "confirmee"].includes(effectif) && r.optionExpiresAt) data.optionExpiresAt = null;
+  // Une caution demandée entre dans son cycle dès que le dossier est acquis.
+  if (
+    ["acceptee", "signee", "confirmee"].includes(effectif) &&
+    r.caution > 0 &&
+    r.cautionStatus === "aucune"
+  )
+    data.cautionStatus = "attendue";
+  // Frais d'annulation selon le barème, pour un dossier acquis ; l'agent peut y renoncer.
+  const frais =
+    effectif === "annulee" && !opts.sansFrais && enabledIn(cfg, "paiements")
+      ? fraisPrevus(r, lireBareme(cfg.ANNULATION_BAREME), now)
+      : null;
   await prisma.reservation.update({ where: { id }, data });
   const libelle = RESERVATION_STATUS[effectif].label;
   await historiser(id, libelle, opts.motif ?? opts.message ?? null, acteur.name);
+  // Les créneaux libérés intéressent la liste d'attente de l'espace.
+  if (effectif === "annulee" || effectif === "refusee") {
+    const { notifierLiberation } = await import("@/server/liste-attente");
+    await notifierLiberation(
+      r.espaceId,
+      r.creneaux.filter((c) => c.status === "prevu"),
+    ).catch((e) => console.error("[liste d'attente]", e));
+  }
   await auditRecord(`reservation ${effectif}`, r.numero, "reservations", acteur.name);
   invalidateNavCounts();
   const maj = (await chargerReservation(id)) as ReservationComplete;
@@ -627,7 +757,33 @@ export async function changerStatut(
   if (effectif === "refusee")
     await courrielUsager(maj, "reservation_refusee", { motif: opts.motif ?? "non précisé" });
   if (effectif === "annulee") {
-    await courrielUsager(maj, "reservation_annulee", { motif: opts.motif ?? "non précisé" });
+    // Les factures encore dues tombent avec la réservation ; les frais font l'objet d'une facture propre.
+    for (const f of maj.factures.filter((x) => x.status === "a_payer")) {
+      const { annulerFacture } = await import("@/server/factures");
+      await annulerFacture(f.id, acteur.name);
+    }
+    let texteFrais = "";
+    if (frais) {
+      const { creerFacture } = await import("@/server/factures");
+      const f = await creerFacture(maj, "frais", acteur.name, 30, frais.montant).catch((e) => {
+        console.error("[frais annulation]", e);
+        return null;
+      });
+      if (f) {
+        texteFrais = `Annulation à ${frais.jours} jour(s) du début : des frais de ${montant(frais.montant)} (${frais.taux} % du montant) vous sont facturés (facture ${f.numero}).`;
+        await historiser(
+          id,
+          "Frais d'annulation facturés",
+          `${montant(frais.montant)} (${frais.taux} %, à ${frais.jours} jour(s))`,
+          acteur.name,
+        );
+      }
+    }
+    if (!opts.sansCourriel)
+      await courrielUsager(maj, "reservation_annulee", {
+        motif: opts.motif ?? "non précisé",
+        frais: texteFrais,
+      });
     if (!acteur.isAgent)
       await notifierAgents(
         r.espaceId,
@@ -702,7 +858,11 @@ export async function ajouterMessage(
 }
 
 /** Recalcule les montants d'un dossier (après modification des options, du matériel ou du profil). */
-export async function recalculerMontants(id: number, gratuit?: boolean): Promise<Devis> {
+export async function recalculerMontants(
+  id: number,
+  gratuit?: boolean,
+  gratuitMotif?: string | null,
+): Promise<Devis> {
   const r = await chargerReservation(id);
   if (!r) throw new UserFacingError("Réservation introuvable.");
   const devis = await deviser(
@@ -721,6 +881,13 @@ export async function recalculerMontants(id: number, gratuit?: boolean): Promise
       acompte: devis.acompte,
       caution: devis.caution,
       gratuit: devis.gratuit,
+      ...(gratuit !== undefined
+        ? {
+            gratuitMotif: devis.gratuit
+              ? (gratuitMotif?.trim().slice(0, 300) ?? r.gratuitMotif)
+              : null,
+          }
+        : {}),
     },
   });
   return devis;

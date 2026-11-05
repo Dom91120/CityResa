@@ -8,6 +8,7 @@ import { Icone } from "@/components/icones";
 import { JOURS_ISO } from "@/lib/constantes";
 import { heure, nomCourt, plageHoraire } from "@/lib/libelles";
 import { parisMidnight, parisParts, toParisWall } from "@/lib/paris-time";
+import { type Couleur, couleurEvt } from "@/lib/planning-vues";
 import {
   type Blocage,
   bornesJour,
@@ -42,18 +43,34 @@ export function Evt({
   espace,
   jour,
   compact = false,
+  couleur = "espace",
+  deplacable = false,
 }: {
   e: EvtResa;
   espace?: EspacePlanning;
   jour: string;
   compact?: boolean;
+  couleur?: Couleur;
+  /** Glissable vers une autre case du même espace (planning.js). */
+  deplacable?: boolean;
 }) {
+  const liseré = couleurEvt(couleur, e, espace);
+  const debut = toParisWall(e.startAt);
   return (
     <a
       href={`/reservations/${e.reservationId}`}
-      className={`evt${ATTENTE.includes(e.status) ? " evt--attente" : ""}`}
-      style={espace ? { borderLeftColor: espace.color } : undefined}
-      title={`${e.numero} · ${e.titre}${e.qui ? ` · ${e.qui}` : ""}${espace ? ` · ${nomCourt(espace)}` : ""}`}
+      className={`evt${ATTENTE.includes(e.status) ? " evt--attente" : ""}${deplacable ? " evt--deplacable" : ""}`}
+      style={liseré ? { borderLeftColor: liseré } : undefined}
+      title={`${e.numero} · ${e.titre}${e.qui ? ` · ${e.qui}` : ""}${espace ? ` · ${nomCourt(espace)}` : ""}${deplacable ? " · glisser pour déplacer" : ""}`}
+      data-creneau-id={deplacable ? e.id : undefined}
+      data-reservation-id={deplacable ? e.reservationId : undefined}
+      data-espace-id={deplacable ? e.espaceId : undefined}
+      data-jour={deplacable ? parisParts(e.startAt).dateKey : undefined}
+      data-debut-min={deplacable ? debut.min : undefined}
+      data-duree-min={
+        deplacable ? Math.round((e.endAt.getTime() - e.startAt.getTime()) / 60_000) : undefined
+      }
+      data-titre={deplacable ? e.titre : undefined}
     >
       <span className="evt-titre">{e.titre}</span>
       <span className="evt-heure">
@@ -138,6 +155,8 @@ type VueProps = {
   peutEditer: boolean;
   aujourdhui: string;
   retour: string;
+  /** Mode de couleur des créneaux : espace (défaut), statut ou type d'usager. */
+  couleur?: Couleur;
 };
 
 function enteteJour(jour: string): string {
@@ -156,7 +175,9 @@ export function VueSemaine({
   peutEditer,
   aujourdhui,
   retour,
+  couleur = "espace",
 }: VueProps) {
+  const deplacable = peutEditer;
   return (
     <div className="planning">
       <table>
@@ -193,6 +214,8 @@ export function VueSemaine({
                     key={j}
                     className={`${peutEditer ? "jour-cellule" : ""}${estWeekend(j) ? " weekend" : ""}`}
                     data-creer={peutEditer ? urlCreer(e.id, j) : undefined}
+                    data-jour={peutEditer ? j : undefined}
+                    data-espace-id={peutEditer ? e.id : undefined}
                     title={peutEditer ? "Cliquer pour réserver ce jour" : undefined}
                   >
                     {blocs.map((b) => (
@@ -206,7 +229,15 @@ export function VueSemaine({
                       />
                     ))}
                     {evts.map((ev) => (
-                      <Evt key={ev.id} e={ev} espace={e} jour={j} compact />
+                      <Evt
+                        key={ev.id}
+                        e={ev}
+                        espace={e}
+                        jour={j}
+                        compact
+                        couleur={couleur}
+                        deplacable={deplacable && STATUTS_DEPLACABLES.includes(ev.status)}
+                      />
                     ))}
                   </td>
                 );
@@ -219,6 +250,9 @@ export function VueSemaine({
   );
 }
 
+/** Les dossiers dont un créneau se déplace par glisser-déposer (règle du serveur : dossier occupant). */
+const STATUTS_DEPLACABLES = ["a_traiter", "en_traitement", "acceptee", "signee", "confirmee"];
+
 export function VueMois({
   fen,
   espaces,
@@ -229,6 +263,7 @@ export function VueMois({
   aujourdhui,
   retour,
   urlJour,
+  couleur = "espace",
 }: VueProps & { urlJour: (jour: string) => string }) {
   const unSeul = espaces.length === 1 ? espaces[0] : null;
   const parEspace = new Map(espaces.map((e) => [e.id, e]));
@@ -277,7 +312,7 @@ export function VueMois({
                   />
                 ))}
                 {evts.slice(0, 4).map((ev) => (
-                  <Evt key={ev.id} e={ev} espace={unSeul} jour={j} compact />
+                  <Evt key={ev.id} e={ev} espace={unSeul} jour={j} compact couleur={couleur} />
                 ))}
                 {evts.length > 4 ? (
                   <a href={urlJour(j)} className="small text-muted">
@@ -299,7 +334,14 @@ export function VueMois({
                 ) : null}
                 <div className="mt-1">
                   {evts.slice(0, 3).map((ev) => (
-                    <Evt key={ev.id} e={ev} espace={parEspace.get(ev.espaceId)} jour={j} compact />
+                    <Evt
+                      key={ev.id}
+                      e={ev}
+                      espace={parEspace.get(ev.espaceId)}
+                      jour={j}
+                      compact
+                      couleur={couleur}
+                    />
                   ))}
                 </div>
               </>
@@ -311,7 +353,16 @@ export function VueMois({
   );
 }
 
-export function VueJour({ fen, espaces, creneaux, blocages, csrf, peutEditer, retour }: VueProps) {
+export function VueJour({
+  fen,
+  espaces,
+  creneaux,
+  blocages,
+  csrf,
+  peutEditer,
+  retour,
+  couleur = "espace",
+}: VueProps) {
   const jour = fen.jours[0];
   const b = bornesJour(jour);
   const heures = Array.from(
@@ -360,6 +411,9 @@ export function VueJour({ fen, espaces, creneaux, blocages, csrf, peutEditer, re
                         ? urlCreer(e.id, jour, `${String(h).padStart(2, "0")}:00`)
                         : undefined
                     }
+                    data-jour={peutEditer ? jour : undefined}
+                    data-espace-id={peutEditer ? e.id : undefined}
+                    data-heure={peutEditer ? `${String(h).padStart(2, "0")}:00` : undefined}
                   >
                     {blocs.map((x) => (
                       <Bloc
@@ -372,7 +426,14 @@ export function VueJour({ fen, espaces, creneaux, blocages, csrf, peutEditer, re
                       />
                     ))}
                     {evts.map((ev) => (
-                      <Evt key={ev.id} e={ev} espace={e} jour={jour} />
+                      <Evt
+                        key={ev.id}
+                        e={ev}
+                        espace={e}
+                        jour={jour}
+                        couleur={couleur}
+                        deplacable={peutEditer && STATUTS_DEPLACABLES.includes(ev.status)}
+                      />
                     ))}
                   </td>
                 );
