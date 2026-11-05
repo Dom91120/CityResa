@@ -3,7 +3,7 @@ import { Barre, Filtre, PaginationBar, Vide } from "@/components/liste";
 import { Chip } from "@/components/macros";
 import type { Prisma } from "@/generated/prisma/client";
 import { parseDate } from "@/lib/forms-util";
-import { dateHeure } from "@/lib/libelles";
+import { dateHeure, libelleAction } from "@/lib/libelles";
 import { CATEGORIES_AUDIT, contexteAdmin, pageBase } from "@/modules/admin/server";
 import { prisma } from "@/server/db";
 import { param, resolvePerPage } from "@/server/paging";
@@ -155,7 +155,7 @@ export default async function AuditPage({
                         <span className="text-faint">—</span>
                       )}
                     </td>
-                    <td className="small fw-medium">{l.action}</td>
+                    <td className="small fw-medium">{libelleAction(l.action)}</td>
                     <td
                       className="small text-muted"
                       style={{ maxWidth: 480, overflowWrap: "anywhere" }}

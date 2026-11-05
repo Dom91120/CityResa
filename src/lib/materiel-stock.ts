@@ -109,3 +109,27 @@ export function decrireControle(
     : "jamais contrôlé";
   return `Tous les ${m.controleMois} mois · ${dernier} · prochain le ${fmt(e)}${e <= now ? " (en retard)" : ""}`;
 }
+
+export type Mobilisation = { debut: Date; fin: Date; quantite: number };
+
+/**
+ * Le plus grand nombre d'unités retenues en même temps par des dossiers (bornes exclues :
+ * un dossier qui finit à 12 h ne gêne pas celui qui commence à 12 h). C'est ce qui manque
+ * au pire moment, à comparer au stock ; additionner tous les dossiers surestime le besoin.
+ */
+export function picMobilisation(lignes: Mobilisation[]): number {
+  const bornes: [number, number][] = [];
+  for (const l of lignes) {
+    if (l.quantite <= 0 || l.fin <= l.debut) continue;
+    bornes.push([l.debut.getTime(), l.quantite], [l.fin.getTime(), -l.quantite]);
+  }
+  // À instant égal, les fins passent avant les débuts.
+  bornes.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  let courant = 0;
+  let pic = 0;
+  for (const [, delta] of bornes) {
+    courant += delta;
+    if (courant > pic) pic = courant;
+  }
+  return pic;
+}
