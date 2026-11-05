@@ -99,6 +99,12 @@ export const ONGLETS: Onglet[] = [
     cles: ["DOCUMENTS_ENABLED", "DOCUMENT_MAX_MB"],
   },
   { cle: "apparence", label: "Apparence", icone: "palette", cles: ["UI_PRIMARY_COLOR"] },
+  {
+    cle: "rgpd",
+    label: "Données personnelles",
+    icone: "shield-check",
+    cles: ["RGPD_INACTIVITE_MOIS", "RGPD_PREAVIS_JOURS", "RGPD_CONSERVATION_ANNEES"],
+  },
   { cle: "sauvegardes", label: "Sauvegardes", icone: "database", cles: ["BACKUP_DB_KEEP"] },
 ];
 

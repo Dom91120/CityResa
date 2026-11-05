@@ -571,6 +571,48 @@ export function VoletApparence({ cfg }: { cfg: AppSettings }) {
   );
 }
 
+export function VoletRgpd({ cfg }: { cfg: AppSettings }) {
+  return (
+    <>
+      <p className="form-section-aide">
+        La tâche planifiée de 3 h 30 prévient par courriel les usagers inactifs, anonymise leur
+        compte à l'échéance du préavis (coordonnées effacées, dossiers conservés sans identité) et
+        purge les messages, pièces et notes des dossiers dont la conservation est échue. Les usagers
+        téléchargent leurs données et demandent la suppression de leur compte depuis « Mon compte ».
+      </p>
+      <Grille colonnes={3}>
+        <Champ
+          label="Anonymisation après inactivité (mois)"
+          name="RGPD_INACTIVITE_MOIS"
+          type="number"
+          min={0}
+          max={240}
+          valeur={cfg.RGPD_INACTIVITE_MOIS}
+          aide="Mois sans connexion. 0 : jamais automatiquement."
+        />
+        <Champ
+          label="Préavis avant anonymisation (jours)"
+          name="RGPD_PREAVIS_JOURS"
+          type="number"
+          min={1}
+          max={365}
+          valeur={cfg.RGPD_PREAVIS_JOURS}
+          aide="Une connexion pendant le préavis annule l'anonymisation."
+        />
+        <Champ
+          label="Conservation des dossiers terminés (années)"
+          name="RGPD_CONSERVATION_ANNEES"
+          type="number"
+          min={0}
+          max={30}
+          valeur={cfg.RGPD_CONSERVATION_ANNEES}
+          aide="Au-delà, les données personnelles du dossier sont purgées. 0 : jamais."
+        />
+      </Grille>
+    </>
+  );
+}
+
 export function VoletSauvegardes({ cfg }: { cfg: AppSettings }) {
   return (
     <>

@@ -14,6 +14,7 @@ const cfg = (extra: Partial<AppSettings> = {}): AppSettings =>
     RAPPEL_J1: true,
     SIGNATURE_ENABLED: true,
     PAIEMENTS_ENABLED: true,
+    RGPD_INACTIVITE_MOIS: 36,
     ...extra,
   }) as unknown as AppSettings;
 
@@ -34,6 +35,7 @@ describe("tachesActives", () => {
     expect(sans).toEqual([
       "archivage_auto",
       "purge_notifications",
+      "rgpd",
       "terminer_reservations",
       "options",
       "digest_agents",
@@ -41,6 +43,9 @@ describe("tachesActives", () => {
     expect(tachesActives(cfg({ BACKUP_DB_DIR: "/backups" })).map((t) => t.id)).toContain(
       "backup_database",
     );
+    expect(
+      tachesActives(cfg({ RGPD_INACTIVITE_MOIS: 0, RGPD_CONSERVATION_ANNEES: 0 })).map((t) => t.id),
+    ).not.toContain("rgpd");
   });
 
   it("chaque tâche a un identifiant unique et soit une heure, soit un intervalle", () => {

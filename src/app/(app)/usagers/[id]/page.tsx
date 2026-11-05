@@ -29,6 +29,7 @@ import {
   qualiteRepresentant,
 } from "@/lib/dossier-usager";
 import { dateCourte, dateHeure, dateMoyenne, depuis, montant } from "@/lib/libelles";
+import { etatInactivite, libelleEtat, reglesDe } from "@/lib/rgpd";
 import { chargerOrganisation } from "@/modules/usagers/server";
 import { nomComplet } from "@/modules/utilisateurs/server";
 import { prisma } from "@/server/db";
@@ -50,6 +51,8 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
   if (!org) notFound();
   const { user, csrf, features } = page;
   const peutEditer = user.canEdit("usagers");
+  const peutAnonymiser = user.canDelete("usagers");
+  const regles = reglesDe(user.settings);
   const manques = manquesDossier(org, org.users.find((u) => u.isActive) ?? null);
   const [reservations, factures, subventions, documents, categories, historique] =
     await Promise.all([
@@ -293,8 +296,17 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
                           {u.lastLoginAt ? depuis(u.lastLoginAt) : "Jamais"}
                         </td>
                         <td>
-                          {u.isActive ? (
-                            <Chip teinte="emerald">Actif</Chip>
+                          {u.anonymiseAt ? (
+                            <Chip teinte="slate">{libelleEtat("anonymise", u, regles)}</Chip>
+                          ) : u.isActive ? (
+                            <span className="cell2">
+                              <Chip teinte="emerald">Actif</Chip>
+                              {etatInactivite(u, regles) !== "actif" ? (
+                                <small className="text-warning-emphasis">
+                                  {libelleEtat(etatInactivite(u, regles), u, regles)}
+                                </small>
+                              ) : null}
+                            </span>
                           ) : (
                             <Chip teinte="slate">Désactivé</Chip>
                           )}
@@ -302,6 +314,15 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
                         {peutEditer ? (
                           <td>
                             <div className="row-actions">
+                              <a
+                                href={`${ici}/membres/${u.id}/donnees.json`}
+                                className="btn btn-ghost btn-icone btn-sm"
+                                title="Exporter ses données (demande d'accès RGPD)"
+                                aria-label="Exporter ses données"
+                                download
+                              >
+                                <Icone nom="download" taille={14} />
+                              </a>
                               <form method="POST" action={`${ici}/membres/${u.id}/reinitialiser`}>
                                 <input type="hidden" name="csrf_token" value={csrf} />
                                 <button
@@ -309,7 +330,7 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
                                   className="btn btn-ghost btn-icone btn-sm"
                                   title="Envoyer un lien de réinitialisation du mot de passe"
                                   aria-label="Envoyer un lien de réinitialisation"
-                                  disabled={!u.isActive}
+                                  disabled={!u.isActive || Boolean(u.anonymiseAt)}
                                   data-confirm={`Envoyer un lien de réinitialisation du mot de passe à ${u.email} ?`}
                                 >
                                   <Icone nom="key-round" taille={14} />
@@ -320,6 +341,7 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
                                 <button
                                   type="submit"
                                   className={`btn btn-ghost btn-icone btn-sm${u.isActive ? " btn-ghost-danger" : ""}`}
+                                  disabled={Boolean(u.anonymiseAt)}
                                   title={
                                     u.isActive ? "Désactiver le compte" : "Réactiver le compte"
                                   }
@@ -335,6 +357,20 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
                                   <Icone nom={u.isActive ? "ban" : "refresh-cw"} taille={14} />
                                 </button>
                               </form>
+                              {peutAnonymiser && !u.anonymiseAt ? (
+                                <form method="POST" action={`${ici}/membres/${u.id}/anonymiser`}>
+                                  <input type="hidden" name="csrf_token" value={csrf} />
+                                  <button
+                                    type="submit"
+                                    className="btn btn-ghost btn-icone btn-sm btn-ghost-danger"
+                                    title="Anonymiser le compte (droit à l'effacement)"
+                                    aria-label="Anonymiser le compte"
+                                    data-confirm={`Anonymiser le compte de ${nomComplet(u)} ? Ses coordonnées sont effacées définitivement et la connexion devient impossible ; ses dossiers restent archivés.`}
+                                  >
+                                    <Icone nom="user-x" taille={14} />
+                                  </button>
+                                </form>
+                              ) : null}
                             </div>
                           </td>
                         ) : null}

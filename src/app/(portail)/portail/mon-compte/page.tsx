@@ -2,6 +2,7 @@ import { Champ } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
 import { Avatar, Chip } from "@/components/macros";
 import { dateCourte } from "@/lib/libelles";
+import { decrireConservation, reglesDe } from "@/lib/rgpd";
 import { organisationDe } from "@/modules/portail/catalogue";
 import { getSettings } from "@/server/config-store";
 import { contexteUsager } from "@/server/page";
@@ -12,6 +13,7 @@ export default async function MonComptePage() {
   const page = await contexteUsager();
   const { user, csrf } = page;
   const [cfg, org] = await Promise.all([getSettings(), organisationDe(user)]);
+  const regles = reglesDe(cfg);
   const ics = user.icsToken ? `${cfg.APP_BASE_URL}/ics/usager/${user.icsToken}` : null;
   return (
     <>
@@ -201,6 +203,45 @@ export default async function MonComptePage() {
                 </button>
               </form>
             )}
+          </div>
+
+          <div className="data-card p-4 mt-3">
+            <h2 className="h5 mb-2">
+              <Icone nom="shield-check" taille={16} /> Mes données personnelles
+            </h2>
+            <p className="text-muted small">
+              {decrireConservation(regles)} Vous pouvez à tout moment télécharger l'ensemble des
+              données vous concernant, ou demander la suppression de votre compte.
+            </p>
+            <a
+              href="/portail/mon-compte/mes-donnees.json"
+              className="btn btn-outline-secondary btn-sm mb-3"
+              download
+            >
+              <Icone nom="download" taille={13} /> Télécharger mes données (JSON)
+            </a>
+            <form
+              method="POST"
+              action="/portail/mon-compte/supprimer"
+              className="d-flex gap-2 flex-wrap align-items-end"
+              data-double-envoi
+            >
+              <input type="hidden" name="csrf_token" value={csrf} />
+              <Champ
+                label="Supprimer mon compte"
+                name="confirmation"
+                id="f-suppression"
+                placeholder="Écrivez SUPPRIMER"
+                aide="Vos coordonnées sont effacées et la connexion devient impossible ; vos dossiers passés restent archivés sans votre identité. Impossible tant qu'un dossier est en cours."
+              />
+              <button
+                type="submit"
+                className="btn btn-outline-danger btn-sm mb-3"
+                data-confirm="Supprimer définitivement votre compte ? Cette action est irréversible."
+              >
+                <Icone nom="user-x" taille={13} /> Supprimer mon compte
+              </button>
+            </form>
           </div>
         </div>
       </div>

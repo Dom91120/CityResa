@@ -193,6 +193,15 @@ export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
     aide: "Un seul courriel par organisation, envoyé depuis la campagne une fois les décisions prises. {{attribues}} et {{refuses}} listent les créneaux (une ligne par vœu, avec le dossier ou le motif), {{suite}} dit quoi faire ensuite.",
   },
   {
+    key: "compte_inactif",
+    label: "Compte inactif : préavis avant anonymisation (usager)",
+    subject: "Votre compte CityRésa sera anonymisé le {{date}}",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>Vous ne vous êtes pas connecté à votre compte depuis plus de {{mois}} mois. Conformément à notre politique de conservation des données, il sera <strong>anonymisé le {{date}}</strong> : vos coordonnées seront effacées et vous ne pourrez plus vous y connecter ; vos réservations passées resteront dans nos archives, sans votre identité.</p><p>Pour conserver votre compte, il vous suffit de vous connecter avant cette date : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Envoyé une fois par la tâche RGPD quand un compte usager dépasse la durée d’inactivité ; une connexion annule l’anonymisation.",
+  },
+  {
     key: "message_recu",
     label: "Nouveau message",
     subject: "Nouveau message sur la réservation {{numero}}",

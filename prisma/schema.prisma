@@ -48,6 +48,10 @@ model User {
   isActive      Boolean   @default(true) @map("is_active")
   lastLoginAt   DateTime? @map("last_login_at") @db.Timestamptz
   acceptedCguAt DateTime? @map("accepted_cgu_at") @db.Timestamptz
+  /// RGPD : courriel de préavis envoyé (compte inactif), remis à zéro à la connexion.
+  inactivitePreavisAt DateTime? @map("inactivite_preavis_at") @db.Timestamptz
+  /// RGPD : identité effacée (compte inactif ou suppression demandée) ; le compte reste pour l’historique.
+  anonymiseAt DateTime? @map("anonymise_at") @db.Timestamptz
 
   // ── Second facteur (plugin twoFactor) ──
   twoFactorEnabled Boolean   @default(false) @map("two_factor_enabled")
@@ -631,6 +635,8 @@ model Reservation {
   /// portail | backoffice
   source     String    @default("backoffice") @db.VarChar(16)
   archivedAt DateTime? @map("archived_at") @db.Timestamptz
+  /// RGPD : données personnelles du dossier purgées (messages, pièces, notes) au-delà de la durée de conservation.
+  purgeAt    DateTime? @map("purge_at") @db.Timestamptz
   createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 

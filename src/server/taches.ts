@@ -14,6 +14,7 @@ import { TACHES as REGISTRE } from "@/server/jobs-registre";
 import { envoyerDepuisModele } from "@/server/mailer";
 import { notifier, notifierAgents } from "@/server/notifications";
 import { changerStatut, chargerReservation, courrielUsager } from "@/server/reservations";
+import { executerRgpd } from "@/server/rgpd";
 
 type Resultat = { ok: boolean; message: string };
 
@@ -342,6 +343,14 @@ async function options(): Promise<Resultat> {
   };
 }
 
+async function rgpd(): Promise<Resultat> {
+  const b = await executerRgpd();
+  return {
+    ok: true,
+    message: `${b.prevenus} préavis envoyé(s), ${b.anonymises} compte(s) anonymisé(s), ${b.purges} dossier(s) purgé(s)`,
+  };
+}
+
 async function sauvegarde(): Promise<Resultat> {
   const cfg = await getSettings();
   const chemin = await backupDatabase(cfg);
@@ -352,6 +361,7 @@ export const TACHES: Record<string, () => Promise<Resultat>> = {
   backup_database: sauvegarde,
   archivage_auto: archiver,
   purge_notifications: purgeNotifications,
+  rgpd: rgpd,
   terminer_reservations: terminer,
   rappels_usagers: rappels,
   relances_signature: relancesSignature,
