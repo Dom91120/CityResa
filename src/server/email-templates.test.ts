@@ -100,6 +100,7 @@ describe("EMAIL_TEMPLATE_SEEDS", () => {
       "reservation_annulee",
       "fermeture_exceptionnelle",
       "creneaux_modifies",
+      "priorite_municipale",
       "avenant_a_signer",
       "avenant_code",
       "avenant_signe",
