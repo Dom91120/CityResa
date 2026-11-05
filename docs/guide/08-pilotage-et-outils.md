@@ -71,8 +71,8 @@ Ce chapitre présente les écrans qui vous servent tous les jours, quel que soit
 
 **Règles à connaître**
 
-- Le chiffre affiché à côté de **À traiter** compte toutes les demandes en attente de la collectivité. La liste en dessous, elle, ne montre que les huit plus anciennes **sur les espaces dont vous avez la charge** (si votre compte est limité à certains espaces). Les deux nombres peuvent donc différer.
-- Les indicateurs et les graphiques portent sur toute la collectivité, pas seulement sur vos espaces.
+- Si votre compte est limité à certains espaces, le chiffre **À traiter** (dans le bloc, dans la phrase d'en-tête et sur le menu **Réservations**) ne compte que les demandes de ces espaces, comme la liste. Celle-ci montre les huit plus anciennes.
+- Les autres indicateurs et les graphiques portent sur toute la collectivité.
 
 ## 8.3 Le bloc d'alertes
 

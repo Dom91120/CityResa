@@ -308,12 +308,12 @@ Le formulaire compte trois parties.
 
 ![Liste du matériel](captures/materiel.webp)
 
-*Figure — les 6 articles du catalogue avec leur catégorie, leur stock, les quantités mobilisées, le disponible et la tarification.*
+*Figure — les 6 articles du catalogue avec leur catégorie, leur stock, la quantité mobilisée au plus fort, le disponible et la tarification.*
 
 **Ce que l'on voit**
 
 - La recherche (nom, catégorie), le filtre **Toutes les catégories** et le filtre d'état (**Actifs et inactifs** par défaut, ou Actifs, Inactifs, Avec unités hors service, Contrôle en retard).
-- Pour chaque article : nom et description, **Catégorie**, **Stock** (avec la mention « 2 hors service » en rouge pour les tables), **Mobilisé**, **Disponible** (pastille rouge à 0, jaune si faible) et **Tarification** (« 3 € par unité », « 30 € par unité et par jour », « Gratuit »…).
+- Pour chaque article : nom et description, **Catégorie**, **Stock** (avec la mention « 2 hors service » en rouge pour les tables), **Mobilisé (pic)**, **Disponible** (pastille rouge à 0, jaune si faible) et **Tarification** (« 3 € par unité », « 30 € par unité et par jour », « Gratuit »…).
 - L'œil ouvre la fiche, le crayon la modification ; le bouton **Nouveau matériel** crée un article.
 
 **Comment faire — créer un article**
@@ -331,7 +331,7 @@ Le formulaire compte trois parties.
 - Un matériel inactif n'est plus proposé dans les demandes.
 - Un article déjà utilisé par des dossiers n'est pas supprimé : il est seulement désactivé.
 
-> **Attention** — La colonne **Mobilisé** additionne tous les dossiers à venir, quelles que soient leurs dates. Elle peut donc dépasser le stock (600 chaises mobilisées pour 300 en stock) sans qu'il y ait de surréservation : le contrôle réel se fait date par date au moment de chaque demande.
+- La colonne **Mobilisé (pic)** indique le plus grand nombre d'unités retenues en même temps par les dossiers à venir : seuls les dossiers dont les dates se recouvrent s'additionnent. **Disponible** est ce qui reste au pire moment ; une date donnée peut en offrir davantage, le contrôle exact se faisant à chaque demande.
 
 ## 4.15 La fiche d'un matériel : pannes, remises en service, contrôles et mouvements
 
@@ -346,7 +346,7 @@ Le formulaire compte trois parties.
 **Ce que l'on voit**
 
 - En haut : le nom, la catégorie et le tarif, puis les boutons **Contrôle effectué**, **Panne / perte** et **Modifier**. Le bouton **Remettre en service** apparaît lorsque des unités sont hors service.
-- Cinq compteurs : **Stock total**, **Hors service**, **Mobilisé (dossiers en cours)**, **Disponible** et **Dossiers (total)**.
+- Cinq compteurs : **Stock total**, **Hors service**, **Mobilisé au plus fort (à venir)**, **Disponible** et **Dossiers (total)**.
 - Le bloc **Synthèse** : catégorie, tarification, **Contrôle périodique** (périodicité, date du dernier contrôle et du prochain), description, dates de création et de modification. Le bloc **Photos** se déplie pour ajouter des images.
 - Le bloc **Réservations à venir qui le mobilisent** : dates, dossier, espace, quantité et statut.
 - Le **Journal des mouvements** : date, nature du mouvement (Contrôle périodique, Remise en service, Panne ou perte signalée…), quantité, dossier éventuel et auteur.

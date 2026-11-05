@@ -486,7 +486,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
   - le **Corps (HTML simple)**, avec la liste des balises de mise en forme admises (paragraphe, gras, lien, liste, citation, retour à la ligne).
 - **Variables disponibles** : les mots entre doubles accolades propres à ce modèle, par exemple `{{prenom}}`, `{{numero}}`, `{{espace}}`, `{{dates}}`, `{{suite}}`, `{{lien}}`, `{{collectivite}}`. Ils sont remplacés à l'envoi par les vraies valeurs.
 - **Aperçu avec des valeurs d'exemple** : le sujet et le corps tels que l'usager les recevra (ici « Bonjour Camille, … votre demande RES-2026-0042 pour Salle des fêtes … est acceptée »).
-- **Actions** : **M'envoyer un test** (à votre adresse), **Rétablir la graine** (revenir au texte d'origine) et une étiquette **Texte d'origine** ou **Personnalisé**.
+- **Actions** : **M'envoyer un test** (à votre adresse), **Rétablir le texte d'origine** et une étiquette **Texte d'origine** ou **Personnalisé**.
 - Les boutons **Annuler** et **Enregistrer**, en haut et en bas.
 
 **Comment faire**
@@ -494,7 +494,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 1. Modifiez le **Sujet** et le **Corps**. Pour insérer une information du dossier, recopiez une variable de la liste, accolades comprises, par exemple `{{prenom}}`.
 2. Cliquez sur **Enregistrer**.
 3. Cliquez sur **M'envoyer un test** pour recevoir le courriel avec des valeurs d'exemple et vérifier sa mise en forme.
-4. Pour revenir au texte livré avec l'application, cliquez sur **Rétablir la graine** et confirmez (bouton actif seulement si le modèle a été personnalisé).
+4. Pour revenir au texte livré avec l'application, cliquez sur **Rétablir le texte d'origine** et confirmez (bouton actif seulement si le modèle a été personnalisé).
 5. Pour ne plus envoyer ce courriel, désactivez **Modèle actif** puis enregistrez.
 
 **Règles à connaître**
@@ -511,12 +511,12 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 **Qui** — Administrateurs.
 
 ![Journal d'audit](captures/audit.webp)
-*Figure — Le journal d'audit : connexions, modification de créneaux, opérations sur le matériel et constats de présence.*
+*Figure — Le journal d'audit filtré sur la catégorie Réservations : modifications de créneaux, réquisitions, cautions, états des lieux, campagne et vœux.*
 
 **Ce que l'on voit**
 
 - Les filtres : une recherche libre (action, détail, utilisateur), **Tous les utilisateurs**, **Toutes les catégories**, deux dates (du… au…), et le bouton **Filtrer**.
-- Le tableau : **Quand** (date et heure), **Utilisateur** (adresse de courriel), **Catégorie** (étiquette colorée : Sécurité, Réservations, Matériel, Planning…), **Action** (connexion, déconnexion, modification de créneaux, matériel en panne, constat de présence…) et **Détail** (numéro de dossier, créneau, quantité…).
+- Le tableau : **Quand** (date et heure), **Utilisateur** (adresse de courriel), **Catégorie** (étiquette colorée : Sécurité, Réservations, Matériel, Planning…), **Action** (Connexion, Modification créneaux, Réquisition municipale, Caution encaissée, Dépôt vœu…) et **Détail** (numéro de dossier, créneau, quantité…).
 
 **Comment faire**
 

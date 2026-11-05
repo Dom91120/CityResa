@@ -278,7 +278,7 @@ const CAPTURES = [
     url: "/modeles-courriel/reservation_acceptee",
     hauteur: 1800,
   },
-  { nom: "audit", compte: "admin", url: "/audit", hauteur: 1300 },
+  { nom: "audit", compte: "admin", url: "/audit?categorie=reservations", hauteur: 1300 },
   { nom: "taches", compte: "admin", url: "/taches", hauteur: 1500 },
   {
     nom: "sauvegardes",
