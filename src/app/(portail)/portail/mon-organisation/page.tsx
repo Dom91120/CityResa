@@ -150,7 +150,14 @@ export default async function MonOrganisationPage() {
                     <div className="grille grille-3">
                       <Champ label="Prénom" name="first_name" requis autoComplete="off" />
                       <Champ label="Nom" name="last_name" requis autoComplete="off" />
-                      <Champ label="Courriel" name="email" type="email" requis autoComplete="off" />
+                      <Champ
+                        label="Courriel"
+                        name="email"
+                        id="m-email"
+                        type="email"
+                        requis
+                        autoComplete="off"
+                      />
                     </div>
                     <button type="submit" className="btn btn-outline-primary btn-sm">
                       <Icone nom="send" taille={14} /> Envoyer l'invitation

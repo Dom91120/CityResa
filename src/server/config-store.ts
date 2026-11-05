@@ -40,6 +40,7 @@ export const INT_KEYS = new Set([
   "CAUTION_DELAI_RESTITUTION_JOURS",
   "OPTION_RELANCE_JOURS",
   "PLANNING_HEBDO_JOUR",
+  "ACCESSIBILITE_TAUX",
   "RGPD_INACTIVITE_MOIS",
   "RGPD_PREAVIS_JOURS",
   "RGPD_CONSERVATION_ANNEES",
@@ -168,6 +169,18 @@ export type AppSettings = EnvOnly & {
   /** Années de conservation d’un dossier archivé avant purge de ses données personnelles (0 = jamais). */
   RGPD_CONSERVATION_ANNEES: number;
   CONVENTION_TEXTE: string;
+  /** Déclaration d'accessibilité : non_evalue | non_conforme | partiellement_conforme | totalement_conforme. */
+  ACCESSIBILITE_ETAT: string;
+  /** Taux de conformité RGAA (%) ; -1 = non renseigné. */
+  ACCESSIBILITE_TAUX: number;
+  /** Date de l'audit (texte libre, « 12 mars 2026 »). */
+  ACCESSIBILITE_DATE: string;
+  /** Non-conformités, dérogations, plan d'amélioration (texte libre). */
+  ACCESSIBILITE_TEXTE: string;
+  /** Mentions légales (texte libre) : éditeur, directeur de publication, hébergeur. */
+  MENTIONS_LEGALES_TEXTE: string;
+  /** Compléments de la page « Données personnelles » (délégué à la protection des données…). */
+  DONNEES_PERSONNELLES_TEXTE: string;
   AGENTS_NOTIFIES: string;
   BACKUP_DB_KEEP: number;
   [key: string]: unknown;
@@ -276,6 +289,12 @@ export function envDefaults(): AppSettings {
     RGPD_INACTIVITE_MOIS: envInt("RGPD_INACTIVITE_MOIS", 36),
     RGPD_PREAVIS_JOURS: envInt("RGPD_PREAVIS_JOURS", 30),
     RGPD_CONSERVATION_ANNEES: envInt("RGPD_CONSERVATION_ANNEES", 5),
+    ACCESSIBILITE_ETAT: envStr("ACCESSIBILITE_ETAT", "non_evalue"),
+    ACCESSIBILITE_TAUX: envInt("ACCESSIBILITE_TAUX", -1),
+    ACCESSIBILITE_DATE: envStr("ACCESSIBILITE_DATE", ""),
+    ACCESSIBILITE_TEXTE: envStr("ACCESSIBILITE_TEXTE", ""),
+    MENTIONS_LEGALES_TEXTE: envStr("MENTIONS_LEGALES_TEXTE", ""),
+    DONNEES_PERSONNELLES_TEXTE: envStr("DONNEES_PERSONNELLES_TEXTE", ""),
     CONVENTION_TEXTE: envStr("CONVENTION_TEXTE", CONVENTION_TEXTE_DEFAUT),
     AGENTS_NOTIFIES: envStr("AGENTS_NOTIFIES", ""),
     BACKUP_DB_KEEP: envInt("BACKUP_DB_KEEP", 14),

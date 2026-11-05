@@ -12,7 +12,10 @@ export default async function MotDePasseOubliePage() {
   const cfg = await getSettings();
   return (
     <>
-      <div className="login-page">
+      <a href="#main-content" className="skip-link">
+        Aller au contenu
+      </a>
+      <main id="main-content" className="login-page">
         <div className="login-panel">
           <a href="/connexion" className="login-brand">
             {urlLogo(cfg) ? (
@@ -65,7 +68,7 @@ export default async function MotDePasseOubliePage() {
           </div>
         </div>
         <div className="login-visuel" />
-      </div>
+      </main>
       <ScriptsPage nonce={nonce} />
     </>
   );
