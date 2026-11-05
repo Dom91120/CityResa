@@ -7,9 +7,14 @@
 import { RESERVATION_STATUS, type ReservationStatus } from "@/lib/constantes";
 import { reglesAuCreneau, verifierRegles } from "@/lib/creneaux";
 import { champ, champOuNull, coche, idOuNull, parseFloat_, parseInt_ } from "@/lib/forms-util";
-import { montant, plage } from "@/lib/libelles";
+import { dateHeure, montant, plage } from "@/lib/libelles";
 import { lirePortee, phraseDeplacement } from "@/lib/serie";
-import { lireChoix, lireCreneau, lireDemande } from "@/modules/reservations/formulaire";
+import {
+  lireChoix,
+  lireCreneau,
+  lireDemande,
+  lireEcheanceOption,
+} from "@/modules/reservations/formulaire";
 import { auditRecord } from "@/server/audit";
 import { courrielAvenantASigner, libelleAvenant, signerAvenantPapier } from "@/server/avenant";
 import {
@@ -28,6 +33,7 @@ import { enabledIn } from "@/server/features";
 import { type CurrentUser, requireAdmin, requireEdit } from "@/server/guards";
 import { horairesSaisonDe } from "@/server/horaires";
 import { pasTrouve, redirigerAvecMessage } from "@/server/http";
+import { notifierLiberation } from "@/server/liste-attente";
 import { invalidateNavCounts } from "@/server/nav";
 import { notifier } from "@/server/notifications";
 import {
@@ -37,7 +43,9 @@ import {
   courrielUsager,
   creerReservation,
   historiser,
+  leverOption,
   majBornes,
+  poserOption,
   type ReservationComplete,
   recalculerMontants,
   stockDisponible,
@@ -307,6 +315,7 @@ async function annulerCreneau({ user, r, fiche }: Contexte, cid: number): Promis
   await majBornes(r.id);
   await recalculerMontants(r.id);
   await historiser(r.id, "Créneau annulé", plage(c.startAt, c.endAt), user.name);
+  await notifierLiberation(r.espaceId, [c]).catch((e) => console.error("[liste d'attente]", e));
   return redirigerAvecMessage(fiche, `Créneau du ${plage(c.startAt, c.endAt)} annulé.`, "success");
 }
 
@@ -520,6 +529,27 @@ export async function actionReservation(
           if (!cid) return pasTrouve();
           if (segments[2] === "annuler") return await annulerCreneau(ctx, cid);
           if (segments[2] === "modifier") return await modifierCreneau(ctx, cid, form);
+        }
+        if (segments[0] === "option" && segments.length === 2) {
+          if (segments[1] === "poser") {
+            const echeance = lireEcheanceOption(form);
+            if (!echeance) throw new UserFacingError("Indiquez la date limite de l'option.");
+            await poserOption(r, echeance, user.name);
+            return redirigerAvecMessage(
+              fiche,
+              `Option posée jusqu'au ${dateHeure(echeance)} : relance ${user.settings.OPTION_RELANCE_JOURS} jour(s) avant, libération d'office ensuite.`,
+              "success",
+            );
+          }
+          if (segments[1] === "lever") {
+            await leverOption(r, user.name);
+            return redirigerAvecMessage(
+              fiche,
+              "Option levée : le dossier suit son cours sans échéance.",
+              "success",
+            );
+          }
+          return pasTrouve();
         }
         if (segments[0] === "etat-des-lieux" && segments.length === 2) {
           const kind = segments[1];

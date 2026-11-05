@@ -104,6 +104,8 @@ describe("EMAIL_TEMPLATE_SEEDS", () => {
       "avenant_code",
       "avenant_signe",
       "campagne_decisions",
+      "option_relance",
+      "liste_attente_liberee",
       "caution_restituee",
       "caution_retenue",
       "message_recu",

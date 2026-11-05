@@ -8,6 +8,7 @@ import { decrireCaution } from "@/lib/caution";
 import { FACTURE_TYPES, RESERVATION_SOURCES } from "@/lib/constantes";
 import { decrireRecurrence, lireRecurrence } from "@/lib/creneaux";
 import { dateCourte, dateHeure, montant, nomCourt, plage, pluriel } from "@/lib/libelles";
+import { decrireOption, estOption } from "@/lib/options";
 import {
   type Etape,
   historiqueVisible,
@@ -184,6 +185,22 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
             <Lu label="Précisions" valeur={r.description} pleine pre />
             {recurrence ? (
               <Lu label="Récurrence" valeur={decrireRecurrence(recurrence)} pleine />
+            ) : null}
+            {estOption(r) ? (
+              <Lu
+                label="Option"
+                pleine
+                valeur={
+                  <>
+                    <Chip teinte="amber">{decrireOption(r)}</Chip>{" "}
+                    <span className="text-muted small">
+                      {r.status === "acceptee"
+                        ? "Signez la convention avant cette date, sinon le créneau est libéré."
+                        : "Sans confirmation à cette date, le créneau est libéré pour d'autres demandeurs."}
+                    </span>
+                  </>
+                }
+              />
             ) : null}
             <Lu
               label="Créneaux"

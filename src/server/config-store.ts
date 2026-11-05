@@ -37,6 +37,7 @@ export const INT_KEYS = new Set([
   "SIGNATURE_VALIDITE_HEURES",
   "ALERTE_PIECES_JOURS",
   "CAUTION_DELAI_RESTITUTION_JOURS",
+  "OPTION_RELANCE_JOURS",
 ]);
 export const FLOAT_KEYS = new Set([
   "TVA_TAUX",
@@ -145,6 +146,8 @@ export type AppSettings = EnvOnly & {
   CAUTION_SEUIL_VALIDATION: number;
   /** Jours après la fin de l'événement avant qu'une caution non restituée soit en alerte. */
   CAUTION_DELAI_RESTITUTION_JOURS: number;
+  /** Jours avant l'échéance d'une option où l'usager est relancé. */
+  OPTION_RELANCE_JOURS: number;
   /** Total d'aides (avantages en nature + subventions) à partir duquel une convention est obligatoire. */
   VALORISATION_SEUIL_CONVENTION: number;
   /** Total d'aides à partir duquel les comptes de l'association doivent être certifiés. */
@@ -250,6 +253,7 @@ export function envDefaults(): AppSettings {
     ANNULATION_BAREME: envStr("ANNULATION_BAREME", ""),
     CAUTION_SEUIL_VALIDATION: envFloat("CAUTION_SEUIL_VALIDATION", 500),
     CAUTION_DELAI_RESTITUTION_JOURS: envInt("CAUTION_DELAI_RESTITUTION_JOURS", 30),
+    OPTION_RELANCE_JOURS: envInt("OPTION_RELANCE_JOURS", 3),
     VALORISATION_SEUIL_CONVENTION: envFloat("VALORISATION_SEUIL_CONVENTION", 23000),
     VALORISATION_SEUIL_CERTIFICATION: envFloat("VALORISATION_SEUIL_CERTIFICATION", 153000),
     CONVENTION_TEXTE: envStr("CONVENTION_TEXTE", CONVENTION_TEXTE_DEFAUT),

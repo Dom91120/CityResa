@@ -41,6 +41,7 @@ import {
   nomCourt,
   plage,
 } from "@/lib/libelles";
+import { decrireOption, estOption, STATUTS_OPTION } from "@/lib/options";
 import type { Devis } from "@/lib/tarification";
 import { ChoixMateriel, ChoixOptions } from "@/modules/reservations/champs";
 import { contactDe } from "@/modules/reservations/requetes";
@@ -691,6 +692,44 @@ export function ModalesDecision({
       </ModalAction>
 
       <ModalAction
+        id="modal-option"
+        titre="Poser une option"
+        action={`/reservations/${r.id}/option/poser`}
+        csrf={csrf}
+        bouton="Poser l'option"
+        icone="hourglass"
+        aide="Le créneau reste bloqué jusqu'à la date limite ; l'usager est relancé peu avant, puis le dossier est libéré d'office (annulé sans frais) si rien n'a été confirmé. Les inscrits en liste d'attente sont alors prévenus."
+      >
+        <div className="grille grille-2">
+          <div>
+            <label className="form-label" htmlFor="option-date">
+              Date limite <span className="req">*</span>
+            </label>
+            <input
+              type="date"
+              name="option_date"
+              id="option-date"
+              className="form-control"
+              required
+              defaultValue={r.optionExpiresAt ? isoParis(r.optionExpiresAt).date : ""}
+            />
+          </div>
+          <div>
+            <label className="form-label" htmlFor="option-heure">
+              Heure
+            </label>
+            <input
+              type="time"
+              name="option_heure"
+              id="option-heure"
+              className="form-control"
+              defaultValue={r.optionExpiresAt ? isoParis(r.optionExpiresAt).time : "18:00"}
+            />
+          </div>
+        </div>
+      </ModalAction>
+
+      <ModalAction
         id="modal-annuler"
         titre="Annuler la réservation"
         action={action}
@@ -961,6 +1000,45 @@ export function SectionEvenement({
         <Lu label="Participants" valeur={r.participants ? String(r.participants) : null} />
         <Lu label="Public" valeur={<OuiNon v={r.isPublicEvent} />} />
         <Lu label="Récurrence" valeur={decrireRecurrence(rec)} />
+        {estOption(r) || (peutDecider && vivant && STATUTS_OPTION.includes(r.status as never)) ? (
+          <Lu
+            label="Option"
+            valeur={
+              <span className="d-flex align-items-center gap-2 flex-wrap">
+                {r.optionExpiresAt ? (
+                  <Chip teinte={r.optionExpiresAt < new Date() ? "red" : "amber"}>
+                    {decrireOption(r)}
+                  </Chip>
+                ) : (
+                  <span className="text-muted">Pas d'échéance</span>
+                )}
+                {peutDecider && vivant ? (
+                  <>
+                    <BoutonOuvrir
+                      cible="modal-option"
+                      libelle={r.optionExpiresAt ? "Modifier" : "Poser une option"}
+                      icone="hourglass"
+                      classe="btn-ghost btn-sm"
+                    />
+                    {r.optionExpiresAt ? (
+                      <form
+                        method="POST"
+                        action={`/reservations/${r.id}/option/lever`}
+                        className="d-inline"
+                      >
+                        <input type="hidden" name="csrf_token" value={csrf} />
+                        <button type="submit" className="btn btn-ghost btn-sm">
+                          <Icone nom="x" taille={14} /> Lever
+                        </button>
+                      </form>
+                    ) : null}
+                  </>
+                ) : null}
+              </span>
+            }
+            pleine
+          />
+        ) : null}
         <Lu
           label="Arrivée"
           valeur={

@@ -180,6 +180,32 @@ export default async function ReserverPage({
         </div>
       </div>
 
+      {!blocage && v("attente") === "1" && v("date") && v("heure_debut") && v("heure_fin") ? (
+        <div className="astuce mb-3">
+          <Icone nom="bell" taille={18} />
+          <div>
+            <strong>Ce créneau est occupé.</strong> Inscrivez-vous sur la liste d'attente : vous
+            serez prévenu par courriel s'il se libère, et vous pourrez alors déposer votre demande.
+            <form
+              method="POST"
+              action="/portail/liste-attente/inscrire"
+              className="mt-2 d-flex align-items-center gap-2 flex-wrap"
+              data-double-envoi
+            >
+              <input type="hidden" name="csrf_token" value={csrf} />
+              <input type="hidden" name="espace_id" value={espace.id} />
+              <input type="hidden" name="date" value={v("date")} />
+              <input type="hidden" name="heure_debut" value={v("heure_debut")} />
+              <input type="hidden" name="heure_fin" value={v("heure_fin")} />
+              <input type="hidden" name="title" value={v("title")} />
+              <button type="submit" className="btn btn-primary btn-sm">
+                <Icone nom="bell" taille={14} /> Me prévenir si le créneau se libère
+              </button>
+            </form>
+          </div>
+        </div>
+      ) : null}
+
       {blocage ? (
         <div className="data-card p-4">
           <div className="alert alert-warning mb-3">

@@ -166,6 +166,24 @@ export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
     aide: "Envoyé quand une retenue sur caution est décidée (ou validée, au-delà du seuil). {{reste}} précise le solde restitué.",
   },
   {
+    key: "option_relance",
+    label: "Option : relance avant échéance (usager)",
+    subject: "Votre option sur {{espace}} expire le {{echeance}}",
+    body:
+      "<p>Bonjour {{prenom}},</p><p>Votre réservation <strong>{{numero}}</strong> ({{titre}}, {{espace}}, {{dates}}) est posée en option jusqu'au <strong>{{echeance}}</strong>. {{suite}}</p><p>Passé ce délai, le créneau est libéré d'office pour d'autres demandeurs.</p><p>Votre dossier : <a href=\"{{lien}}\">{{lien}}</a></p>" +
+      SIGNATURE,
+    aide: "Envoyé quelques jours avant l'échéance d'une option (réglage OPTION_RELANCE_JOURS). {{suite}} dit ce qui est attendu de l'usager (signer, répondre).",
+  },
+  {
+    key: "liste_attente_liberee",
+    label: "Liste d'attente : créneau libéré (usager)",
+    subject: "{{espace}} : le créneau du {{creneau}} se libère",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>Vous souhaitiez être prévenu si <strong>{{espace}}</strong> se libérait le {{creneau}} : c\'est le cas. Déposez votre demande dès maintenant, le créneau reste ouvert à tous : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Envoyé une seule fois aux inscrits en liste d'attente dont le créneau souhaité se libère (annulation, refus, option expirée, créneau déplacé).",
+  },
+  {
     key: "campagne_decisions",
     label: "Campagne de créneaux : décisions (usager)",
     subject: "{{campagne}} : réponse à vos vœux de créneaux",
