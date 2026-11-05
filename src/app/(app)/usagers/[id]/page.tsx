@@ -54,7 +54,7 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
   const peutAnonymiser = user.canDelete("usagers");
   const regles = reglesDe(user.settings);
   const manques = manquesDossier(org, org.users.find((u) => u.isActive) ?? null);
-  const [reservations, factures, subventions, documents, categories, historique] =
+  const [reservations, factures, subventions, documents, categories, historique, absences] =
     await Promise.all([
       prisma.reservation.findMany({
         where: { organisationId: id },
@@ -82,6 +82,9 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
         where: { OR: [{ detail: { contains: org.name } }, { detail: { contains: `#${id}` } }] },
         orderBy: { createdAt: "desc" },
         take: 30,
+      }),
+      prisma.creneau.count({
+        where: { presence: "absente", status: "prevu", reservation: { organisationId: id } },
       }),
     ]);
   const ici = `/usagers/${id}`;
@@ -211,6 +214,19 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
                 tiret
               />
               <Lu label="Statut" valeur={org.isActive ? "Active" : "Désactivée"} />
+              {absences ? (
+                <Lu
+                  label="Absences non signalées"
+                  valeur={
+                    <Chip
+                      teinte="red"
+                      titre="Créneaux réservés où l'usager n'est pas venu sans prévenir"
+                    >
+                      {absences}
+                    </Chip>
+                  }
+                />
+              ) : null}
               <Lu
                 label="Validée le"
                 valeur={

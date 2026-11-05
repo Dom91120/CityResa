@@ -67,7 +67,7 @@ export default async function StatistiquesPage({
   const params = await searchParams;
   const p = periodeDepuisParams(params);
   const stats = await chargerStatistiques(p);
-  const { kpi, occupation, usagers, mois, reservations, paiements, gracieux } = stats;
+  const { kpi, occupation, usagers, mois, reservations, paiements, gracieux, presences } = stats;
   const taux = tauxAcceptation(reservations);
   const delai = delaiMoyen(reservations);
   const heures = heuresReservees(reservations, p);
@@ -130,6 +130,15 @@ export default async function StatistiquesPage({
       label: "Heures réservées",
       valeur: `${fr(heures)} h`,
       detail: pluriel(effectives, "réservation effective", "réservations effectives"),
+    },
+    {
+      icone: "calendar-check",
+      teinte: "sky",
+      label: "Présence constatée",
+      valeur: presences.tauxPresence === null ? "—" : `${fr(presences.tauxPresence)} %`,
+      detail: presences.renseignes
+        ? `${pluriel(presences.absents, "absence non signalée", "absences non signalées")} · ${fr(presences.heuresReelles)} h constatées sur ${fr(presences.heuresPrevues)} h`
+        : `aucun constat sur ${pluriel(presences.passes, "créneau passé", "créneaux passés")}`,
     },
     {
       icone: "banknote",
