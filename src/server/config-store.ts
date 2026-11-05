@@ -24,6 +24,7 @@ export const BOOL_KEYS = new Set([
   "CAMPAGNES_ENABLED",
   "RAPPEL_J7",
   "RAPPEL_J1",
+  "PLANNING_HEBDO_ENABLED",
   "VALIDATION_COMPTE_USAGER",
   "PORTAIL_AFFICHER_TARIFS",
 ]);
@@ -38,6 +39,7 @@ export const INT_KEYS = new Set([
   "ALERTE_PIECES_JOURS",
   "CAUTION_DELAI_RESTITUTION_JOURS",
   "OPTION_RELANCE_JOURS",
+  "PLANNING_HEBDO_JOUR",
   "RGPD_INACTIVITE_MOIS",
   "RGPD_PREAVIS_JOURS",
   "RGPD_CONSERVATION_ANNEES",
@@ -134,6 +136,10 @@ export type AppSettings = EnvOnly & {
   ACOMPTE_PCT: number;
   RAPPEL_J7: boolean;
   RAPPEL_J1: boolean;
+  /** Planning hebdomadaire (PDF) envoyé aux gestionnaires de chaque espace. */
+  PLANNING_HEBDO_ENABLED: boolean;
+  /** Jour ISO de l'envoi (1 = lundi … 7 = dimanche). */
+  PLANNING_HEBDO_JOUR: number;
   VALIDATION_COMPTE_USAGER: boolean;
   PORTAIL_AFFICHER_TARIFS: boolean;
   RELANCE_SIGNATURE_JOURS: number;
@@ -251,6 +257,8 @@ export function envDefaults(): AppSettings {
     ACOMPTE_PCT: envFloat("ACOMPTE_PCT", 30),
     RAPPEL_J7: envBool("RAPPEL_J7", true),
     RAPPEL_J1: envBool("RAPPEL_J1", true),
+    PLANNING_HEBDO_ENABLED: envBool("PLANNING_HEBDO_ENABLED", false),
+    PLANNING_HEBDO_JOUR: envInt("PLANNING_HEBDO_JOUR", 1),
     VALIDATION_COMPTE_USAGER: envBool("VALIDATION_COMPTE_USAGER", false),
     PORTAIL_AFFICHER_TARIFS: envBool("PORTAIL_AFFICHER_TARIFS", true),
     RELANCE_SIGNATURE_JOURS: envInt("RELANCE_SIGNATURE_JOURS", 3),

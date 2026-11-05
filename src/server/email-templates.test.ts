@@ -120,6 +120,7 @@ describe("EMAIL_TEMPLATE_SEEDS", () => {
       "subvention_recue",
       "subvention_decision",
       "digest_agents",
+      "planning_hebdo",
       "mot_de_passe",
     ])
       expect(keys.has(k), k).toBe(true);

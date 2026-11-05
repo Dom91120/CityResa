@@ -299,6 +299,13 @@ export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
     aide: "Envoyé chaque matin aux agents qui ont choisi de le recevoir.",
   },
   {
+    key: "planning_hebdo",
+    label: "Planning hebdomadaire (gestionnaires)",
+    subject: "Planning de la semaine du {{semaine}} : {{espaces}}",
+    body: '<p>Bonjour {{prenom}},</p><p>Voici le planning de la semaine du <strong>{{semaine}}</strong> pour les espaces dont vous avez la charge, en pièce jointe (PDF, une page par espace).</p><p style="white-space:pre-line">{{resume}}</p><p><a href="{{lien}}">Ouvrir le planning</a></p>',
+    aide: "Envoyé chaque semaine (réglage « Planning hebdomadaire ») aux gestionnaires et agents notifiés de chaque espace. {{resume}} liste les créneaux par espace, {{espaces}} les nomme.",
+  },
+  {
     key: "piece_expiration",
     label: "Pièce justificative à renouveler (usager)",
     subject: "{{piece}} : {{echeance}}",

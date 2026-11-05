@@ -13,6 +13,7 @@ import { backupDatabase } from "@/server/db-backup";
 import { TACHES as REGISTRE } from "@/server/jobs-registre";
 import { envoyerDepuisModele } from "@/server/mailer";
 import { notifier, notifierAgents } from "@/server/notifications";
+import { envoyerPlanningsHebdo } from "@/server/planning-hebdo";
 import { changerStatut, chargerReservation, courrielUsager } from "@/server/reservations";
 import { executerRgpd } from "@/server/rgpd";
 
@@ -351,6 +352,11 @@ async function rgpd(): Promise<Resultat> {
   };
 }
 
+async function planningHebdo(): Promise<Resultat> {
+  const b = await envoyerPlanningsHebdo();
+  return { ok: true, message: b };
+}
+
 async function sauvegarde(): Promise<Resultat> {
   const cfg = await getSettings();
   const chemin = await backupDatabase(cfg);
@@ -368,6 +374,7 @@ export const TACHES: Record<string, () => Promise<Resultat>> = {
   relances_paiement: relancesPaiement,
   options: options,
   digest_agents: digest,
+  planning_hebdo: planningHebdo,
   alertes_pieces: alertesPieces,
 };
 

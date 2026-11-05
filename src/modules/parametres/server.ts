@@ -67,6 +67,8 @@ export const ONGLETS: Onglet[] = [
       "VALORISATION_SEUIL_CERTIFICATION",
       "RAPPEL_J7",
       "RAPPEL_J1",
+      "PLANNING_HEBDO_ENABLED",
+      "PLANNING_HEBDO_JOUR",
       "AGENTS_NOTIFIES",
     ],
   },
