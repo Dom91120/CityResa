@@ -92,6 +92,15 @@ export default async function PlanningPage({
           >
             <Icone nom="repeat" taille={14} /> Semaine type
           </a>
+          {peutEditer ? (
+            <a
+              href={`/planning/presences?date=${fen.date}${filtresQs ? `&${filtresQs}` : ""}`}
+              className="btn btn-ghost btn-sm"
+              title="Constater les présences et les heures réelles des créneaux passés"
+            >
+              <Icone nom="calendar-check" taille={14} /> Présences
+            </a>
+          ) : null}
           {unSeul ? (
             <a
               href={`/espaces/${unSeul.id}/feuille.pdf?date=${fen.date}`}

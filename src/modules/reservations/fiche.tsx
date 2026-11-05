@@ -43,6 +43,7 @@ import {
   plage,
 } from "@/lib/libelles";
 import { decrireOption, estOption, STATUTS_OPTION } from "@/lib/options";
+import { decrirePresence, resumePresences } from "@/lib/presences";
 import type { Devis } from "@/lib/tarification";
 import { ChoixMateriel, ChoixOptions } from "@/modules/reservations/champs";
 import { contactDe } from "@/modules/reservations/requetes";
@@ -1063,14 +1064,25 @@ export function SectionEvenement({
 
       <div className="d-flex align-items-center justify-content-between mt-3 mb-1">
         <span className="form-label mb-0">Créneaux ({prevus.length})</span>
-        {peutDecider && vivant ? (
-          <BoutonOuvrir
-            cible="modal-creneau"
-            libelle="Ajouter un créneau"
-            icone="calendar-plus"
-            classe="btn-ghost btn-sm"
-          />
-        ) : null}
+        <span className="d-flex gap-1">
+          {peutDecider && resumePresences(r.creneaux).passes > 0 ? (
+            <a
+              href={`/planning/presences?dossier=${r.id}`}
+              className="btn btn-ghost btn-sm"
+              title="Constater la présence et les heures réelles des créneaux passés"
+            >
+              <Icone nom="calendar-check" taille={14} /> Présences
+            </a>
+          ) : null}
+          {peutDecider && vivant ? (
+            <BoutonOuvrir
+              cible="modal-creneau"
+              libelle="Ajouter un créneau"
+              icone="calendar-plus"
+              classe="btn-ghost btn-sm"
+            />
+          ) : null}
+        </span>
       </div>
       <table className="table table-sm mb-3">
         <tbody>
@@ -1083,10 +1095,19 @@ export function SectionEvenement({
                 {duree((c.endAt.getTime() - c.startAt.getTime()) / 60_000)}
               </td>
               <td>
-                {c.status === "prevu" ? (
-                  <Chip teinte="emerald">Prévu</Chip>
-                ) : (
+                {c.status !== "prevu" ? (
                   <Chip teinte="slate">Annulé</Chip>
+                ) : c.presence ? (
+                  <Chip
+                    teinte={c.presence === "presente" ? "emerald" : "red"}
+                    titre={c.presenceNote ?? undefined}
+                  >
+                    {decrirePresence(c)}
+                  </Chip>
+                ) : c.endAt <= new Date() ? (
+                  <Chip teinte="slate">Passé</Chip>
+                ) : (
+                  <Chip teinte="emerald">Prévu</Chip>
                 )}
               </td>
               <td className="actions text-nowrap">

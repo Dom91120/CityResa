@@ -13,6 +13,7 @@ import { UserFacingError } from "@/server/errors";
 import { apercuFermeture, poserFermeture, urlApercuFermeture } from "@/server/fermetures";
 import { requireEdit } from "@/server/guards";
 import { pasTrouve, redirection, redirigerAvecMessage, suite } from "@/server/http";
+import { constaterPresence, heuresSaisies } from "@/server/presences";
 
 export async function bloquer(form: FormData): Promise<Response> {
   const user = await requireEdit("reservations");
@@ -114,4 +115,36 @@ export async function supprimerBlocage(id: number, form: FormData): Promise<Resp
     user.email,
   );
   return redirigerAvecMessage(retour, `Blocage levé sur ${b.espace.name}.`, "success");
+}
+
+/** POST /planning/presences : constate la présence (ou l'absence) d'un créneau passé. */
+export async function constater(form: FormData): Promise<Response> {
+  const user = await requireEdit("reservations");
+  const retour = suite(form, "/planning/presences");
+  try {
+    const creneauId = idOuNull(form, "creneau_id");
+    if (!creneauId) return pasTrouve();
+    const presence = champ(form, "presence");
+    let message: string;
+    if (presence === "presente" || presence === "absente") {
+      const c = await prisma.creneau.findUnique({
+        where: { id: creneauId },
+        select: { startAt: true },
+      });
+      if (!c) return pasTrouve();
+      message = await constaterPresence(user, creneauId, {
+        presence,
+        ...(presence === "presente"
+          ? heuresSaisies(c, champ(form, "arrivee"), champ(form, "depart"))
+          : { realStartAt: null, realEndAt: null }),
+        note: champOuNull(form, "note"),
+      });
+    } else {
+      message = await constaterPresence(user, creneauId, null);
+    }
+    return redirigerAvecMessage(retour, message, "success");
+  } catch (e) {
+    if (e instanceof UserFacingError) return redirigerAvecMessage(retour, e.message, "danger");
+    throw e;
+  }
 }

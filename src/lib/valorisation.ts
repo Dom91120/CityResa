@@ -8,6 +8,7 @@
 import type { Intervalle } from "@/lib/creneaux";
 import { dureeMinutes } from "@/lib/creneaux";
 import { parisParts } from "@/lib/paris-time";
+import { type CreneauPresence, heuresEffectives } from "@/lib/presences";
 
 const arrondi = (n: number) => Math.round(n * 100) / 100;
 
@@ -16,16 +17,25 @@ export function exerciceDe(d: Date): number {
   return Number(parisParts(d).dateKey.slice(0, 4));
 }
 
-/** Les créneaux d'un dossier qui tombent dans l'exercice, et la part d'heures que cela représente. */
+/**
+ * Les créneaux d'un dossier qui tombent dans l'exercice, et la part d'heures que cela représente.
+ * Les heures sont celles réellement occupées quand un constat de présence existe (un créneau
+ * manqué sans prévenir compte zéro, des heures constatées remplacent les heures prévues).
+ */
 export function partExercice(
-  creneaux: readonly Intervalle[],
+  creneaux: readonly CreneauValorise[],
   exercice: number,
 ): { dedans: Intervalle[]; heures: number; part: number } {
   const dedans = creneaux.filter((c) => exerciceDe(c.startAt) === exercice);
-  const heures = dedans.reduce((s, c) => s + dureeMinutes(c) / 60, 0);
-  const total = creneaux.reduce((s, c) => s + dureeMinutes(c) / 60, 0);
+  const effectives = (c: CreneauValorise) =>
+    c.status === undefined ? dureeMinutes(c) / 60 : heuresEffectives({ ...c, status: c.status });
+  const heures = dedans.reduce((s, c) => s + effectives(c), 0);
+  const total = creneaux.reduce((s, c) => s + effectives(c), 0);
   return { dedans, heures: arrondi(heures), part: total > 0 ? heures / total : 0 };
 }
+
+/** Un créneau tel que la valorisation le lit : intervalle, et constat de présence s'il existe. */
+export type CreneauValorise = Intervalle & Partial<Omit<CreneauPresence, keyof Intervalle>>;
 
 /**
  * La valeur de référence des heures d'un espace : sa valeur horaire de valorisation si elle
