@@ -37,6 +37,3 @@ src/generated
 # Documents de référence (brochures, cahier des charges d'origine) : hors dépôt
 /Documents/
 .next-build
-
-# Guide utilisateur rassemblé en PDF (refait par node scripts/guide-pdf.mjs)
-docs/guide/*.pdf
