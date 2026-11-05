@@ -581,6 +581,19 @@ export function PanneauApprobation({
               Mise à disposition gratuite (aucune redevance ni caution)
             </label>
           </div>
+          <input
+            type="text"
+            name="gratuit_motif"
+            className="form-control form-control-sm mb-2"
+            placeholder="Fondement de la gratuité : délibération, convention, intérêt général…"
+            aria-label="Fondement de la gratuité"
+            defaultValue={r.gratuitMotif ?? ""}
+            maxLength={300}
+          />
+          <div className="form-text mb-2">
+            Obligatoire si la gratuité est accordée ; figure sur la convention et l'attestation de
+            valorisation.
+          </div>
           <div id="approuver-devis" className="small">
             <p className="text-muted mb-0">Calcul du montant…</p>
           </div>
@@ -1162,7 +1175,12 @@ export function SectionMontants({
       icone="euro"
       droite={
         r.gratuit ? (
-          <Chip teinte="emerald">Gratuité</Chip>
+          <span className="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+            <Chip teinte="emerald" titre={r.gratuitMotif ?? undefined}>
+              Gratuité
+            </Chip>
+            {r.gratuitMotif ? <small className="text-muted">{r.gratuitMotif}</small> : null}
+          </span>
         ) : (
           <strong>{montant(r.montantTtc)}</strong>
         )

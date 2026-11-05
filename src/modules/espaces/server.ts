@@ -24,6 +24,7 @@ import {
   champOuNull,
   coche,
   idOuNull,
+  parseDate,
   parseFloat_,
   parseInt_,
   slugifier,
@@ -416,10 +417,13 @@ export async function ajouterTarif(espaceId: number, form: FormData): Promise<vo
     const p = await prisma.referential.findFirst({ where: { id: profilId, kind: "profil" } });
     if (!p) throw new UserFacingError("Profil introuvable.");
   }
-  const doublon = await prisma.tarif.findFirst({ where: { espaceId, profilId, unite } });
+  const validFrom = parseDate(form.get("valid_from"));
+  const doublon = await prisma.tarif.findFirst({
+    where: { espaceId, profilId, unite, validFrom },
+  });
   if (doublon)
     throw new UserFacingError(
-      "Un tarif existe déjà pour ce profil et cette unité : supprimez-le d'abord.",
+      "Un tarif existe déjà pour ce profil, cette unité et cette date d'effet : supprimez-le d'abord, ou donnez une date d'effet à la nouvelle ligne.",
     );
   const dernier = await prisma.tarif.aggregate({ where: { espaceId }, _max: { position: true } });
   await prisma.tarif.create({
@@ -430,6 +434,8 @@ export async function ajouterTarif(espaceId: number, form: FormData): Promise<vo
       montant: Math.round(m * 100) / 100,
       label: champOuNull(form, "label")?.slice(0, 120) ?? null,
       position: (dernier._max.position ?? -1) + 1,
+      validFrom,
+      deliberation: champOuNull(form, "deliberation")?.slice(0, 120) ?? null,
     },
   });
 }

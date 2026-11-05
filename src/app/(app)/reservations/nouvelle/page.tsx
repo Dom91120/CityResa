@@ -316,7 +316,15 @@ export default async function NouvelleReservationPage({
                       label="Mise à disposition gratuite"
                       name="gratuit"
                       coche={false}
-                      aide="Aucune redevance ni caution."
+                      aide="Aucune redevance ni caution ; le fondement est alors obligatoire."
+                    />
+                    <input
+                      type="text"
+                      name="gratuit_motif"
+                      className="form-control form-control-sm mt-1"
+                      placeholder="Fondement : délibération, convention…"
+                      aria-label="Fondement de la gratuité"
+                      maxLength={300}
                     />
                   </div>
                   <div className="pt-4">

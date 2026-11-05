@@ -198,6 +198,8 @@ export type DemandeEntree = {
   userId: string | null;
   source: "portail" | "backoffice";
   gratuit?: boolean;
+  /** Fondement de la gratuité, obligatoire quand elle est accordée. */
+  gratuitMotif?: string | null;
   /** Un agent peut passer outre délai et horizon. */
   ignorerDelai?: boolean;
   statutInitial?: ReservationStatus;
@@ -282,6 +284,10 @@ export async function creerReservation(
   });
   if (!espace?.isActive) throw new UserFacingError("Cet espace n'est pas disponible.");
   if (!e.title.trim()) throw new UserFacingError("Indiquez l'objet de la réservation.");
+  if (e.gratuit && !e.gratuitMotif?.trim())
+    throw new UserFacingError(
+      "Indiquez le fondement de la gratuité (délibération, convention, intérêt général…).",
+    );
   const now = new Date();
   const creneaux = developperRecurrence(
     e.premier,
@@ -414,6 +420,7 @@ export async function creerReservation(
       acompte: devis.acompte,
       caution: devis.caution,
       gratuit: devis.gratuit,
+      gratuitMotif: devis.gratuit ? (e.gratuitMotif?.trim().slice(0, 300) ?? null) : null,
       source: e.source,
       decisionAt: statut === "confirmee" ? now : null,
       decisionBy: statut === "confirmee" ? "automatique" : null,
@@ -795,7 +802,11 @@ export async function ajouterMessage(
 }
 
 /** Recalcule les montants d'un dossier (après modification des options, du matériel ou du profil). */
-export async function recalculerMontants(id: number, gratuit?: boolean): Promise<Devis> {
+export async function recalculerMontants(
+  id: number,
+  gratuit?: boolean,
+  gratuitMotif?: string | null,
+): Promise<Devis> {
   const r = await chargerReservation(id);
   if (!r) throw new UserFacingError("Réservation introuvable.");
   const devis = await deviser(
@@ -814,6 +825,13 @@ export async function recalculerMontants(id: number, gratuit?: boolean): Promise
       acompte: devis.acompte,
       caution: devis.caution,
       gratuit: devis.gratuit,
+      ...(gratuit !== undefined
+        ? {
+            gratuitMotif: devis.gratuit
+              ? (gratuitMotif?.trim().slice(0, 300) ?? r.gratuitMotif)
+              : null,
+          }
+        : {}),
     },
   });
   return devis;
