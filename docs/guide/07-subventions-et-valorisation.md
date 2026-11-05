@@ -97,7 +97,7 @@ L'association dépose normalement sa demande elle-même depuis « Mes subvention
 - Chaque utilisateur ne donne qu'un avis par demande ; un nouvel enregistrement remplace le précédent.
 - Les avis sont recueillis tant que la demande est déposée, en instruction ou soumise aux élus ; ils se ferment au vote ou au refus.
 
-> **Attention** — Avec les droits prévus par défaut, le rôle Élu peut aussi voter ou refuser une demande : les boutons **Voter la subvention** et **Refuser** lui sont affichés. Si la Ville souhaite réserver la décision aux gestionnaires, un administrateur doit ajuster les droits du rôle dans Administration › Rôles.
+> **Attention** — Un élu donne un avis mais ne décide pas : il ne voit ni **Voter la subvention**, ni **Refuser**, ni **Modifier**. La carte Instruction le lui rappelle (« la décision est enregistrée par les agents »). Le vote, le refus et le versement sont saisis par les agents qui instruisent les subventions.
 
 ## 7.4 La décision et le versement
 

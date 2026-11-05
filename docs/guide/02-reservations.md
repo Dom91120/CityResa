@@ -211,8 +211,6 @@ La carte de décision propose, selon le statut :
 - Les factures ne s'émettent que pour un dossier signé, confirmé ou terminé, et jamais pour une mise à disposition gratuite.
 - À la confirmation, la facture d'acompte (ou de solde s'il n'y a pas d'acompte) est émise automatiquement quand le module Paiements est actif.
 
-> **Attention** — Sur cette capture, la caution de 400 € porte encore la mention « Sans caution » : c'est une particularité des données de démonstration. Sur un dossier réel accepté, elle indique « Attendue ».
-
 ## 2.7 Fil de discussion et notes internes
 
 **À quoi ça sert** — Échanger avec l'usager au sujet de son dossier et laisser des notes à vos collègues.
