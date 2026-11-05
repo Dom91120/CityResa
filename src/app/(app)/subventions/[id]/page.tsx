@@ -22,6 +22,7 @@ import {
   chargerSubvention,
   compterAvis,
   estModifiable,
+  peutDecider,
   TRANSITION_LIBELLES,
   TRANSITIONS_SUBVENTION,
 } from "@/modules/subventions/server";
@@ -91,9 +92,10 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
   ]);
   const { user } = page;
   const peutEditer = user.canEdit("subventions");
+  const decide = peutDecider(user);
   const ici = `/subventions/${id}`;
   const org = s.organisation;
-  const transitions = peutEditer ? (TRANSITIONS_SUBVENTION[s.status] ?? []) : [];
+  const transitions = decide ? (TRANSITIONS_SUBVENTION[s.status] ?? []) : [];
   const monAvis = s.avis.find((a) => a.authorId === user.id) ?? null;
   const compte = compterAvis(s.avis);
   const montantsProposes = s.avis.map((a) => a.montant).filter((m): m is number => m !== null);
@@ -124,7 +126,7 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
           </>
         }
         actions={
-          peutEditer && estModifiable(s) ? (
+          decide && estModifiable(s) ? (
             <a href={`${ici}/modifier`} className="btn btn-outline-secondary">
               <Icone nom="pencil" taille={14} /> Modifier
             </a>
@@ -314,6 +316,10 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
                 </div>
               ) : !peutEditer ? (
                 <p className="text-faint small mb-0">Vous consultez ce dossier en lecture seule.</p>
+              ) : !decide ? (
+                <p className="text-faint small mb-0">
+                  Donnez votre avis ci-dessous : la décision est enregistrée par les agents.
+                </p>
               ) : null}
             </Section>
           </div>

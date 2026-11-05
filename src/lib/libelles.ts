@@ -230,3 +230,36 @@ export function isoParis(d: Date): { date: string; time: string } {
 export function nomCourt(e: { name: string; shortName?: string | null }): string {
   return e.shortName?.trim() || e.name;
 }
+
+/** Mots des actions du journal d'audit, enregistrées sans accents, et leur forme accentuée. */
+const ACCENTS_AUDIT: Record<string, string> = {
+  acceptee: "acceptée",
+  annulee: "annulée",
+  controle: "contrôle",
+  creation: "création",
+  creneaux: "créneaux",
+  decisions: "décisions",
+  deconnexion: "déconnexion",
+  depot: "dépôt",
+  donnees: "données",
+  emission: "émission",
+  encaissee: "encaissée",
+  etat: "état",
+  materiel: "matériel",
+  parametres: "paramètres",
+  presence: "présence",
+  refusee: "refusée",
+  requisition: "réquisition",
+  reservation: "réservation",
+  rgpd: "RGPD",
+  voeu: "vœu",
+};
+
+/** Libellé lisible d'une action du journal : accents rétablis, majuscule initiale. */
+export function libelleAction(action: string): string {
+  const texte = action
+    .split(" ")
+    .map((mot) => ACCENTS_AUDIT[mot] ?? mot)
+    .join(" ");
+  return texte.charAt(0).toUpperCase() + texte.slice(1);
+}
