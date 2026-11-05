@@ -18,6 +18,7 @@ const ICONES = [
   "calendar-range",
   "calendar-clock",
   "calendar-check",
+  "bookmark",
   "package-check",
   "calculator",
   "save",

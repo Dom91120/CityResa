@@ -581,6 +581,11 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .evt .evt-qui { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 .evt--bloque { background: repeating-linear-gradient(45deg, var(--inset), var(--inset) 6px, var(--line) 6px, var(--line) 8px); border-left-color: var(--faint); color: var(--muted); }
 .evt--attente { border-left-style: dashed; opacity: .85; }
+.evt--deplacable { cursor: grab; }
+.evt--glisse { opacity: .4; }
+.evt--en-cours { opacity: .5; pointer-events: none; }
+.planning td.depot-possible { outline: 2px dashed var(--primary); outline-offset: -3px; background: var(--primary-dim); }
+.legende-liseré { display: inline-block; width: 14px; height: 10px; border-radius: 3px; vertical-align: middle; margin-right: 2px; }
 .evt--jour { display: flex; gap: 8px; align-items: center; }
 .planning-jour .heure { font-size: 0.72rem; color: var(--muted); width: 56px; text-align: right; padding-right: 8px; }
 
