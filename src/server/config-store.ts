@@ -38,6 +38,9 @@ export const INT_KEYS = new Set([
   "ALERTE_PIECES_JOURS",
   "CAUTION_DELAI_RESTITUTION_JOURS",
   "OPTION_RELANCE_JOURS",
+  "RGPD_INACTIVITE_MOIS",
+  "RGPD_PREAVIS_JOURS",
+  "RGPD_CONSERVATION_ANNEES",
 ]);
 export const FLOAT_KEYS = new Set([
   "TVA_TAUX",
@@ -152,6 +155,12 @@ export type AppSettings = EnvOnly & {
   VALORISATION_SEUIL_CONVENTION: number;
   /** Total d'aides à partir duquel les comptes de l'association doivent être certifiés. */
   VALORISATION_SEUIL_CERTIFICATION: number;
+  /** Mois sans connexion après lesquels un compte usager est anonymisé (0 = jamais). */
+  RGPD_INACTIVITE_MOIS: number;
+  /** Jours entre le courriel de préavis et l’anonymisation. */
+  RGPD_PREAVIS_JOURS: number;
+  /** Années de conservation d’un dossier archivé avant purge de ses données personnelles (0 = jamais). */
+  RGPD_CONSERVATION_ANNEES: number;
   CONVENTION_TEXTE: string;
   AGENTS_NOTIFIES: string;
   BACKUP_DB_KEEP: number;
@@ -256,6 +265,9 @@ export function envDefaults(): AppSettings {
     OPTION_RELANCE_JOURS: envInt("OPTION_RELANCE_JOURS", 3),
     VALORISATION_SEUIL_CONVENTION: envFloat("VALORISATION_SEUIL_CONVENTION", 23000),
     VALORISATION_SEUIL_CERTIFICATION: envFloat("VALORISATION_SEUIL_CERTIFICATION", 153000),
+    RGPD_INACTIVITE_MOIS: envInt("RGPD_INACTIVITE_MOIS", 36),
+    RGPD_PREAVIS_JOURS: envInt("RGPD_PREAVIS_JOURS", 30),
+    RGPD_CONSERVATION_ANNEES: envInt("RGPD_CONSERVATION_ANNEES", 5),
     CONVENTION_TEXTE: envStr("CONVENTION_TEXTE", CONVENTION_TEXTE_DEFAUT),
     AGENTS_NOTIFIES: envStr("AGENTS_NOTIFIES", ""),
     BACKUP_DB_KEEP: envInt("BACKUP_DB_KEEP", 14),

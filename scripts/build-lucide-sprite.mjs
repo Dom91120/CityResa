@@ -31,6 +31,7 @@ const ICONES = [
   "users",
   "user",
   "user-plus",
+  "user-x",
   "user-check",
   "user-cog",
   "circle-user",

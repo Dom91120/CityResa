@@ -53,7 +53,12 @@ export async function POST(req: Request) {
       if (ok) {
         await prisma.user.update({
           where: { id: user.id },
-          data: { totpFailedCount: 0, totpLockedUntil: null, lastLoginAt: now },
+          data: {
+            totpFailedCount: 0,
+            totpLockedUntil: null,
+            lastLoginAt: now,
+            inactivitePreavisAt: null,
+          },
         });
         const next = safeNext(pending.next);
         await clearPending2fa();

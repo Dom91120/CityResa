@@ -80,7 +80,10 @@ export async function seConnecter(
       await setPending2fa(user.id, next);
       return { ok: true, twoFactor: true, isAgent };
     }
-    await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: now } });
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: now, inactivitePreavisAt: null },
+    });
     await auditRecord("connexion", "", "securite", user.email);
     return { ok: true, twoFactor: false, isAgent };
   }

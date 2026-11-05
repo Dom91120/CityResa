@@ -2,10 +2,11 @@ import { envoyerLienReinitialisation, nomComplet } from "@/modules/utilisateurs/
 import { auditRecord } from "@/server/audit";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
-import { requireEdit } from "@/server/guards";
+import { requireDelete, requireEdit } from "@/server/guards";
 import { idDe, pasTrouve, redirigerAvecMessage, traiterFormulaire } from "@/server/http";
+import { anonymiserCompte } from "@/server/rgpd";
 
-/** POST /usagers/[id]/membres/[uid]/(actif|reinitialiser) */
+/** POST /usagers/[id]/membres/[uid]/(actif|reinitialiser|anonymiser) */
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string; uid: string; action: string }> },
@@ -20,6 +21,22 @@ export async function POST(
       where: { id: uid, organisationId: id, kind: "usager" },
     });
     if (!membre) return pasTrouve();
+    if (membre.anonymiseAt)
+      return redirigerAvecMessage(retour, "Ce compte est anonymisé.", "warning");
+    if (action === "anonymiser") {
+      await requireDelete("usagers");
+      try {
+        await anonymiserCompte(uid, user.email, "agent");
+      } catch (e) {
+        if (e instanceof UserFacingError) return redirigerAvecMessage(retour, e.message, "danger");
+        throw e;
+      }
+      return redirigerAvecMessage(
+        retour,
+        `Compte de ${nomComplet(membre)} anonymisé : coordonnées effacées, connexion impossible.`,
+        "success",
+      );
+    }
     if (action === "actif") {
       const actif = !membre.isActive;
       await prisma.user.update({ where: { id: uid }, data: { isActive: actif } });

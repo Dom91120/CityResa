@@ -24,6 +24,13 @@ export const TACHES: Tache[] = [
   },
   { id: "archivage_auto", label: "Archivage des dossiers terminés", heure: 2, minute: 0 },
   { id: "purge_notifications", label: "Purge des vieilles notifications", heure: 3, minute: 0 },
+  {
+    id: "rgpd",
+    label: "RGPD : préavis et anonymisation des comptes inactifs, purge des dossiers",
+    heure: 3,
+    minute: 30,
+    actif: (c) => Boolean(c.RGPD_INACTIVITE_MOIS || c.RGPD_CONSERVATION_ANNEES),
+  },
   { id: "terminer_reservations", label: "Clôture des réservations passées", intervalleMinutes: 60 },
   {
     id: "rappels_usagers",
