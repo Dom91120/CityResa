@@ -4,6 +4,7 @@
  */
 import { timingSafeEqual } from "node:crypto";
 import { cookies, headers } from "next/headers";
+import { emplacementAscii } from "@/lib/url";
 import { type FlashCategory, flash } from "@/server/flash";
 
 export const CSRF_COOKIE = "cityresa_csrf";
@@ -40,9 +41,9 @@ export async function verifierCsrf(req: Request, form?: FormData | null): Promis
   return true;
 }
 
-/** Redirection 303 (après un POST). */
+/** Redirection 303 (après un POST). Les accents du chemin sont percent-encodés (en-tête ASCII). */
 export function redirection(location: string): Response {
-  return new Response(null, { status: 303, headers: { Location: location } });
+  return new Response(null, { status: 303, headers: { Location: emplacementAscii(location) } });
 }
 
 /** Redirection précédée d'un message flash. */
