@@ -504,6 +504,7 @@ export async function courrielUsager(
       reservation_infos: `Précisions demandées sur ${r.numero}`,
       reservation_signee: `Convention ${r.numero} signée`,
       fermeture_exceptionnelle: `Fermeture de ${r.espace.name} : ${r.numero} concerné`,
+      creneaux_modifies: `Réservation ${r.numero} : nouveaux horaires`,
     };
     if (titres[key])
       await notifier(

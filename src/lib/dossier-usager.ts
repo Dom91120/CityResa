@@ -185,11 +185,7 @@ export function phraseManques(manques: Exigence[]): string {
 export function communeDeLAdresse(adresse: string): { codePostal: string; ville: string } | null {
   const m = /\b(\d{5})\s+([^,\d][^,]*)$/.exec(adresse.trim());
   if (!m) return null;
-  const ville = m[2]
-    .trim()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toUpperCase();
+  const ville = m[2].trim().normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase();
   return ville ? { codePostal: m[1], ville } : null;
 }
 

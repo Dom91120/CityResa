@@ -963,7 +963,21 @@ export function SectionEvenement({
                   <Chip teinte="slate">Annulé</Chip>
                 )}
               </td>
-              <td className="actions">
+              <td className="actions text-nowrap">
+                {peutDecider && vivant && c.status === "prevu" ? (
+                  <a
+                    href={`/reservations/${r.id}/creneaux/${c.id}/modifier`}
+                    className="btn btn-ghost btn-icone btn-sm"
+                    title={
+                      prevus.length > 1
+                        ? "Modifier ce créneau, les suivants ou toute la série"
+                        : "Modifier ce créneau"
+                    }
+                    aria-label="Modifier ce créneau"
+                  >
+                    <Icone nom="pencil" taille={14} />
+                  </a>
+                ) : null}
                 {peutDecider && vivant && c.status === "prevu" && prevus.length > 1 ? (
                   <form
                     method="POST"

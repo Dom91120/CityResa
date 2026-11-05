@@ -8,6 +8,7 @@ import { RESERVATION_STATUS, type ReservationStatus } from "@/lib/constantes";
 import { verifierRegles } from "@/lib/creneaux";
 import { champ, champOuNull, coche, idOuNull, parseInt_ } from "@/lib/forms-util";
 import { montant, plage } from "@/lib/libelles";
+import { lirePortee, phraseDeplacement } from "@/lib/serie";
 import { lireChoix, lireCreneau, lireDemande } from "@/modules/reservations/formulaire";
 import { auditRecord } from "@/server/audit";
 import { genererConvention } from "@/server/convention";
@@ -32,6 +33,7 @@ import {
   stockDisponible,
   verifierDisponibilite,
 } from "@/server/reservations";
+import { deplacerSerie } from "@/server/serie";
 
 // ── Création ──
 
@@ -290,6 +292,45 @@ async function annulerCreneau({ user, r, fiche }: Contexte, cid: number): Promis
   return redirigerAvecMessage(fiche, `Créneau du ${plage(c.startAt, c.endAt)} annulé.`, "success");
 }
 
+/**
+ * Déplace un créneau (et, selon la portée, les suivants ou toute la série). Une erreur ramène
+ * à la page de modification, pas à la fiche, pour corriger la saisie.
+ */
+async function modifierCreneau(
+  { user, r, fiche }: Contexte,
+  cid: number,
+  form: FormData,
+): Promise<Response> {
+  const page = `${fiche}/creneaux/${cid}/modifier`;
+  if (!r.creneaux.some((c) => c.id === cid)) return pasTrouve();
+  try {
+    const portee = lirePortee(champ(form, "portee"));
+    const prevenir = coche(form, "prevenir");
+    const b = await deplacerSerie({
+      r,
+      cibleId: cid,
+      nouveau: lireCreneau(form),
+      portee,
+      prevenir,
+      acteur: { email: user.email, name: user.name },
+    });
+    const suite =
+      b.convention === "regeneree"
+        ? " La convention a été régénérée."
+        : b.convention === "signee"
+          ? " La convention signée ne reflète plus ces horaires : prévoyez un avenant."
+          : "";
+    return redirigerAvecMessage(
+      fiche,
+      `${phraseDeplacement(b.nb, portee, prevenir)}${suite}`,
+      b.convention === "signee" ? "warning" : "success",
+    );
+  } catch (e) {
+    if (e instanceof UserFacingError) return redirigerAvecMessage(page, e.message, "danger");
+    throw e;
+  }
+}
+
 async function regenererConvention({ user, r, fiche }: Contexte): Promise<Response> {
   await genererConvention(r, user.name);
   return redirigerAvecMessage(fiche, "Convention régénérée.", "success");
@@ -419,10 +460,11 @@ export async function actionReservation(
       case "supprimer":
         return await supprimer(ctx);
       default: {
-        if (segments[0] === "creneaux" && segments[2] === "annuler") {
+        if (segments[0] === "creneaux" && segments.length === 3) {
           const cid = parseInt_(segments[1], null, 1);
           if (!cid) return pasTrouve();
-          return await annulerCreneau(ctx, cid);
+          if (segments[2] === "annuler") return await annulerCreneau(ctx, cid);
+          if (segments[2] === "modifier") return await modifierCreneau(ctx, cid, form);
         }
         return pasTrouve();
       }
