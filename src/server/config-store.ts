@@ -21,6 +21,7 @@ export const BOOL_KEYS = new Set([
   "MATERIEL_ENABLED",
   "SUBVENTIONS_ENABLED",
   "DOCUMENTS_ENABLED",
+  "CAMPAGNES_ENABLED",
   "RAPPEL_J7",
   "RAPPEL_J1",
   "VALIDATION_COMPTE_USAGER",
@@ -115,6 +116,7 @@ export type AppSettings = EnvOnly & {
   MATERIEL_ENABLED: boolean;
   SUBVENTIONS_ENABLED: boolean;
   DOCUMENTS_ENABLED: boolean;
+  CAMPAGNES_ENABLED: boolean;
   DOCUMENT_MAX_MB: number;
   TVA_TAUX: number;
   ACOMPTE_PCT: number;
@@ -212,6 +214,7 @@ export function envDefaults(): AppSettings {
     SIGNATURE_ENABLED: envBool("SIGNATURE_ENABLED", true),
     MATERIEL_ENABLED: envBool("MATERIEL_ENABLED", true),
     SUBVENTIONS_ENABLED: envBool("SUBVENTIONS_ENABLED", true),
+    CAMPAGNES_ENABLED: envBool("CAMPAGNES_ENABLED", true),
     DOCUMENTS_ENABLED: envBool("DOCUMENTS_ENABLED", true),
     DOCUMENT_MAX_MB: envInt("DOCUMENT_MAX_MB", 10),
     TVA_TAUX: envFloat("TVA_TAUX", 0),

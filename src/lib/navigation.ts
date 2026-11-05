@@ -46,6 +46,7 @@ export const GENERAL: NavDomaine = {
     t("sky", e("/", "Tableau de bord", "layout-dashboard")),
     t("emerald", e("/reservations", "Réservations", "clipboard-list", "reservations", "a_traiter")),
     t("violet", e("/planning", "Planning", "calendar-days", "planning")),
+    t("rose", e("/campagnes", "Campagnes", "calendar-check", "reservations", null, "campagnes")),
     t("red", e("/sites", "Sites", "map-pin", "espaces")),
     t("amber", e("/espaces", "Espaces", "door-open", "espaces")),
     t("lime", e("/materiel", "Matériel", "boxes", "materiel", null, "materiel")),
@@ -138,6 +139,7 @@ export function filAriane(pathname: string): { href: string; label: string }[] {
 export const PORTAIL: NavEntry[] = [
   e("/portail", "Catalogue des espaces", "door-open"),
   e("/portail/mes-reservations", "Mes réservations", "clipboard-list"),
+  e("/portail/mes-voeux", "Mes vœux", "calendar-check", null, null, "campagnes"),
   e("/portail/mes-messages", "Mes messages", "message-circle"),
   e("/portail/mon-organisation", "Mon organisation", "building-2"),
   e("/portail/mes-subventions", "Mes subventions", "hand-coins", null, null, "subventions"),

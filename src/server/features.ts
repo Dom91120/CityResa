@@ -13,7 +13,8 @@ export type FeatureName =
   | "signature"
   | "materiel"
   | "subventions"
-  | "documents";
+  | "documents"
+  | "campagnes";
 
 /** nom court → (clé de configuration, libellé, aide) */
 export const FEATURES: Record<FeatureName, [string, string, string]> = {
@@ -51,6 +52,11 @@ export const FEATURES: Record<FeatureName, [string, string, string]> = {
     "DOCUMENTS_ENABLED",
     "Pièces jointes",
     "Dépôt de pièces (attestation d'assurance, statuts, programme) sur les dossiers.",
+  ],
+  campagnes: [
+    "CAMPAGNES_ENABLED",
+    "Campagnes annuelles de créneaux",
+    "Les usagers déposent leurs vœux de créneaux hebdomadaires sur une saison ; la Ville arbitre par priorité et attribue en lot.",
   ],
 };
 

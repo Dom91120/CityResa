@@ -188,7 +188,19 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
               <Lu label="Profil tarifaire" valeur={org.profil?.label} tiret />
               <Lu label={qualiteRepresentant(org.type)} valeur={nomRepresentant(org)} tiret />
               {org.type === "association" ? (
-                <Lu label="AG de nomination" valeur={dateCourte(org.legalAppointedAt)} tiret />
+                <>
+                  <Lu label="AG de nomination" valeur={dateCourte(org.legalAppointedAt)} tiret />
+                  <Lu
+                    label="Conventionnée"
+                    valeur={
+                      org.conventionnee ? (
+                        <Chip teinte="emerald">Oui · prioritaire</Chip>
+                      ) : (
+                        <span className="text-muted">Non</span>
+                      )
+                    }
+                  />
+                </>
               ) : null}
               <Lu
                 label="Téléphone"
