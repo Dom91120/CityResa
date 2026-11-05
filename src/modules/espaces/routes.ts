@@ -11,6 +11,7 @@ import {
   enregistrerEquipements,
   enregistrerOption,
   lireEspace,
+  lireHorairesSaisonsForm,
   lireIndisponibilite,
   lireOption,
   retirerGestionnaire,
@@ -26,6 +27,7 @@ import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
 import { apercuFermeture, urlApercuFermeture } from "@/server/fermetures";
 import { type CurrentUser, requireDelete, requireEdit } from "@/server/guards";
+import { enregistrerHorairesSaisons, saisonsPourFormulaire } from "@/server/horaires";
 import { pasTrouve, redirection, redirigerAvecMessage } from "@/server/http";
 import { nouveauJeton } from "@/server/ics";
 
@@ -57,7 +59,10 @@ export async function creer(form: FormData): Promise<Response> {
     await verifierParent(data.parentId, null);
     const site = await prisma.site.findUnique({ where: { id: data.siteId }, select: { id: true } });
     if (!site) throw new UserFacingError("Site introuvable.");
+    const saisons = await saisonsPourFormulaire(null);
+    const horairesSaisons = lireHorairesSaisonsForm(form, saisons);
     const e = await prisma.espace.create({ data });
+    await enregistrerHorairesSaisons(e.id, horairesSaisons);
     await auditRecord("creation espace", e.name, "espaces", user.email);
     return redirigerAvecMessage(
       `/espaces/${e.id}`,
@@ -75,7 +80,9 @@ async function modifier(user: CurrentUser, id: number, form: FormData): Promise<
   const data = lireEspace(form, await codesProfils());
   await verifierSlugEspace(data.slug, id);
   await verifierParent(data.parentId, id);
+  const horairesSaisons = lireHorairesSaisonsForm(form, await saisonsPourFormulaire(id));
   const e = await prisma.espace.update({ where: { id }, data });
+  await enregistrerHorairesSaisons(id, horairesSaisons);
   await auditRecord("modification espace", e.name, "espaces", user.email);
   return redirigerAvecMessage(`/espaces/${id}`, "Espace modifié.", "success");
 }

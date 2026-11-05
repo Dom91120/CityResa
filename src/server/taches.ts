@@ -5,6 +5,7 @@ import { DOCUMENT_KINDS, STATUTS_FERMES } from "@/lib/constantes";
 import { dateCourte, montant } from "@/lib/libelles";
 import { addParisDays, parisMidnight, todayParisISO } from "@/lib/paris-time";
 import { joursRestants } from "@/lib/pieces";
+import { courrielAvenantASigner } from "@/server/avenant";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { backupDatabase } from "@/server/db-backup";
@@ -72,7 +73,33 @@ async function relancesSignature(): Promise<Resultat> {
     await courrielUsager(r, "convention_a_signer");
     n += 1;
   }
-  return { ok: true, message: `${n} relance(s) de signature` };
+  // Les avenants non signés sont relancés au même rythme.
+  const avenants = await prisma.avenant.findMany({
+    where: {
+      signedAt: null,
+      createdAt: { lt: seuil },
+      reservation: { startAt: { gt: new Date() } },
+    },
+  });
+  let na = 0;
+  for (const a of avenants) {
+    const deja = await prisma.mailLog.findFirst({
+      where: {
+        templateKey: "avenant_a_signer",
+        reservationId: a.reservationId,
+        sentAt: { gte: seuil },
+      },
+    });
+    if (deja) continue;
+    const r = await chargerReservation(a.reservationId);
+    if (!r) continue;
+    await courrielAvenantASigner(r, a);
+    na += 1;
+  }
+  return {
+    ok: true,
+    message: `${n} relance(s) de signature${na ? `, ${na} relance(s) d'avenant` : ""}`,
+  };
 }
 
 async function relancesPaiement(): Promise<Resultat> {

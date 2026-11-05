@@ -67,16 +67,16 @@ export type EspaceEntree = {
   instructions: string | null;
 };
 
-/** La grille des horaires saisie : une plage par jour, « Fermé » = pas de plage. */
-export function lireHorairesForm(form: FormData): Horaires {
+/** La grille des horaires saisie : une plage par jour, « Fermé » = pas de plage. `prefixe` : grille d'une saison. */
+export function lireHorairesForm(form: FormData, prefixe = ""): Horaires {
   const out: Horaires = {};
   for (const j of JOURS_ISO) {
-    if (coche(form, `ferme_${j.iso}`)) {
+    if (coche(form, `${prefixe}ferme_${j.iso}`)) {
       out[String(j.iso)] = [];
       continue;
     }
-    const ouv = champ(form, `ouv_${j.iso}`);
-    const ferm = champ(form, `ferm_${j.iso}`);
+    const ouv = champ(form, `${prefixe}ouv_${j.iso}`);
+    const ferm = champ(form, `${prefixe}ferm_${j.iso}`);
     const o = minutesDe(ouv);
     const f = minutesDe(ferm);
     if (o === null || f === null)
@@ -88,6 +88,23 @@ export function lireHorairesForm(form: FormData): Horaires {
     out[String(j.iso)] = [[ouv, ferm]];
   }
   return out;
+}
+
+/** Les horaires particuliers par saison : la grille de chaque saison dont la case est cochée, null sinon. */
+export function lireHorairesSaisonsForm(
+  form: FormData,
+  saisons: { id: number; label: string }[],
+): { saisonId: number; openHours: Horaires | null }[] {
+  return saisons.map((s) => {
+    if (!coche(form, `saison_${s.id}_actif`)) return { saisonId: s.id, openHours: null };
+    try {
+      return { saisonId: s.id, openHours: lireHorairesForm(form, `s${s.id}_`) };
+    } catch (e) {
+      if (e instanceof UserFacingError)
+        throw new UserFacingError(`Saison ${s.label} · ${e.message}`);
+      throw e;
+    }
+  });
 }
 
 export function lireEspace(form: FormData, profilsConnus: string[]): EspaceEntree {
@@ -179,6 +196,10 @@ export async function verifierParent(parentId: number | null, id: number | null)
 
 export const INCLUDE_ESPACE = {
   site: true,
+  horairesSaisons: {
+    include: { saison: true },
+    orderBy: { saison: { startDate: "asc" as const } },
+  },
   parent: { select: { id: true, name: true } },
   enfants: { select: { id: true, name: true, color: true, status: true, isActive: true } },
   nature: true,

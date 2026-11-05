@@ -5,6 +5,7 @@ import { JOURS_ISO, OPTION_UNITES } from "@/lib/constantes";
 import { manquesDossier, phraseManques } from "@/lib/dossier-usager";
 import { duree, montant, nomCourt } from "@/lib/libelles";
 import { addParisDays, parisMidnight, todayParisISO } from "@/lib/paris-time";
+import { lireReglePieces, phrasePiecesBloquantes, piecesBloquent } from "@/lib/pieces";
 import { aPartirDe, tarifMateriel } from "@/lib/tarification";
 import {
   documentsPublics,
@@ -21,6 +22,7 @@ import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { getCurrentUser } from "@/server/guards";
 import { contexteUsager } from "@/server/page";
+import { piecesBloquantesDe } from "@/server/pieces";
 
 export const metadata = { title: "Demander une réservation - CityRésa" };
 
@@ -67,6 +69,10 @@ export default async function ReserverPage({
   const retourFiche = `/portail/espaces/${espace.slug}`;
 
   // Blocages.
+  const piecesEnDefaut =
+    org && piecesBloquent(lireReglePieces(cfg.PIECES_REGLE), "depot")
+      ? await piecesBloquantesDe(org, cfg)
+      : [];
   let blocage: React.ReactNode = null;
   if (cfg.VALIDATION_COMPTE_USAGER && org && !org.validatedAt)
     blocage = (
@@ -95,6 +101,18 @@ export default async function ReserverPage({
               <Icone nom="circle-user" taille={14} /> Compléter mon compte
             </a>
           ) : null}
+        </div>
+      </>
+    );
+  else if (piecesEnDefaut.length)
+    blocage = (
+      <>
+        <strong>Vos pièces justificatives ne sont pas à jour.</strong> Avant de déposer une demande,
+        la collectivité attend : {phrasePiecesBloquantes(piecesEnDefaut)}.
+        <div className="mt-2">
+          <a href="/portail/mon-organisation" className="btn btn-primary btn-sm">
+            <Icone nom="paperclip" taille={14} /> Déposer mes pièces
+          </a>
         </div>
       </>
     );

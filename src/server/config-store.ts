@@ -46,6 +46,7 @@ export const MANAGED = new Set<string>([
   "COLLECTIVITE_NOM",
   "COLLECTIVITE_ADRESSE",
   "COLLECTIVITE_EMAIL",
+  "PIECES_REGLE",
   "COLLECTIVITE_TELEPHONE",
   "COLLECTIVITE_SITE_WEB",
   "COLLECTIVITE_SIGNATAIRE",
@@ -126,6 +127,8 @@ export type AppSettings = EnvOnly & {
   DELAI_ANNULATION_JOURS: number;
   SIGNATURE_VALIDITE_HEURES: number;
   ALERTE_PIECES_JOURS: number;
+  /** avertir | depot | acceptation : effet des pièces attendues manquantes ou expirées. */
+  PIECES_REGLE: string;
   CONVENTION_TEXTE: string;
   AGENTS_NOTIFIES: string;
   BACKUP_DB_KEEP: number;
@@ -222,6 +225,7 @@ export function envDefaults(): AppSettings {
     DELAI_ANNULATION_JOURS: envInt("DELAI_ANNULATION_JOURS", 7),
     SIGNATURE_VALIDITE_HEURES: envInt("SIGNATURE_VALIDITE_HEURES", 72),
     ALERTE_PIECES_JOURS: envInt("ALERTE_PIECES_JOURS", 30),
+    PIECES_REGLE: envStr("PIECES_REGLE", "avertir"),
     CONVENTION_TEXTE: envStr("CONVENTION_TEXTE", CONVENTION_TEXTE_DEFAUT),
     AGENTS_NOTIFIES: envStr("AGENTS_NOTIFIES", ""),
     BACKUP_DB_KEEP: envInt("BACKUP_DB_KEEP", 14),

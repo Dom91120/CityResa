@@ -8,6 +8,7 @@ import { Avatar, Chip, Frise, StatutResa } from "@/components/macros";
 import { JOURS_ISO } from "@/lib/constantes";
 import {
   dateCourte,
+  dateHeure,
   dateMoyenne,
   depuis,
   montant,
@@ -193,6 +194,173 @@ export function CalendrierDispo({
 }
 
 /** L'encart « Prochaine étape ». */
+/**
+ * Le bloc de signature en deux étapes (code reçu par SMS ou courriel, puis code + nom),
+ * pour la convention comme pour un avenant.
+ */
+export function BlocSignature({
+  id,
+  titre,
+  intro,
+  documentId,
+  documentLibelle,
+  enPreparation,
+  codeEnCours,
+  canal,
+  sentAt,
+  expiresAt,
+  actionCode,
+  actionSigner,
+  csrf,
+  telephone,
+  email,
+  nom,
+  libelleLu,
+  libelleSigner,
+}: {
+  id: string;
+  titre: string;
+  intro: string;
+  documentId: number | null;
+  documentLibelle: string;
+  enPreparation: string;
+  codeEnCours: boolean;
+  canal: string | null;
+  sentAt: Date | null;
+  expiresAt: Date | null;
+  actionCode: string;
+  actionSigner: string;
+  csrf: string;
+  telephone: string;
+  email: string;
+  nom: string;
+  libelleLu: string;
+  libelleSigner: string;
+}) {
+  const champ = (suffixe: string) => `f-${id}-${suffixe}`;
+  return (
+    <div className="data-card p-4 mb-3" id={id}>
+      <h2 className="h5 mb-2">
+        <Icone nom="pen-line" taille={18} /> {titre}
+      </h2>
+      <p className="text-muted">{intro}</p>
+      {documentId ? (
+        <a
+          href={`/documents/${documentId}/view`}
+          target="_blank"
+          rel="noopener"
+          className="btn btn-outline-primary mb-3"
+        >
+          <Icone nom="file-signature" taille={14} /> {documentLibelle}
+        </a>
+      ) : (
+        <p className="text-muted small">{enPreparation}</p>
+      )}
+      <div className="row g-3">
+        <div className="col-md-6">
+          <div className="form-section h-100">
+            <div className="form-section-titre">
+              <Icone nom="smartphone" taille={14} /> Étape 1 · Recevoir mon code
+            </div>
+            {codeEnCours ? (
+              <div className="alert alert-success small">
+                <Icone nom="check" taille={14} /> Un code vous a été envoyé{" "}
+                {canal === "sms" ? "par SMS" : "par courriel"}
+                {sentAt ? ` le ${dateHeure(sentAt)}` : ""}. Il reste valable jusqu'au{" "}
+                {expiresAt ? dateHeure(expiresAt) : ""}.
+              </div>
+            ) : null}
+            <form method="POST" action={actionCode} data-double-envoi>
+              <input type="hidden" name="csrf_token" value={csrf} />
+              <label className="form-label" htmlFor={champ("telephone")}>
+                Téléphone mobile (pour le SMS)
+              </label>
+              <input
+                type="tel"
+                name="telephone"
+                id={champ("telephone")}
+                className="form-control"
+                defaultValue={telephone}
+                autoComplete="tel"
+                placeholder="06 12 34 56 78"
+              />
+              <div className="form-text mb-2">
+                Sans numéro ou si le SMS n'est pas disponible, le code arrive par courriel à {email}
+                .
+              </div>
+              <button
+                type="submit"
+                className={`btn ${codeEnCours ? "btn-outline-secondary" : "btn-primary"}`}
+              >
+                <Icone nom="send" taille={14} />{" "}
+                {codeEnCours ? "Renvoyer un code" : "Recevoir mon code"}
+              </button>
+            </form>
+          </div>
+        </div>
+        <div className="col-md-6">
+          <div className="form-section h-100">
+            <div className="form-section-titre">
+              <Icone nom="signature" taille={14} /> Étape 2 · Signer
+            </div>
+            <form method="POST" action={actionSigner} data-double-envoi>
+              <input type="hidden" name="csrf_token" value={csrf} />
+              <label className="form-label" htmlFor={champ("code")}>
+                Code reçu (6 chiffres)
+              </label>
+              <input
+                type="text"
+                name="code"
+                id={champ("code")}
+                className="form-control form-control-lg"
+                inputMode="numeric"
+                pattern="[0-9 ]{6,7}"
+                maxLength={7}
+                required
+                autoComplete="one-time-code"
+                disabled={!codeEnCours}
+                placeholder="123456"
+              />
+              <label className="form-label mt-2" htmlFor={champ("nom")}>
+                Votre nom complet
+              </label>
+              <input
+                type="text"
+                name="nom"
+                id={champ("nom")}
+                className="form-control"
+                defaultValue={nom}
+                required
+                minLength={3}
+                disabled={!codeEnCours}
+              />
+              <div className="form-check mt-2 mb-3">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  name="lu"
+                  id={champ("lu")}
+                  required
+                  disabled={!codeEnCours}
+                />
+                <label className="form-check-label" htmlFor={champ("lu")}>
+                  {libelleLu}
+                </label>
+              </div>
+              <button type="submit" className="btn btn-primary" disabled={!codeEnCours}>
+                <Icone nom="pen-line" taille={14} /> {libelleSigner}
+              </button>
+              {!codeEnCours ? (
+                <div className="form-text">Demandez d'abord votre code (étape 1).</div>
+              ) : null}
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function EncartEtape({ etape, lien }: { etape: Etape; lien?: string }) {
   return (
     <div className="astuce mb-3">

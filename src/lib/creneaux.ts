@@ -254,6 +254,30 @@ export function dansHoraires(horaires: Horaires | null, i: Intervalle): boolean 
   });
 }
 
+/** Des horaires valables sur une période de jours « YYYY-MM-DD » (bornes incluses) : ceux d'une saison. */
+export type HorairesPeriode = { debut: string; fin: string; openHours: unknown };
+
+/** Les horaires applicables à un instant : ceux de la période qui contient ce jour (Paris), sinon `base`. */
+export function horairesA(
+  base: unknown,
+  periodes: readonly HorairesPeriode[],
+  instant: Date,
+): unknown {
+  const jour = parisParts(instant).dateKey;
+  const p = periodes.find((x) => x.debut <= jour && jour <= x.fin);
+  return p ? p.openHours : base;
+}
+
+/** Les règles de l'espace telles qu'elles s'appliquent à ce créneau : horaires de sa saison s'il y en a. */
+export function reglesAuCreneau<T extends ReglesEspace>(
+  espace: T,
+  periodes: readonly HorairesPeriode[],
+  i: Intervalle,
+): T {
+  if (!periodes.length) return espace;
+  return { ...espace, openHours: horairesA(espace.openHours, periodes, i.startAt) };
+}
+
 /** Horaires par défaut : tous les jours 8h-22h. */
 export const HORAIRES_DEFAUT: Horaires = Object.fromEntries(
   [1, 2, 3, 4, 5, 6, 7].map((j) => [String(j), [["08:00", "22:00"]]]),

@@ -54,8 +54,13 @@ export function etatValidite(
 }
 
 /** Le libellé court d'un état : « Expirée le 12/03/2026 », « Expire dans 12 jours »… */
+/** « 12/03/2026 » d'une date de validité. */
+export function dateFr(validUntil: Date): string {
+  return `${String(validUntil.getUTCDate()).padStart(2, "0")}/${String(validUntil.getUTCMonth() + 1).padStart(2, "0")}/${validUntil.getUTCFullYear()}`;
+}
+
 export function libelleValidite(validUntil: Date, today: string, seuilJours: number): string {
-  const fr = `${String(validUntil.getUTCDate()).padStart(2, "0")}/${String(validUntil.getUTCMonth() + 1).padStart(2, "0")}/${validUntil.getUTCFullYear()}`;
+  const fr = dateFr(validUntil);
   const etat = etatValidite(validUntil, today, seuilJours);
   const j = joursRestants(validUntil, today);
   if (etat === "expiree") return `Expirée le ${fr}`;
@@ -96,6 +101,51 @@ export function etatPiecesAttendues(
       validUntil: meilleure,
     };
   });
+}
+
+// ── Règle de blocage ──
+
+/** Ce que font les pièces attendues manquantes ou expirées : avertir seulement, bloquer le dépôt d'une demande, ou aussi son acceptation. */
+export type ReglePieces = "avertir" | "depot" | "acceptation";
+
+export const REGLES_PIECES: { value: ReglePieces; label: string }[] = [
+  { value: "avertir", label: "Signaler seulement (pastilles, alertes, relances)" },
+  { value: "depot", label: "Bloquer le dépôt d'une demande sur le portail" },
+  { value: "acceptation", label: "Bloquer le dépôt et l'acceptation par un agent" },
+];
+
+export function lireReglePieces(v: unknown): ReglePieces {
+  return v === "depot" || v === "acceptation" ? v : "avertir";
+}
+
+/** La règle bloque-t-elle à ce moment ? */
+export function piecesBloquent(regle: ReglePieces, moment: "depot" | "acceptation"): boolean {
+  return moment === "depot" ? regle !== "avertir" : regle === "acceptation";
+}
+
+/** Parmi les pièces attendues d'un usager, celles qui manquent ou sont expirées. */
+export function piecesBloquantes(
+  type: string,
+  pieces: PieceJugee[],
+  today: string,
+  seuilJours: number,
+): EtatPieceAttendue[] {
+  return etatPiecesAttendues(type, pieces, today, seuilJours).filter(
+    (p) => p.etat === "manquante" || p.etat === "expiree",
+  );
+}
+
+/** « Attestation d'assurance responsabilité civile expirée le 12/03/2026, statuts de l'association manquants ». */
+export function phrasePiecesBloquantes(bloquantes: EtatPieceAttendue[]): string {
+  return bloquantes
+    .map((p) => {
+      const nom = p.libelle.charAt(0).toLowerCase() + p.libelle.slice(1);
+      const pluriel = nom.startsWith("statuts");
+      if (p.etat === "expiree" && p.validUntil)
+        return `${nom} expiré${pluriel ? "s" : "e"} le ${dateFr(p.validUntil)}`;
+      return `${nom} manquant${pluriel ? "s" : "e"}`;
+    })
+    .join(", ");
 }
 
 /** Une organisation a-t-elle au moins une pièce expirée ou sur le point d'expirer ? */

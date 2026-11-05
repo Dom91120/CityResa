@@ -320,6 +320,7 @@ model Espace {
   options          Option[]
   gestionnaires    EspaceGestionnaire[]
   documents        Document[]
+  horairesSaisons  HorairesSaison[]
   indisponibilites Indisponibilite[]
   reservations     Reservation[]
   creneaux         Creneau[]
@@ -444,7 +445,23 @@ model Saison {
   isActive  Boolean  @default(false) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
+  horaires HorairesSaison[]
+
   @@map("saison")
+}
+
+/// Horaires d'ouverture particuliers d'un espace pendant une saison ; à défaut, ceux de l'espace.
+model HorairesSaison {
+  id        Int    @id @default(autoincrement())
+  espaceId  Int    @map("espace_id")
+  espace    Espace @relation(fields: [espaceId], references: [id], onDelete: Cascade)
+  saisonId  Int    @map("saison_id")
+  saison    Saison @relation(fields: [saisonId], references: [id], onDelete: Cascade)
+  /// Même forme que Espace.openHours : {"1":[["08:00","22:00"]], …}.
+  openHours Json   @map("open_hours")
+
+  @@unique([espaceId, saisonId])
+  @@map("horaires_saison")
 }
 
 /// Une période du calendrier, bornes incluses : vacances scolaires (zone C) ou jour férié.
@@ -584,6 +601,7 @@ model Reservation {
   documents Document[]
   factures  Facture[]
   histories ReservationHistory[]
+  avenants  Avenant[]
 
   @@index([espaceId, startAt])
   @@index([organisationId])
@@ -669,6 +687,35 @@ model ReservationHistory {
   @@map("reservation_history")
 }
 
+/// Avenant à une convention signée (créneaux modifiés après signature) : PDF accroché au
+/// dossier, signé à son tour par l'usager (code à usage unique) ou sur papier.
+model Avenant {
+  id            Int         @id @default(autoincrement())
+  reservationId Int         @map("reservation_id")
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  /// 1, 2, 3… par dossier.
+  numero        Int
+  /// Ce qui change, en une phrase (« Créneaux modifiés : … »).
+  objet         String
+  documentId    Int?        @map("document_id")
+  document      Document?   @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  signatureChannel   String?   @map("signature_channel") @db.VarChar(10)
+  signatureSentAt    DateTime? @map("signature_sent_at") @db.Timestamptz
+  signatureCodeHash  String?   @map("signature_code_hash") @db.VarChar(128)
+  signatureExpiresAt DateTime? @map("signature_expires_at") @db.Timestamptz
+  signatureAttempts  Int       @default(0) @map("signature_attempts")
+  signedAt           DateTime? @map("signed_at") @db.Timestamptz
+  signerName         String?   @map("signer_name") @db.VarChar(160)
+  signerIp           String?   @map("signer_ip") @db.VarChar(64)
+
+  createdBy String?  @map("created_by") @db.VarChar(160)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([reservationId, numero])
+  @@map("avenant")
+}
+
 // ============================================================
 //  Pièces jointes (octets à part)
 // ============================================================
@@ -707,7 +754,8 @@ model Document {
   uploadedBy   User?    @relation(fields: [uploadedById], references: [id])
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  content DocumentContent?
+  content  DocumentContent?
+  avenants Avenant[]
 
   @@index([espaceId])
   @@index([siteId])

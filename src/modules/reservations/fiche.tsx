@@ -42,6 +42,7 @@ import type { Devis } from "@/lib/tarification";
 import { ChoixMateriel, ChoixOptions } from "@/modules/reservations/champs";
 import { contactDe } from "@/modules/reservations/requetes";
 import type { MaterielDispo } from "@/modules/reservations/saisie";
+import { libelleAvenant } from "@/server/avenant";
 import type { DocumentAvecCategorie } from "@/server/documents";
 import type { FeatureFlags } from "@/server/features";
 import type { ReservationComplete } from "@/server/reservations";
@@ -1236,7 +1237,9 @@ export function SectionDocuments({
         documents={documents}
         csrf={csrf}
         next={next}
-        peutSupprimer={(d) => peutSupprimer && d.kind !== "convention" && d.kind !== "facture"}
+        peutSupprimer={(d) =>
+          peutSupprimer && !["convention", "avenant", "facture"].includes(d.kind)
+        }
         vide="Aucune pièce sur ce dossier."
       />
       {documentsUsager.length ? (
@@ -1286,11 +1289,16 @@ export function SectionDocuments({
 export function SectionConvention({
   r,
   features,
+  csrf,
+  peutDecider,
 }: {
   r: ReservationComplete;
   features: FeatureFlags;
+  csrf: string;
+  peutDecider: boolean;
 }) {
   const sansObjet = ["brouillon", "a_traiter", "en_traitement"].includes(r.status);
+  const aSigner = r.avenants.filter((a) => !a.signedAt);
   return (
     <Section titre="Convention & signature" icone="file-signature" ouverte={!sansObjet}>
       {sansObjet && !r.conventionDocumentId ? (
@@ -1375,6 +1383,98 @@ export function SectionConvention({
           ) : null}
         </Lus>
       )}
+      {r.avenants.length ? (
+        <>
+          <div className="form-label mt-3 mb-1">Avenants ({r.avenants.length})</div>
+          <table className="table table-sm mb-0">
+            <tbody>
+              {r.avenants.map((a) => (
+                <tr key={a.id}>
+                  <td>
+                    Avenant {libelleAvenant(a)}
+                    <div className="text-muted small">{a.objet}</div>
+                  </td>
+                  <td className="text-nowrap">{dateCourte(a.createdAt)}</td>
+                  <td>
+                    {a.signedAt ? (
+                      <Chip teinte="emerald">Signé le {dateCourte(a.signedAt)}</Chip>
+                    ) : (
+                      <Chip teinte="amber">À signer</Chip>
+                    )}
+                  </td>
+                  <td className="actions text-nowrap">
+                    {a.documentId ? (
+                      <a
+                        href={`/documents/${a.documentId}/view`}
+                        target="_blank"
+                        rel="noopener"
+                        className="btn btn-ghost btn-icone btn-sm"
+                        title="Voir le PDF"
+                        aria-label="Voir le PDF"
+                      >
+                        <Icone nom="file-text" taille={14} />
+                      </a>
+                    ) : null}
+                    {peutDecider && !a.signedAt ? (
+                      <>
+                        <form
+                          method="POST"
+                          action={`/reservations/${r.id}/avenants/${a.id}/relancer`}
+                          className="d-inline"
+                        >
+                          <input type="hidden" name="csrf_token" value={csrf} />
+                          <button
+                            type="submit"
+                            className="btn btn-ghost btn-icone btn-sm"
+                            title="Relancer l'usager pour la signature"
+                            aria-label="Relancer l'usager pour la signature"
+                          >
+                            <Icone nom="send" taille={14} />
+                          </button>
+                        </form>
+                        <BoutonOuvrir
+                          cible={`modal-avenant-${a.id}`}
+                          libelle="Signature sur papier"
+                          icone="pen-line"
+                          classe="btn-ghost btn-icone btn-sm"
+                          sansTexte
+                        />
+                      </>
+                    ) : null}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {peutDecider
+            ? aSigner.map((a) => (
+                <ModalAction
+                  key={a.id}
+                  id={`modal-avenant-${a.id}`}
+                  titre={`Avenant ${libelleAvenant(a)} signé sur papier`}
+                  action={`/reservations/${r.id}/avenants/${a.id}/signature-manuelle`}
+                  csrf={csrf}
+                  bouton="Enregistrer la signature"
+                  icone="pen-line"
+                  aide="L'usager a retourné l'avenant signé : le PDF est réédité avec la mention de signature et l'usager reçoit une confirmation."
+                >
+                  <label className="form-label" htmlFor={`av-nom-${a.id}`}>
+                    Nom du signataire <span className="req">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="signer_name"
+                    id={`av-nom-${a.id}`}
+                    className="form-control"
+                    required
+                    minLength={3}
+                    defaultValue={r.signerName ?? ""}
+                  />
+                </ModalAction>
+              ))
+            : null}
+        </>
+      ) : null}
     </Section>
   );
 }
