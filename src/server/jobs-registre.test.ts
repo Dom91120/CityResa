@@ -46,6 +46,10 @@ describe("tachesActives", () => {
     expect(
       tachesActives(cfg({ RGPD_INACTIVITE_MOIS: 0, RGPD_CONSERVATION_ANNEES: 0 })).map((t) => t.id),
     ).not.toContain("rgpd");
+    expect(tachesActives(cfg()).map((t) => t.id)).not.toContain("planning_hebdo");
+    expect(tachesActives(cfg({ PLANNING_HEBDO_ENABLED: true })).map((t) => t.id)).toContain(
+      "planning_hebdo",
+    );
   });
 
   it("chaque tâche a un identifiant unique et soit une heure, soit un intervalle", () => {

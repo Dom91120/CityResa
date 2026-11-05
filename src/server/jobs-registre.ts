@@ -61,6 +61,13 @@ export const TACHES: Tache[] = [
   },
   { id: "digest_agents", label: "Récapitulatif quotidien des agents", heure: 7, minute: 45 },
   {
+    id: "planning_hebdo",
+    label: "Planning hebdomadaire envoyé aux gestionnaires (le jour configuré)",
+    heure: 6,
+    minute: 30,
+    actif: (c) => Boolean(c.PLANNING_HEBDO_ENABLED),
+  },
+  {
     id: "alertes_pieces",
     label: "Alertes d'expiration des pièces justificatives",
     heure: 7,

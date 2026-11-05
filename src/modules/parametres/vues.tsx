@@ -7,6 +7,7 @@ import { Blason } from "@/components/blason";
 import { Champ, Grille, Interrupteur, Select, Zone } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
 import { decrireBareme, lireBareme } from "@/lib/annulation";
+import { JOURS_ISO } from "@/lib/constantes";
 import { lireReglePieces, REGLES_PIECES } from "@/lib/pieces";
 import { colorMix, contraste, normalizeColor } from "@/lib/theming";
 import type { AppSettings } from "@/server/config-store";
@@ -271,8 +272,21 @@ export function VoletReservations({ cfg }: { cfg: AppSettings }) {
           coche={cfg.RAPPEL_J7}
         />
         <Interrupteur label="Rappel aux usagers la veille" name="RAPPEL_J1" coche={cfg.RAPPEL_J1} />
+        <Interrupteur
+          label="Planning hebdomadaire par courriel aux gestionnaires"
+          name="PLANNING_HEBDO_ENABLED"
+          coche={cfg.PLANNING_HEBDO_ENABLED}
+          aide="Chaque semaine, les gestionnaires et agents notifiés d'un espace reçoivent son planning en PDF, avec le résumé des créneaux."
+        />
       </div>
       <Grille colonnes={2}>
+        <Select
+          label="Jour d'envoi du planning hebdomadaire"
+          name="PLANNING_HEBDO_JOUR"
+          valeur={String(cfg.PLANNING_HEBDO_JOUR)}
+          options={JOURS_ISO.map((j) => [String(j.iso), j.long])}
+          aide="Du lundi au jeudi, la semaine en cours est envoyée ; du vendredi au dimanche, la semaine suivante."
+        />
         <Champ
           label="Adresses supplémentaires à notifier"
           name="AGENTS_NOTIFIES"

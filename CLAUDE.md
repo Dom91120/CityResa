@@ -21,7 +21,7 @@ node scripts/build-lucide-sprite.mjs   # régénère public/vendor/lucide.svg ap
 pnpm illustration        # refait l'illustration de la connexion (captures du portail, serveur dev + démo)
 pnpm tsx scripts/regenerer-convention.ts <id>   # réédite la convention d'un dossier hors interface
 pnpm tsx scripts/apercu-editions.ts <espaceId> <lundi> <dossier>   # PDF + PNG du planning semaine, de la semaine type et de la feuille de salle
-pnpm tsx scripts/executer-tache.ts <id>   # lance une tâche planifiée hors interface (ex. options, rappels_usagers, rgpd)
+pnpm tsx scripts/executer-tache.ts <id>   # lance une tâche planifiée hors interface (ex. options, rappels_usagers, rgpd, planning_hebdo)
 ```
 
 Base locale : conteneur Docker `cityresa-pg` (PostgreSQL 18, port 5435) ; voir `.env.example`.
