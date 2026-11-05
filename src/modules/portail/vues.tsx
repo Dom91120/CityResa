@@ -587,7 +587,7 @@ export function BlocVide({
       <span className="ico">
         <Icone nom={icone} taille={28} />
       </span>
-      <h5>{titre}</h5>
+      <h2 className="h5">{titre}</h2>
       {texte ? <p className="mb-3">{texte}</p> : null}
       {action}
     </div>

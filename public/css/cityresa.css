@@ -21,7 +21,7 @@
     --warning: #f59e0b;
     --warning-dim: #fef3c7;
     --warning-text: #b45309;
-    --danger: #ef4444;
+    --danger: #dc2626;
     --danger-dim: #fee2e2;
     --danger-text: #b91c1c;
     --info: #3b82f6;
@@ -47,8 +47,8 @@
     --sub: #d1d5db;
     --strong: #111827;
     --body: #1f2937;
-    --muted: #6b7280;
-    --faint: #9ca3af;
+    --muted: #5b6675;
+    --faint: #667085;
 
     --sidebar-w: 240px;
     --topbar-h: 64px;

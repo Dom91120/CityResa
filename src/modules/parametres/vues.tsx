@@ -6,6 +6,7 @@
 import { Blason } from "@/components/blason";
 import { Champ, Grille, Interrupteur, Select, Zone } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
+import { ETATS_ACCESSIBILITE } from "@/lib/accessibilite";
 import { decrireBareme, lireBareme } from "@/lib/annulation";
 import { JOURS_ISO } from "@/lib/constantes";
 import { lireReglePieces, REGLES_PIECES } from "@/lib/pieces";
@@ -138,6 +139,55 @@ export function VoletPortail({ cfg }: { cfg: AppSettings }) {
           valeur={cfg.PORTAIL_CONDITIONS}
           rows={6}
           aide="Texte affiché à l'inscription (CGU). Vide : aucune condition particulière."
+        />
+      </Grille>
+      <p className="form-section-aide mt-3">
+        Pages réglementaires du portail (liens en pied de page) : déclaration d'accessibilité,
+        mentions légales, données personnelles. Les durées de conservation de la page « Données
+        personnelles » viennent de l'onglet du même nom.
+      </p>
+      <Grille colonnes={3}>
+        <Select
+          label="État de conformité RGAA"
+          name="ACCESSIBILITE_ETAT"
+          valeur={cfg.ACCESSIBILITE_ETAT}
+          options={Object.entries(ETATS_ACCESSIBILITE)}
+        />
+        <Champ
+          label="Taux de conformité (%)"
+          name="ACCESSIBILITE_TAUX"
+          type="number"
+          min={-1}
+          max={100}
+          valeur={cfg.ACCESSIBILITE_TAUX < 0 ? "" : cfg.ACCESSIBILITE_TAUX}
+          aide="Vide ou -1 : non renseigné."
+        />
+        <Champ
+          label="Date de l'audit"
+          name="ACCESSIBILITE_DATE"
+          valeur={cfg.ACCESSIBILITE_DATE}
+          placeholder="12 mars 2026"
+        />
+        <Zone
+          label="Déclaration : non-conformités, dérogations, plan d'amélioration"
+          name="ACCESSIBILITE_TEXTE"
+          valeur={cfg.ACCESSIBILITE_TEXTE}
+          rows={5}
+          aide="Complète les mentions obligatoires générées (état, voies de recours). Audit automatisé : pnpm tsx scripts/audit-accessibilite.ts."
+        />
+        <Zone
+          label="Mentions légales"
+          name="MENTIONS_LEGALES_TEXTE"
+          valeur={cfg.MENTIONS_LEGALES_TEXTE}
+          rows={5}
+          aide="Éditeur, directeur de publication, hébergeur. Vide : éditeur et contact repris de l'onglet Collectivité."
+        />
+        <Zone
+          label="Données personnelles : compléments"
+          name="DONNEES_PERSONNELLES_TEXTE"
+          valeur={cfg.DONNEES_PERSONNELLES_TEXTE}
+          rows={5}
+          aide="Délégué à la protection des données, base légale, destinataires… ajoutés sous les mentions générées."
         />
       </Grille>
     </>
