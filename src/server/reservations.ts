@@ -4,6 +4,7 @@
  * courriels, fil de discussion, historique.
  */
 import type { Prisma } from "@/generated/prisma/client";
+import { fraisPrevus, lireBareme } from "@/lib/annulation";
 import {
   RESERVATION_STATUS,
   type ReservationStatus,
@@ -14,6 +15,7 @@ import {
 import {
   bornes,
   conflits,
+  conflitsCapacite,
   developperRecurrence,
   type Intervalle,
   type Recurrence,
@@ -22,7 +24,7 @@ import {
   verifierRegles,
 } from "@/lib/creneaux";
 import { manquesDossier, nomRepresentant, phraseManques } from "@/lib/dossier-usager";
-import { dateMoyenne, plage } from "@/lib/libelles";
+import { dateMoyenne, montant, plage } from "@/lib/libelles";
 import { calculerDevis, type Devis } from "@/lib/tarification";
 import { auditRecord } from "@/server/audit";
 import { joursExclus } from "@/server/calendrier";
@@ -49,6 +51,10 @@ export const INCLUDE_RESERVATION = {
   materiels: { include: { materiel: true } },
   factures: { include: { paiements: true }, orderBy: { createdAt: "asc" as const } },
   avenants: { orderBy: { numero: "asc" as const } },
+  etatsDesLieux: {
+    include: { documents: { orderBy: { position: "asc" as const } } },
+    orderBy: { kind: "asc" as const },
+  },
 } satisfies Prisma.ReservationInclude;
 
 export type ReservationComplete = Prisma.ReservationGetPayload<{
@@ -138,9 +144,17 @@ export async function occupants(
 
 export type Conflit = { demande: Intervalle; existant: Occupant };
 
-/** Les conflits d'une liste de créneaux demandés sur un espace. */
+/**
+ * Les conflits d'une liste de créneaux demandés sur un espace. Un blocage bloque toujours ;
+ * les réservations en place ne bloquent qu'à partir de la capacité simultanée de l'espace.
+ */
 export async function verifierDisponibilite(
-  espace: { id: number; bufferBeforeMin: number; bufferAfterMin: number },
+  espace: {
+    id: number;
+    bufferBeforeMin: number;
+    bufferAfterMin: number;
+    capaciteSimultanee?: number;
+  },
   creneaux: Intervalle[],
   excludeReservationId: number | null = null,
 ): Promise<Conflit[]> {
@@ -153,10 +167,20 @@ export async function verifierDisponibilite(
     new Date(b.endAt.getTime() + marge),
     excludeReservationId,
   );
-  return conflits(creneaux, exist, {
-    avantMin: espace.bufferBeforeMin,
-    apresMin: espace.bufferAfterMin,
-  });
+  const marges = { avantMin: espace.bufferBeforeMin, apresMin: espace.bufferAfterMin };
+  return [
+    ...conflits(
+      creneaux,
+      exist.filter((o) => o.genre === "blocage"),
+      marges,
+    ),
+    ...conflitsCapacite(
+      creneaux,
+      exist.filter((o) => o.genre === "reservation"),
+      marges,
+      espace.capaciteSimultanee ?? 1,
+    ),
+  ];
 }
 
 export type DemandeEntree = {
@@ -523,6 +547,8 @@ export async function courrielUsager(
       creneaux_modifies: `Réservation ${r.numero} : nouveaux horaires`,
       avenant_a_signer: `Avenant à signer pour ${r.numero}`,
       avenant_signe: `Avenant de ${r.numero} signé`,
+      caution_restituee: `Caution de ${r.numero} restituée`,
+      caution_retenue: `Caution de ${r.numero} : retenue`,
     };
     if (titres[key])
       await notifier(
@@ -572,7 +598,7 @@ export async function changerStatut(
   id: number,
   nouveau: ReservationStatus,
   acteur: CurrentUser | { name: string; isAgent: boolean },
-  opts: { motif?: string; message?: string; parSysteme?: boolean } = {},
+  opts: { motif?: string; message?: string; parSysteme?: boolean; sansFrais?: boolean } = {},
 ): Promise<ReservationComplete> {
   const r = await chargerReservation(id);
   if (!r) throw new UserFacingError("Réservation introuvable.");
@@ -613,6 +639,18 @@ export async function changerStatut(
   if (effectif === "archivee") data.archivedAt = now;
   if (effectif === "annulee" || effectif === "refusee")
     data.creneaux = { updateMany: { where: {}, data: { status: "annule" } } };
+  // Une caution demandée entre dans son cycle dès que le dossier est acquis.
+  if (
+    ["acceptee", "signee", "confirmee"].includes(effectif) &&
+    r.caution > 0 &&
+    r.cautionStatus === "aucune"
+  )
+    data.cautionStatus = "attendue";
+  // Frais d'annulation selon le barème, pour un dossier acquis ; l'agent peut y renoncer.
+  const frais =
+    effectif === "annulee" && !opts.sansFrais && enabledIn(cfg, "paiements")
+      ? fraisPrevus(r, lireBareme(cfg.ANNULATION_BAREME), now)
+      : null;
   await prisma.reservation.update({ where: { id }, data });
   const libelle = RESERVATION_STATUS[effectif].label;
   await historiser(id, libelle, opts.motif ?? opts.message ?? null, acteur.name);
@@ -657,7 +695,32 @@ export async function changerStatut(
   if (effectif === "refusee")
     await courrielUsager(maj, "reservation_refusee", { motif: opts.motif ?? "non précisé" });
   if (effectif === "annulee") {
-    await courrielUsager(maj, "reservation_annulee", { motif: opts.motif ?? "non précisé" });
+    // Les factures encore dues tombent avec la réservation ; les frais font l'objet d'une facture propre.
+    for (const f of maj.factures.filter((x) => x.status === "a_payer")) {
+      const { annulerFacture } = await import("@/server/factures");
+      await annulerFacture(f.id, acteur.name);
+    }
+    let texteFrais = "";
+    if (frais) {
+      const { creerFacture } = await import("@/server/factures");
+      const f = await creerFacture(maj, "frais", acteur.name, 30, frais.montant).catch((e) => {
+        console.error("[frais annulation]", e);
+        return null;
+      });
+      if (f) {
+        texteFrais = `Annulation à ${frais.jours} jour(s) du début : des frais de ${montant(frais.montant)} (${frais.taux} % du montant) vous sont facturés (facture ${f.numero}).`;
+        await historiser(
+          id,
+          "Frais d'annulation facturés",
+          `${montant(frais.montant)} (${frais.taux} %, à ${frais.jours} jour(s))`,
+          acteur.name,
+        );
+      }
+    }
+    await courrielUsager(maj, "reservation_annulee", {
+      motif: opts.motif ?? "non précisé",
+      frais: texteFrais,
+    });
     if (!acteur.isAgent)
       await notifierAgents(
         r.espaceId,

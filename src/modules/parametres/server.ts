@@ -2,6 +2,7 @@
  * Paramètres : les onglets, les clés que chacun enregistre, et la lecture d'un onglet
  * depuis son formulaire (booléens non cochés → "false", secret vide → inchangé).
  */
+import { ecrireBareme, lireBareme } from "@/lib/annulation";
 import { coche } from "@/lib/forms-util";
 import { lireReglePieces } from "@/lib/pieces";
 import { normalizeColor } from "@/lib/theming";
@@ -58,6 +59,9 @@ export const ONGLETS: Onglet[] = [
       "SIGNATURE_VALIDITE_HEURES",
       "ALERTE_PIECES_JOURS",
       "PIECES_REGLE",
+      "ANNULATION_BAREME",
+      "CAUTION_SEUIL_VALIDATION",
+      "CAUTION_DELAI_RESTITUTION_JOURS",
       "RAPPEL_J7",
       "RAPPEL_J1",
       "AGENTS_NOTIFIES",
@@ -133,6 +137,10 @@ export function lireOnglet(form: FormData, o: Onglet): Record<string, string> {
     }
     if (key === "PIECES_REGLE") {
       maj[key] = lireReglePieces(v);
+      continue;
+    }
+    if (key === "ANNULATION_BAREME") {
+      maj[key] = ecrireBareme(lireBareme(v));
       continue;
     }
     maj[key] = v;

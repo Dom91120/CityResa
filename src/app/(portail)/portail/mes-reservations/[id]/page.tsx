@@ -3,6 +3,8 @@ import { FormDocument, ListeDocuments } from "@/components/documents";
 import { BoutonOuvrir, Lu, Lus, ModalAction, Section } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { Chip, Frise, StatutFacture, StatutResa } from "@/components/macros";
+import { fraisPrevus, lireBareme } from "@/lib/annulation";
+import { decrireCaution } from "@/lib/caution";
 import { FACTURE_TYPES, RESERVATION_SOURCES } from "@/lib/constantes";
 import { decrireRecurrence, lireRecurrence } from "@/lib/creneaux";
 import { dateCourte, dateHeure, montant, nomCourt, plage, pluriel } from "@/lib/libelles";
@@ -57,6 +59,7 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
       }
     : prochaineEtape(r, cfg);
   const annulable = peutAnnuler(r, cfg);
+  const frais = fraisPrevus(r, lireBareme(cfg.ANNULATION_BAREME));
   const aSigner = r.status === "acceptee" && features.signature;
   const codeEnCours = Boolean(
     r.signatureCodeHash && r.signatureExpiresAt && r.signatureExpiresAt > new Date(),
@@ -232,6 +235,60 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
           ) : null}
         </Section>
 
+        {r.caution > 0 && r.cautionStatus !== "aucune" ? (
+          <Section titre="Caution & états des lieux" icone="piggy-bank" ouverte={false}>
+            <Lus>
+              <Lu label="Caution" valeur={decrireCaution(r)} pleine />
+              {r.cautionMotif && ["retenue", "retenue_a_valider"].includes(r.cautionStatus) ? (
+                <Lu label="Motif de la retenue" valeur={r.cautionMotif} pleine pre />
+              ) : null}
+              {r.etatsDesLieux.map((e) => (
+                <Lu
+                  key={e.id}
+                  label={
+                    e.kind === "entree" ? "État des lieux d'entrée" : "État des lieux de sortie"
+                  }
+                  pleine
+                  valeur={
+                    <>
+                      {dateHeure(e.doneAt)} · {e.degats ? "dégâts constatés" : "sans dégât"}
+                      {e.observations ? (
+                        <div className="text-muted" style={{ whiteSpace: "pre-wrap" }}>
+                          {e.observations}
+                        </div>
+                      ) : null}
+                      {e.documents.length ? (
+                        <div className="d-flex flex-wrap gap-2 mt-1">
+                          {e.documents.map((d) => (
+                            <a
+                              key={d.id}
+                              href={`/documents/${d.id}/view`}
+                              target="_blank"
+                              rel="noopener"
+                            >
+                              <img
+                                src={`/documents/${d.id}/thumb`}
+                                alt={d.filename}
+                                style={{
+                                  width: 96,
+                                  height: 72,
+                                  objectFit: "cover",
+                                  borderRadius: 6,
+                                }}
+                                loading="lazy"
+                              />
+                            </a>
+                          ))}
+                        </div>
+                      ) : null}
+                    </>
+                  }
+                />
+              ))}
+            </Lus>
+          </Section>
+        ) : null}
+
         <Section titre="Messages" icone="message-circle" id="messages" nb={messages.length || null}>
           <FilMessages
             messages={messages}
@@ -359,7 +416,11 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
           bouton="Confirmer l'annulation"
           icone="calendar-x"
           danger
-          aide="L'annulation est définitive. La collectivité en sera informée."
+          aide={
+            frais
+              ? `L'annulation est définitive. À ${frais.jours} jour${frais.jours > 1 ? "s" : ""} du début, le barème de la collectivité prévoit des frais de ${montant(frais.montant)} (${frais.taux} % du montant), qui vous seront facturés.`
+              : "L'annulation est définitive. La collectivité en sera informée."
+          }
         >
           <label className="form-label" htmlFor="f-motif">
             Motif (facultatif)

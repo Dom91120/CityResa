@@ -6,6 +6,7 @@
 import { Blason } from "@/components/blason";
 import { Champ, Grille, Interrupteur, Select, Zone } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
+import { decrireBareme, lireBareme } from "@/lib/annulation";
 import { lireReglePieces, REGLES_PIECES } from "@/lib/pieces";
 import { colorMix, contraste, normalizeColor } from "@/lib/theming";
 import type { AppSettings } from "@/server/config-store";
@@ -210,6 +211,31 @@ export function VoletReservations({ cfg }: { cfg: AppSettings }) {
           options={REGLES_PIECES.map((o) => [o.value, o.label])}
           aide="Statuts et assurance pour une association, assurance pour une entreprise ou un particulier. Un dossier déjà accepté n'est jamais remis en cause."
           pleine
+        />
+        <Champ
+          label="Barème de frais d'annulation"
+          name="ANNULATION_BAREME"
+          valeur={cfg.ANNULATION_BAREME}
+          placeholder="30:20;7:50;2:100"
+          pleine
+          aide={`Tranches « à moins de N jours du début : % du montant TTC », séparées par des points-virgules ; au-delà de la plus large, aucun frais. Actuellement : ${decrireBareme(lireBareme(cfg.ANNULATION_BAREME))} Facturés à l'annulation d'un dossier accepté, signé ou confirmé ; un agent peut annuler sans frais.`}
+        />
+        <Champ
+          label="Retenue sur caution : seuil de double validation (€)"
+          name="CAUTION_SEUIL_VALIDATION"
+          type="number"
+          min={0}
+          step="0.01"
+          valeur={cfg.CAUTION_SEUIL_VALIDATION}
+          aide="Au-delà, la retenue décidée par un agent attend la validation d'un administrateur."
+        />
+        <Champ
+          label="Restitution de la caution : délai d'alerte (jours)"
+          name="CAUTION_DELAI_RESTITUTION_JOURS"
+          type="number"
+          min={0}
+          valeur={cfg.CAUTION_DELAI_RESTITUTION_JOURS}
+          aide="Passé ce délai après la fin de l'événement, une caution encaissée ni restituée ni retenue apparaît dans les alertes."
         />
       </Grille>
       <div className="d-flex flex-column gap-2 mt-2 mb-3">

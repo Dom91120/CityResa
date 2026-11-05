@@ -36,13 +36,16 @@ export async function chargerFacture(id: number) {
 /** Crée une facture pour un dossier (acompte, solde ou caution) et l'envoie à l'usager. */
 export async function creerFacture(
   r: ReservationComplete,
-  type: "acompte" | "solde" | "caution",
+  type: "acompte" | "solde" | "caution" | "frais",
   acteur: string,
   dueDays = 30,
+  /** Montant TTC imposé (frais d'annulation). */
+  montantForce?: number,
 ) {
   const cfg = await getSettings();
   let ttc: number;
-  if (type === "acompte") ttc = r.acompte;
+  if (montantForce !== undefined) ttc = Math.round(montantForce * 100) / 100;
+  else if (type === "acompte") ttc = r.acompte;
   else if (type === "caution") ttc = r.caution;
   else {
     const dejaAcompte = r.factures
@@ -94,7 +97,8 @@ export async function creerFacture(
     console.error("[facture] PDF impossible :", e);
   }
   await courrielUsager(r, "facture_emise", {
-    type_facture: FACTURE_TYPES[type].toLowerCase(),
+    type_facture:
+      type === "frais" ? "facture de frais d'annulation" : FACTURE_TYPES[type].toLowerCase(),
     numero_facture: numero,
     montant: montant(ttc),
     echeance: f.dueAt ? dateCourte(f.dueAt) : "—",
@@ -123,11 +127,18 @@ export async function enregistrerPaiement(
   });
   const total = f.paiements.reduce((s, p) => s + p.montant, 0) + montantPaye;
   const soldee = total + 0.005 >= f.montantTtc;
-  if (soldee)
+  if (soldee) {
     await prisma.facture.update({
       where: { id: factureId },
       data: { status: "payee", paidAt },
     });
+    // Une caution réglée est encaissée : son cycle (états des lieux, restitution) commence.
+    if (f.type === "caution" && f.reservationId)
+      await prisma.reservation.updateMany({
+        where: { id: f.reservationId, cautionStatus: { in: ["aucune", "attendue"] } },
+        data: { cautionStatus: "encaissee", cautionEncaisseeAt: paidAt },
+      });
+  }
   await auditRecord(
     "paiement",
     `${f.numero} · ${montant(montantPaye)} (${PAIEMENT_MODES[mode]})`,

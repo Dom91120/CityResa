@@ -4,7 +4,8 @@ import { idDe, pasTrouve, traiterFormulaire } from "@/server/http";
 /**
  * POST /reservations/<id>/modifier | statut | message | assigner | creneaux/ajouter |
  * creneaux/<cid>/annuler | creneaux/<cid>/modifier | convention/regenerer | convention/relancer |
- * avenants/<aid>/relancer | avenants/<aid>/signature-manuelle | signature/manuelle |
+ * avenants/<aid>/relancer | avenants/<aid>/signature-manuelle | etat-des-lieux/entree|sortie |
+ * caution/encaisser|restituer|retenir|valider | signature/manuelle |
  * factures/creer | recalculer | supprimer
  */
 export async function POST(

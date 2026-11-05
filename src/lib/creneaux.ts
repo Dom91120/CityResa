@@ -350,6 +350,42 @@ export function conflits<T extends Intervalle>(
   return out;
 }
 
+/**
+ * Conflits d'un espace partageable : une demande n'est en conflit que si, à un instant de son
+ * créneau (marges comprises), `capacite` occupations sont déjà en place. Capacité 1 = `conflits`.
+ * L'existant rapporté est celui qui porte l'occupation au plafond.
+ */
+export function conflitsCapacite<T extends Intervalle>(
+  demandes: Intervalle[],
+  existants: T[],
+  marges: { avantMin: number; apresMin: number } = { avantMin: 0, apresMin: 0 },
+  capacite = 1,
+): { demande: Intervalle; existant: T }[] {
+  if (capacite <= 1) return conflits(demandes, existants, marges);
+  const out: { demande: Intervalle; existant: T }[] = [];
+  for (const d of demandes) {
+    const dm = avecMarges(d, marges.avantMin, marges.apresMin);
+    const dedans = existants.filter((e) => chevauche(dm, e));
+    if (dedans.length < capacite) continue;
+    // Balayage des bornes : combien d'occupations se recouvrent à chaque instant du créneau.
+    const evenements = dedans
+      .flatMap((e) => [
+        { t: Math.max(e.startAt.getTime(), dm.startAt.getTime()), delta: 1, e },
+        { t: Math.min(e.endAt.getTime(), dm.endAt.getTime()), delta: -1, e },
+      ])
+      .sort((a, b) => a.t - b.t || a.delta - b.delta);
+    let courant = 0;
+    for (const ev of evenements) {
+      courant += ev.delta;
+      if (courant >= capacite) {
+        out.push({ demande: d, existant: ev.e });
+        break;
+      }
+    }
+  }
+  return out;
+}
+
 /** Bornes (premier début, dernière fin) d'un ensemble de créneaux. */
 export function bornes(creneaux: Intervalle[]): Intervalle {
   const startAt = new Date(Math.min(...creneaux.map((c) => c.startAt.getTime())));

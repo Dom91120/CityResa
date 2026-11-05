@@ -61,6 +61,7 @@ export type EspaceEntree = {
   bufferBeforeMin: number;
   bufferAfterMin: number;
   cautionAmount: number;
+  capaciteSimultanee: number;
   status: string;
   isActive: boolean;
   rules: string | null;
@@ -156,6 +157,7 @@ export function lireEspace(form: FormData, profilsConnus: string[]): EspaceEntre
     bufferBeforeMin: parseInt_(form.get("buffer_before_min"), 0, 0) ?? 0,
     bufferAfterMin: parseInt_(form.get("buffer_after_min"), 0, 0) ?? 0,
     cautionAmount: Math.max(0, parseFloat_(form.get("caution_amount"), 0) ?? 0),
+    capaciteSimultanee: parseInt_(form.get("capacite_simultanee"), 1, 1) ?? 1,
     status,
     isActive: status !== "inactif",
     rules: champOuNull(form, "rules"),
@@ -267,6 +269,7 @@ export type EspaceRegles = {
   bufferBeforeMin: number;
   bufferAfterMin: number;
   cautionAmount: number;
+  capaciteSimultanee?: number;
   requiresValidation: boolean;
 };
 
@@ -288,6 +291,10 @@ export function decrireRegles(e: EspaceRegles): string[] {
       `Montage ${e.bufferBeforeMin} min avant, démontage ${e.bufferAfterMin} min après chaque créneau`,
     );
   out.push(e.cautionAmount ? `Caution de ${montant(e.cautionAmount)}` : "Aucune caution");
+  if ((e.capaciteSimultanee ?? 1) > 1)
+    out.push(
+      `Espace partageable : jusqu'à ${e.capaciteSimultanee} réservations en même temps (pistes, bassin, terrain partagé)`,
+    );
   out.push(
     e.requiresValidation
       ? "Chaque demande est validée par un agent"

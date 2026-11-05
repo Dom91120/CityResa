@@ -3,12 +3,14 @@ import { Entete, MenuLien, MenuPost, MenuSep } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { StatutResa } from "@/components/macros";
 import { ScriptDiffere } from "@/components/scripts";
+import { fraisPrevus, lireBareme } from "@/lib/annulation";
 import { isoParis, nomCourt, plage } from "@/lib/libelles";
 import {
   CarteDecision,
   FilDiscussion,
   ModalesDecision,
   PanneauApprobation,
+  SectionCaution,
   SectionConvention,
   SectionDemandeur,
   SectionDocuments,
@@ -210,6 +212,13 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
             />
           ) : null}
           <SectionConvention r={r} features={features} csrf={csrf} peutDecider={peutDecider} />
+          <SectionCaution
+            r={r}
+            csrf={csrf}
+            peutDecider={peutDecider}
+            isAdmin={user.isAdmin}
+            seuil={user.settings.CAUTION_SEUIL_VALIDATION}
+          />
           {features.paiements && user.canView("paiements") ? (
             <SectionFactures
               r={r}
@@ -221,7 +230,13 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
         </div>
       </div>
 
-      {peutDecider ? <ModalesDecision r={r} csrf={csrf} /> : null}
+      {peutDecider ? (
+        <ModalesDecision
+          r={r}
+          csrf={csrf}
+          frais={fraisPrevus(r, lireBareme(user.settings.ANNULATION_BAREME))}
+        />
+      ) : null}
       {peutDecider && aTraiter ? (
         <PanneauApprobation
           r={r}

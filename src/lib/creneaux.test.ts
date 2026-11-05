@@ -5,6 +5,7 @@ import {
   bornesRecurrence,
   chevauche,
   conflits,
+  conflitsCapacite,
   dansHoraires,
   decrireRecurrence,
   developperRecurrence,
@@ -554,5 +555,49 @@ describe("horaires par saison", () => {
       }),
     ).toEqual([]);
     expect(reglesAuCreneau(regles, [], soirEte)).toBe(regles);
+  });
+});
+
+describe("conflitsCapacite (espace partageable)", () => {
+  const occ = (id: number, de: string, a: string) => ({
+    id,
+    libelle: `R${id}`,
+    ...cr("2026-11-04", de, a),
+  });
+  const demande = [cr("2026-11-04", "10:00", "12:00")];
+
+  it("capacité 1 : tout chevauchement est un conflit", () => {
+    expect(conflitsCapacite(demande, [occ(1, "11:00", "13:00")], undefined, 1)).toHaveLength(1);
+  });
+
+  it("capacité 2 : une seule occupation en place laisse passer", () => {
+    expect(conflitsCapacite(demande, [occ(1, "11:00", "13:00")], undefined, 2)).toHaveLength(0);
+  });
+
+  it("capacité 2 : deux occupations qui se recouvrent pendant la demande bloquent", () => {
+    const c = conflitsCapacite(
+      demande,
+      [occ(1, "09:00", "11:00"), occ(2, "10:30", "13:00")],
+      undefined,
+      2,
+    );
+    expect(c).toHaveLength(1);
+    expect(c[0].existant.id).toBe(2);
+  });
+
+  it("capacité 2 : deux occupations qui se succèdent sans se recouvrir laissent passer", () => {
+    expect(
+      conflitsCapacite(demande, [occ(1, "09:00", "11:00"), occ(2, "11:00", "13:00")], undefined, 2),
+    ).toHaveLength(0);
+  });
+
+  it("tient compte des marges de montage et démontage", () => {
+    const c = conflitsCapacite(
+      demande,
+      [occ(1, "08:00", "09:45"), occ(2, "09:30", "11:00")],
+      { avantMin: 30, apresMin: 0 },
+      2,
+    );
+    expect(c).toHaveLength(1);
   });
 });

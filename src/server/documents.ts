@@ -274,6 +274,17 @@ export async function peutLire(user: CurrentUser | null, doc: Document): Promise
     );
   }
   if (doc.organisationId) return doc.organisationId === user.organisationId;
+  if (doc.etatDesLieuxId) {
+    const e = await prisma.etatDesLieux.findUnique({
+      where: { id: doc.etatDesLieuxId },
+      select: { reservation: { select: { userId: true, organisationId: true } } },
+    });
+    return Boolean(
+      e &&
+        (e.reservation.userId === user.id ||
+          (user.organisationId && e.reservation.organisationId === user.organisationId)),
+    );
+  }
   if (doc.subventionId) {
     const s = await prisma.subvention.findUnique({
       where: { id: doc.subventionId },

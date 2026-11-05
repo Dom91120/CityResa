@@ -98,9 +98,9 @@ export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
     label: "Réservation annulée",
     subject: "Réservation {{numero}} annulée",
     body:
-      "<p>Bonjour {{prenom}},</p><p>La réservation <strong>{{numero}}</strong> ({{espace}}, {{dates}}) est annulée.</p><p>Motif : {{motif}}</p>" +
+      "<p>Bonjour {{prenom}},</p><p>La réservation <strong>{{numero}}</strong> ({{espace}}, {{dates}}) est annulée.</p><p>Motif : {{motif}}</p><p>{{frais}}</p>" +
       SIGNATURE,
-    aide: "Envoyé à l'usager, qu'il soit ou non à l'origine de l'annulation.",
+    aide: "Envoyé à l'usager, qu'il soit ou non à l'origine de l'annulation. {{frais}} annonce les frais d'annulation facturés selon le barème, s'il y en a.",
   },
   {
     key: "fermeture_exceptionnelle",
@@ -146,6 +146,24 @@ export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
       '<p>Bonjour {{prenom}},</p><p>L\'avenant {{avenant}} à la convention <strong>{{numero}}</strong> est signé le {{date_signature}}. Le document signé est disponible dans votre dossier : <a href="{{lien}}">{{lien}}</a></p>' +
       SIGNATURE,
     aide: "Confirmation envoyée après la signature d'un avenant, en ligne ou sur papier.",
+  },
+  {
+    key: "caution_restituee",
+    label: "Caution restituée (usager)",
+    subject: "Restitution de votre caution · réservation {{numero}}",
+    body:
+      "<p>Bonjour {{prenom}},</p><p>L'état des lieux de sortie de la réservation <strong>{{numero}}</strong> ({{espace}}, {{dates}}) n'appelle aucune remarque : votre caution de <strong>{{montant_caution}}</strong> vous est restituée en totalité ({{date}}).</p>" +
+      SIGNATURE,
+    aide: "Envoyé quand un agent restitue la caution après l'état des lieux de sortie.",
+  },
+  {
+    key: "caution_retenue",
+    label: "Caution retenue (usager)",
+    subject: "Retenue sur votre caution · réservation {{numero}}",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>À la suite de l\'état des lieux de sortie de la réservation <strong>{{numero}}</strong> ({{espace}}, {{dates}}), la collectivité retient <strong>{{montant_retenu}}</strong> sur votre caution de {{montant_caution}}.</p><p>Motif : {{motif}}</p><p>{{reste}} Les constats et photos sont consultables depuis votre dossier : <a href="{{lien}}">{{lien}}</a></p>' +
+      SIGNATURE,
+    aide: "Envoyé quand une retenue sur caution est décidée (ou validée, au-delà du seuil). {{reste}} précise le solde restitué.",
   },
   {
     key: "campagne_decisions",
