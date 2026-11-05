@@ -62,6 +62,7 @@ export type EspaceEntree = {
   bufferAfterMin: number;
   cautionAmount: number;
   capaciteSimultanee: number;
+  valorisationHoraire: number | null;
   status: string;
   isActive: boolean;
   rules: string | null;
@@ -158,6 +159,7 @@ export function lireEspace(form: FormData, profilsConnus: string[]): EspaceEntre
     bufferAfterMin: parseInt_(form.get("buffer_after_min"), 0, 0) ?? 0,
     cautionAmount: Math.max(0, parseFloat_(form.get("caution_amount"), 0) ?? 0),
     capaciteSimultanee: parseInt_(form.get("capacite_simultanee"), 1, 1) ?? 1,
+    valorisationHoraire: parseFloat_(form.get("valorisation_horaire"), null),
     status,
     isActive: status !== "inactif",
     rules: champOuNull(form, "rules"),

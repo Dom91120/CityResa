@@ -237,6 +237,24 @@ export function VoletReservations({ cfg }: { cfg: AppSettings }) {
           valeur={cfg.CAUTION_DELAI_RESTITUTION_JOURS}
           aide="Passé ce délai après la fin de l'événement, une caution encaissée ni restituée ni retenue apparaît dans les alertes."
         />
+        <Champ
+          label="Valorisation : seuil de convention obligatoire (€)"
+          name="VALORISATION_SEUIL_CONVENTION"
+          type="number"
+          min={0}
+          step="0.01"
+          valeur={cfg.VALORISATION_SEUIL_CONVENTION}
+          aide="Total des aides d'un exercice (avantages en nature + subventions) au-delà duquel une convention avec l'association est obligatoire (23 000 € par défaut)."
+        />
+        <Champ
+          label="Valorisation : seuil de certification des comptes (€)"
+          name="VALORISATION_SEUIL_CERTIFICATION"
+          type="number"
+          min={0}
+          step="0.01"
+          valeur={cfg.VALORISATION_SEUIL_CERTIFICATION}
+          aide="Au-delà, l'association doit faire certifier ses comptes (153 000 € par défaut)."
+        />
       </Grille>
       <div className="d-flex flex-column gap-2 mt-2 mb-3">
         <Interrupteur

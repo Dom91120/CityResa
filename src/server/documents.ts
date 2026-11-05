@@ -233,11 +233,11 @@ export async function deposerDocument(e: DepotEntree): Promise<Document> {
 
 /** Enregistre un PDF produit par l'application (convention, facture). */
 export async function enregistrerPdf(
-  kind: "reservation" | "subvention",
+  kind: "reservation" | "subvention" | "organisation",
   parentIdValue: number,
   filename: string,
   octets: Buffer,
-  docKind: "convention" | "avenant" | "facture" | "autre",
+  docKind: "convention" | "avenant" | "facture" | "attestation" | "autre",
   title?: string,
 ): Promise<Document> {
   const col = DOCUMENT_PARENTS[kind][0];

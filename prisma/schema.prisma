@@ -307,6 +307,8 @@ model Espace {
   cautionAmount Float   @default(0) @map("caution_amount")
   /// Réservations admises en même temps (1 = exclusif ; > 1 = espace partageable : pistes, bassin…).
   capaciteSimultanee Int @default(1) @map("capacite_simultanee")
+  /// Valeur de référence horaire (€/h) pour la valorisation des avantages en nature ; vide = grille « tous profils ».
+  valorisationHoraire Float? @map("valorisation_horaire")
   rules         String?
   instructions  String?
   /// actif | inactif | maintenance
@@ -528,6 +530,7 @@ model Organisation {
   factures     Facture[]
   subventions  Subvention[]
   voeux        Voeu[]
+  valorisations Valorisation[]
 
   @@index([type])
   @@map("organisation")
@@ -739,6 +742,32 @@ model Avenant {
   @@map("avenant")
 }
 
+/// Valorisation des avantages en nature d'une organisation sur un exercice, figée à la clôture :
+/// heures mises à disposition, valeur de référence, redevance perçue, avantage, subventions
+/// en numéraire et total (seuils de convention et de certification des comptes).
+model Valorisation {
+  id             Int          @id @default(autoincrement())
+  organisationId Int          @map("organisation_id")
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  exercice       Int
+  nbDossiers     Int          @default(0) @map("nb_dossiers")
+  heures         Float        @default(0)
+  valeurReference Float       @default(0) @map("valeur_reference")
+  redevance      Float        @default(0)
+  avantage       Float        @default(0)
+  subventions    Float        @default(0)
+  total          Float        @default(0)
+  figeeAt        DateTime     @default(now()) @map("figee_at") @db.Timestamptz
+  figeePar       String?      @map("figee_par") @db.VarChar(160)
+  /// L'attestation annuelle déposée sur la fiche de l'organisation.
+  documentId     Int?         @map("document_id")
+  document       Document?    @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  @@unique([organisationId, exercice])
+  @@index([exercice])
+  @@map("valorisation")
+}
+
 /// État des lieux d'entrée ou de sortie d'une réservation : observations, dégâts, photos
 /// (pièces rattachées), usager présent. La restitution de la caution attend celui de sortie.
 model EtatDesLieux {
@@ -879,8 +908,9 @@ model Document {
   uploadedBy   User?    @relation(fields: [uploadedById], references: [id])
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  content  DocumentContent?
-  avenants Avenant[]
+  content       DocumentContent?
+  avenants      Avenant[]
+  valorisations Valorisation[]
 
   @@index([espaceId])
   @@index([siteId])
