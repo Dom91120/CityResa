@@ -304,6 +304,7 @@ export const DOCUMENT_KINDS: Record<string, string> = {
   avenant: "Avenant",
   facture: "Facture",
   etat_des_lieux: "État des lieux",
+  attestation: "Attestation de valorisation",
   statuts: "Statuts",
   assurance: "Attestation d'assurance",
   autre: "Autre",

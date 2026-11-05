@@ -39,10 +39,11 @@ depuis l'interface, le flux ICS public par espace et une signature par code SMS 
 
 ## Avancement au 5 novembre 2026
 
-Les dix points de la priorité haute ont été livrés depuis la rédaction du rapport (branche
-`fermetures-exceptionnelles`, migrations `20261102140000_saisons_calendrier`,
+Les dix points de la priorité haute et le point 11 ont été livrés depuis la rédaction du rapport
+(branche `fermetures-exceptionnelles`, migrations `20261102140000_saisons_calendrier`,
 `20261102160000_validite_pieces`, `20261105100048_horaires_saison_avenants`,
-`20261105112816_campagnes` et `20261105115516_partage_annulation_caution`).
+`20261105112816_campagnes`, `20261105115516_partage_annulation_caution` et
+`20261105125943_valorisation`).
 
 | Point | Livré | Reste à faire |
 | --- | --- | --- |
@@ -55,6 +56,7 @@ Les dix points de la priorité haute ont été livrés depuis la rédaction du r
 | 7 — Caution et états des lieux | Cycle de la caution sur le dossier : attendue (dès l'acceptation) → encaissée (paiement de la facture de caution, ou constat d'un agent) → restituée ou retenue. États des lieux d'entrée et de sortie (observations, dégâts, usager présent, photos jointes visibles de l'usager). Restitution possible seulement après l'état des lieux de sortie ; retenue motivée, totale ou partielle, refusée sans constat ; au-delà du seuil `CAUTION_SEUIL_VALIDATION`, elle attend la validation d'un administrateur avant l'envoi à l'usager. Courriels « caution restituée » et « caution retenue », alertes du tableau de bord « cautions à clôturer depuis plus de N jours » (`CAUTION_DELAI_RESTITUTION_JOURS`) et « retenues à valider », filtres correspondants de la liste des réservations. Table `EtatDesLieux`, service `src/server/caution.ts`, règles dans `src/lib/caution.ts`. | Pas d'écran « Cautions » transverse : tout se fait depuis la fiche du dossier et les alertes. Pas de signature électronique de l'état des lieux (nom de l'usager présent seulement). |
 | 8 — Espaces partageables | Champ « Occupations simultanées » sur l'espace (1 = exclusif). La disponibilité refuse un créneau seulement quand ce nombre de réservations se recouvrent déjà à un même instant (balayage des bornes, marges comprises) ; un blocage bloque toujours. Règle `conflitsCapacite` dans `src/lib/creneaux.ts`, affichée dans les règles de la fiche de l'espace. | Le calendrier public du portail et le planning continuent de montrer un jour « occupé » dès la première réservation. |
 | 9 — Impressions au format calendrier | Planning hebdomadaire en PDF (A4 ou A3, paysage, noir et blanc, date d'édition, une page par espace, week-end grisé, fermetures hachurées, chevauchements en couloirs) depuis le menu « Imprimer » du planning, pour la sélection de sites et d'espaces en cours. Feuille de salle (PDF A4) depuis le planning d'un espace ou sa fiche : programme de la semaine, consignes, règlement et QR code vers la page publique de l'espace. Écran « Semaine type » (Planning › Semaine type) : les séries hebdomadaires acquises d'une saison ramenées sur une semaine, par espace, avec nombre de séances et lien vers le dossier, exportable en PDF A4 / A3. Règles dans `src/lib/editions.ts`, rendu dans `src/server/editions.ts`, script d'aperçu `scripts/apercu-editions.ts`. | Les éditions sont en noir et blanc par choix (photocopie, affichage) ; pas de version couleur ni de planning mensuel imprimable. |
+| 11 — Valorisation des avantages en nature | Écran « Valorisation » (module ASSO, droit Subventions) par exercice civil : pour chaque organisation, dossiers acquis dont des créneaux tombent dans l'année, heures, valeur de référence (grille « tous profils » de l'espace, ou valeur horaire de valorisation fixée sur l'espace : coût de revient, valeur locative), redevance réellement due au prorata des heures, avantage en nature, subventions votées ou versées, total des aides, seuils réglables de convention obligatoire (23 000 €) et de certification des comptes (153 000 €) avec signalement des associations non conventionnées. Attestation annuelle en PDF par organisation, déposée sur sa fiche (visible sur le portail dans ses documents), annexe du compte administratif en CSV, clôture qui fige les montants (table `Valorisation`) et rééditer les attestations ; alerte du tableau de bord. Règles dans `src/lib/valorisation.ts`, service `src/server/valorisation.ts`. | Le matériel est compté au tarif de l'espace via le devis de référence ; le personnel (gardiennage) n'est pas valorisé. Une organisation « particulier » ou « entreprise » apparaît avec un avantage nul quand sa redevance dépasse la valeur de référence. |
 | 10 — Alertes du tableau de bord | Bloc d'alertes à compteurs cliquables vers la liste filtrée : pièces expirées ou bientôt expirées, factures échues, conventions non signées malgré la relance, demandes sans réponse depuis plus de sept jours, fiches à valider, messages (`src/server/alertes.ts`). Compteurs « cautions à clôturer » et « retenues à valider » ajoutés le 5 novembre avec le point 7. | Compteurs « options expirantes » et « contrôles matériel » quand les points 13 et 23 existeront. |
 
 Le point 26 (notifications groupées) est couvert par le courriel de fermeture et par le courriel
@@ -86,7 +88,7 @@ Valeur réelle mais effort plus important ou dépendant d'une décision de la Vi
 
 | # | Fonctionnalité | Réf. Résagora | Situation CityRésa | Remarques |
 | --- | --- | --- | --- | --- |
-| 11 | **Valorisation des avantages en nature** : méthode par famille d'espace (tarif de référence, coût de revient, valeur locative), calcul par association et par exercice (espaces, matériel, personnel), **attestation annuelle** déposée sur le portail, **annexe du compte administratif** exportable, alertes de seuil **23 000 €** (convention obligatoire) et 153 000 € en cumulant les subventions en numéraire, montants figés à la clôture | VAL-01 à VAL-08, RG-05, RG-12 | Seule une « valeur des gratuités » apparaît dans les statistiques | Synergie directe avec le module ASSO : le seuil de 23 000 € additionne subventions et mises à disposition. Suppose de conserver un tarif de référence même en gratuité (déjà le cas : lignes à zéro gardées « pour mémoire ») |
+| 11 | **Valorisation des avantages en nature** : méthode par famille d'espace (tarif de référence, coût de revient, valeur locative), calcul par association et par exercice (espaces, matériel, personnel), **attestation annuelle** déposée sur le portail, **annexe du compte administratif** exportable, alertes de seuil **23 000 €** (convention obligatoire) et 153 000 € en cumulant les subventions en numéraire, montants figés à la clôture | VAL-01 à VAL-08, RG-05, RG-12 | **Réalisé le 5 novembre** (voir Avancement) | Écran `/valorisation`, attestation PDF, annexe CSV, clôture figée, alerte de seuil ; règles dans `src/lib/valorisation.ts` |
 | 12 | **Grilles tarifaires datées et votées** : date de validité, référence de délibération ; **tarif en vigueur à la date d'occupation**, figé sur le devis accepté ; gratuité ou réduction avec **fondement obligatoire** | TAR-01, TAR-03, TAR-04, RG-04 | Grille sans date ; vérifier que la modification d'une grille ne recalcule pas un dossier accepté | Permet de préparer les tarifs de l'année suivante à l'avance |
 | 13 | **Options (pré-réservations) avec date d'expiration**, relance puis libération automatique ; **liste d'attente** sur un créneau occupé, notifiée à la libération | PLA-08, PLA-09, RG-07 | Statut « en traitement » sans échéance ; pas de liste d'attente | Tâche planifiée dans `src/server/taches.ts` |
 | 14 | **Alternatives en cas de conflit** : proposer trois créneaux ou espaces libres équivalents | PLA-07 | Refus simple du créneau | Portail et back-office |
@@ -130,8 +132,10 @@ Ville ne l'exige pas.
 5. ~~**Campagne annuelle** (point 2)~~ : livré le 5 novembre.
 6. ~~**Caution et états des lieux** (point 7), **frais d'annulation** (point 6), **espaces partageables** (point 8)~~ : livrés le 5 novembre.
 7. ~~**Éditions PDF au format calendrier et semaine type** (point 9)~~ : livré le 5 novembre.
-8. **Valorisation des avantages en nature** (point 11), en lien avec le module ASSO : prochaine étape.
-9. Ensuite, selon les décisions de la Ville : finances Ciril, PayFiP, modèles .docx, RGPD.
+8. ~~**Valorisation des avantages en nature** (point 11)~~ : livré le 5 novembre.
+9. Ensuite, selon les décisions de la Ville : finances Ciril, PayFiP, modèles .docx, RGPD ; parmi les
+   points de priorité moyenne sans décision à attendre, les plus utiles sont les grilles tarifaires
+   datées (12), les options avec expiration et la liste d'attente (13) et le RGPD (22).
 
 Chaque point se déclare comme module dans `src/server/features.ts` quand il est débrayable, ses
 règles vont dans `src/lib` (testées) ou `src/server/reservations.ts`, et toute évolution du

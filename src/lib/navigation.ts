@@ -68,6 +68,7 @@ export const GENERAL: NavDomaine = {
         "subventions",
       ),
     ),
+    t("lime", e("/valorisation", "Valorisation", "handshake", "subventions", null, "subventions")),
     t("sky", e("/statistiques", "Statistiques", "chart-column")),
   ],
 };

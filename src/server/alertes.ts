@@ -10,6 +10,7 @@ import type { AppSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { allFlagsIn } from "@/server/features";
 import type { CurrentUser } from "@/server/guards";
+import { organisationsSansConvention } from "@/server/valorisation";
 
 export type Alerte = {
   cle: string;
@@ -88,6 +89,21 @@ export async function alertes(
         detail: "Les usagers concernés sont prévenus par courriel.",
         nb: bientot.size,
         href: "/usagers?type=pieces",
+      });
+  }
+
+  if (features.subventions && user.canView("subventions")) {
+    const n = await organisationsSansConvention(cfg).catch(() => 0);
+    if (n)
+      out.push({
+        cle: "valorisation_convention",
+        niveau: "warning",
+        icone: "handshake",
+        titre: `${n} association${n > 1 ? "s" : ""} dépasse${n > 1 ? "nt" : ""} ${Math.round(cfg.VALORISATION_SEUIL_CONVENTION).toLocaleString("fr-FR")} € d'aides sans convention`,
+        detail:
+          "Avantages en nature et subventions de l'exercice : une convention d'objectifs est obligatoire.",
+        nb: n,
+        href: "/valorisation",
       });
   }
 

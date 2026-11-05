@@ -479,6 +479,15 @@ export function FormulaireEspace({
             aide="0 = aucune caution."
           />
           <Champ
+            label="Valeur de référence (€/h)"
+            name="valorisation_horaire"
+            type="number"
+            min={0}
+            step="0.01"
+            valeur={espace?.valorisationHoraire}
+            aide="Pour la valorisation des avantages en nature (coût de revient ou valeur locative). Vide = grille tarifaire « tous profils »."
+          />
+          <Champ
             label="Délai minimal (jours)"
             name="delay_min_days"
             type="number"
