@@ -94,7 +94,7 @@ export async function materielsPour(
       materiel: m,
       dispo: fenetre
         ? await stockDisponible(m.id, fenetre.de, fenetre.a, excludeReservationId)
-        : m.stockTotal,
+        : m.stockTotal - m.horsService,
     })),
   );
 }

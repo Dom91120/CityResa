@@ -2,6 +2,7 @@ import { Vignette } from "@/components/documents";
 import { Icone } from "@/components/icones";
 import { Barre, Filtre, PaginationBar, Th, trier, Vide } from "@/components/liste";
 import { Chip } from "@/components/macros";
+import { controleEnRetard } from "@/lib/materiel-stock";
 import {
   categoriesMateriel,
   premieresPhotosMateriel,
@@ -31,13 +32,16 @@ export default async function MaterielPage({ searchParams }: { searchParams: Pro
       ...m,
       categorieNom: m.categorie?.label ?? "",
       mobilise: mob,
-      disponible: Math.max(0, m.stockTotal - mob),
+      disponible: Math.max(0, m.stockTotal - m.horsService - mob),
+      controleRetard: controleEnRetard(m),
       tarif: tarifMateriel(m),
     };
   });
   if (catF) items = items.filter((m) => String(m.categorieId ?? "") === catF);
   if (etat === "actifs") items = items.filter((m) => m.isActive);
   if (etat === "inactifs") items = items.filter((m) => !m.isActive);
+  if (etat === "hors_service") items = items.filter((m) => m.horsService > 0);
+  if (etat === "controle") items = items.filter((m) => m.controleRetard);
   items = textSearch(items, q, ["name", "categorieNom", "description"]);
   items = trier(
     items,
@@ -98,6 +102,8 @@ export default async function MaterielPage({ searchParams }: { searchParams: Pro
               options={[
                 ["actifs", "Actifs"],
                 ["inactifs", "Inactifs"],
+                ["hors_service", "Avec unités hors service"],
+                ["controle", "Contrôle en retard"],
               ]}
             />
           </>
@@ -172,7 +178,17 @@ export default async function MaterielPage({ searchParams }: { searchParams: Pro
                         </span>
                       </td>
                       <td>{m.categorieNom || <span className="text-faint">—</span>}</td>
-                      <td className="text-end tabular">{m.stockTotal}</td>
+                      <td className="text-end tabular">
+                        <span className="cell2">
+                          <span>{m.stockTotal}</span>
+                          {m.horsService ? (
+                            <small className="text-danger">{m.horsService} hors service</small>
+                          ) : null}
+                          {m.controleRetard ? (
+                            <small className="text-warning-emphasis">contrôle en retard</small>
+                          ) : null}
+                        </span>
+                      </td>
                       <td className="text-end tabular">{m.mobilise}</td>
                       <td className="text-end tabular">
                         <Chip

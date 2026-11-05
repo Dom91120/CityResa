@@ -413,11 +413,17 @@ model Materiel {
   /// gratuit | forfait | unite | jour
   unite       String       @default("gratuit") @db.VarChar(16)
   isActive    Boolean      @default(true) @map("is_active")
+  /// Unités indisponibles (en panne, perdues) : retirées du stock utilisable.
+  horsService Int          @default(0) @map("hors_service")
+  /// Périodicité du contrôle (mois) ; null = pas de contrôle périodique.
+  controleMois      Int?      @map("controle_mois")
+  dernierControleAt DateTime? @map("dernier_controle_at") @db.Timestamptz
   createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   reservations ReservationMateriel[]
   documents    Document[]
+  mouvements   MouvementMateriel[]
 
   @@map("materiel")
 }
@@ -650,6 +656,7 @@ model Reservation {
   factures  Facture[]
   histories ReservationHistory[]
   avenants  Avenant[]
+  mouvementsMateriel MouvementMateriel[]
   voeu      Voeu?
   etatsDesLieux EtatDesLieux[]
 
@@ -707,9 +714,31 @@ model ReservationMateriel {
   materiel      Materiel    @relation(fields: [materielId], references: [id])
   quantite      Int         @default(1)
   montant       Float       @default(0)
+  /// Sortie du stock remise à l’usager, retour constaté, unités manquantes au retour.
+  sortieAt      DateTime?   @map("sortie_at") @db.Timestamptz
+  retourAt      DateTime?   @map("retour_at") @db.Timestamptz
+  manquants     Int         @default(0)
 
   @@id([reservationId, materielId])
   @@map("reservation_materiel")
+}
+
+/// Journal des mouvements d’un matériel : sortie et retour pour un dossier, perte, panne, remise en service, contrôle.
+model MouvementMateriel {
+  id            Int          @id @default(autoincrement())
+  materielId    Int          @map("materiel_id")
+  materiel      Materiel     @relation(fields: [materielId], references: [id], onDelete: Cascade)
+  reservationId Int?         @map("reservation_id")
+  reservation   Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+  /// sortie | retour | perte | panne | reparation | controle
+  kind          String       @db.VarChar(12)
+  quantite      Int          @default(0)
+  note          String?      @db.VarChar(300)
+  createdBy     String       @map("created_by") @db.VarChar(160)
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([materielId, createdAt])
+  @@map("mouvement_materiel")
 }
 
 /// Fil de discussion d'une réservation ; `isInternal` = note interne aux agents.

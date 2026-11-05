@@ -18,6 +18,7 @@ export type MaterielEntree = {
   montant: number;
   unite: string;
   isActive: boolean;
+  controleMois: number | null;
 };
 
 export function lireMateriel(form: FormData): MaterielEntree {
@@ -35,6 +36,7 @@ export function lireMateriel(form: FormData): MaterielEntree {
     montant: unite === "gratuit" ? 0 : Math.round(m * 100) / 100,
     unite,
     isActive: coche(form, "is_active"),
+    controleMois: parseInt_(form.get("controle_mois"), null, 1),
   };
 }
 
