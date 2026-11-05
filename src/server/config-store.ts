@@ -36,8 +36,9 @@ export const INT_KEYS = new Set([
   "DELAI_ANNULATION_JOURS",
   "SIGNATURE_VALIDITE_HEURES",
   "ALERTE_PIECES_JOURS",
+  "CAUTION_DELAI_RESTITUTION_JOURS",
 ]);
-export const FLOAT_KEYS = new Set(["TVA_TAUX", "ACOMPTE_PCT"]);
+export const FLOAT_KEYS = new Set(["TVA_TAUX", "ACOMPTE_PCT", "CAUTION_SEUIL_VALIDATION"]);
 
 /** Ensemble des clés gérées en base (= celles écrites par la page Paramètres). */
 export const MANAGED = new Set<string>([
@@ -48,6 +49,7 @@ export const MANAGED = new Set<string>([
   "COLLECTIVITE_ADRESSE",
   "COLLECTIVITE_EMAIL",
   "PIECES_REGLE",
+  "ANNULATION_BAREME",
   "COLLECTIVITE_TELEPHONE",
   "COLLECTIVITE_SITE_WEB",
   "COLLECTIVITE_SIGNATAIRE",
@@ -131,6 +133,12 @@ export type AppSettings = EnvOnly & {
   ALERTE_PIECES_JOURS: number;
   /** avertir | depot | acceptation : effet des pièces attendues manquantes ou expirées. */
   PIECES_REGLE: string;
+  /** Barème de frais d'annulation « 30:0;7:50;0:100 » (jours avant : % du TTC) ; vide = aucun. */
+  ANNULATION_BAREME: string;
+  /** Au-delà de ce montant (€), une retenue sur caution attend la validation d'un administrateur. */
+  CAUTION_SEUIL_VALIDATION: number;
+  /** Jours après la fin de l'événement avant qu'une caution non restituée soit en alerte. */
+  CAUTION_DELAI_RESTITUTION_JOURS: number;
   CONVENTION_TEXTE: string;
   AGENTS_NOTIFIES: string;
   BACKUP_DB_KEEP: number;
@@ -229,6 +237,9 @@ export function envDefaults(): AppSettings {
     SIGNATURE_VALIDITE_HEURES: envInt("SIGNATURE_VALIDITE_HEURES", 72),
     ALERTE_PIECES_JOURS: envInt("ALERTE_PIECES_JOURS", 30),
     PIECES_REGLE: envStr("PIECES_REGLE", "avertir"),
+    ANNULATION_BAREME: envStr("ANNULATION_BAREME", ""),
+    CAUTION_SEUIL_VALIDATION: envFloat("CAUTION_SEUIL_VALIDATION", 500),
+    CAUTION_DELAI_RESTITUTION_JOURS: envInt("CAUTION_DELAI_RESTITUTION_JOURS", 30),
     CONVENTION_TEXTE: envStr("CONVENTION_TEXTE", CONVENTION_TEXTE_DEFAUT),
     AGENTS_NOTIFIES: envStr("AGENTS_NOTIFIES", ""),
     BACKUP_DB_KEEP: envInt("BACKUP_DB_KEEP", 14),

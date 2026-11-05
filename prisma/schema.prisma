@@ -305,6 +305,8 @@ model Espace {
   bufferAfterMin  Int @default(0) @map("buffer_after_min")
   /// Caution demandée (€), 0 = aucune.
   cautionAmount Float   @default(0) @map("caution_amount")
+  /// Réservations admises en même temps (1 = exclusif ; > 1 = espace partageable : pistes, bassin…).
+  capaciteSimultanee Int @default(1) @map("capacite_simultanee")
   rules         String?
   instructions  String?
   /// actif | inactif | maintenance
@@ -584,6 +586,18 @@ model Reservation {
   /// Gratuité accordée (mise à disposition à titre gracieux).
   gratuit    Boolean @default(false)
 
+  // ── Cycle de la caution ──
+  /// aucune | attendue | encaissee | restituee | retenue | retenue_a_valider
+  cautionStatus      String    @default("aucune") @map("caution_status") @db.VarChar(20)
+  cautionEncaisseeAt DateTime? @map("caution_encaissee_at") @db.Timestamptz
+  cautionClotureeAt  DateTime? @map("caution_cloturee_at") @db.Timestamptz
+  /// Part retenue (€) ; le reste est restitué.
+  cautionRetenue     Float     @default(0) @map("caution_retenue")
+  cautionMotif       String?   @map("caution_motif")
+  cautionDecideePar  String?   @map("caution_decidee_par") @db.VarChar(160)
+  /// Seconde validation (administrateur) d'une retenue au-delà du seuil.
+  cautionValideePar  String?   @map("caution_validee_par") @db.VarChar(160)
+
   // ── Convention et signature électronique ──
   conventionDocumentId Int?      @map("convention_document_id")
   signatureChannel     String?   @map("signature_channel") @db.VarChar(10)
@@ -610,6 +624,7 @@ model Reservation {
   histories ReservationHistory[]
   avenants  Avenant[]
   voeu      Voeu?
+  etatsDesLieux EtatDesLieux[]
 
   @@index([espaceId, startAt])
   @@index([organisationId])
@@ -724,6 +739,28 @@ model Avenant {
   @@map("avenant")
 }
 
+/// État des lieux d'entrée ou de sortie d'une réservation : observations, dégâts, photos
+/// (pièces rattachées), usager présent. La restitution de la caution attend celui de sortie.
+model EtatDesLieux {
+  id            Int         @id @default(autoincrement())
+  reservationId Int         @map("reservation_id")
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  /// entree | sortie
+  kind          String      @db.VarChar(8)
+  doneAt        DateTime    @default(now()) @map("done_at") @db.Timestamptz
+  agent         String      @db.VarChar(160)
+  observations  String?
+  degats        Boolean     @default(false)
+  /// Nom de l'usager présent, s'il a contresigné sur place.
+  signataire    String?     @db.VarChar(160)
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz
+
+  documents Document[]
+
+  @@unique([reservationId, kind])
+  @@map("etat_des_lieux")
+}
+
 // ============================================================
 //  Campagnes annuelles d'attribution des créneaux
 // ============================================================
@@ -835,6 +872,8 @@ model Document {
   reservation    Reservation?  @relation(fields: [reservationId], references: [id], onDelete: Cascade)
   subventionId   Int?          @map("subvention_id")
   subvention     Subvention?   @relation(fields: [subventionId], references: [id], onDelete: Cascade)
+  etatDesLieuxId Int?          @map("etat_des_lieux_id")
+  etatDesLieux   EtatDesLieux? @relation(fields: [etatDesLieuxId], references: [id], onDelete: Cascade)
 
   uploadedById String?  @map("uploaded_by_id")
   uploadedBy   User?    @relation(fields: [uploadedById], references: [id])

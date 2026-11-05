@@ -6,14 +6,22 @@
  */
 import { RESERVATION_STATUS, type ReservationStatus } from "@/lib/constantes";
 import { reglesAuCreneau, verifierRegles } from "@/lib/creneaux";
-import { champ, champOuNull, coche, idOuNull, parseInt_ } from "@/lib/forms-util";
+import { champ, champOuNull, coche, idOuNull, parseFloat_, parseInt_ } from "@/lib/forms-util";
 import { montant, plage } from "@/lib/libelles";
 import { lirePortee, phraseDeplacement } from "@/lib/serie";
 import { lireChoix, lireCreneau, lireDemande } from "@/modules/reservations/formulaire";
 import { auditRecord } from "@/server/audit";
 import { courrielAvenantASigner, libelleAvenant, signerAvenantPapier } from "@/server/avenant";
+import {
+  enregistrerEtatDesLieux,
+  marquerCautionEncaissee,
+  restituerCaution,
+  retenirCaution,
+  validerRetenue,
+} from "@/server/caution";
 import { genererConvention } from "@/server/convention";
 import { prisma } from "@/server/db";
+import { type FichierLu, lireFichier } from "@/server/documents";
 import { UserFacingError } from "@/server/errors";
 import { creerFacture } from "@/server/factures";
 import { enabledIn } from "@/server/features";
@@ -215,6 +223,7 @@ async function statut({ user, r, fiche }: Contexte, form: FormData): Promise<Res
   const maj = await changerStatut(r.id, nouveau, user, {
     motif: motif ?? undefined,
     message: message ?? undefined,
+    sansFrais: coche(form, "sans_frais"),
   });
   if (nouveau === "acceptee" && message) await ajouterMessage(r.id, user, message, false);
   const label = RESERVATION_STATUS[maj.status as ReservationStatus].label;
@@ -505,6 +514,81 @@ export async function actionReservation(
           if (!cid) return pasTrouve();
           if (segments[2] === "annuler") return await annulerCreneau(ctx, cid);
           if (segments[2] === "modifier") return await modifierCreneau(ctx, cid, form);
+        }
+        if (segments[0] === "etat-des-lieux" && segments.length === 2) {
+          const kind = segments[1];
+          if (kind !== "entree" && kind !== "sortie") return pasTrouve();
+          const photos: FichierLu[] = [];
+          for (const f of form.getAll("photos")) {
+            if (typeof f === "string" || !(f.name || "").trim()) continue;
+            const lu = await lireFichier(user.settings, f, { imagesSeulement: true });
+            if (typeof lu === "string") throw new UserFacingError(lu);
+            photos.push(lu);
+          }
+          await enregistrerEtatDesLieux(
+            r,
+            kind,
+            {
+              observations: champOuNull(form, "observations"),
+              degats: coche(form, "degats"),
+              signataire: champOuNull(form, "signataire"),
+            },
+            photos,
+            { name: user.name, email: user.email, id: user.id },
+          );
+          return redirigerAvecMessage(
+            `${fiche}#caution`,
+            `État des lieux ${kind === "entree" ? "d'entrée" : "de sortie"} enregistré${photos.length ? ` avec ${photos.length} photo(s)` : ""}.`,
+            "success",
+          );
+        }
+        if (segments[0] === "caution" && segments.length === 2) {
+          const acteur = { name: user.name, email: user.email };
+          switch (segments[1]) {
+            case "encaisser":
+              await marquerCautionEncaissee(r, acteur);
+              return redirigerAvecMessage(
+                `${fiche}#caution`,
+                "Caution marquée encaissée.",
+                "success",
+              );
+            case "restituer":
+              await restituerCaution(r, acteur);
+              return redirigerAvecMessage(
+                `${fiche}#caution`,
+                "Caution restituée ; l'usager est prévenu.",
+                "success",
+              );
+            case "retenir": {
+              const statutCaution = await retenirCaution(
+                r,
+                parseFloat_(form.get("montant"), 0) ?? 0,
+                champOuNull(form, "motif"),
+                acteur,
+                user.settings,
+              );
+              return redirigerAvecMessage(
+                `${fiche}#caution`,
+                statutCaution === "retenue"
+                  ? "Retenue enregistrée ; l'usager est prévenu."
+                  : "Retenue enregistrée : au-delà du seuil, elle attend la validation d'un administrateur avant l'envoi à l'usager.",
+                statutCaution === "retenue" ? "success" : "warning",
+              );
+            }
+            case "valider":
+              if (!user.isAdmin)
+                throw new UserFacingError(
+                  "La validation d'une retenue est réservée aux administrateurs.",
+                );
+              await validerRetenue(r, acteur);
+              return redirigerAvecMessage(
+                `${fiche}#caution`,
+                "Retenue validée ; l'usager est prévenu.",
+                "success",
+              );
+            default:
+              return pasTrouve();
+          }
         }
         if (segments[0] === "avenants" && segments.length === 3) {
           const aid = parseInt_(segments[1], null, 1);

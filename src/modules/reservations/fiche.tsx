@@ -18,7 +18,10 @@ import {
   TypeOrganisation,
 } from "@/components/macros";
 import type { Option, Prisma, Referential, ReservationHistory } from "@/generated/prisma/client";
+import type { FraisPrevus } from "@/lib/annulation";
+import { CAUTION_STATUS, lireStatutCaution } from "@/lib/caution";
 import {
+  FACTURE_STATUS,
   FACTURE_TYPES,
   RESERVATION_SOURCES,
   RESERVATION_STATUS,
@@ -43,7 +46,7 @@ import { ChoixMateriel, ChoixOptions } from "@/modules/reservations/champs";
 import { contactDe } from "@/modules/reservations/requetes";
 import type { MaterielDispo } from "@/modules/reservations/saisie";
 import { libelleAvenant } from "@/server/avenant";
-import type { DocumentAvecCategorie } from "@/server/documents";
+import { type DocumentAvecCategorie, estImage } from "@/server/documents";
 import type { FeatureFlags } from "@/server/features";
 import type { ReservationComplete } from "@/server/reservations";
 
@@ -614,7 +617,16 @@ export function PanneauApprobation({
 
 // ── Modales ──
 
-export function ModalesDecision({ r, csrf }: { r: ReservationComplete; csrf: string }) {
+export function ModalesDecision({
+  r,
+  csrf,
+  frais = null,
+}: {
+  r: ReservationComplete;
+  csrf: string;
+  /** Les frais d'annulation qu'entraînerait une annulation maintenant (barème). */
+  frais?: FraisPrevus | null;
+}) {
   const action = `/reservations/${r.id}/statut`;
   return (
     <>
@@ -680,6 +692,27 @@ export function ModalesDecision({ r, csrf }: { r: ReservationComplete; csrf: str
           Motif <span className="req">*</span>
         </label>
         <textarea name="motif" id="annul-motif" className="form-control" rows={3} required />
+        {frais ? (
+          <>
+            <div className="alert alert-warning small mt-3 mb-2">
+              <Icone nom="triangle-alert" taille={14} /> Annulation à {frais.jours} jour
+              {frais.jours > 1 ? "s" : ""} du début : le barème prévoit des frais de{" "}
+              <strong>{montant(frais.montant)}</strong> ({frais.taux} % du montant), facturés à
+              l'usager.
+            </div>
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                name="sans_frais"
+                id="annul-sans-frais"
+              />
+              <label className="form-check-label" htmlFor="annul-sans-frais">
+                Annuler sans frais (geste commercial, annulation du fait de la Ville…)
+              </label>
+            </div>
+          </>
+        ) : null}
       </ModalAction>
 
       <ModalAction
@@ -1281,6 +1314,325 @@ export function SectionDocuments({
             </div>
           ) : null}
         </div>
+      ) : null}
+    </Section>
+  );
+}
+
+/** Un état des lieux (entrée ou sortie) : constat, photos. */
+function BlocEtatDesLieux({
+  edl,
+  kind,
+  peutDecider,
+  r,
+}: {
+  edl: ReservationComplete["etatsDesLieux"][number] | undefined;
+  kind: "entree" | "sortie";
+  peutDecider: boolean;
+  r: ReservationComplete;
+}) {
+  const libelle = kind === "entree" ? "État des lieux d'entrée" : "État des lieux de sortie";
+  return (
+    <div className="mb-3">
+      <div className="d-flex align-items-center justify-content-between mb-1">
+        <span className="form-label mb-0">{libelle}</span>
+        {peutDecider ? (
+          <BoutonOuvrir
+            cible={`modal-edl-${kind}`}
+            libelle={edl ? "Compléter" : "Faire l'état des lieux"}
+            icone={edl ? "pencil" : "clipboard-check"}
+            classe="btn-ghost btn-sm"
+          />
+        ) : null}
+      </div>
+      {edl ? (
+        <div className="small">
+          <div>
+            {dateHeure(edl.doneAt)} par {edl.agent}
+            {edl.signataire ? ` · en présence de ${edl.signataire}` : ""}
+            {" · "}
+            {edl.degats ? (
+              <Chip teinte="red">Dégâts constatés</Chip>
+            ) : (
+              <Chip teinte="emerald">Sans dégât</Chip>
+            )}
+          </div>
+          {edl.observations ? (
+            <div className="text-muted" style={{ whiteSpace: "pre-wrap" }}>
+              {edl.observations}
+            </div>
+          ) : null}
+          {edl.documents.length ? (
+            <div className="d-flex flex-wrap gap-2 mt-2">
+              {edl.documents.map((d) => (
+                <a
+                  key={d.id}
+                  href={`/documents/${d.id}/view`}
+                  target="_blank"
+                  rel="noopener"
+                  title={d.filename}
+                >
+                  {estImage(d) ? (
+                    <img
+                      src={`/documents/${d.id}/thumb`}
+                      alt={d.filename}
+                      className="vignette"
+                      style={{ width: 96, height: 72, objectFit: "cover", borderRadius: 6 }}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span className="btn btn-ghost btn-sm">
+                      <Icone nom="paperclip" taille={14} /> {d.filename}
+                    </span>
+                  )}
+                </a>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <p className="text-muted small mb-0">
+          {kind === "entree"
+            ? "À faire à la remise des clés : point de départ en cas de litige."
+            : `Indispensable avant de restituer ou retenir la caution${r.caution > 0 ? ` (${montant(r.caution)})` : ""}.`}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** Caution et états des lieux : cycle de la caution, constats d'entrée et de sortie, décisions. */
+export function SectionCaution({
+  r,
+  csrf,
+  peutDecider,
+  isAdmin,
+  seuil,
+}: {
+  r: ReservationComplete;
+  csrf: string;
+  peutDecider: boolean;
+  isAdmin: boolean;
+  seuil: number;
+}) {
+  const statut = lireStatutCaution(r.cautionStatus);
+  const s = CAUTION_STATUS[statut];
+  const entree = r.etatsDesLieux.find((e) => e.kind === "entree");
+  const sortie = r.etatsDesLieux.find((e) => e.kind === "sortie");
+  const acquis = ["acceptee", "signee", "confirmee", "terminee"].includes(r.status);
+  const factureCaution = r.factures.find((f) => f.type === "caution" && f.status !== "annulee");
+  const peutCloturer = statut === "encaissee" && Boolean(sortie);
+  const ouverte = r.caution > 0 && statut !== "restituee" && statut !== "retenue";
+  const ici = `/reservations/${r.id}`;
+  return (
+    <Section
+      titre="Caution & états des lieux"
+      icone="piggy-bank"
+      id="caution"
+      ouverte={ouverte && acquis}
+    >
+      <Lus intitule="110px">
+        <Lu
+          label="Caution"
+          valeur={
+            r.caution > 0 ? (
+              <span className="d-flex align-items-center gap-2 flex-wrap">
+                <strong>{montant(r.caution)}</strong>
+                <Chip teinte={s.teinte} titre={s.aide}>
+                  {s.label}
+                </Chip>
+              </span>
+            ) : (
+              <span className="text-muted">Aucune caution demandée</span>
+            )
+          }
+        />
+        {r.caution > 0 ? (
+          <Lu
+            label="Facture"
+            valeur={
+              factureCaution ? (
+                <a href={`/paiements/${factureCaution.id}`}>
+                  {factureCaution.numero} ·{" "}
+                  {FACTURE_STATUS[factureCaution.status]?.label ?? factureCaution.status}
+                </a>
+              ) : null
+            }
+            tiret
+          />
+        ) : null}
+        <Lu label="Encaissée le" valeur={dateHeure(r.cautionEncaisseeAt)} tiret />
+        {statut === "retenue" || statut === "retenue_a_valider" ? (
+          <>
+            <Lu
+              label="Retenue"
+              valeur={`${montant(r.cautionRetenue)} par ${r.cautionDecideePar ?? "—"}`}
+            />
+            <Lu label="Motif" valeur={r.cautionMotif} pleine pre />
+            <Lu label="Validée par" valeur={r.cautionValideePar} tiret />
+          </>
+        ) : null}
+        {statut === "restituee" ? (
+          <Lu label="Restituée le" valeur={dateHeure(r.cautionClotureeAt)} />
+        ) : null}
+      </Lus>
+
+      {acquis ? (
+        <div className="mt-3">
+          <BlocEtatDesLieux edl={entree} kind="entree" peutDecider={peutDecider} r={r} />
+          <BlocEtatDesLieux edl={sortie} kind="sortie" peutDecider={peutDecider} r={r} />
+        </div>
+      ) : (
+        <p className="text-muted small mt-2 mb-0">
+          Les états des lieux se font une fois la réservation acquise.
+        </p>
+      )}
+
+      {peutDecider && r.caution > 0 ? (
+        <div className="d-flex flex-wrap gap-2 mt-2">
+          {statut === "attendue" || statut === "aucune" ? (
+            <form method="POST" action={`${ici}/caution/encaisser`} className="d-inline">
+              <input type="hidden" name="csrf_token" value={csrf} />
+              <button type="submit" className="btn btn-outline-secondary btn-sm">
+                <Icone nom="banknote" taille={14} /> Marquer encaissée
+              </button>
+            </form>
+          ) : null}
+          {statut === "encaissee" ? (
+            <>
+              <form method="POST" action={`${ici}/caution/restituer`} className="d-inline">
+                <input type="hidden" name="csrf_token" value={csrf} />
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-sm"
+                  disabled={!peutCloturer}
+                  title={peutCloturer ? undefined : "Faites d'abord l'état des lieux de sortie"}
+                  data-confirm={`Restituer la caution de ${montant(r.caution)} en totalité ? L'usager est prévenu par courriel.`}
+                >
+                  <Icone nom="check" taille={14} /> Restituer
+                </button>
+              </form>
+              <BoutonOuvrir
+                cible="modal-retenir"
+                libelle="Retenir tout ou partie"
+                icone="octagon-alert"
+                classe="btn-outline-danger btn-sm"
+              />
+            </>
+          ) : null}
+          {statut === "retenue_a_valider" && isAdmin ? (
+            <form method="POST" action={`${ici}/caution/valider`} className="d-inline">
+              <input type="hidden" name="csrf_token" value={csrf} />
+              <button
+                type="submit"
+                className="btn btn-primary btn-sm"
+                data-confirm={`Valider la retenue de ${montant(r.cautionRetenue)} ? L'usager est alors prévenu.`}
+              >
+                <Icone nom="shield-check" taille={14} /> Valider la retenue
+              </button>
+            </form>
+          ) : null}
+        </div>
+      ) : null}
+
+      {peutDecider
+        ? (["entree", "sortie"] as const).map((kind) => (
+            <ModalAction
+              key={kind}
+              id={`modal-edl-${kind}`}
+              titre={kind === "entree" ? "État des lieux d'entrée" : "État des lieux de sortie"}
+              action={`${ici}/etat-des-lieux/${kind}`}
+              csrf={csrf}
+              bouton="Enregistrer"
+              icone="clipboard-check"
+              multipart
+              aide="Les photos sont jointes au constat et visibles par l'usager depuis son dossier."
+            >
+              <label className="form-label" htmlFor={`edl-${kind}-obs`}>
+                Observations
+              </label>
+              <textarea
+                name="observations"
+                id={`edl-${kind}-obs`}
+                className="form-control"
+                rows={4}
+                defaultValue={(kind === "entree" ? entree : sortie)?.observations ?? ""}
+                placeholder="État des sols, du matériel, propreté, clés rendues…"
+              />
+              <div className="form-check mt-2">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  name="degats"
+                  id={`edl-${kind}-degats`}
+                  defaultChecked={(kind === "entree" ? entree : sortie)?.degats ?? false}
+                />
+                <label className="form-check-label" htmlFor={`edl-${kind}-degats`}>
+                  Dégâts ou manquements constatés
+                </label>
+              </div>
+              <label className="form-label mt-2" htmlFor={`edl-${kind}-sig`}>
+                Usager présent (nom)
+              </label>
+              <input
+                type="text"
+                name="signataire"
+                id={`edl-${kind}-sig`}
+                className="form-control"
+                defaultValue={(kind === "entree" ? entree : sortie)?.signataire ?? ""}
+              />
+              <label className="form-label mt-2" htmlFor={`edl-${kind}-photos`}>
+                Photos
+              </label>
+              <input
+                type="file"
+                name="photos"
+                id={`edl-${kind}-photos`}
+                className="form-control"
+                accept="image/*"
+                multiple
+              />
+            </ModalAction>
+          ))
+        : null}
+
+      {peutDecider && r.caution > 0 ? (
+        <ModalAction
+          id="modal-retenir"
+          titre="Retenir tout ou partie de la caution"
+          action={`${ici}/caution/retenir`}
+          csrf={csrf}
+          bouton="Retenir"
+          icone="octagon-alert"
+          danger
+          aide={`Le motif et le montant sont transmis à l'usager avec les constats de l'état des lieux de sortie.${seuil > 0 ? ` Au-delà de ${montant(seuil)}, la retenue attend la validation d'un administrateur.` : ""}`}
+        >
+          <label className="form-label" htmlFor="ret-montant">
+            Montant retenu (€) <span className="req">*</span>
+          </label>
+          <input
+            type="number"
+            name="montant"
+            id="ret-montant"
+            className="form-control"
+            min={0.01}
+            max={r.caution}
+            step="0.01"
+            defaultValue={r.caution}
+            required
+          />
+          <label className="form-label mt-2" htmlFor="ret-motif">
+            Motif <span className="req">*</span>
+          </label>
+          <textarea
+            name="motif"
+            id="ret-motif"
+            className="form-control"
+            rows={3}
+            required
+            placeholder="Dégradation du parquet constatée à l'état des lieux de sortie, remise en état facturée…"
+          />
+        </ModalAction>
       ) : null}
     </Section>
   );

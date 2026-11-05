@@ -510,6 +510,14 @@ export function FormulaireEspace({
             step={5}
             valeur={espace?.bufferAfterMin ?? 0}
           />
+          <Champ
+            label="Occupations simultanées"
+            name="capacite_simultanee"
+            type="number"
+            min={1}
+            valeur={espace?.capaciteSimultanee ?? 1}
+            aide="1 = exclusif. Plus : espace partageable (pistes, couloirs de bassin, terrain multisport) ; un créneau est refusé seulement quand ce nombre de réservations se recouvrent déjà."
+          />
           <Select
             label="Statut"
             name="status"

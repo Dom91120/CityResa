@@ -125,6 +125,43 @@ export async function alertes(
   }
 
   if (user.canView("reservations")) {
+    const delai = cfg.CAUTION_DELAI_RESTITUTION_JOURS || 30;
+    const retard = await prisma.reservation.count({
+      where: {
+        cautionStatus: "encaissee",
+        endAt: { lt: addParisDays(minuit, -delai) },
+        ...(user.espacesGeres.length ? { espaceId: { in: user.espacesGeres } } : {}),
+      },
+    });
+    if (retard)
+      out.push({
+        cle: "cautions_retard",
+        niveau: "warning",
+        icone: "piggy-bank",
+        titre: `${retard} caution${retard > 1 ? "s" : ""} à restituer ou retenir depuis plus de ${delai} jours`,
+        detail: "État des lieux de sortie, puis restitution ou retenue motivée.",
+        nb: retard,
+        href: "/reservations?caution=retard",
+      });
+    if (user.isAdmin) {
+      const aValider = await prisma.reservation.count({
+        where: { cautionStatus: "retenue_a_valider" },
+      });
+      if (aValider)
+        out.push({
+          cle: "cautions_a_valider",
+          niveau: "warning",
+          icone: "shield-check",
+          titre: `${aValider} retenue${aValider > 1 ? "s" : ""} sur caution à valider`,
+          detail:
+            "Au-delà du seuil, un administrateur confirme la retenue avant l'envoi à l'usager.",
+          nb: aValider,
+          href: "/reservations?caution=a_valider",
+        });
+    }
+  }
+
+  if (user.canView("reservations")) {
     const n = await prisma.reservation.count({
       where: {
         status: { in: ["a_traiter", "en_traitement"] },

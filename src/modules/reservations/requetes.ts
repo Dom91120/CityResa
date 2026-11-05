@@ -79,6 +79,8 @@ export type Filtres = {
   type: string;
   agent: string;
   periode: string;
+  /** « retard » : cautions encaissées non clôturées après le délai ; « a_valider » : retenues à valider. */
+  caution: string;
   q: string;
   vue: "cartes" | "table";
   tri: string;
@@ -99,6 +101,9 @@ export function lireFiltres(params: Params): Filtres {
     type: type in ORGANISATION_TYPES ? type : "",
     agent: (param(params, "agent") ?? "").trim(),
     periode: PERIODES.some(([k]) => k === per) ? per : "",
+    caution: ["retard", "a_valider"].includes(param(params, "caution") ?? "")
+      ? (param(params, "caution") as string)
+      : "",
     q: (param(params, "q") ?? "").trim(),
     vue: param(params, "vue") === "table" ? "table" : "cartes",
     tri,
@@ -125,6 +130,16 @@ export function whereListe(f: Filtres, user: CurrentUser): Prisma.ReservationWhe
     const p = periode(f.periode);
     and.push({ startAt: { lt: p.a }, endAt: { gt: p.de } });
   }
+  if (f.caution === "retard")
+    and.push({
+      cautionStatus: "encaissee",
+      endAt: {
+        lt: new Date(
+          Date.now() - (user.settings.CAUTION_DELAI_RESTITUTION_JOURS || 30) * 86_400_000,
+        ),
+      },
+    });
+  if (f.caution === "a_valider") and.push({ cautionStatus: "retenue_a_valider" });
   return and.length ? { AND: and } : {};
 }
 
