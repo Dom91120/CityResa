@@ -20,6 +20,7 @@ pnpm db:demo             # jeu de données de démonstration (sites, espaces, us
 node scripts/build-lucide-sprite.mjs   # régénère public/vendor/lucide.svg après ajout d'une icône
 pnpm illustration        # refait l'illustration de la connexion (captures du portail, serveur dev + démo)
 pnpm tsx scripts/regenerer-convention.ts <id>   # réédite la convention d'un dossier hors interface
+pnpm tsx scripts/apercu-editions.ts <espaceId> <lundi> <dossier>   # PDF + PNG du planning semaine, de la semaine type et de la feuille de salle
 ```
 
 Base locale : conteneur Docker `cityresa-pg` (PostgreSQL 18, port 5435) ; voir `.env.example`.

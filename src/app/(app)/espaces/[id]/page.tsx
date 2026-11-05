@@ -101,6 +101,13 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
           </>
         }
         menu={[
+          <MenuLien
+            key="feuille"
+            url={`${fiche}/feuille.pdf`}
+            libelle="Feuille de salle (PDF, QR code)"
+            icone="qr-code"
+            cible="_blank"
+          />,
           peutEditer && !bloque ? (
             <MenuLien
               key="resa"
