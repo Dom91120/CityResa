@@ -3,6 +3,7 @@ import { EnteteForm, Interrupteur } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
 import { StatutResa } from "@/components/macros";
 import { plage } from "@/lib/libelles";
+import { type Alternative, alternativesPour } from "@/server/alternatives";
 import { prisma } from "@/server/db";
 import { apercuFermeture } from "@/server/fermetures";
 import { requireEdit } from "@/server/guards";
@@ -40,6 +41,22 @@ export default async function FermeturePage({
   });
   if (!espace) notFound();
   const dossiers = await apercuFermeture(espaceId, startAt, endAt);
+  // Pour chaque dossier, des créneaux de remplacement libres pour son premier créneau touché.
+  const remplacements = new Map<number, Alternative[]>();
+  for (const d of dossiers) {
+    const o = d.occurrences[0];
+    if (!o) continue;
+    remplacements.set(
+      d.reservationId,
+      await alternativesPour({
+        espaceId,
+        i: o,
+        excludeReservationId: d.reservationId,
+        ignorerDelai: true,
+        fermeture: { startAt, endAt },
+      }),
+    );
+  }
   const nbOcc = dossiers.reduce((n, d) => n + d.occurrences.length, 0);
   const entiers = dossiers.filter((d) => d.entier).length;
 
@@ -120,6 +137,17 @@ export default async function FermeturePage({
                             <div className="text-warning mt-1">
                               <Icone nom="triangle-alert" taille={14} /> Tous ses créneaux : à
                               annuler ou reporter depuis la fiche
+                            </div>
+                          ) : null}
+                          {remplacements.get(d.reservationId)?.length ? (
+                            <div className="text-muted mt-1" style={{ whiteSpace: "normal" }}>
+                              <Icone nom="calendar-check" taille={14} /> Remplacement possible du
+                              premier créneau :{" "}
+                              {remplacements
+                                .get(d.reservationId)
+                                ?.map((a) => a.texte)
+                                .join(" ; ")}
+                              . Proposé dans le courriel.
                             </div>
                           ) : null}
                         </td>

@@ -3,6 +3,7 @@
  * puis blocage avec, au choix, annulation des occurrences touchées et courriel aux usagers.
  */
 import { after } from "next/server";
+import { lignesCourriel } from "@/lib/alternatives";
 import {
   apercuInchange,
   type BilanFermeture,
@@ -11,6 +12,7 @@ import {
   planFermeture,
 } from "@/lib/fermetures";
 import { plage } from "@/lib/libelles";
+import { alternativesPour } from "@/server/alternatives";
 import { auditRecord } from "@/server/audit";
 import { prisma } from "@/server/db";
 import { invalidateNavCounts } from "@/server/nav";
@@ -169,13 +171,28 @@ export async function poserFermeture(opts: {
       for (const t of touches) {
         const r = await chargerReservation(t.reservationId);
         if (!r) continue;
+        // Le blocage est posé : les alternatives proposées sont hors fermeture et libres.
+        const premiere = t.occurrences[0];
+        const alternatives = premiere
+          ? await alternativesPour({
+              espaceId: espace.id,
+              i: premiere,
+              excludeReservationId: t.reservationId,
+              ignorerDelai: true,
+            })
+          : [];
         await courrielUsager(r, "fermeture_exceptionnelle", {
           fermeture: periode,
           motif: motif ?? "raison de service",
           occurrences: dates.get(t.reservationId) ?? "",
-          suite: dossiersAnnules.has(t.reservationId)
-            ? "Ces créneaux sont annulés et retirés du montant de votre réservation."
-            : "Nos services reviennent vers vous pour la suite à donner.",
+          suite: [
+            dossiersAnnules.has(t.reservationId)
+              ? "Ces créneaux sont annulés et retirés du montant de votre réservation."
+              : "Nos services reviennent vers vous pour la suite à donner.",
+            lignesCourriel(alternatives),
+          ]
+            .filter(Boolean)
+            .join(" "),
         });
       }
     });

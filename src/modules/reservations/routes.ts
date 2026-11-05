@@ -100,7 +100,13 @@ export async function creer(form: FormData): Promise<Response> {
       "success",
     );
   } catch (e) {
-    if (e instanceof UserFacingError) return redirigerAvecMessage(retour, e.message, "danger");
+    if (e instanceof UserFacingError) {
+      // Créneau occupé : la page de saisie propose des alternatives libres.
+      const conflit = e.message.startsWith("Créneau indisponible")
+        ? `${retour}${retour.includes("?") ? "&" : "?"}conflit=1`
+        : retour;
+      return redirigerAvecMessage(conflit, e.message, "danger");
+    }
     throw e;
   }
 }

@@ -4,7 +4,12 @@ import { Chip } from "@/components/macros";
 import { JOURS_ISO, OPTION_UNITES } from "@/lib/constantes";
 import { manquesDossier, phraseManques } from "@/lib/dossier-usager";
 import { duree, montant, nomCourt } from "@/lib/libelles";
-import { addParisDays, parisMidnight, todayParisISO } from "@/lib/paris-time";
+import {
+  addParisDays,
+  parisDateTimeToInstant,
+  parisMidnight,
+  todayParisISO,
+} from "@/lib/paris-time";
 import { lireReglePieces, phrasePiecesBloquantes, piecesBloquent } from "@/lib/pieces";
 import { aPartirDe, tarifMateriel } from "@/lib/tarification";
 import {
@@ -17,6 +22,7 @@ import {
 } from "@/modules/portail/catalogue";
 import { Etapes } from "@/modules/portail/vues";
 import { CochesCalendrier } from "@/modules/reservations/champs";
+import { alternativesPour } from "@/server/alternatives";
 import { saisonActive } from "@/server/calendrier";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
@@ -67,6 +73,22 @@ export default async function ReserverPage({
   const photo = photoPrincipale(espace);
   const docs = documentsPublics(espace);
   const retourFiche = `/portail/espaces/${espace.slug}`;
+  // Créneau refusé car occupé : les alternatives libres (même espace, autre horaire ou jour ; espace équivalent).
+  const debutDemande = parisDateTimeToInstant(v("date"), v("heure_debut"));
+  const finDemande = parisDateTimeToInstant(v("date"), v("heure_fin"));
+  const alternatives =
+    v("attente") === "1" && debutDemande && finDemande && finDemande > debutDemande
+      ? await alternativesPour({
+          espaceId: espace.id,
+          i: { startAt: debutDemande, endAt: finDemande },
+          participants: Number(v("participants")) || null,
+          portail: true,
+        })
+      : [];
+  const reprise = new URLSearchParams();
+  for (const k of ["title", "participants", "nature_id", "description"])
+    if (v(k)) reprise.set(k, v(k));
+  const lienAlternative = (lien: string) => (reprise.size ? `${lien}&${reprise}` : lien);
 
   // Blocages.
   const piecesEnDefaut =
@@ -202,6 +224,18 @@ export default async function ReserverPage({
                 <Icone nom="bell" taille={14} /> Me prévenir si le créneau se libère
               </button>
             </form>
+            {alternatives.length ? (
+              <div className="mt-3">
+                <strong>Créneaux équivalents libres :</strong>
+                <ul className="mb-0 mt-1 ps-3">
+                  {alternatives.map((a) => (
+                    <li key={`${a.espaceId}-${a.startAt.toISOString()}`}>
+                      <a href={lienAlternative(a.lienPortail)}>{a.texte}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
         </div>
       ) : null}
