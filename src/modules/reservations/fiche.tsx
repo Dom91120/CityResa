@@ -43,6 +43,7 @@ import {
   plage,
 } from "@/lib/libelles";
 import { decrireOption, estOption, STATUTS_OPTION } from "@/lib/options";
+import { ETATS_COUVERTURE } from "@/lib/personnel";
 import { decrirePresence, resumePresences } from "@/lib/presences";
 import type { Devis } from "@/lib/tarification";
 import { ChoixMateriel, ChoixOptions } from "@/modules/reservations/champs";
@@ -51,11 +52,51 @@ import type { MaterielDispo } from "@/modules/reservations/saisie";
 import { libelleAvenant } from "@/server/avenant";
 import { type DocumentAvecCategorie, estImage } from "@/server/documents";
 import type { FeatureFlags } from "@/server/features";
+import type { ServiceCreneau, ServiceDossier } from "@/server/personnel";
 import type { ReservationComplete } from "@/server/reservations";
 
 export type MessageAvecAuteur = Prisma.MessageGetPayload<{ include: { author: true } }>;
 
 type Agent = { id: string; firstName: string; lastName: string; email: string };
+
+/** La cellule « Service » d'un créneau : qui est de service, et le bouton pour épingler. */
+function ServiceCreneauCell({
+  s,
+  aVenir,
+  creneauId,
+  peutEpingler,
+}: {
+  s: ServiceCreneau | undefined;
+  aVenir: boolean;
+  creneauId: number;
+  peutEpingler: boolean;
+}) {
+  const etat = s ? ETATS_COUVERTURE[s.etat] : null;
+  return (
+    <span className="d-inline-flex align-items-center gap-1 flex-wrap">
+      {s?.noms.length ? (
+        <span title={s.epingle ? "Personne épinglée sur ce créneau" : "De service par vacation"}>
+          {s.epingle ? <Icone nom="bookmark" taille={11} /> : null} {s.noms.join(", ")}
+        </span>
+      ) : null}
+      {etat && aVenir && (s?.etat !== "couvert" || !s.noms.length) ? (
+        <Chip teinte={etat.teinte} dot>
+          {etat.label}
+        </Chip>
+      ) : null}
+      {!aVenir && !s?.noms.length ? <span className="text-faint">—</span> : null}
+      {peutEpingler && aVenir ? (
+        <BoutonOuvrir
+          cible={`modal-service-${creneauId}`}
+          libelle="Personne de service"
+          icone="shield"
+          classe="btn-ghost btn-sm"
+          sansTexte
+        />
+      ) : null}
+    </span>
+  );
+}
 
 // ── Boutons ──
 
@@ -955,12 +996,17 @@ export function SectionEvenement({
   agents,
   peutEditer,
   peutDecider,
+  service = null,
+  peutEpingler = false,
 }: {
   r: ReservationComplete;
   csrf: string;
   agents: Agent[];
   peutEditer: boolean;
   peutDecider: boolean;
+  /** Personnel de service par créneau (module actif et droit de lecture) ; null sinon. */
+  service?: ServiceDossier | null;
+  peutEpingler?: boolean;
 }) {
   const rec = lireRecurrence(r.recurrence);
   const prevus = r.creneaux.filter((c) => c.status === "prevu");
@@ -1110,6 +1156,18 @@ export function SectionEvenement({
                   <Chip teinte="emerald">Prévu</Chip>
                 )}
               </td>
+              {service ? (
+                <td className="small">
+                  {c.status !== "prevu" ? null : (
+                    <ServiceCreneauCell
+                      s={service.parCreneau.get(c.id)}
+                      aVenir={c.endAt > new Date()}
+                      creneauId={c.id}
+                      peutEpingler={peutEpingler}
+                    />
+                  )}
+                </td>
+              ) : null}
               <td className="actions text-nowrap">
                 {peutDecider && vivant && c.status === "prevu" ? (
                   <a
@@ -1161,6 +1219,40 @@ export function SectionEvenement({
           ))}
         </tbody>
       </table>
+      {service && peutEpingler
+        ? r.creneaux
+            .filter((c) => c.status === "prevu")
+            .map((c) => (
+              <ModalAction
+                key={`service-${c.id}`}
+                id={`modal-service-${c.id}`}
+                titre={`Personne de service · ${plage(c.startAt, c.endAt)}`}
+                action={`/reservations/${r.id}/creneaux/${c.id}/service`}
+                csrf={csrf}
+                bouton="Enregistrer"
+                icone="shield"
+                aide="Épingler une personne sur ce créneau précis (état des lieux, événement) : elle est alors de service même sans vacation sur le site. Laissez vide pour s'en remettre aux vacations."
+              >
+                <label className="form-label" htmlFor={`service-${c.id}-personne`}>
+                  Personne
+                </label>
+                <select
+                  name="personnel_id"
+                  id={`service-${c.id}-personne`}
+                  className="form-select"
+                  defaultValue={c.personnelId ?? ""}
+                >
+                  <option value="">Aucune (vacations du site)</option>
+                  {service.personnes.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {`${p.firstName} ${p.lastName}`.trim()}
+                      {p.fonction ? ` · ${p.fonction}` : ""}
+                    </option>
+                  ))}
+                </select>
+              </ModalAction>
+            ))
+        : null}
 
       <Lus intitule="110px">
         <div className="lu lu--pleine">

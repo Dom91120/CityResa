@@ -22,6 +22,8 @@ export const BOOL_KEYS = new Set([
   "SUBVENTIONS_ENABLED",
   "DOCUMENTS_ENABLED",
   "CAMPAGNES_ENABLED",
+  "PERSONNEL_ENABLED",
+  "PLANNING_PERSONNEL_ENABLED",
   "RAPPEL_J7",
   "RAPPEL_J1",
   "PLANNING_HEBDO_ENABLED",
@@ -132,6 +134,9 @@ export type AppSettings = EnvOnly & {
   SUBVENTIONS_ENABLED: boolean;
   DOCUMENTS_ENABLED: boolean;
   CAMPAGNES_ENABLED: boolean;
+  PERSONNEL_ENABLED: boolean;
+  /** Planning de service hebdomadaire envoyé par courriel à chaque personne de service (même jour que PLANNING_HEBDO_JOUR). */
+  PLANNING_PERSONNEL_ENABLED: boolean;
   DOCUMENT_MAX_MB: number;
   TVA_TAUX: number;
   ACOMPTE_PCT: number;
@@ -265,6 +270,8 @@ export function envDefaults(): AppSettings {
     SUBVENTIONS_ENABLED: envBool("SUBVENTIONS_ENABLED", true),
     CAMPAGNES_ENABLED: envBool("CAMPAGNES_ENABLED", true),
     DOCUMENTS_ENABLED: envBool("DOCUMENTS_ENABLED", true),
+    PERSONNEL_ENABLED: envBool("PERSONNEL_ENABLED", true),
+    PLANNING_PERSONNEL_ENABLED: envBool("PLANNING_PERSONNEL_ENABLED", false),
     DOCUMENT_MAX_MB: envInt("DOCUMENT_MAX_MB", 10),
     TVA_TAUX: envFloat("TVA_TAUX", 0),
     ACOMPTE_PCT: envFloat("ACOMPTE_PCT", 30),

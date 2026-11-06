@@ -47,7 +47,7 @@ export const INCLUDE_RESERVATION = {
   user: true,
   agent: true,
   nature: true,
-  creneaux: { orderBy: { startAt: "asc" as const } },
+  creneaux: { orderBy: { startAt: "asc" as const }, include: { personnel: true } },
   options: { include: { option: true } },
   materiels: { include: { materiel: true } },
   factures: { include: { paiements: true }, orderBy: { createdAt: "asc" as const } },

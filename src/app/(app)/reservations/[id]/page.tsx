@@ -28,6 +28,7 @@ import { redirigerAvecFlashDepuisRendu } from "@/server/flash";
 import { idDeRoute } from "@/server/guards";
 import { contexteModule } from "@/server/module";
 import { invalidateNavCounts } from "@/server/nav";
+import { serviceDossier } from "@/server/personnel";
 import { chargerReservation, deviser } from "@/server/reservations";
 
 export const metadata = { title: "Réservation - CityRésa" };
@@ -58,6 +59,7 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
     options,
     materiels,
     devis,
+    service,
   ] = await Promise.all([
     prisma.message.findMany({
       where: { reservationId: id },
@@ -94,6 +96,7 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
       r.materiels.map((m) => ({ materielId: m.materielId, quantite: m.quantite })),
       r.gratuit,
     ),
+    features.personnel && user.canView("personnel") ? serviceDossier(r) : null,
   ]);
 
   // Les messages de l'usager sont lus dès que l'agent ouvre le dossier.
@@ -192,6 +195,8 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
             agents={agents}
             peutEditer={peutEditer}
             peutDecider={peutDecider}
+            service={service}
+            peutEpingler={!!service && peutDecider && user.canEdit("personnel")}
           />
           <SectionDemandeur r={r} />
           {features.materiel ? (

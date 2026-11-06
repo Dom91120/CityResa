@@ -5,7 +5,8 @@ et son matériel, suivre les usagers (associations, entreprises, particuliers, s
 ville) et instruire les demandes de subvention des associations.
 
 Ce guide présente l'application **fonctionnalité par fonctionnalité** (chapitres 1 à 9), puis
-le **parcours métier** de chaque intervenant (chapitre 10). Toutes les captures d'écran viennent
+le **parcours métier** de chaque intervenant (chapitre 10) et le module **Personnel de
+service** (chapitre 11). Toutes les captures d'écran viennent
 du jeu de démonstration : les personnes, associations et dossiers cités sont fictifs.
 
 ## Deux portes d'entrée
@@ -31,6 +32,7 @@ espace.
 8. [Tableau de bord, statistiques et outils du quotidien](08-pilotage-et-outils.md)
 9. [Administration](09-administration.md)
 10. [Parcours métier par profil](10-parcours-metier.md)
+11. [Personnel de service](11-personnel-de-service.md)
 
 ## Lire ce guide
 

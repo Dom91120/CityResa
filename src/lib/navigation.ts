@@ -53,6 +53,7 @@ export const GENERAL: NavDomaine = {
     t("sky", e("/messages", "Messages", "message-circle", "messages", "messages")),
     t("rose", e("/usagers", "Usagers", "users", "usagers", "usagers_a_valider")),
     t("violet", e("/equipe", "Mon équipe", "contact-round", "equipe")),
+    t("slate", e("/personnel", "Personnel", "shield", "personnel", null, "personnel")),
     t(
       "emerald",
       e("/paiements", "Paiements", "credit-card", "paiements", "factures_a_payer", "paiements"),

@@ -14,7 +14,8 @@ export type FeatureName =
   | "materiel"
   | "subventions"
   | "documents"
-  | "campagnes";
+  | "campagnes"
+  | "personnel";
 
 /** nom court → (clé de configuration, libellé, aide) */
 export const FEATURES: Record<FeatureName, [string, string, string]> = {
@@ -58,6 +59,11 @@ export const FEATURES: Record<FeatureName, [string, string, string]> = {
     "Campagnes annuelles de créneaux",
     "Les usagers déposent leurs vœux de créneaux hebdomadaires sur une saison ; la Ville arbitre par priorité et attribue en lot.",
   ],
+  personnel: [
+    "PERSONNEL_ENABLED",
+    "Planning du personnel de service",
+    "Gardiens, agents d'accueil et vacataires planifiés par vacations sur les sites ; créneaux réservés sans personne de service signalés.",
+  ],
 };
 
 /** Un module qui est un ÉCRAN ENTIER se coupe par sa catégorie de droit. */
@@ -65,6 +71,7 @@ export const MODULE_CATEGORIES: Record<string, PermissionCategory> = {
   materiel: "materiel",
   paiements: "paiements",
   subventions: "subventions",
+  personnel: "personnel",
 };
 
 export type FeatureFlags = Record<FeatureName, boolean>;

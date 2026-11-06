@@ -38,6 +38,7 @@ import { notifierLiberation } from "@/server/liste-attente";
 import { retournerMateriel, sortirMateriel } from "@/server/materiel-stock";
 import { invalidateNavCounts } from "@/server/nav";
 import { notifier } from "@/server/notifications";
+import { epingler } from "@/server/personnel";
 import { requisitionner } from "@/server/priorite";
 import {
   ajouterMessage,
@@ -328,6 +329,27 @@ async function annulerCreneau({ user, r, fiche }: Contexte, cid: number): Promis
   return redirigerAvecMessage(fiche, `Créneau du ${plage(c.startAt, c.endAt)} annulé.`, "success");
 }
 
+/** Épingle une personne de service sur un créneau, ou la retire (module Personnel). */
+async function serviceCreneau(
+  { user, r, fiche }: Contexte,
+  cid: number,
+  form: FormData,
+): Promise<Response> {
+  if (!enabledIn(user.settings, "personnel") || !user.canEdit("personnel"))
+    throw new UserFacingError("Vous ne pouvez pas affecter le personnel de service.");
+  const c = r.creneaux.find((x) => x.id === cid);
+  if (!c) return pasTrouve();
+  if (c.status !== "prevu") throw new UserFacingError("Ce créneau est annulé.");
+  const message = await epingler(cid, idOuNull(form, "personnel_id"));
+  await auditRecord(
+    "service creneau",
+    `${r.numero} · ${plage(c.startAt, c.endAt)} · ${message}`,
+    "personnel",
+    user.email,
+  );
+  return redirigerAvecMessage(fiche, message, "success");
+}
+
 /**
  * Déplace un créneau (et, selon la portée, les suivants ou toute la série). Une erreur ramène
  * à la page de modification, pas à la fiche, pour corriger la saisie.
@@ -590,6 +612,7 @@ export async function actionReservation(
           if (segments[2] === "annuler") return await annulerCreneau(ctx, cid);
           if (segments[2] === "modifier") return await modifierCreneau(ctx, cid, form);
           if (segments[2] === "requisition") return await requisitionCreneau(ctx, cid, form);
+          if (segments[2] === "service") return await serviceCreneau(ctx, cid, form);
         }
         if (segments[0] === "materiel" && segments.length === 3) {
           const mid = parseInt_(segments[1], null, 1);

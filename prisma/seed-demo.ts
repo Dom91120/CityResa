@@ -318,8 +318,10 @@ async function remettreAZero(): Promise<void> {
   // (administrateur compris). Toutes les tables qui se référencent entre elles sont listées.
   await prisma.$executeRawUnsafe(
     `TRUNCATE TABLE paiement, facture, subvention_avis, subvention, message, reservation_history,
-     reservation_option, reservation_materiel, creneau, document_content, document, reservation,
-     notification, mail_log, action_log, scheduler_run, indisponibilite, espace_gestionnaire,
+     reservation_option, reservation_materiel, mouvement_materiel, avenant, etat_des_lieux, voeu,
+     campagne_espace, campagne, liste_attente, brouillon_demande, valorisation, creneau,
+     document_content, document, reservation, notification, mail_log, action_log, scheduler_run,
+     indisponibilite, espace_gestionnaire, horaires_saison, vacation, personnel,
      tarif, "option", espace_equipement, espace, site, materiel, sequence RESTART IDENTITY`,
   );
   await prisma.organisation.deleteMany({});
@@ -3339,6 +3341,160 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
   }
 }
 
+// ── Personnel de service ──
+
+const PERSONNEL = [
+  {
+    cle: "ali",
+    prenom: "Ali",
+    nom: "Keita",
+    fonction: "Gardien",
+    email: "ali.keita@exemple.fr",
+    phone: "06 12 34 56 78",
+    color: "#3b82f6",
+    note: "Clés de la Maison Blanche et du gymnase. Astreinte téléphonique le week-end.",
+  },
+  {
+    cle: "nadia",
+    prenom: "Nadia",
+    nom: "Benmoussa",
+    fonction: "Gardienne",
+    email: "nadia.benmoussa@exemple.fr",
+    phone: "06 23 45 67 89",
+    color: "#10b981",
+    note: null,
+  },
+  {
+    cle: "lucas",
+    prenom: "Lucas",
+    nom: "Perrin",
+    fonction: "Agent d'accueil",
+    email: "lucas.perrin@exemple.fr",
+    phone: null,
+    color: "#f59e0b",
+    note: "Accueil du public, ouverture le matin.",
+  },
+  {
+    cle: "fatou",
+    prenom: "Fatou",
+    nom: "Diallo",
+    fonction: "Vacataire",
+    email: null,
+    phone: "07 98 76 54 32",
+    color: "#8b5cf6",
+    note: "Renfort sur les événements ; joignable par SMS uniquement.",
+  },
+];
+
+/**
+ * Le personnel de service et ses vacations : une série hebdomadaire du gardien (soirées de
+ * semaine à la Maison Blanche), les week-ends du gymnase, l'accueil du matin, quelques
+ * renforts ; deux créneaux épinglés. Les autres sites restent sans vacation : des créneaux
+ * « à couvrir » apparaissent dans le planning et sur le tableau de bord.
+ */
+async function creerPersonnel(): Promise<void> {
+  console.log("→ Personnel de service et vacations…");
+  const sites = await prisma.site.findMany({ orderBy: { position: "asc" } });
+  const siteDe = (motif: string) =>
+    sites.find((s) => s.name.toLowerCase().includes(motif)) ?? sites[0];
+  const maisonBlanche = siteDe("maison blanche");
+  const gymnase = siteDe("sablons");
+  const personnes = new Map<string, { id: number; email: string | null }>();
+  for (const p of PERSONNEL) {
+    const row = await prisma.personnel.create({
+      data: {
+        firstName: p.prenom,
+        lastName: p.nom,
+        fonction: p.fonction,
+        email: p.email,
+        phone: p.phone,
+        color: p.color,
+        note: p.note,
+        icsToken: p.cle === "ali" ? "demo-ali-keita-planning-de-service-0001" : null,
+      },
+    });
+    personnes.set(p.cle, { id: row.id, email: row.email });
+    compter("personnel de service");
+  }
+  const id = (cle: string) => personnes.get(cle)?.id as number;
+  const lundi = js(1, -7);
+  const vac = async (
+    cle: string,
+    siteId: number,
+    offset: number,
+    de: string,
+    a_: string,
+    extra: { serieId?: string; note?: string } = {},
+  ) => {
+    const startAt = a(offset, de);
+    let endAt = a(offset, a_);
+    if (endAt <= startAt) endAt = new Date(endAt.getTime() + 86_400_000);
+    await prisma.vacation.create({
+      data: {
+        personnelId: id(cle),
+        siteId,
+        startAt,
+        endAt,
+        serieId: extra.serieId ?? null,
+        note: extra.note ?? null,
+        createdBy: "sophie.martin@exemple.fr",
+      },
+    });
+    compter("vacations");
+  };
+  // Ali : chaque soir de semaine à la Maison Blanche, huit semaines à partir de lundi dernier.
+  for (let semaine = 0; semaine < 8; semaine++) {
+    for (let j = 0; j < 5; j++) {
+      await vac("ali", maisonBlanche.id, lundi + semaine * 7 + j, "17:00", "23:30", {
+        serieId: "demo-serie-ali-soirs",
+        note: "Ouverture, fermeture et remise des clés",
+      });
+    }
+  }
+  // Nadia : les week-ends au gymnase, quatre semaines.
+  for (let semaine = 0; semaine < 4; semaine++) {
+    await vac("nadia", gymnase.id, lundi + semaine * 7 + 5, "08:00", "20:00", {
+      serieId: "demo-serie-nadia-we",
+    });
+    await vac("nadia", gymnase.id, lundi + semaine * 7 + 6, "08:00", "18:00", {
+      serieId: "demo-serie-nadia-we",
+    });
+  }
+  // Lucas : l'accueil du matin à la Maison Blanche, cette semaine et la suivante.
+  for (let semaine = 0; semaine < 2; semaine++) {
+    for (let j = 0; j < 5; j++) {
+      await vac("lucas", maisonBlanche.id, lundi + semaine * 7 + j, "08:30", "13:00");
+    }
+  }
+  // Fatou : deux renforts ponctuels au gymnase en soirée.
+  await vac("fatou", gymnase.id, lundi + 2, "18:00", "22:30", { note: "Renfort match" });
+  await vac("fatou", gymnase.id, lundi + 9, "18:00", "22:30", { note: "Renfort match" });
+
+  // Deux créneaux fermes à venir épinglés : un sur la Maison Blanche (état des lieux), un ailleurs.
+  const fermes = await prisma.creneau.findMany({
+    where: {
+      status: "prevu",
+      startAt: { gte: now },
+      reservation: { status: { in: ["acceptee", "signee", "confirmee"] } },
+    },
+    include: { espace: { select: { siteId: true } } },
+    orderBy: { startAt: "asc" },
+    take: 60,
+  });
+  const surMaisonBlanche = fermes.find((c) => c.espace.siteId === maisonBlanche.id);
+  const ailleurs = fermes.find(
+    (c) => c.espace.siteId !== maisonBlanche.id && c.espace.siteId !== gymnase.id,
+  );
+  for (const [c, cle] of [
+    [surMaisonBlanche, "fatou"],
+    [ailleurs, "nadia"],
+  ] as const) {
+    if (!c) continue;
+    await prisma.creneau.update({ where: { id: c.id }, data: { personnelId: id(cle) } });
+    compter("créneaux épinglés");
+  }
+}
+
 async function creerNotificationsEtJournal(
   ctx: Contexte,
   parStatut: Map<ReservationStatus, number[]>,
@@ -3562,6 +3718,7 @@ async function main(): Promise<void> {
   };
   const parStatut = await creerReservations(ctx);
   await cyclerCautions();
+  await creerPersonnel();
   await creerSubventions(ctx);
   await creerNotificationsEtJournal(ctx, parStatut);
 

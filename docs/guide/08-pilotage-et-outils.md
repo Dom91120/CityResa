@@ -106,6 +106,7 @@ Les alertes possibles, des plus urgentes (en rouge) aux simples informations :
 | Pièces qui expirent bientôt | Dans le délai réglé par l'administrateur (30 jours par défaut) ; les usagers sont prévenus par courriel | Usagers, filtre pièces |
 | Associations au-delà du seuil d'aides sans convention | Avantages en nature et subventions de l'exercice au-delà du seuil (23 000 € par défaut) | Valorisation |
 | Matériels à contrôler | Contrôle périodique échu | Matériel |
+| Créneaux réservés sans personne de service | Module Personnel de service : dans les 7 jours, un créneau accepté, signé ou confirmé qu'aucune vacation ne couvre entièrement | Personnel de service, onglet À couvrir |
 | Conventions en attente de signature | Toujours pas signée plusieurs jours après l'envoi (3 jours par défaut) | Réservations acceptées |
 | Options arrivant à échéance | Une option approche de sa date limite ; sans confirmation, le créneau sera libéré d'office | Réservations à traiter |
 | Cautions à restituer ou retenir | Caution encaissée, événement passé depuis plus de 30 jours (par défaut) | Réservations, filtre caution |
