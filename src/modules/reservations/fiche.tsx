@@ -34,6 +34,7 @@ import {
   dateCourte,
   dateHeure,
   dateLongue,
+  dateMoyenne,
   duree,
   heure,
   isoParis,
@@ -41,6 +42,7 @@ import {
   montantOuGratuit,
   nomCourt,
   plage,
+  plageHoraire,
 } from "@/lib/libelles";
 import { decrireOption, estOption, STATUTS_OPTION } from "@/lib/options";
 import { ETATS_COUVERTURE } from "@/lib/personnel";
@@ -1135,7 +1137,14 @@ export function SectionEvenement({
           {r.creneaux.map((c) => (
             <tr key={c.id} className={c.status !== "prevu" ? "text-muted" : undefined}>
               <td style={c.status !== "prevu" ? { textDecoration: "line-through" } : undefined}>
-                {plage(c.startAt, c.endAt)}
+                <span className="cell2">
+                  <span>{dateMoyenne(c.startAt)}</span>
+                  <small>
+                    {isoParis(c.startAt).date === isoParis(c.endAt).date
+                      ? plageHoraire(c.startAt, c.endAt)
+                      : `${heure(c.startAt)} → ${dateMoyenne(c.endAt)} ${heure(c.endAt)}`}
+                  </small>
+                </span>
               </td>
               <td className="text-nowrap">
                 {duree((c.endAt.getTime() - c.startAt.getTime()) / 60_000)}
