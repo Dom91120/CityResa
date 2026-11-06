@@ -138,6 +138,8 @@ les référentiels et la configuration sont conservés).
 | `pnpm db:demo [--reset]`                     | Jeu de données de démonstration.                                          |
 | `pnpm db:studio`                             | Prisma Studio.                                                            |
 | `node scripts/build-lucide-sprite.mjs`       | Régénère le sprite d'icônes après ajout d'une icône.                      |
+| `node scripts/captures-guide.mjs [nom…]`     | Refait les captures du guide utilisateur (serveur dev + démo).            |
+| `node scripts/guide-pdf.mjs`                 | Rassemble le guide utilisateur en PDF.                                    |
 
 ## Structure
 
@@ -155,12 +157,15 @@ src/app/(auth)/      connexion, 2FA, inscription src/app/envoi/       gestionnai
 src/app/api/         JSON (auth, cron, devis, disponibilités, notifications)
 src/app/ics/         flux iCalendar              public/              CSS, JS, icônes
 cron/                conteneur cron (crontab, backup.sh)
-docs/                CONVENTIONS.md, CAHIER-DES-CHARGES.md, DEPLOY.md
+docs/                CONVENTIONS.md, CAHIER-DES-CHARGES.md, DEPLOY.md, guide/ (guide utilisateur)
 Documents/           cahier des charges d'origine (Synbird, AgoraManager, Mariloo)
 ```
 
 ## Documentation
 
+- [`docs/guide/`](docs/guide/README.md) — guide utilisateur : chaque fonctionnalité avec captures
+  d'écran, puis les parcours métier par profil ; aussi en PDF
+  ([`CityResa-guide-utilisateur.pdf`](docs/guide/CityResa-guide-utilisateur.pdf)).
 - [`docs/CAHIER-DES-CHARGES.md`](docs/CAHIER-DES-CHARGES.md) — périmètre fonctionnel, acteurs,
   parcours, règles de gestion, couverture du cahier des charges d'origine, limites.
 - [`docs/DEPLOY.md`](docs/DEPLOY.md) — déploiement Docker Compose, reverse proxy TLS, cron,

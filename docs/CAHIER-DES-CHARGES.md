@@ -50,7 +50,7 @@ des courriels et de la convention) sont **paramétrables** sans intervention tec
 | **Agent** | Back-office | Traite les demandes des espaces dont il a la charge, répond aux messages, bloque des créneaux ; pas de suppression. |
 | **Gestionnaire** | Back-office | Tout le métier : espaces, tarifs, matériel, usagers, réservations, factures, subventions ; peut supprimer. |
 | **Financier** | Back-office | Suit factures et paiements, consulte le reste. |
-| **Élu** | Back-office | Consulte l'activité (tableaux de bord), donne un **avis** sur les demandes de subvention. |
+| **Élu** | Back-office | Consulte l'activité (tableaux de bord), donne un **avis** sur les demandes de subvention ; la décision (vote, refus, versement) est saisie par les agents. |
 | **Administrateur** | Back-office | Paramètres, utilisateurs et rôles, référentiels, modèles de courriel, sauvegardes, audit. |
 | **Lecteur** | Back-office | Lecture seule. |
 
@@ -204,6 +204,8 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 - Catalogue (catégorie, description, stock total, tarif gratuit / forfait / unité / unité et
   par jour, photos).
 - Stock disponible calculé sur la période du dossier (dossiers vivants) ; refus si insuffisant.
+  La liste et la fiche affichent le **pic de mobilisation** à venir (seuls les dossiers qui se
+  recouvrent s'additionnent).
 
 ### Usagers et organisations
 
@@ -424,7 +426,7 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 | Tableaux de bord personnalisables | **Partiel** — tableau de bord des agents avec indicateurs et préférences d'affichage ; pas de constructeur de widgets. |
 | Gestion des accès par service ou lieu, tableau de bord, notifications | **Oui** — rôles par catégorie, rattachement des agents aux espaces, notifications ciblées (gestionnaires de l'espace, sinon tous). |
 | Module ASSO : espace dédié, compte, dépôt de demandes de subvention | **Oui** — « Mes subventions », dépôt avec pièces, suivi. |
-| Back-office collectivité et application dédiée aux élus | **Oui / partiel** — instruction côté agents, rôle Élu avec avis et vote dans la même application (responsive), pas d'application mobile séparée. |
+| Back-office collectivité et application dédiée aux élus | **Oui / partiel** — instruction côté agents, rôle Élu avec avis dans la même application (le vote est enregistré par les agents) (responsive), pas d'application mobile séparée. |
 | CRM : fichier de contacts unique, filtres, segmentation, historique (Agora) | **Oui** — organisations et contacts, type, profil, notes, pièces, historique des dossiers et factures ; recherche globale. |
 | Planning unique imprimable, exportable Excel, récurrences, annulations, alertes (Agora) | **Oui / partiel** — planning multi-espaces, flux ICS, exports Excel des statistiques ; impression par le navigateur. |
 | Devis et factures avec mise en page paramétrable (Agora) | **Partiel** — devis en direct, factures et conventions PDF à l'identité de la collectivité (texte de convention paramétrable, pas d'éditeur de mise en page). |

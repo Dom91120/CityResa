@@ -6,7 +6,8 @@ subvention des associations, pour la Ville de Châtillon. Même socle technique 
 `../sentinelle-next` (Next.js 16, Prisma 7 / PostgreSQL 18, Better Auth, Bootstrap + feuille
 maison, formulaires POST réécrits vers `/envoi`, CSP à nonce). Thème Vert.
 Les conventions de code vivent dans `docs/CONVENTIONS.md`, le périmètre fonctionnel dans
-`docs/CAHIER-DES-CHARGES.md`.
+`docs/CAHIER-DES-CHARGES.md`, le guide utilisateur (captures, parcours métier) dans `docs/guide/` :
+un changement visible à l'écran s'y reporte (texte, capture, PDF).
 
 ## Commandes
 
@@ -22,6 +23,8 @@ pnpm illustration        # refait l'illustration de la connexion (captures du po
 pnpm tsx scripts/regenerer-convention.ts <id>   # réédite la convention d'un dossier hors interface
 pnpm tsx scripts/apercu-editions.ts <espaceId> <lundi> <dossier>   # PDF + PNG du planning semaine, de la semaine type et de la feuille de salle
 pnpm tsx scripts/executer-tache.ts <id>   # lance une tâche planifiée hors interface (ex. options, rappels_usagers, rgpd, planning_hebdo)
+node scripts/captures-guide.mjs [nom…]   # captures du guide (serveur dev + démo ; GUIDE_ADMIN / GUIDE_ADMIN_MDP pour l'administration)
+node scripts/guide-pdf.mjs   # rassemble docs/guide en CityResa-guide-utilisateur.pdf
 pnpm tsx scripts/audit-accessibilite.ts [pages…]   # audit d'accessibilité (règles RGAA maison, Chromium) ; AUDIT_EMAIL / AUDIT_MDP pour les pages connectées
 ```
 
