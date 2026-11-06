@@ -137,3 +137,46 @@ export async function fluxUsager(icsToken: string, baseUrl: string): Promise<str
     })),
   );
 }
+
+/** Le calendrier d'une personne de service : ses vacations et les créneaux où elle est épinglée. */
+export async function fluxPersonnel(icsToken: string, baseUrl: string): Promise<string | null> {
+  const personne = await prisma.personnel.findUnique({ where: { icsToken } });
+  if (!personne) return null;
+  const depuis = new Date(Date.now() - 30 * 86_400_000);
+  const [vacations, creneaux] = await Promise.all([
+    prisma.vacation.findMany({
+      where: { personnelId: personne.id, startAt: { gte: depuis } },
+      include: { site: true },
+      orderBy: { startAt: "asc" },
+      take: 1000,
+    }),
+    prisma.creneau.findMany({
+      where: { personnelId: personne.id, status: "prevu", startAt: { gte: depuis } },
+      include: { reservation: true, espace: { include: { site: true } } },
+      orderBy: { startAt: "asc" },
+      take: 1000,
+    }),
+  ]);
+  const lieu = (s: { name: string; address: string | null }) =>
+    `${s.name}${s.address ? `, ${s.address}` : ""}`;
+  return calendrier(`Service · ${personne.firstName} ${personne.lastName}`.trim(), [
+    ...vacations.map((v) => ({
+      uid: `vacation-${v.id}@cityresa`,
+      debut: v.startAt,
+      fin: v.endAt,
+      titre: `Service · ${v.site.name}`,
+      lieu: lieu(v.site),
+      description: v.note ?? undefined,
+      url: `${baseUrl}/personnel?site=${v.siteId}`,
+    })),
+    ...creneaux.map((c) => ({
+      uid: `service-creneau-${c.id}@cityresa`,
+      debut: c.startAt,
+      fin: c.endAt,
+      titre: `${c.reservation.title} · ${nomCourt(c.espace)}`,
+      lieu: lieu(c.espace.site),
+      description: `Réservation ${c.reservation.numero} : personne de service`,
+      url: `${baseUrl}/reservations/${c.reservationId}`,
+    })),
+  ]);
+}

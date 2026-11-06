@@ -263,6 +263,7 @@ model Site {
 
   espaces   Espace[]
   documents Document[]
+  vacations Vacation[]
 
   @@map("site")
 }
@@ -454,6 +455,54 @@ model Indisponibilite {
 
   @@index([espaceId, startAt])
   @@map("indisponibilite")
+}
+
+// ============================================================
+//  Personnel de service : gardiens, agents d'accueil, vacataires
+// ============================================================
+
+/// Une personne de service (sans compte utilisateur) que l'on planifie sur les sites.
+model Personnel {
+  id        Int     @id @default(autoincrement())
+  firstName String  @map("first_name") @db.VarChar(80)
+  lastName  String  @map("last_name") @db.VarChar(80)
+  /// Texte libre : Gardien, Agent d'accueil, Vacataire…
+  fonction  String? @db.VarChar(80)
+  phone     String? @db.VarChar(40)
+  email     String? @db.VarChar(160)
+  /// Couleur dans le planning (#rrggbb).
+  color     String? @db.VarChar(7)
+  note      String? @db.VarChar(400)
+  isActive  Boolean @default(true) @map("is_active")
+  /// Jeton d'abonnement à son calendrier ICS (null = pas de lien actif).
+  icsToken  String?  @unique @map("ics_token") @db.VarChar(64)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  vacations Vacation[]
+  creneaux  Creneau[]
+
+  @@index([isActive, lastName])
+  @@map("personnel")
+}
+
+/// Une vacation : la personne est de service sur un site entier, d'un instant à un autre.
+model Vacation {
+  id          Int       @id @default(autoincrement())
+  personnelId Int       @map("personnel_id")
+  personnel   Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+  siteId      Int       @map("site_id")
+  site        Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  startAt     DateTime  @map("start_at") @db.Timestamptz
+  endAt       DateTime  @map("end_at") @db.Timestamptz
+  /// Les vacations nées d'une même répétition hebdomadaire partagent cet identifiant.
+  serieId   String?  @map("serie_id") @db.VarChar(32)
+  note      String?  @db.VarChar(200)
+  createdBy String?  @map("created_by") @db.VarChar(160)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([siteId, startAt])
+  @@index([personnelId, startAt])
+  @@map("vacation")
 }
 
 // ============================================================
@@ -689,9 +738,13 @@ model Creneau {
   presenceNote String?   @map("presence_note") @db.VarChar(200)
   presenceBy   String?   @map("presence_by") @db.VarChar(160)
   presenceAt   DateTime? @map("presence_at") @db.Timestamptz
+  /// Personne de service épinglée sur ce créneau (module Personnel) ; null = déduite des vacations.
+  personnelId Int?       @map("personnel_id")
+  personnel   Personnel? @relation(fields: [personnelId], references: [id], onDelete: SetNull)
 
   @@index([espaceId, startAt])
   @@index([reservationId])
+  @@index([personnelId])
   @@map("creneau")
 }
 

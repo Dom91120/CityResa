@@ -328,6 +328,14 @@ export function VoletReservations({ cfg }: { cfg: AppSettings }) {
           coche={cfg.PLANNING_HEBDO_ENABLED}
           aide="Chaque semaine, les gestionnaires et agents notifiés d'un espace reçoivent son planning en PDF, avec le résumé des créneaux."
         />
+        {cfg.PERSONNEL_ENABLED && (
+          <Interrupteur
+            label="Planning de service par courriel au personnel"
+            name="PLANNING_PERSONNEL_ENABLED"
+            coche={cfg.PLANNING_PERSONNEL_ENABLED}
+            aide="Le même jour, chaque personne de service ayant une adresse reçoit ses vacations de la semaine, avec le PDF."
+          />
+        )}
       </div>
       <Grille colonnes={2}>
         <Select

@@ -222,6 +222,22 @@ const CAPTURES = [
   { nom: "messages", compte: "gestionnaire", url: "/messages", hauteur: 1200 },
   { nom: "equipe", compte: "gestionnaire", url: "/equipe", hauteur: 1400 },
 
+  // Personnel de service
+  { nom: "personnel-planning", compte: "gestionnaire", url: "/personnel", hauteur: 1500 },
+  {
+    nom: "personnel-a-couvrir",
+    compte: "gestionnaire",
+    url: "/personnel?onglet=a_couvrir",
+    hauteur: 1100,
+  },
+  {
+    nom: "personnel-personnes",
+    compte: "gestionnaire",
+    url: "/personnel/personnes",
+    hauteur: 1100,
+  },
+  { nom: "personnel-fiche", compte: "gestionnaire", url: "/personnel/personnes/1", hauteur: 2000 },
+
   // Paiements
   { nom: "paiements", compte: "gestionnaire", url: "/paiements", hauteur: 1500 },
   { nom: "facture", compte: "gestionnaire", url: "/paiements/5", hauteur: 1800 },

@@ -18,6 +18,7 @@ export const PERMISSION_CATEGORIES = [
   "paiements",
   "subventions",
   "equipe",
+  "personnel",
 ] as const;
 export type PermissionCategory = (typeof PERMISSION_CATEGORIES)[number];
 
@@ -31,6 +32,7 @@ export const CATEGORY_LABELS: Record<PermissionCategory, string> = {
   paiements: "Paiements",
   subventions: "Subventions",
   equipe: "Mon équipe",
+  personnel: "Personnel de service",
 };
 /** Niveaux : 0 aucun, 1 lecture, 2 écriture, 3 suppression (cumulatifs). */
 export const PERMISSION_LEVELS: Record<number, string> = {

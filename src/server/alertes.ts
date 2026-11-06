@@ -12,6 +12,7 @@ import { prisma } from "@/server/db";
 import { allFlagsIn } from "@/server/features";
 import type { CurrentUser } from "@/server/guards";
 import { controlesEnRetard } from "@/server/materiel-stock";
+import { nbCreneauxACouvrir } from "@/server/personnel";
 import { organisationsSansConvention } from "@/server/valorisation";
 
 export type Alerte = {
@@ -106,6 +107,21 @@ export async function alertes(
           "Avantages en nature et subventions de l'exercice : une convention d'objectifs est obligatoire.",
         nb: n,
         href: "/valorisation",
+      });
+  }
+
+  if (features.personnel && user.canView("personnel")) {
+    const n = await nbCreneauxACouvrir(user, minuit, addParisDays(minuit, 7));
+    if (n)
+      out.push({
+        cle: "personnel_a_couvrir",
+        niveau: "warning",
+        icone: "shield",
+        titre: `${n} créneau${n > 1 ? "x" : ""} réservé${n > 1 ? "s" : ""} sans personne de service dans les 7 jours`,
+        detail:
+          "Aucune vacation ne couvre entièrement le créneau : ajoutez une vacation ou épinglez quelqu'un.",
+        nb: n,
+        href: `/personnel?onglet=a_couvrir&date=${today}`,
       });
   }
 

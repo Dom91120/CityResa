@@ -95,7 +95,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 - **Restitution de la caution : délai d'alerte (jours)** (30).
 - **Option : relance avant l'échéance (jours)** (3) : un dossier posé en option est relancé ce nombre de jours avant sa date limite, puis libéré d'office (les inscrits en liste d'attente sont prévenus).
 - **Valorisation : seuil de convention obligatoire (€)** (23000) et **Valorisation : seuil de certification des comptes (€)** (153000).
-- Les interrupteurs **Rappel aux usagers 7 jours avant**, **Rappel aux usagers la veille** et **Planning hebdomadaire par courriel aux gestionnaires**.
+- Les interrupteurs **Rappel aux usagers 7 jours avant**, **Rappel aux usagers la veille** et **Planning hebdomadaire par courriel aux gestionnaires** ; si le module Personnel de service est actif, **Planning de service par courriel au personnel** (chaque personne ayant une adresse reçoit ses vacations de la semaine, le même jour).
 - **Jour d'envoi du planning hebdomadaire** (Lundi) : du lundi au jeudi, la semaine en cours est envoyée ; du vendredi au dimanche, la semaine suivante.
 - **Adresses supplémentaires à notifier** : des adresses séparées par des virgules, qui reçoivent les nouvelles demandes en plus des gestionnaires des espaces.
 
@@ -184,7 +184,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 **Qui** — Administrateurs.
 
 ![Paramètres, onglet Modules](captures/parametres-modules.webp)
-*Figure — L'onglet Modules : cinq interrupteurs, tous activés.*
+*Figure — L'onglet Modules : les interrupteurs des modules, tous activés (le module Personnel de service, ajouté depuis, s'y trouve aussi).*
 
 **Ce que l'on voit**
 
@@ -193,6 +193,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 - **Matériel** : mobilisation de matériel (tables, chaises, sono…) avec une réservation, stocks suivis.
 - **Demandes de subvention (module ASSO)** : les associations déposent leurs demandes ; les élus donnent un avis.
 - **Campagnes annuelles de créneaux** : les usagers déposent leurs vœux de créneaux hebdomadaires sur une saison ; la Ville arbitre et attribue en lot.
+- **Planning du personnel de service** : gardiens, agents d'accueil et vacataires planifiés par vacations sur les sites ; créneaux réservés sans personne de service signalés (chapitre 11). Coupé, le menu **Personnel** disparaît et la colonne **Service** des fiches de réservation avec lui ; les personnes et vacations déjà saisies restent en base.
 
 **Comment faire**
 
@@ -555,6 +556,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 | Options : relance avant échéance et libération d'office | 7 h 40 | Relance les options proches de leur date limite, libère sans frais celles qui sont échues | toujours |
 | Récapitulatif quotidien des agents | 7 h 45 | Courriel aux administrateurs, gestionnaires et agents : demandes à traiter, messages, signatures, factures, créneaux du jour | toujours (seuls les agents qui acceptent les courriels le reçoivent) |
 | Planning hebdomadaire envoyé aux gestionnaires | 6 h 30, le jour choisi | Envoie aux gestionnaires et agents notifiés de chaque espace son planning de la semaine en PDF | planning hebdomadaire activé (onglet Réservations) |
+| Planning de service envoyé au personnel | 6 h 45, le jour choisi | Envoie à chaque personne de service ayant une adresse ses vacations de la semaine en PDF | module Personnel de service et planning de service par courriel activés |
 | Alertes d'expiration des pièces justificatives | 7 h 50 | Prévient les usagers dont une pièce expire bientôt ou aujourd'hui | module Pièces jointes activé |
 
 **Comment faire**

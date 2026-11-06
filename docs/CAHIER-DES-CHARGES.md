@@ -55,7 +55,8 @@ des courriels et de la convention) sont **paramétrables** sans intervention tec
 | **Lecteur** | Back-office | Lecture seule. |
 
 Les droits se règlent **par rôle et par catégorie** (réservations, planning, sites et espaces,
-matériel, usagers, messages, paiements, subventions, mon équipe) sur quatre niveaux (aucun,
+matériel, usagers, messages, paiements, subventions, mon équipe, personnel de service) sur
+quatre niveaux (aucun,
 lecture, écriture, suppression). Un agent peut en plus être rattaché à des espaces
 (gestionnaire, lecteur ou simplement notifié) : c'est la **gestion des accès par service ou
 par lieu** demandée par le cahier des charges.
@@ -175,6 +176,28 @@ disposition gracieuses accordées aux associations, top organisations ; export *
   blocages (indisponibilités), événements publics.
 - API de disponibilités utilisée par le portail (calendrier d'un espace).
 
+### Personnel de service (module débrayable)
+
+- **Personnes** : gardiens, agents d'accueil, vacataires, sans compte dans l'application
+  (nom, fonction, téléphone, courriel, couleur, note, en service ou non).
+- **Vacations** : une personne est de service sur un **site entier** d'un instant à un autre,
+  avec une note ; répétition hebdomadaire jusqu'à une date (hors jours fériés et vacances
+  scolaires au choix), chaque occurrence étant une vacation propre (suppression d'une seule ou
+  de la série à partir d'elle). Une même personne ne peut pas être de service deux fois sur des
+  horaires qui se recouvrent.
+- **Couverture des créneaux** : chaque créneau d'un dossier accepté, signé ou confirmé est
+  « couvert » (une ou plusieurs vacations du site, mises bout à bout, l'englobent), « partiel »
+  (une vacation le touche sans tout couvrir) ou « à couvrir ». Depuis la fiche d'une
+  réservation, on peut **épingler** une personne sur un créneau précis (état des lieux,
+  événement) : il est alors couvert même sans vacation.
+- **Planning de service** : semaine ou jour, une ligne par personne et une ligne « À couvrir »
+  avec les créneaux réservés et leur état ; filtres site et personne ; onglet « À couvrir » ;
+  PDF de la semaine (une page par site, créneaux à couvrir hachurés) ; alerte du tableau de bord
+  sur les créneaux sans personne de service dans les 7 jours.
+- **Courriel et agenda** : flux ICS personnel par jeton (vacations et créneaux épinglés) ; envoi
+  hebdomadaire des vacations de la semaine à chaque personne ayant une adresse (PDF joint),
+  le même jour que le planning hebdomadaire des gestionnaires, ou à la demande depuis sa fiche.
+
 ### Sites, espaces, sous-espaces, équipements, tarifs, options
 
 - Site : nom, description, adresse, code postal, ville, latitude / longitude, téléphone,
@@ -274,7 +297,8 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 - **Paramètres** : identité de la collectivité (nom, adresse, signataire, logo ou blason
   affiché dans l'application et en en-tête des conventions et factures), couleur, textes du
   portail, SMTP, SMS, modules (portail, inscription, paiements, signature, matériel,
-  subventions, documents), TVA, pourcentage d'acompte, rappels, relances, archivage, délai
+  subventions, documents, campagnes, personnel de service), TVA, pourcentage d'acompte,
+  rappels, relances, archivage, délai
   d'annulation, validité des codes, texte de la convention, agents notifiés.
 - **Utilisateurs et rôles** : agents, rôles avec permissions par catégorie, rattachement aux
   espaces, second facteur, désactivation.
@@ -298,7 +322,8 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 
 ### Flux ICS et exports
 
-- ICS public par espace (jeton), ICS personnel par usager (jeton révocable).
+- ICS public par espace (jeton), ICS personnel par usager (jeton révocable), ICS par personne
+  de service (jeton révocable depuis sa fiche).
 - Export Excel des statistiques (réservations, espaces, usagers), export des listes.
 
 ---
@@ -425,6 +450,7 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 | Données clés pour responsables et élus (taux d'occupation, valeur des mises à disposition) | **Oui** — statistiques par période, taux d'occupation, recettes, valorisation des gratuités, export Excel ; rôle Élu en lecture. |
 | Tableaux de bord personnalisables | **Partiel** — tableau de bord des agents avec indicateurs et préférences d'affichage ; pas de constructeur de widgets. |
 | Gestion des accès par service ou lieu, tableau de bord, notifications | **Oui** — rôles par catégorie, rattachement des agents aux espaces, notifications ciblées (gestionnaires de l'espace, sinon tous). |
+| Planning du personnel de service (gardiens, agents d'accueil) en regard des réservations | **Oui** — module Personnel de service : vacations par site avec répétition hebdomadaire, créneaux réservés couverts / partiels / à couvrir, épinglage sur un créneau, PDF, ICS et courriel hebdomadaire par personne. |
 | Module ASSO : espace dédié, compte, dépôt de demandes de subvention | **Oui** — « Mes subventions », dépôt avec pièces, suivi. |
 | Back-office collectivité et application dédiée aux élus | **Oui / partiel** — instruction côté agents, rôle Élu avec avis dans la même application (le vote est enregistré par les agents) (responsive), pas d'application mobile séparée. |
 | CRM : fichier de contacts unique, filtres, segmentation, historique (Agora) | **Oui** — organisations et contacts, type, profil, notes, pièces, historique des dossiers et factures ; recherche globale. |

@@ -384,6 +384,7 @@ Vous pouvez aussi poser l'option dès la saisie d'une réservation, avec le cham
 - Dans **Événement**, la ligne **Récurrence** (« Chaque semaine le mercredi, jusqu'au 31/01/2027 »).
 - La liste **Créneaux (20)** : pour chaque séance, la date, les horaires, la durée et une pastille : « Passé », « Présent » avec les heures constatées, « Absent sans prévenir », « Prévu » ou « Annulé » (barré).
 - Pour chaque créneau prévu, de petits boutons : le crayon (**Modifier ce créneau**), le bâtiment public (**Réquisitionner ce créneau pour la Ville**, sur les séances à venir d'un dossier accepté, signé ou confirmé) et la croix (**Annuler ce créneau**).
+- Si le module **Personnel de service** est actif, une colonne de plus montre qui est de service sur chaque séance à venir (nom de la personne, ou pastille **À couvrir** / **Partiel**), avec le bouton en forme de bouclier (**Personne de service**) pour épingler quelqu'un sur ce créneau précis (chapitre 11).
 - Les boutons **Présences** (constat des séances passées) et **Ajouter un créneau**.
 - Dans **Montants**, une ligne par créneau. Ici le tarif du profil « Association de la commune » est nul : le total affiche « Gratuit ».
 

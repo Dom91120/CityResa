@@ -68,6 +68,13 @@ export const TACHES: Tache[] = [
     actif: (c) => Boolean(c.PLANNING_HEBDO_ENABLED),
   },
   {
+    id: "planning_personnel",
+    label: "Planning de service envoyé au personnel (le jour configuré)",
+    heure: 6,
+    minute: 45,
+    actif: (c) => Boolean(c.PERSONNEL_ENABLED && c.PLANNING_PERSONNEL_ENABLED),
+  },
+  {
     id: "alertes_pieces",
     label: "Alertes d'expiration des pièces justificatives",
     heure: 7,
