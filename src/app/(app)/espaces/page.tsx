@@ -14,7 +14,12 @@ import {
 import { PastilleEspace } from "@/components/macros";
 import { aPartirDe } from "@/lib/tarification";
 import { libellesProfils, premieresPhotos, referentielsEspaces } from "@/modules/espaces/server";
-import { PileGestionnaires, StatutEspace, Visibilite } from "@/modules/espaces/vues";
+import {
+  OuvertA,
+  PastilleVisibilite,
+  PileGestionnaires,
+  StatutEspace,
+} from "@/modules/espaces/vues";
 import { prisma } from "@/server/db";
 import { contexteModule } from "@/server/module";
 import { type Params, paginate, param, resolvePerPage, textSearch } from "@/server/paging";
@@ -171,12 +176,17 @@ export default async function EspacesPage({ searchParams }: { searchParams: Prom
                   label="Capacité"
                   pathname={page.pathname}
                   search={page.search}
-                  classes="text-end"
+                  classes="text-center"
                 />
                 <Th col="site" label="Site" pathname={page.pathname} search={page.search} />
                 <th>Visibilité</th>
+                <th>Ouvert à</th>
                 <Th col="statut" label="Statut" pathname={page.pathname} search={page.search} />
-                <th>Gestionnaires</th>
+                <th>
+                  <abbr title="Gestionnaires" style={{ textDecoration: "none" }}>
+                    Gest.
+                  </abbr>
+                </th>
                 <th />
               </tr>
             </thead>
@@ -211,8 +221,10 @@ export default async function EspacesPage({ searchParams }: { searchParams: Prom
                           </span>
                         </span>
                       </td>
-                      <td>{e.natureNom || <span className="text-faint">—</span>}</td>
-                      <td className="text-end tabular">
+                      <td className="text-nowrap">
+                        {e.natureNom || <span className="text-faint">—</span>}
+                      </td>
+                      <td className="text-center tabular">
                         {e.capacite !== null ? (
                           <span title="Debout / assis">
                             {e.capacityStanding ?? "—"} / {e.capacitySeated ?? "—"}
@@ -221,15 +233,14 @@ export default async function EspacesPage({ searchParams }: { searchParams: Prom
                           <span className="text-faint">—</span>
                         )}
                       </td>
-                      <td>
+                      <td className="text-nowrap">
                         <a href={`/sites/${e.siteId}`}>{e.siteNom}</a>
                       </td>
                       <td>
-                        <Visibilite
-                          isPublic={e.isPublic}
-                          allowedProfiles={e.allowedProfiles}
-                          libelles={libelles}
-                        />
+                        <PastilleVisibilite isPublic={e.isPublic} />
+                      </td>
+                      <td className="text-nowrap">
+                        <OuvertA allowedProfiles={e.allowedProfiles} libelles={libelles} resume />
                       </td>
                       <td>
                         <StatutEspace status={e.status} isActive={e.isActive} />
@@ -293,7 +304,7 @@ export default async function EspacesPage({ searchParams }: { searchParams: Prom
                 })
               ) : (
                 <Vide
-                  colonnes={9}
+                  colonnes={10}
                   message={
                     q || onglet || siteF || natureF
                       ? "Aucun espace ne correspond à ces critères."

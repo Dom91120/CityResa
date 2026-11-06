@@ -151,8 +151,6 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
               <tr>
                 {th("numero", "Numéro")}
                 {th("organisation", "Association")}
-                {th("exercice", "Exercice")}
-                {th("type", "Type")}
                 {th("objet", "Objet")}
                 {th("demande", "Demandé", "text-end")}
                 {th("accorde", "Accordé", "text-end")}
@@ -174,20 +172,25 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
                         >
                           {s.numero}
                         </a>
-                        <small>déposée le {dateCourte(s.createdAt)}</small>
+                        <small>
+                          Exercice {s.exercice} · déposée le {dateCourte(s.createdAt)}
+                        </small>
                       </span>
                     </td>
                     <td>
-                      <a href={`/usagers/${s.organisation.id}`}>{s.organisation.name}</a>
+                      <span className="cell2" style={{ maxWidth: 200 }}>
+                        <a href={`/usagers/${s.organisation.id}`} title={s.organisation.name}>
+                          {s.organisation.name}
+                        </a>
+                      </span>
                     </td>
-                    <td className="tabular">{s.exercice}</td>
                     <td>
-                      <TypeSubvention type={s.type} />
-                    </td>
-                    <td>
-                      <span className="cell2" style={{ maxWidth: 280 }}>
+                      <span className="cell2" style={{ maxWidth: 260 }}>
                         <span title={s.objet}>{s.objet}</span>
-                        {s.beneficiaires ? <small>{s.beneficiaires} bénéficiaires</small> : null}
+                        <small className="d-flex align-items-center gap-1">
+                          <TypeSubvention type={s.type} />
+                          {s.beneficiaires ? `· ${s.beneficiaires} bénéficiaires` : null}
+                        </small>
                       </span>
                     </td>
                     <td className="text-end tabular">{montant(s.montantDemande)}</td>
@@ -230,7 +233,7 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
                 ))
               ) : (
                 <Vide
-                  colonnes={10}
+                  colonnes={8}
                   icone="hand-coins"
                   message={
                     fl.q || fl.type || fl.organisation || fl.exercice

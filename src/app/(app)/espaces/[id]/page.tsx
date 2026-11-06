@@ -30,7 +30,7 @@ import {
   ROLES_GESTIONNAIRE,
   referentielsEspaces,
 } from "@/modules/espaces/server";
-import { Onglets, StatutEspace, Visibilite, Volet } from "@/modules/espaces/vues";
+import { Onglets, OuvertA, PastilleVisibilite, StatutEspace, Volet } from "@/modules/espaces/vues";
 import { forParent } from "@/server/documents";
 import { idDeRoute } from "@/server/guards";
 import { entreesEspace } from "@/server/liste-attente";
@@ -208,16 +208,10 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
                     label="Surface"
                     valeur={e.surface ? `${String(e.surface).replace(".", ",")} m²` : null}
                   />
+                  <Lu label="Visibilité" valeur={<PastilleVisibilite isPublic={e.isPublic} />} />
                   <Lu
-                    label="Visibilité"
-                    valeur={
-                      <Visibilite
-                        isPublic={e.isPublic}
-                        allowedProfiles={e.allowedProfiles}
-                        libelles={libelles}
-                      />
-                    }
-                    pleine
+                    label="Ouvert à"
+                    valeur={<OuvertA allowedProfiles={e.allowedProfiles} libelles={libelles} />}
                   />
                   <Lu label="Tarif" valeur={aPartirDe(e.tarifs)} />
                   <Lu

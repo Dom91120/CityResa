@@ -426,6 +426,8 @@ type EspaceSpec = {
   site: string;
   parent?: string;
   name: string;
+  /** Libellé court pour le planning ; `null` = aucun ; absent = la partie avant « - » du nom. */
+  court?: string | null;
   nature: string | null;
   description: string;
   standing?: number;
@@ -503,9 +505,9 @@ const SITES: {
   },
   {
     cle: "henri-matisse",
-    name: "Salle Henri Matisse",
+    name: "Parc Henri Matisse",
     description:
-      "Salle de 106 m² lumineuse, adaptée aux expositions, ateliers et réunions d'associations.",
+      "À l'entrée du Parc. Une salle de 106 m² lumineuse, adaptée aux expositions, ateliers et réunions d'associations.",
     address: "13 rue de Bagneux",
     postalCode: "92320",
     city: "Châtillon",
@@ -717,7 +719,8 @@ const ESPACES: EspaceSpec[] = [
   {
     cle: "mb-polyvalente",
     site: "maison-blanche",
-    name: "Salle polyvalente - Espace Maison Blanche",
+    name: "Salle EMB - Rez de chaussée",
+    court: null,
     nature: "Salle des fêtes",
     description:
       "La grande salle de la ville : 600 m² modulables avec scène, sonorisation et éclairage scénique, cuisine professionnelle attenante et accès direct sur le parc. Pour les galas, repas, lotos, spectacles et grandes assemblées.",
@@ -800,7 +803,8 @@ const ESPACES: EspaceSpec[] = [
   {
     cle: "mb-reunion-1",
     site: "maison-blanche",
-    name: "Salle de réunion du 1er étage - Espace Maison Blanche",
+    name: "Salle EMB - 1er étage",
+    court: null,
     nature: "Salle de réunion",
     description:
       "Salle de 53 m² : 20 places autour d'une table en U, vidéoprojecteur et écran, tableau blanc, Wi-Fi. Pour un conseil d'administration, une formation ou un entretien.",
@@ -823,7 +827,8 @@ const ESPACES: EspaceSpec[] = [
   {
     cle: "mb-reunion-2",
     site: "maison-blanche",
-    name: "Salle de réunion du 2e étage - Espace Maison Blanche",
+    name: "Salle EMB - 2e étage",
+    court: null,
     nature: "Salle de réunion",
     description:
       "60 m² réservés aux associations de la ville pour leurs activités régulières : cours, ateliers, permanences. Tables et chaises empilables, placard fermé par association.",
@@ -852,7 +857,8 @@ const ESPACES: EspaceSpec[] = [
   {
     cle: "mb-reunion-3",
     site: "maison-blanche",
-    name: "Salle de réunion du 3e étage - Espace Maison Blanche",
+    name: "Salle EMB - 3e étage",
+    court: null,
     nature: "Salle de réunion",
     description:
       "Petite salle de 35 m² sous les toits : 12 places autour d'une table, écran de visioconférence, Wi-Fi. Pour un bureau, un entretien ou un petit atelier.",
@@ -2457,7 +2463,12 @@ async function creerSitesEtEspaces(): Promise<{
         parentId: parent?.id ?? null,
         name: e.name,
         // « Salle polyvalente - Espace Maison Blanche » → libellé court « Salle polyvalente ».
-        shortName: e.name.includes(" - ") ? e.name.split(" - ")[0].trim() : null,
+        shortName:
+          e.court !== undefined
+            ? e.court
+            : e.name.includes(" - ")
+              ? e.name.split(" - ")[0].trim()
+              : null,
         slug: slug(e.name),
         natureId: refOuNull("espace_nature", e.nature),
         description: e.description,

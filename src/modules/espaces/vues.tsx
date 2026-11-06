@@ -26,37 +26,52 @@ export function StatutEspace({ status, isActive }: { status: string; isActive: b
 }
 
 /** Public / interne, et les profils autorisés. */
-export function Visibilite({
-  isPublic,
+/** Qui voit l'espace : sur le portail public, ou seulement en back-office. */
+export function PastilleVisibilite({ isPublic }: { isPublic: boolean }) {
+  return isPublic ? (
+    <Chip teinte="emerald" titre="Visible sur le portail public">
+      <Icone nom="globe" taille={11} /> Public
+    </Chip>
+  ) : (
+    <Chip teinte="slate" titre="Réservé au back-office">
+      <Icone nom="eye-off" taille={11} /> Interne
+    </Chip>
+  );
+}
+
+/**
+ * Qui peut demander l'espace : tous les profils, ou une liste. En `resume` (listes), une seule
+ * pastille « 3 profils » avec les noms au survol ; sinon une pastille par profil.
+ */
+export function OuvertA({
   allowedProfiles,
   libelles,
+  resume = false,
 }: {
-  isPublic: boolean;
   allowedProfiles: string[];
   libelles: Map<string, string>;
+  resume?: boolean;
 }) {
+  const noms = allowedProfiles.map((c) => libelles.get(c) ?? c);
+  if (!allowedProfiles.length)
+    return (
+      <Chip teinte="sky" titre="Tous les profils peuvent demander">
+        Tous les profils
+      </Chip>
+    );
+  if (resume)
+    return (
+      <Chip teinte="violet" titre={`Profils autorisés à demander : ${noms.join(", ")}`}>
+        {noms.length === 1 ? noms[0] : `${noms.length} profils`}
+      </Chip>
+    );
   return (
     <span className="d-inline-flex flex-wrap gap-1">
-      {isPublic ? (
-        <Chip teinte="emerald" titre="Visible sur le portail public">
-          <Icone nom="globe" taille={11} /> Public
+      {noms.map((n) => (
+        <Chip key={n} teinte="violet" titre="Profil autorisé à demander">
+          {n}
         </Chip>
-      ) : (
-        <Chip teinte="slate" titre="Réservé au back-office">
-          <Icone nom="eye-off" taille={11} /> Interne
-        </Chip>
-      )}
-      {allowedProfiles.length ? (
-        allowedProfiles.map((c) => (
-          <Chip key={c} teinte="violet" titre="Profil autorisé à demander">
-            {libelles.get(c) ?? c}
-          </Chip>
-        ))
-      ) : (
-        <Chip teinte="sky" titre="Tous les profils peuvent demander">
-          Tous profils
-        </Chip>
-      )}
+      ))}
     </span>
   );
 }
@@ -426,7 +441,7 @@ export function FormulaireEspace({
             aide="Décoché : une demande conforme est confirmée automatiquement."
           />
           <Coches
-            label="Profils autorisés à demander (aucun coché = tous les profils)"
+            label="Ouvert à : profils autorisés à demander (aucun coché = tous les profils)"
             name="profil"
             options={profils
               .filter((p) => p.code)
