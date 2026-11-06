@@ -77,8 +77,9 @@ Ce chapitre explique comment décrire les lieux de la Ville (sites), ce qui s'y 
 - Pour chaque espace :
   - la pastille de couleur (celle du planning), le nom et, dessous, le tarif « à partir de » (par exemple « À partir de 12 €/h ») ou **Sur demande** si aucun tarif n'est saisi ;
   - la **Capacité** sous la forme « debout / assis » (500 / 300) ; un tiret indique une capacité non renseignée ;
-  - la **Visibilité** : **Public** si l'espace est visible sur le portail, puis **Tous profils** ou la liste des profils autorisés (la salle du 2e étage n'est ouverte qu'aux associations de la commune, aux associations extérieures et aux services de la collectivité) ;
-  - le **Statut** et les initiales des agents qui gèrent l'espace (SM pour Sophie Martin, KB pour Karim Benali).
+  - la **Visibilité** : **Public** si l'espace est visible sur le portail, **Interne** s'il n'existe que pour les agents ;
+  - **Ouvert à** : qui peut déposer une demande, **Tous les profils** ou le nombre de profils autorisés (« 3 profils » pour la salle du 2e étage, ouverte aux seules associations de la commune, associations extérieures et services de la collectivité ; survolez la pastille pour lire la liste, ou ouvrez la fiche) ;
+  - le **Statut** et, dans la colonne **Gest.** (gestionnaires), les initiales des agents qui gèrent l'espace (SM pour Sophie Martin, KB pour Karim Benali).
 - Le menu de chaque ligne propose **Voir la fiche**, **Voir au planning**, **Modifier**, **Nouvelle réservation** et **Supprimer**.
 
 **Règles à connaître**
@@ -100,7 +101,7 @@ Ce chapitre explique comment décrire les lieux de la Ville (sites), ce qui s'y 
 - En haut : la pastille de couleur, le nom, le statut (**Actif**), le site et la nature. À droite, **Planning** (planning filtré sur cet espace), **Modifier** et le menu « … ».
 - Les onglets : **Synthèse**, **Photos**, **Équipements**, **Tarifs**, **Prestations**, **Gestionnaires**, **Indisponibilités**, **Réservations**, **Flux ICS** et **Activité**. Le chiffre à côté de chaque onglet indique le nombre d'éléments (3 photos, 11 lignes de tarif…).
 - Dans **Synthèse** :
-  - le bloc **Identité** : site, nature, étage, capacité, surface, visibilité, tarif, lien **Voir sur le portail** (avec une icône pour copier le lien), description ; s'il existe des sous-espaces, ils sont listés ici ;
+  - le bloc **Identité** : site, nature, étage, capacité, surface, visibilité (Public ou Interne), **Ouvert à** (les profils autorisés à demander), tarif, lien **Voir sur le portail** (avec une icône pour copier le lien), description ; s'il existe des sous-espaces, ils sont listés ici ;
   - le bloc **Règlement et consignes**, repris dans la convention envoyée à l'usager ;
   - le bloc **Règles de réservation**, qui résume en clair les réglages : pas des créneaux, durée minimale, délai, horizon, montage et démontage, caution, mode de validation ;
   - le bloc **Horaires d'ouverture**, jour par jour. Si des horaires particuliers existent pour une saison, ils s'affichent dans un second tableau.
@@ -128,7 +129,7 @@ Ce chapitre explique comment décrire les lieux de la Ville (sites), ce qui s'y 
 Le formulaire compte trois parties.
 
 - **Identité** : **Nom de l'espace** (obligatoire), **Libellé court** (affiché dans le planning ; vide = le nom), **Adresse courte (slug)**, **Nature**, **Site** (obligatoire), **Espace parent**, **Étage / niveau**, **Capacité debout**, **Capacité assise**, **Surface (m²)**, **Description** et **Couleur dans le planning** (une pastille à choisir parmi dix).
-- **Visibilité** : l'interrupteur **Visible sur le portail public**, l'interrupteur **Demandes à valider par un agent** et la rangée **Profils autorisés à demander** (Particulier de la commune, Particulier extérieur, Association de la commune, Association extérieure, Entreprise, Service de la collectivité, Autre collectivité).
+- **Visibilité** : l'interrupteur **Visible sur le portail public**, l'interrupteur **Demandes à valider par un agent** et la rangée **Ouvert à : profils autorisés à demander** (Particulier de la commune, Particulier extérieur, Association de la commune, Association extérieure, Entreprise, Service de la collectivité, Autre collectivité).
 - **Règles de réservation** : le tableau des **Horaires d'ouverture** (ouverture, fermeture et case **Fermé** pour chaque jour), les **Horaires particuliers par saison**, puis les champs **Pas des créneaux (min)**, **Durée minimale (min)**, **Durée maximale (min)**, **Caution (€)**, **Valeur de référence (€/h)**, **Délai minimal (jours)**, **Horizon maximal (jours)**, **Montage avant (min)**, **Démontage après (min)**, **Occupations simultanées**, **Statut**, **Règlement et conditions** et **Consignes pratiques**.
 
 **Comment faire**
@@ -147,7 +148,7 @@ Le formulaire compte trois parties.
 - **Montage et démontage** : ces minutes s'ajoutent avant et après chaque créneau pour vérifier les conflits. Avec 30 minutes de chaque côté, un créneau 14 h-18 h occupe en réalité la salle de 13 h 30 à 18 h 30.
 - **Sous-espaces** : choisir un **Espace parent** fait de l'espace une partie d'une salle modulable. Réserver le parent bloque tous ses sous-espaces ; réserver un sous-espace bloque le parent ; deux sous-espaces voisins restent indépendants.
 - **Occupations simultanées** : 1 = l'espace est exclusif. Au-delà (pistes, couloirs de bassin, terrain multisport), un créneau n'est refusé que lorsque ce nombre de réservations se chevauchent déjà au même moment. Une indisponibilité bloque toujours l'espace, quel que soit ce nombre.
-- **Profils autorisés** : aucune case cochée = tous les profils peuvent demander l'espace. Une organisation dont la fiche n'est pas encore validée ne bénéficie pas des espaces réservés à son profil (voir chapitre 5).
+- **Ouvert à** (profils autorisés) : aucune case cochée = tous les profils peuvent demander l'espace ; la fiche et la liste des espaces affichent alors **Tous les profils**, sinon le nombre de profils cochés. Une organisation dont la fiche n'est pas encore validée ne bénéficie pas des espaces réservés à son profil (voir chapitre 5).
 - **Demandes à valider par un agent** : décoché, une demande conforme aux règles est confirmée automatiquement, sans intervention d'un agent.
 - **Visible sur le portail public** : décoché, seuls les agents peuvent voir l'espace et y créer des réservations.
 - **Caution (€)** : 0 = aucune caution. La caution est facturée à part, hors devis, puis restituée ou retenue (voir chapitre 6).

@@ -6,21 +6,6 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["dev"],
       "port": 3000
-    },
-    {
-      "name": "dev-3001",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": [
-        "exec",
-        "cross-env",
-        "NEXT_DIST_DIR=.next-3001",
-        "NODE_OPTIONS=--max-old-space-size=8192",
-        "next",
-        "dev",
-        "--port",
-        "3001"
-      ],
-      "port": 3001
     }
   ]
 }

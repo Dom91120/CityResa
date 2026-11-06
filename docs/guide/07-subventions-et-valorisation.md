@@ -18,7 +18,7 @@ Ce chapitre couvre le module destiné aux associations : le circuit des demandes
 - Quatre cartes cliquables : **Demandé** pour l'exercice (4 800 €, 2 dossiers), **Accordé** (montant et nombre de subventions votées), **Versé** (montant et nombre de versements) et **En cours d'instruction** (dossiers à instruire, soumettre ou voter).
 - Les onglets **Déposées**, **En instruction**, **Avis**, **Votées**, **Refusées**, **Versées** et **Toutes**.
 - La recherche (numéro, association, objet) et les filtres **Tous les exercices**, **Tous les types**, **Toutes les associations**, puis **Filtrer**.
-- Pour chaque demande : le **Numéro** (SUB-ANNÉE-NNNN) et sa date de dépôt, l'**Association**, l'**Exercice**, le **Type** (Fonctionnement, Projet, Exceptionnelle, Investissement), l'**Objet** et le nombre de bénéficiaires, les montants **Demandé** et **Accordé**, et le **Statut**.
+- Pour chaque demande : le **Numéro** (SUB-ANNÉE-NNNN) avec l'exercice et la date de dépôt, l'**Association**, l'**Objet** avec le type (Fonctionnement, Projet, Exceptionnelle, Investissement) et le nombre de bénéficiaires, les montants **Demandé** et **Accordé**, et le **Statut**.
 
 **Comment faire — déposer une demande au nom d'une association**
 
