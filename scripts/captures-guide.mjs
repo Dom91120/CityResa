@@ -37,6 +37,7 @@ const COMPTES = {
   particulier: ["martine.dupont@exemple.fr"],
   association: ["sandra.da-silva@exemple.fr"],
   basket: ["redouane.el-bennane@exemple.fr"],
+  yoga: ["madeleine.legouez@exemple.fr"],
   entreprise: ["isabelle.roux@exemple.fr"],
   avalider: ["josette.nickels@exemple.fr"],
   service: ["lea.fontaine@exemple.fr"],
@@ -117,9 +118,21 @@ const CAPTURES = [
     hauteur: 2200,
   },
   {
-    nom: "asso-nouvelle-subvention",
-    compte: "association",
-    url: "/portail/mes-subventions/nouvelle",
+    nom: "asso-dossier-subvention",
+    compte: "yoga",
+    url: "/portail/mes-subventions/5/dossier/budget",
+    hauteur: 2600,
+  },
+  {
+    nom: "asso-subvention-pieces",
+    compte: "yoga",
+    url: "/portail/mes-subventions/5/dossier/pieces",
+    hauteur: 1800,
+  },
+  {
+    nom: "asso-subvention-attestation",
+    compte: "yoga",
+    url: "/portail/mes-subventions/5/dossier/attestation",
     hauteur: 2600,
   },
   { nom: "asso-mes-voeux", compte: "twirling", url: "/portail/mes-voeux", hauteur: 2200 },
@@ -250,8 +263,20 @@ const CAPTURES = [
   { nom: "facture-nouvelle", compte: "gestionnaire", url: "/paiements/nouvelle", hauteur: 1600 },
 
   // Subventions et valorisation
-  { nom: "subventions", compte: "gestionnaire", url: "/subventions", hauteur: 1200 },
-  { nom: "subvention-instruction", compte: "gestionnaire", url: "/subventions/3", hauteur: 2600 },
+  { nom: "subventions", compte: "gestionnaire", url: "/subventions", hauteur: 1500 },
+  {
+    nom: "subventions-campagne",
+    compte: "gestionnaire",
+    url: "/subventions/campagnes",
+    hauteur: 900,
+  },
+  {
+    nom: "subvention-dossier-fiche",
+    compte: "gestionnaire",
+    url: "/subventions/5/dossier/budget",
+    hauteur: 2400,
+  },
+  { nom: "subvention-instruction", compte: "gestionnaire", url: "/subventions/3", hauteur: 3200 },
   { nom: "subvention-elu", compte: "elu", url: "/subventions/3", hauteur: 2600 },
   { nom: "valorisation", compte: "gestionnaire", url: "/valorisation", hauteur: 1600 },
 

@@ -237,7 +237,7 @@ export async function enregistrerPdf(
   parentIdValue: number,
   filename: string,
   octets: Buffer,
-  docKind: "convention" | "avenant" | "facture" | "attestation" | "autre",
+  docKind: "convention" | "avenant" | "facture" | "attestation" | "dossier" | "autre",
   title?: string,
 ): Promise<Document> {
   const col = DOCUMENT_PARENTS[kind][0];

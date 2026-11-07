@@ -69,6 +69,7 @@ export type Usage = {
   profilsEspaces: number;
   personnels: number;
   absences: number;
+  subventions: number;
 };
 
 /** Combien d'enregistrements pointent vers chaque valeur (pour interdire la suppression). */
@@ -91,6 +92,7 @@ export async function usages(ids: number[], codes: string[]): Promise<Map<number
           documents: true,
           personnelsContrat: true,
           absences: true,
+          secteursSubvention: true,
         },
       },
     },
@@ -117,6 +119,7 @@ export async function usages(ids: number[], codes: string[]): Promise<Map<number
       profilsEspaces: r.code ? (parCode.get(r.code) ?? 0) : 0,
       personnels: r._count.personnelsContrat,
       absences: r._count.absences,
+      subventions: r._count.secteursSubvention,
     });
   }
   return out;
@@ -142,6 +145,7 @@ export function decrireUsage(u: Usage | undefined): string {
   p(u.documents, "pièce");
   p(u.personnels, "personne de service", "personnes de service");
   p(u.absences, "absence");
+  p(u.subventions, "demande de subvention", "demandes de subvention");
   return parts.join(", ");
 }
 

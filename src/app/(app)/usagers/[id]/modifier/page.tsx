@@ -93,6 +93,14 @@ export default async function ModifierUsagerPage({ params }: { params: Promise<{
                 aide="Prioritaire dans les campagnes annuelles de créneaux, après les services de la Ville et les autres collectivités."
               />
             </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <Interrupteur
+                label="Association sportive"
+                name="sportive"
+                coche={org.sportive}
+                aide="Dossier de demande de subvention et plan de budget des associations sportives."
+              />
+            </div>
           </Grille>
         </SectionForm>
         <SectionForm

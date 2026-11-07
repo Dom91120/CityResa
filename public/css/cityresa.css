@@ -757,3 +757,17 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .evt--propose { border-left-style: dashed; background: var(--amber-dim, #fef3c7); }
 .evt--absence { background: repeating-linear-gradient(45deg, var(--inset), var(--inset) 6px, var(--amber-dim, #fef3c7) 6px, var(--amber-dim, #fef3c7) 8px); border-left-color: var(--amber-text); color: var(--muted); }
 .plages-jour { display: block; font-size: 0.66rem; color: var(--muted); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── Dossier de demande de subvention : fiches ── */
+.fiches-nav { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.fiche-onglet { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px 5px 6px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); color: var(--body); font-size: .86rem; text-decoration: none; line-height: 1.2; }
+.fiche-onglet .num { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--surface-2, #eef1ef); font-size: .74rem; font-weight: 600; }
+.fiche-onglet .etat { margin-left: 2px; }
+.fiche-onglet.ok .etat { color: var(--success, #2e8b57); }
+.fiche-onglet.manque .etat { color: var(--warning, #c47f00); }
+.fiche-onglet.active { border-color: var(--primary); background: var(--primary-dim, rgba(46, 139, 87, .08)); color: var(--strong); font-weight: 500; }
+.fiche-onglet:hover { border-color: var(--primary); }
+.table-saisie td { padding: 3px 4px; vertical-align: middle; }
+.table-saisie th { font-size: .78rem; font-weight: 600; color: var(--muted); }
+.table-plan tr.groupe td { background: var(--surface-2, #f1f3f2); font-weight: 600; font-size: .8rem; padding: 4px 8px; }
+.table-plan tr.total td { font-weight: 700; border-top: 2px solid var(--border-strong, #999); }

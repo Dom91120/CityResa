@@ -119,6 +119,8 @@ describe("EMAIL_TEMPLATE_SEEDS", () => {
       "compte_inactif",
       "subvention_recue",
       "subvention_decision",
+      "subvention_incomplete",
+      "subvention_code",
       "digest_agents",
       "planning_hebdo",
       "mot_de_passe",

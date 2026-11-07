@@ -281,6 +281,15 @@ export const SUBVENTION_TYPES: Record<string, string> = {
   exceptionnelle: "Exceptionnelle",
   investissement: "Investissement",
 };
+export const SUBVENTION_NATURES: Record<string, string> = {
+  premiere: "Première demande",
+  renouvellement: "Renouvellement",
+};
+export const CAMPAGNE_SUBVENTION_STATUS: Record<string, { label: string; teinte: string }> = {
+  brouillon: { label: "En préparation", teinte: "slate" },
+  ouverte: { label: "Dépôt ouvert", teinte: "emerald" },
+  cloturee: { label: "Clôturée", teinte: "amber" },
+};
 export const SUBVENTION_STATUS: Record<string, { label: string; teinte: string }> = {
   brouillon: { label: "Brouillon", teinte: "slate" },
   deposee: { label: "Déposée", teinte: "amber" },
@@ -309,6 +318,17 @@ export const DOCUMENT_KINDS: Record<string, string> = {
   attestation: "Attestation de valorisation",
   statuts: "Statuts",
   assurance: "Attestation d'assurance",
+  dossier: "Dossier de demande de subvention",
+  pv_ag: "Procès-verbal d'assemblée générale",
+  comptes: "Comptes approuvés du dernier exercice",
+  budget_previsionnel: "Budget prévisionnel",
+  projet_action: "Projet financier d'une action",
+  rib: "Relevé d'identité bancaire",
+  cer: "Contrat d'engagement républicain signé",
+  pouvoir: "Pouvoir ou mandat du signataire",
+  rapport_cac: "Rapport du commissaire aux comptes",
+  compte_rendu: "Compte rendu financier des actions subventionnées",
+  composition_ca: "Composition du conseil d'administration",
   autre: "Autre",
 };
 /** Parent → (colonne de rattachement, catégorie de droits). */
@@ -360,6 +380,7 @@ export const REFERENTIAL_KINDS: Record<string, string> = {
   doc_categorie: "Catégories de pièces",
   contrat_type: "Types de contrat du personnel",
   absence_motif: "Motifs d'absence du personnel",
+  subvention_secteur: "Secteurs des demandes de subvention",
 };
 export const REFERENTIAL_SEEDS: Record<string, { label: string; code?: string; icon?: string }[]> =
   {
@@ -456,6 +477,14 @@ export const REFERENTIAL_SEEDS: Record<string, { label: string; code?: string; i
       { label: "Maladie", code: "maladie", icon: "thermometer" },
       { label: "Formation", code: "formation", icon: "graduation-cap" },
       { label: "Récupération", code: "recuperation", icon: "clock" },
+      { label: "Autre", code: "autre" },
+    ],
+    subvention_secteur: [
+      { label: "Sport", code: "sport", icon: "dumbbell" },
+      { label: "Culture", code: "culture", icon: "music" },
+      { label: "Solidarité", code: "solidarite", icon: "handshake" },
+      { label: "Jeunesse et éducation", code: "jeunesse", icon: "graduation-cap" },
+      { label: "Cadre de vie", code: "cadre_de_vie", icon: "trees" },
       { label: "Autre", code: "autre" },
     ],
   };

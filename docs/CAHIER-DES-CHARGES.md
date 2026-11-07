@@ -301,13 +301,39 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 
 ### Subventions (module ASSO)
 
-- Dépôt par l'association depuis son espace : exercice, objet, type (fonctionnement, projet,
-  exceptionnelle, investissement), montant demandé, budget total, bénéficiaires, description,
-  pièces (budget prévisionnel, bilan, RIB). Numérotation SUB-AAAA-0001.
-- Instruction par les agents (instructeur, notes), **avis des élus** (favorable, avec réserve,
-  défavorable, montant proposé, commentaire), décision (votée / refusée) avec montant accordé
-  et note, versement. Courriels de réception et de décision.
-- Suivi par l'association (« Mes subventions »), tableau et statistiques côté collectivité.
+- **Campagne annuelle** : une campagne par exercice (intitulé, dates d'ouverture et de clôture
+  du dépôt, consignes, statut en préparation / dépôt ouvert / clôturée). Le portail accepte un
+  dépôt entre les deux dates d'une campagne ouverte ; un agent peut déposer ou compléter un
+  dossier hors période avec un motif de dérogation tracé dans l'historique.
+- **Dossier de demande** reprenant le formulaire de la Ville, en deux variantes selon la case
+  « association sportive » de l'organisation : présentation (identification, agréments, label,
+  utilité publique, commissaire aux comptes), bureau et personne chargée du dossier, effectifs
+  (bénévoles, salariés, adhérents sur deux exercices, licenciés et cotisations), rayonnement
+  (orientations, vie locale, moyens mis à disposition), budget prévisionnel par postes (plan
+  associatif 60–78 et 86/87, ou plan sportif par rubriques) avec totaux, résultat et part de la
+  subvention, demande et actions (objet, type, montant, justification, actions spécifiques),
+  trésorerie, bilan N-1 (subvention perçue, actions réalisées, compte de résultat budget /
+  réalisé, synthèse), pièces à joindre (liste conditionnelle : PV d'AG, comptes, RIB, compte
+  rendu des actions, rapport du commissaire, statuts et composition du conseil pour une première
+  demande ou un changement, pouvoir du mandataire, projet financier des actions), attestation
+  sur l'honneur et contrat d'engagement républicain.
+- Dossier **pré-rempli** depuis la fiche de l'organisation, le dossier de l'exercice précédent
+  (renouvellement) et les locaux municipaux mis à disposition l'an passé (valorisation) ; rempli
+  fiche par fiche avec enregistrement et reprise ; contrôle de complétude (champs obligatoires par
+  fiche, pièces attendues, signature) avant le dépôt.
+- **Signature électronique** de l'attestation par code à usage unique (SMS, à défaut courriel),
+  invalidée par toute modification ultérieure ; dépôt qui numérote (SUB-AAAA-0001), date la
+  réception, génère le **PDF du dossier** (fiches, cadre réservé, mentions de signature) et envoie
+  l'accusé de réception. Nature première demande / renouvellement.
+- **Instruction** : cadre réservé (numéro, réception, secteur d'instruction, campagne), lecture du
+  dossier par fiches, état des pièces, **renvoi comme incomplet** (motif, retour en rédaction,
+  courriel à l'association, numéro conservé), complément du dossier par un agent, instructeur,
+  **avis des élus** (favorable, avec réserve, défavorable, montant proposé, commentaire),
+  décision (votée / refusée) avec montant accordé et note, versement daté. Historique de chaque
+  dossier. Courriels de réception, de renvoi, de code de signature et de décision.
+- Suivi par l'association (« Mes subventions » : campagne en cours, dossier à commencer ou à
+  reprendre, dossiers déposés, PDF), liste filtrable par campagne, compteurs par exercice et
+  export côté collectivité.
 
 ### Notifications, courriels, SMS
 

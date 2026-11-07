@@ -1,6 +1,6 @@
 import { FormDocument, ListeDocuments, PiecesAttendues } from "@/components/documents";
 import { Lu, Lus, Section } from "@/components/fiche";
-import { Champ } from "@/components/formulaire";
+import { Champ, Interrupteur } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
 import { Avatar, Chip, TypeOrganisation } from "@/components/macros";
 import {
@@ -306,6 +306,16 @@ export default async function MonOrganisationPage() {
                       aide="L'assemblée générale qui a élu le président ou la présidente."
                       pleine
                     />
+                  ) : null}
+                  {org.type === "association" ? (
+                    <div style={{ gridColumn: "1 / -1" }}>
+                      <Interrupteur
+                        label="Association sportive"
+                        name="sportive"
+                        coche={org.sportive}
+                        aide="Détermine le dossier de demande de subvention (sportif ou non)."
+                      />
+                    </div>
                   ) : null}
                 </div>
               </>

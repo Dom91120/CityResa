@@ -85,7 +85,7 @@ Le parcours d'une association suit le rythme de la saison sportive et culturelle
 | Convention | Signe la convention de la saison | Dossier | — | 1 |
 | Au fil de l'année | Demande des créneaux ponctuels (gala, spectacle), souvent à titre gracieux ; échange avec la Ville dans le fil du dossier | Demande, Mes messages | Instruit, présences constatées après chaque séance | 1, 2, 3 |
 | Imprévus | Est prévenue en cas de fermeture exceptionnelle ou de réquisition d'un créneau pour un événement de la Ville, avec une proposition de report | Courriel, dossier | Fermeture, réquisition | 2, 3 |
-| Subvention | Dépose sa demande de subvention (objet, type, montant, budget, pièces) et en suit l'avancement | Mes subventions | Instruction, avis des élus, vote, versement | 1, 7 |
+| Subvention | Remplit pendant la campagne le dossier de demande de subvention (fiches, budget par postes, pièces, attestation signée par code), le dépose et en suit l'avancement | Mes subventions | Instruction, avis des élus, vote, versement | 1, 7 |
 | Fin d'exercice | Reçoit l'attestation de valorisation des avantages en nature (mises à disposition gratuites) | Mes subventions | Valorisation | 7 |
 
 ![Dépôt des vœux de créneaux par une association](captures/asso-mes-voeux.webp)

@@ -1,12 +1,14 @@
 import { notFound } from "next/navigation";
 import { Icone } from "@/components/icones";
-import { StatutSubvention } from "@/components/macros";
-import { SUBVENTION_TYPES } from "@/lib/constantes";
-import { montant } from "@/lib/libelles";
+import { Chip, StatutSubvention } from "@/components/macros";
+import { SUBVENTION_NATURES, SUBVENTION_TYPES } from "@/lib/constantes";
+import { dateCourte, montant } from "@/lib/libelles";
 import { organisationDe } from "@/modules/portail/catalogue";
 import { BlocVide } from "@/modules/portail/vues";
+import { CarteCampagne } from "@/modules/subventions/dossier-vues";
 import { prisma } from "@/server/db";
 import { contexteUsager } from "@/server/page";
+import { brouillonCourant, contexteCampagne } from "@/server/subventions-dossier";
 
 export const metadata = { title: "Mes subventions - CityRésa" };
 
@@ -29,10 +31,17 @@ export default async function MesSubventionsPage() {
         />
       </div>
     );
-  const subventions = await prisma.subvention.findMany({
-    where: { organisationId: org.id },
-    orderBy: [{ exercice: "desc" }, { createdAt: "desc" }],
-  });
+  const [subventions, { campagne, depotOuvert }] = await Promise.all([
+    prisma.subvention.findMany({
+      where: { organisationId: org.id },
+      orderBy: [{ exercice: "desc" }, { createdAt: "desc" }],
+    }),
+    contexteCampagne(),
+  ]);
+  const brouillon = campagne ? await brouillonCourant(org.id, campagne.exercice) : null;
+  const dejaDeposee = campagne
+    ? subventions.find((s) => s.exercice === campagne.exercice && s.status !== "brouillon")
+    : null;
   return (
     <>
       <div className="page-header">
@@ -40,23 +49,57 @@ export default async function MesSubventionsPage() {
           <h1 className="page-title">
             Mes subventions <span className="page-count">{subventions.length}</span>
           </h1>
-          <p className="page-subtitle">Les demandes de subvention de {org.name}.</p>
-        </div>
-        <div className="page-actions">
-          <a href="/portail/mes-subventions/nouvelle" className="btn btn-primary">
-            <Icone nom="plus" taille={14} /> Nouvelle demande
-          </a>
+          <p className="page-subtitle">Les dossiers de demande de subvention de {org.name}.</p>
         </div>
       </div>
+
+      <CarteCampagne
+        c={campagne}
+        depotOuvert={depotOuvert}
+        actions={
+          campagne ? (
+            dejaDeposee ? (
+              <a
+                href={`/portail/mes-subventions/${dejaDeposee.id}`}
+                className="btn btn-outline-primary"
+              >
+                <Icone nom="eye" taille={14} /> Voir mon dossier {campagne.exercice} (
+                {dejaDeposee.numero})
+              </a>
+            ) : brouillon ? (
+              <a
+                href={`/portail/mes-subventions/${brouillon.id}/dossier/presentation`}
+                className="btn btn-primary"
+              >
+                <Icone nom="pencil" taille={14} /> Reprendre mon dossier {campagne.exercice}
+              </a>
+            ) : depotOuvert ? (
+              <form method="POST" action="/portail/mes-subventions/nouvelle" data-double-envoi>
+                <input type="hidden" name="csrf_token" value={page.csrf} />
+                <button type="submit" className="btn btn-primary">
+                  <Icone nom="plus" taille={14} /> Commencer mon dossier {campagne.exercice}
+                </button>
+              </form>
+            ) : null
+          ) : null
+        }
+      />
+      <div className="astuce mb-3">
+        <Icone nom="lightbulb" taille={18} />
+        <div>
+          Le dossier se remplit fiche par fiche (présentation, bureau, effectifs, budget, actions,
+          trésorerie, bilan), avec les pièces à joindre et l'attestation sur l'honneur signée par
+          code. Vous pouvez l'enregistrer et le reprendre à tout moment avant le dépôt.
+        </div>
+      </div>
+
       <div className="data-card">
         {subventions.length ? (
           <div className="table-responsive">
             <table className="table table-hover mb-0">
               <thead>
                 <tr>
-                  <th>Numéro</th>
-                  <th>Exercice</th>
-                  <th>Type</th>
+                  <th>Dossier</th>
                   <th>Objet</th>
                   <th className="text-end">Demandé</th>
                   <th className="text-end">Accordé</th>
@@ -67,23 +110,46 @@ export default async function MesSubventionsPage() {
               <tbody>
                 {subventions.map((s) => (
                   <tr key={s.id}>
-                    <td className="fw-semibold">{s.numero}</td>
-                    <td>{s.exercice}</td>
-                    <td>{SUBVENTION_TYPES[s.type] ?? s.type}</td>
-                    <td>{s.objet}</td>
-                    <td className="text-end">{montant(s.montantDemande)}</td>
-                    <td className="text-end">
+                    <td>
+                      <span className="cell2">
+                        <span className="fw-semibold">
+                          {s.status === "brouillon" ? `Exercice ${s.exercice}` : s.numero}
+                        </span>
+                        <small>
+                          {s.status === "brouillon"
+                            ? "en rédaction"
+                            : `exercice ${s.exercice} · déposé le ${dateCourte(s.recuAt ?? s.createdAt)}`}
+                          {" · "}
+                          {SUBVENTION_NATURES[s.nature] ?? s.nature}
+                        </small>
+                      </span>
+                    </td>
+                    <td>
+                      <span className="cell2">
+                        <span>{s.objet}</span>
+                        <small>{SUBVENTION_TYPES[s.type] ?? s.type}</small>
+                      </span>
+                    </td>
+                    <td className="text-end tabular">
+                      {s.montantDemande ? montant(s.montantDemande) : "—"}
+                    </td>
+                    <td className="text-end tabular">
                       {s.montantAccorde != null ? montant(s.montantAccorde) : "—"}
                     </td>
                     <td>
                       <StatutSubvention status={s.status} />
+                      {s.verseAt ? <Chip teinte="slate">le {dateCourte(s.verseAt)}</Chip> : null}
                     </td>
                     <td className="text-end">
                       <a
-                        href={`/portail/mes-subventions/${s.id}`}
+                        href={
+                          s.status === "brouillon"
+                            ? `/portail/mes-subventions/${s.id}/dossier/presentation`
+                            : `/portail/mes-subventions/${s.id}`
+                        }
                         className="btn btn-sm btn-outline-secondary"
                       >
-                        Voir
+                        {s.status === "brouillon" ? "Reprendre" : "Voir"}
                       </a>
                     </td>
                   </tr>
@@ -94,12 +160,11 @@ export default async function MesSubventionsPage() {
         ) : (
           <BlocVide
             icone="hand-coins"
-            titre="Aucune demande de subvention"
-            texte="Déposez votre première demande : objet, montant, budget et pièces justificatives."
-            action={
-              <a href="/portail/mes-subventions/nouvelle" className="btn btn-primary">
-                <Icone nom="plus" taille={14} /> Déposer une demande
-              </a>
+            titre="Aucun dossier de subvention"
+            texte={
+              depotOuvert
+                ? "Commencez votre dossier pour la campagne en cours : il est pré-rempli depuis la fiche de votre association."
+                : "Le dépôt s'ouvre pendant la campagne annuelle ; vous serez informés de son ouverture."
             }
           />
         )}

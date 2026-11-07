@@ -289,3 +289,38 @@ export async function organisationsSansConvention(cfg: AppSettings): Promise<num
 export function invaliderCacheValorisation(): void {
   if (partage.__cityresaValo) partage.__cityresaValo.cache = null;
 }
+
+// ── Par organisation ──
+
+/**
+ * Les locaux municipaux mis à disposition d'une organisation sur un exercice : heures par
+ * espace (créneaux prévus des dossiers acquis). Sert à pré-remplir le dossier de subvention.
+ */
+export async function locauxMisADisposition(
+  organisationId: number,
+  exercice: number,
+): Promise<{ espace: string; heures: number }[]> {
+  const de = parisMidnight(`${exercice}-01-01`);
+  const a = parisMidnight(`${exercice + 1}-01-01`);
+  const dossiers = await prisma.reservation.findMany({
+    where: {
+      organisationId,
+      status: { in: STATUTS_VALORISES },
+      creneaux: { some: { status: "prevu", startAt: { gte: de, lt: a } } },
+    },
+    select: {
+      espace: { select: { name: true, site: { select: { name: true } } } },
+      creneaux: { where: { status: "prevu" }, select: { startAt: true, endAt: true } },
+    },
+  });
+  const heures = new Map<string, number>();
+  for (const r of dossiers) {
+    const part = partExercice(r.creneaux, exercice);
+    if (!part.heures) continue;
+    const cle = `${r.espace.name} (${r.espace.site.name})`;
+    heures.set(cle, (heures.get(cle) ?? 0) + part.heures);
+  }
+  return [...heures.entries()]
+    .map(([espace, h]) => ({ espace, heures: Math.round(h * 10) / 10 }))
+    .sort((x, y) => y.heures - x.heures);
+}

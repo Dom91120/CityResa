@@ -22,6 +22,7 @@ const ICONES_KIND: Record<string, string> = {
   doc_categorie: "paperclip",
   contrat_type: "id-card",
   absence_motif: "calendar-x",
+  subvention_secteur: "hand-coins",
 };
 
 const AIDES: Record<string, string> = {
@@ -38,6 +39,8 @@ const AIDES: Record<string, string> = {
     "Le type de contrat d'une personne de service (titulaire, contractuel, vacataire…), à titre d'information sur sa fiche.",
   absence_motif:
     "Les motifs d'absence du personnel de service (congés, RTT, maladie, formation…). L'icône est un nom Lucide.",
+  subvention_secteur:
+    "Le secteur d'un dossier de demande de subvention (cadre réservé à l'administration : sport, culture, solidarité…).",
 };
 
 export default async function ReferentielsPage() {
