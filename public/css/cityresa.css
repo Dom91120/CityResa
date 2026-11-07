@@ -249,6 +249,12 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
 /* ============================ CONTENU ============================ */
 .main-content { margin-left: var(--sidebar-w); padding: 24px 28px 48px; min-height: calc(100vh - var(--topbar-h)); }
 .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+/* Au-dessus de la tablette, les actions restent à droite sur la ligne du titre ; le bloc titre rétrécit. */
+@media (min-width: 992px) {
+  .page-header { flex-wrap: nowrap; }
+  .page-header > :first-child { min-width: 0; flex: 1 1 auto; }
+  .page-header > .page-actions { flex: 0 0 auto; justify-content: flex-end; }
+}
 .page-title { font-size: 1.35rem; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .page-count { font-size: 0.75rem; font-weight: 500; color: var(--muted); background: var(--inset); border-radius: 8px; padding: 2px 8px; }
 .page-subtitle { color: var(--muted); margin: 4px 0 0; font-size: 0.85rem; }
@@ -291,11 +297,12 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
 @media (max-width: 1199px) { .fiche-colonnes .lu-grille { grid-template-columns: 1fr; } }
 
 /* ============================ PASTILLES ============================ */
-.chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: var(--radius-pill); font-size: 0.72rem; font-weight: 500; line-height: 1.4; white-space: nowrap; }
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: var(--radius-pill); font-size: 0.72rem; font-weight: 500; line-height: 1.4; letter-spacing: -0.05em; white-space: nowrap; }
 .chip .lucide { width: 12px; height: 12px; }
 .chip-rose { background: var(--rose-dim); color: var(--rose-text); }
 .chip-primary { background: var(--primary-soft); color: var(--primary-text); }
 .chip-amber { background: var(--amber-dim); color: var(--amber-text); }
+.text-ambre { color: var(--amber-text) !important; }
 .chip-sky { background: var(--sky-dim); color: var(--sky-text); }
 .chip-emerald { background: var(--emerald-dim); color: var(--emerald-text); }
 .chip-violet { background: var(--violet-dim); color: var(--violet-text); }
@@ -312,7 +319,7 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
 .badge-muted { background: var(--slate-dim); color: var(--slate-text); }
 
 /* ============================ BOUTONS ============================ */
-.btn { font-family: var(--font-sans); font-weight: 500; font-size: 0.84rem; border-radius: var(--radius-pill); padding: 8px 16px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s ease; }
+.btn { font-family: var(--font-sans); font-weight: 500; font-size: 0.84rem; border-radius: var(--radius-pill); padding: 8px 16px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; letter-spacing: -0.05em; transition: all 0.15s ease; }
 .btn-sm { font-size: 0.78rem; padding: 5px 12px; }
 .btn-lg { font-size: 0.95rem; padding: 11px 22px; }
 .btn-primary { background: var(--gradient); border: 0; color: #fff; box-shadow: 0 4px 12px -4px rgba(var(--primary-rgb), 0.6); }
@@ -407,6 +414,18 @@ textarea.form-control { min-height: 90px; }
 .table-hover > tbody > tr:hover > * { background: var(--zebra); color: inherit; }
 .table tbody tr:last-child td { border-bottom: 0; }
 .table td.actions { text-align: right; white-space: nowrap; }
+/* Tableau resserré (tableau de bord) : lignes moins hautes. */
+.table-serree > :not(caption) > * > * { padding: 8px 12px; }
+.table-serree .cell2 { line-height: 1.15; }
+/* Largeurs fixes (colgroup) : le tableau tient dans sa carte, les textes longs sont tronqués ;
+   en dessous de 660 px il défile. */
+.table-serree { table-layout: fixed; width: 100%; min-width: 660px; }
+.table-serree > :not(caption) > * > * { padding-left: 8px; padding-right: 8px; }
+.table-serree td { overflow: hidden; letter-spacing: -0.02em; }
+/* Espace, demandeur et date : un cran plus serrés que le reste du tableau. */
+.table-serree td:nth-child(2) .text-truncate,
+.table-serree td:nth-child(3) .cell2 > span,
+.table-serree td:nth-child(4) .cell2 > span { letter-spacing: -0.03em; }
 .table .td-check { width: 36px; }
 .cell2 { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
 .cell2 > span, .cell2 > strong, .cell2 > a { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -528,17 +547,29 @@ textarea.form-control { min-height: 90px; }
 @media (max-width: 575px) { .stat-grid { grid-template-columns: 1fr; } }
 .stat-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 18px; display: flex; flex-direction: column; gap: 10px; color: var(--body); box-shadow: var(--shadow-xs); transition: transform .15s ease, box-shadow .15s ease; }
 a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); color: var(--body); }
+/* Variante en ligne : icône centrée sur le libellé et le chiffre, flèche ou évolution à droite, détail dessous. */
+.stat-card--ligne { gap: 6px; padding: 14px; }
+.stat-card--ligne .stat-haut { display: flex; align-items: center; gap: 10px; }
+.stat-card--ligne .stat-ico { flex: 0 0 auto; }
+.stat-card--ligne .stat-texte { flex: 1 1 auto; min-width: 0; }
+.stat-card--ligne .stat-texte { line-height: 1; }
+.stat-card--ligne .stat-texte .stat-number { margin-top: 2px; }
+.stat-card--ligne .stat-droite { flex: 0 0 auto; margin-left: auto; display: inline-flex; align-items: center; }
+.stat-card--ligne .stat-detail { margin: 0; }
 .stat-ico { width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; }
-.stat-label { color: var(--muted); font-size: 0.78rem; }
+.stat-label { color: var(--muted); font-size: 0.78rem; letter-spacing: -0.02em; }
 .stat-ligne { display: flex; align-items: baseline; gap: 10px; }
 .stat-number { font-size: 1.6rem; font-weight: 600; color: var(--strong); line-height: 1; }
 .delta { font-size: 0.7rem; font-weight: 600; border-radius: 6px; padding: 2px 6px; }
 .delta-up { background: var(--emerald-dim); color: var(--emerald-text); }
 .delta-down { background: var(--red-dim); color: var(--red-text); }
 .delta-flat { background: var(--slate-dim); color: var(--slate-text); }
-.dash-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; }
+.dash-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 1fr); gap: 16px; }
 @media (max-width: 1199px) { .dash-grid { grid-template-columns: 1fr; } }
 .dash-col { display: flex; flex-direction: column; gap: 16px; }
+/* Listes de la colonne de droite (alertes, notifications, prochains jours, en un coup d'œil) : texte resserré. */
+.dash-col:last-child .liste-simple,
+.dash-col:last-child .card-header-custom h6 { letter-spacing: -0.02em; }
 .graph-wrap { position: relative; height: 240px; }
 .legende { display: flex; flex-direction: column; gap: 8px; font-size: 0.8rem; }
 .legende li { display: flex; align-items: center; gap: 8px; }
@@ -771,3 +802,31 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .table-saisie th { font-size: .78rem; font-weight: 600; color: var(--muted); }
 .table-plan tr.groupe td { background: var(--surface-2, #f1f3f2); font-weight: 600; font-size: .8rem; padding: 4px 8px; }
 .table-plan tr.total td { font-weight: 700; border-top: 2px solid var(--border-strong, #999); }
+
+/* ── Modèles de courriel : rédaction dans l'aperçu ── */
+.editeur-courriel .zone-html { display: block; }
+.editeur-courriel .zone-editeur { display: none; }
+.editeur-courriel.est-actif .zone-html { display: none; }
+.editeur-courriel.est-actif .zone-editeur { display: block; }
+.editeur-courriel.est-actif.mode-html .zone-html { display: block; }
+.editeur-courriel.est-actif.mode-html .zone-editeur { display: none; }
+.editeur-courriel .barre-outils { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 6px 8px; border: 1px solid var(--line); border-bottom: 0; border-radius: var(--radius) var(--radius) 0 0; background: var(--surface); }
+.editeur-courriel .barre-outils .sep { width: 1px; height: 20px; background: var(--line); margin: 0 4px; }
+.editeur-courriel .lien-saisie { display: flex; gap: 6px; align-items: center; padding: 6px 8px; border: 1px solid var(--line); border-top: 0; background: var(--surface); }
+.editeur-courriel .lien-saisie input { flex: 1; }
+.courriel-cadre { border: 1px solid var(--line); border-radius: 0 0 var(--radius) var(--radius); background: #f6f6f8; padding: 20px 12px; }
+.courriel-cadre .courriel-carte { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(15,23,42,.06); color: #1f2937; font-family: Poppins, "Segoe UI", Arial, sans-serif; }
+.courriel-cadre .courriel-bandeau { background: var(--primary); color: #fff; padding: 18px 24px; font-size: 18px; font-weight: 600; }
+.courriel-cadre .courriel-pied { padding: 14px 24px; background: #fafafa; color: #6b7280; font-size: 12px; }
+.courriel-cadre .courriel-corps { padding: 24px; font-size: 15px; line-height: 1.55; min-height: 160px; outline: none; }
+.courriel-cadre .courriel-corps:focus { box-shadow: inset 0 0 0 2px var(--primary-dim); }
+.courriel-cadre .courriel-corps p { margin: 0 0 1em; }
+.courriel-cadre .courriel-corps p:last-child { margin-bottom: 0; }
+.courriel-cadre .courriel-corps blockquote { margin: 0 0 1em; padding: 8px 14px; border-left: 3px solid #d1d5db; color: #4b5563; }
+.courriel-cadre .courriel-corps a { color: var(--primary); }
+.jeton-variable { display: inline-block; padding: 0 6px; border-radius: 6px; background: var(--sky-dim); color: var(--sky-text); font-size: .86em; font-weight: 500; line-height: 1.5; white-space: nowrap; cursor: default; user-select: all; }
+.avec-exemples .jeton-variable { background: var(--amber-dim); color: var(--amber-text); font-style: italic; }
+/* Les pastilles sont des éléments de la barre à part entière : elles passent à la ligne une par une. */
+.barre-outils .variables-boutons { display: contents; }
+.variables-boutons button { border: 1px solid transparent; background: var(--sky-dim); color: var(--sky-text); border-radius: var(--radius-pill); padding: 2px 9px; font-size: .76rem; font-weight: 500; line-height: 1.5; cursor: pointer; }
+.variables-boutons button:hover { border-color: var(--primary); }

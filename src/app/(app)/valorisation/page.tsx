@@ -141,7 +141,7 @@ export default async function ValorisationPage({
       </div>
 
       {alertes.length ? (
-        <div className="astuce mb-3">
+        <div className="alert alert-warning d-flex gap-2 align-items-start mb-3">
           <Icone nom="triangle-alert" taille={18} />
           <div>
             <strong>

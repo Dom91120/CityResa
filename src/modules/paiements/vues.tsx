@@ -2,8 +2,8 @@
  * Sous-composants du module PAIEMENTS : pastille de type, échéance, débiteur, cartes de
  * synthèse.
  */
-import { Icone, IconePastille } from "@/components/icones";
 import { Chip } from "@/components/macros";
+import { CarteStat } from "@/components/stats";
 import { FACTURE_TYPES } from "@/lib/constantes";
 import { dateCourte, delai, montant, pluriel } from "@/lib/libelles";
 import {
@@ -104,17 +104,15 @@ export function CartesFactures({
   return (
     <div className="stat-grid">
       {cartes.map((c) => (
-        <a key={c.label} href={c.href} className="stat-card">
-          <div className="d-flex align-items-center justify-content-between">
-            <IconePastille nom={c.icone} teinte={c.teinte} />
-            <Icone nom="arrow-right" taille={14} classes="text-faint" />
-          </div>
-          <div>
-            <div className="stat-label">{c.label}</div>
-            <div className="stat-number">{c.valeur}</div>
-            <div className="text-muted small mt-1">{c.detail}</div>
-          </div>
-        </a>
+        <CarteStat
+          key={c.label}
+          href={c.href}
+          icone={c.icone}
+          teinte={c.teinte}
+          label={c.label}
+          valeur={c.valeur}
+          detail={c.detail}
+        />
       ))}
     </div>
   );
