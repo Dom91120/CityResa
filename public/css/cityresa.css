@@ -303,6 +303,15 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
 .chip-primary { background: var(--primary-soft); color: var(--primary-text); }
 .chip-amber { background: var(--amber-dim); color: var(--amber-text); }
 .text-ambre { color: var(--amber-text) !important; }
+/* Message flash replacé sous la ligne concernée (flash-sur-place.js). */
+.flash-ligne > td { padding: 0 10px 4px !important; border-bottom: 0; }
+.alert.alert-sur-place { margin: 0; padding: 3px 8px; min-height: 0; border: 0; border-radius: 6px; font-size: 0.74rem; line-height: 1.4; gap: 6px !important; }
+.alert.alert-success.alert-sur-place { background: color-mix(in srgb, var(--success-dim) 55%, transparent); }
+.alert.alert-danger.alert-sur-place { background: color-mix(in srgb, var(--danger-dim) 60%, transparent); }
+.alert.alert-sur-place > .lucide { width: 12px; height: 12px; }
+.alert.alert-sur-place .btn-close { position: static; padding: 0; width: 8px; height: 8px; background-size: 8px; margin-left: 4px; opacity: .55; }
+[id^="creneau-"] { scroll-margin-top: 140px; }
+.cible-flash > td { background: var(--primary-dim) !important; transition: background 1.5s ease; }
 .chip-sky { background: var(--sky-dim); color: var(--sky-text); }
 .chip-emerald { background: var(--emerald-dim); color: var(--emerald-text); }
 .chip-violet { background: var(--violet-dim); color: var(--violet-text); }
@@ -417,6 +426,10 @@ textarea.form-control { min-height: 90px; }
 /* Tableau resserré (tableau de bord) : lignes moins hautes. */
 .table-serree > :not(caption) > * > * { padding: 8px 12px; }
 .table-serree .cell2 { line-height: 1.15; }
+/* Tableau compact (liste des réservations) : marges réduites, interligne et espacement serrés. */
+.table-compacte > :not(caption) > * > * { padding: 8px 10px; }
+.table-compacte .cell2 { line-height: 1.15; }
+.table-compacte td { letter-spacing: -0.02em; }
 /* Largeurs fixes (colgroup) : le tableau tient dans sa carte, les textes longs sont tronqués ;
    en dessous de 660 px il défile. */
 .table-serree { table-layout: fixed; width: 100%; min-width: 660px; }

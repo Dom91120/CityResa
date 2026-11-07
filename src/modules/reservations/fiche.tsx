@@ -79,7 +79,7 @@ function ServiceCreneauCell({
 }) {
   const etat = s ? ETATS_COUVERTURE[s.etat] : null;
   return (
-    <span className="d-inline-flex align-items-center gap-1 flex-wrap">
+    <span className="d-inline-flex align-items-center gap-1 text-nowrap">
       {s?.noms.length ? (
         <span title={s.epingle ? "Personne épinglée sur ce créneau" : "De service par vacation"}>
           {s.epingle ? <Icone nom="bookmark" taille={11} /> : null} {s.noms.join(", ")}
@@ -101,9 +101,14 @@ function ServiceCreneauCell({
             method="POST"
             action={`/personnel/propositions/${creneauId}/valider`}
             className="d-inline"
+            data-sur-place={`creneau-${creneauId}`}
           >
             <input type="hidden" name="csrf_token" value={csrf} />
-            <input type="hidden" name="next" value={`/reservations/${reservationId}`} />
+            <input
+              type="hidden"
+              name="next"
+              value={`/reservations/${reservationId}#creneau-${creneauId}`}
+            />
             <button
               type="submit"
               className="btn btn-ghost btn-icone btn-sm"
@@ -117,9 +122,14 @@ function ServiceCreneauCell({
             method="POST"
             action={`/personnel/propositions/${creneauId}/ecarter`}
             className="d-inline"
+            data-sur-place={`creneau-${creneauId}`}
           >
             <input type="hidden" name="csrf_token" value={csrf} />
-            <input type="hidden" name="next" value={`/reservations/${reservationId}`} />
+            <input
+              type="hidden"
+              name="next"
+              value={`/reservations/${reservationId}#creneau-${creneauId}`}
+            />
             <button
               type="submit"
               className="btn btn-ghost btn-icone btn-sm"
@@ -1176,138 +1186,145 @@ export function SectionEvenement({
           ) : null}
         </span>
       </div>
-      <table className="table table-sm mb-3">
-        <tbody>
-          {r.creneaux.map((c) => (
-            <tr key={c.id} className={c.status !== "prevu" ? "text-muted" : undefined}>
-              <td style={c.status !== "prevu" ? { textDecoration: "line-through" } : undefined}>
-                <span className="cell2">
-                  <span>{dateMoyenne(c.startAt)}</span>
-                  <small>
-                    {isoParis(c.startAt).date === isoParis(c.endAt).date
-                      ? plageHoraire(c.startAt, c.endAt)
-                      : `${heure(c.startAt)} → ${dateMoyenne(c.endAt)} ${heure(c.endAt)}`}
-                  </small>
-                </span>
-              </td>
-              <td className="text-nowrap">
-                {duree((c.endAt.getTime() - c.startAt.getTime()) / 60_000)}
-              </td>
-              <td>
-                {c.status !== "prevu" ? (
-                  <Chip teinte="slate">Annulé</Chip>
-                ) : c.presence ? (
-                  <Chip
-                    teinte={c.presence === "presente" ? "emerald" : "red"}
-                    titre={c.presenceNote ?? undefined}
-                  >
-                    {decrirePresence(c)}
-                  </Chip>
-                ) : c.endAt <= new Date() ? (
-                  <Chip teinte="slate">Passé</Chip>
-                ) : (
-                  <Chip teinte="emerald">Prévu</Chip>
-                )}
-              </td>
-              {service ? (
-                <td className="small">
-                  {c.status !== "prevu" ? null : (
-                    <ServiceCreneauCell
-                      s={service.parCreneau.get(c.id)}
-                      aVenir={c.endAt > new Date()}
-                      creneauId={c.id}
-                      reservationId={r.id}
-                      csrf={csrf}
-                      peutEpingler={peutEpingler}
-                    />
+      <div data-zone-maj="creneaux">
+        <table className="table table-sm mb-3 table-compacte">
+          <tbody>
+            {r.creneaux.map((c) => (
+              <tr
+                key={c.id}
+                id={`creneau-${c.id}`}
+                className={c.status !== "prevu" ? "text-muted" : undefined}
+              >
+                <td style={c.status !== "prevu" ? { textDecoration: "line-through" } : undefined}>
+                  <span className="cell2">
+                    <span>{dateMoyenne(c.startAt)}</span>
+                    <small>
+                      {isoParis(c.startAt).date === isoParis(c.endAt).date
+                        ? plageHoraire(c.startAt, c.endAt)
+                        : `${heure(c.startAt)} → ${dateMoyenne(c.endAt)} ${heure(c.endAt)}`}
+                    </small>
+                  </span>
+                </td>
+                <td className="text-nowrap">
+                  {duree((c.endAt.getTime() - c.startAt.getTime()) / 60_000)}
+                </td>
+                <td>
+                  {c.status !== "prevu" ? (
+                    <Chip teinte="slate">Annulé</Chip>
+                  ) : c.presence ? (
+                    <Chip
+                      teinte={c.presence === "presente" ? "emerald" : "red"}
+                      titre={c.presenceNote ?? undefined}
+                    >
+                      {decrirePresence(c)}
+                    </Chip>
+                  ) : c.endAt <= new Date() ? (
+                    <Chip teinte="slate">Passé</Chip>
+                  ) : (
+                    <Chip teinte="emerald">Prévu</Chip>
                   )}
                 </td>
-              ) : null}
-              <td className="actions text-nowrap">
-                {peutDecider && vivant && c.status === "prevu" ? (
-                  <a
-                    href={`/reservations/${r.id}/creneaux/${c.id}/modifier`}
-                    className="btn btn-ghost btn-icone btn-sm"
-                    title={
-                      prevus.length > 1
-                        ? "Modifier ce créneau, les suivants ou toute la série"
-                        : "Modifier ce créneau"
-                    }
-                    aria-label="Modifier ce créneau"
-                  >
-                    <Icone nom="pencil" taille={14} />
-                  </a>
+                {service ? (
+                  <td className="small">
+                    {c.status !== "prevu" ? null : (
+                      <ServiceCreneauCell
+                        s={service.parCreneau.get(c.id)}
+                        aVenir={c.endAt > new Date()}
+                        creneauId={c.id}
+                        reservationId={r.id}
+                        csrf={csrf}
+                        peutEpingler={peutEpingler}
+                      />
+                    )}
+                  </td>
                 ) : null}
-                {peutDecider &&
-                c.status === "prevu" &&
-                c.startAt > new Date() &&
-                STATUTS_FERMES.includes(r.status as ReservationStatus) ? (
-                  <a
-                    href={`/reservations/${r.id}/creneaux/${c.id}/requisition`}
-                    className="btn btn-ghost btn-icone btn-sm"
-                    title="Priorité municipale : réquisitionner ce créneau pour un événement de la Ville"
-                    aria-label="Réquisitionner ce créneau pour la Ville"
-                  >
-                    <Icone nom="landmark" taille={14} />
-                  </a>
-                ) : null}
-                {peutDecider && vivant && c.status === "prevu" && prevus.length > 1 ? (
-                  <form
-                    method="POST"
-                    action={`/reservations/${r.id}/creneaux/${c.id}/annuler`}
-                    className="d-inline"
-                  >
-                    <input type="hidden" name="csrf_token" value={csrf} />
-                    <button
-                      type="submit"
-                      className="btn btn-ghost btn-ghost-danger btn-icone btn-sm"
-                      title="Annuler ce créneau"
-                      aria-label="Annuler ce créneau"
-                      data-confirm={`Annuler le créneau du ${plage(c.startAt, c.endAt)} ?`}
+                <td className="actions text-nowrap">
+                  {peutDecider && vivant && c.status === "prevu" ? (
+                    <a
+                      href={`/reservations/${r.id}/creneaux/${c.id}/modifier`}
+                      className="btn btn-ghost btn-icone btn-sm"
+                      title={
+                        prevus.length > 1
+                          ? "Modifier ce créneau, les suivants ou toute la série"
+                          : "Modifier ce créneau"
+                      }
+                      aria-label="Modifier ce créneau"
                     >
-                      <Icone nom="x" taille={14} />
-                    </button>
-                  </form>
-                ) : null}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {service && peutEpingler
-        ? r.creneaux
-            .filter((c) => c.status === "prevu")
-            .map((c) => (
-              <ModalAction
-                key={`service-${c.id}`}
-                id={`modal-service-${c.id}`}
-                titre={`Personne de service · ${plage(c.startAt, c.endAt)}`}
-                action={`/reservations/${r.id}/creneaux/${c.id}/service`}
-                csrf={csrf}
-                bouton="Enregistrer"
-                icone="shield"
-                aide="Épingler une personne sur ce créneau précis (état des lieux, événement) : elle est alors de service même sans vacation sur le site. Laissez vide pour s'en remettre aux vacations."
-              >
-                <label className="form-label" htmlFor={`service-${c.id}-personne`}>
-                  Personne
-                </label>
-                <select
-                  name="personnel_id"
-                  id={`service-${c.id}-personne`}
-                  className="form-select"
-                  defaultValue={c.personnelId ?? service.parCreneau.get(c.id)?.propose?.id ?? ""}
+                      <Icone nom="pencil" taille={14} />
+                    </a>
+                  ) : null}
+                  {peutDecider &&
+                  c.status === "prevu" &&
+                  c.startAt > new Date() &&
+                  STATUTS_FERMES.includes(r.status as ReservationStatus) ? (
+                    <a
+                      href={`/reservations/${r.id}/creneaux/${c.id}/requisition`}
+                      className="btn btn-ghost btn-icone btn-sm"
+                      title="Priorité municipale : réquisitionner ce créneau pour un événement de la Ville"
+                      aria-label="Réquisitionner ce créneau pour la Ville"
+                    >
+                      <Icone nom="landmark" taille={14} />
+                    </a>
+                  ) : null}
+                  {peutDecider && vivant && c.status === "prevu" && prevus.length > 1 ? (
+                    <form
+                      method="POST"
+                      action={`/reservations/${r.id}/creneaux/${c.id}/annuler`}
+                      className="d-inline"
+                    >
+                      <input type="hidden" name="csrf_token" value={csrf} />
+                      <button
+                        type="submit"
+                        className="btn btn-ghost btn-ghost-danger btn-icone btn-sm"
+                        title="Annuler ce créneau"
+                        aria-label="Annuler ce créneau"
+                        data-confirm={`Annuler le créneau du ${plage(c.startAt, c.endAt)} ?`}
+                      >
+                        <Icone nom="x" taille={14} />
+                      </button>
+                    </form>
+                  ) : null}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {service && peutEpingler
+          ? r.creneaux
+              .filter((c) => c.status === "prevu")
+              .map((c) => (
+                <ModalAction
+                  key={`service-${c.id}`}
+                  id={`modal-service-${c.id}`}
+                  titre={`Personne de service · ${plage(c.startAt, c.endAt)}`}
+                  action={`/reservations/${r.id}/creneaux/${c.id}/service`}
+                  csrf={csrf}
+                  bouton="Enregistrer"
+                  icone="shield"
+                  formAttrs={{ "data-sur-place": `creneau-${c.id}` }}
+                  aide="Épingler une personne sur ce créneau précis (état des lieux, événement) : elle est alors de service même sans vacation sur le site. Laissez vide pour s'en remettre aux vacations."
                 >
-                  <option value="">Aucune (vacations du site)</option>
-                  {service.personnes.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {`${p.firstName} ${p.lastName}`.trim()}
-                      {p.fonction ? ` · ${p.fonction}` : ""}
-                    </option>
-                  ))}
-                </select>
-              </ModalAction>
-            ))
-        : null}
+                  <label className="form-label" htmlFor={`service-${c.id}-personne`}>
+                    Personne
+                  </label>
+                  <select
+                    name="personnel_id"
+                    id={`service-${c.id}-personne`}
+                    className="form-select"
+                    defaultValue={c.personnelId ?? service.parCreneau.get(c.id)?.propose?.id ?? ""}
+                  >
+                    <option value="">Aucune (vacations du site)</option>
+                    {service.personnes.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {`${p.firstName} ${p.lastName}`.trim()}
+                        {p.fonction ? ` · ${p.fonction}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </ModalAction>
+              ))
+          : null}
+      </div>
 
       <Lus intitule="110px">
         <div className="lu lu--pleine">

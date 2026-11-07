@@ -37,6 +37,7 @@ export function ScriptsPage({ nonce, extra }: { nonce?: string; extra?: React.Re
     "/js/onglets.js",
     "/js/formulaire.js",
     "/js/texte-tronque.js",
+    "/js/flash-sur-place.js",
   ];
   return (
     <>
