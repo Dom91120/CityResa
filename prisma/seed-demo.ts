@@ -20,10 +20,12 @@ import path from "node:path";
 import "dotenv/config";
 import { Prisma } from "@/generated/prisma/client";
 import { saisonDe } from "@/lib/calendrier";
+import { datesParDefaut, labelCampagne } from "@/lib/campagne-subvention";
 import type { ReservationStatus } from "@/lib/constantes";
 import { COULEURS_ESPACE, FACTURE_TYPES, RESERVATION_STATUS } from "@/lib/constantes";
 import { bornes, developperRecurrence, type Intervalle, type Recurrence } from "@/lib/creneaux";
 import { parseYmdUtc } from "@/lib/date-utc";
+import { type DossierSubvention, dossierVide } from "@/lib/dossier-subvention";
 import { montant, plage } from "@/lib/libelles";
 import {
   addParisDays,
@@ -34,6 +36,7 @@ import {
   todayParisISO,
   toParisWall,
 } from "@/lib/paris-time";
+import type { Montants } from "@/lib/plan-budget";
 import { affecterCreneaux, reverifierAffectations } from "@/server/affectation";
 import { amorcer, poserMotDePasse } from "@/server/amorcage";
 import { creerSaison, joursExclus, saisons } from "@/server/calendrier";
@@ -319,7 +322,7 @@ async function remettreAZero(): Promise<void> {
   // TRUNCATE sans CASCADE : la table `user` référence `organisation`, un CASCADE la viderait
   // (administrateur compris). Toutes les tables qui se référencent entre elles sont listées.
   await prisma.$executeRawUnsafe(
-    `TRUNCATE TABLE paiement, facture, subvention_avis, subvention, message, reservation_history,
+    `TRUNCATE TABLE paiement, facture, subvention_history, subvention_avis, subvention, campagne_subvention, message, reservation_history,
      reservation_option, reservation_materiel, mouvement_materiel, avenant, etat_des_lieux, voeu,
      campagne_espace, campagne, liste_attente, brouillon_demande, valorisation, creneau,
      document_content, document, reservation, notification, mail_log, action_log, scheduler_run,
@@ -1368,6 +1371,14 @@ const MATERIELS = [
 ];
 
 // ── Usagers ──
+
+// Les associations au dossier de subvention « sportif » : celles du fichier des associations
+// sportives, hors danse et yoga (dossier associatif).
+const SPORTIVES = new Set(
+  ASSOCIATIONS_SPORTIVES.filter(
+    (a) => !["arounddance", "espace-yoga", "scmc-yoga"].includes(a.cle),
+  ).map((a) => a.cle),
+);
 
 const ORGS: OrgSpec[] = [
   ...ASSOCIATIONS_SPORTIVES,
@@ -2626,7 +2637,19 @@ async function creerSitesEtEspaces(): Promise<{
 }
 
 type Compte = { id: string; nom: string; email: string; phone: string | null };
-type OrgRow = { id: number; name: string; profilId: number | null; user: Compte; cle: string };
+type OrgRow = {
+  id: number;
+  name: string;
+  profilId: number | null;
+  user: Compte;
+  cle: string;
+  sportive: boolean;
+  address: string | null;
+  postalCode: string;
+  city: string;
+  email: string | null;
+  phone: string | null;
+};
 
 async function creerAgents(espaces: Map<string, EspaceRow>): Promise<Map<string, Compte>> {
   console.log("→ Agents…");
@@ -2695,6 +2718,7 @@ async function creerUsagers(): Promise<Map<string, OrgRow>> {
         legalAppointedAt:
           o.type === "association" ? new Date(Date.UTC(2025, entre(0, 11), entre(1, 28))) : null,
         profilId,
+        sportive: SPORTIVES.has(o.cle),
         notes: o.notes ?? null,
         validatedAt: o.valide ? ilYA(creeIlYA - 2) : null,
         createdAt: ilYA(creeIlYA),
@@ -2723,6 +2747,12 @@ async function creerUsagers(): Promise<Map<string, OrgRow>> {
       profilId,
       user: { id: u.id, nom: u.name, email: u.email, phone: u.phone },
       cle: o.cle,
+      sportive: org.sportive,
+      address: org.address,
+      postalCode: o.postalCode,
+      city: o.city,
+      email: org.email,
+      phone: org.phone,
     });
     compter("organisations");
     compter("usagers");
@@ -3292,19 +3322,55 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
       depuis: 4,
     },
   ] as const;
+  const NATURES: Record<string, "premiere" | "renouvellement"> = {
+    ascb: "renouvellement",
+    sgdt: "renouvellement",
+    arounddance: "renouvellement",
+    ttmc: "premiere",
+  };
+  // Les campagnes : celle de l'exercice en cours (close) et celle de l'exercice suivant (ouverte).
+  const campagnes = new Map<number, number>();
+  for (const [exercice, status] of [
+    [annee, "cloturee"],
+    [annee + 1, "ouverte"],
+  ] as const) {
+    const d = datesParDefaut(exercice);
+    const c = await prisma.campagneSubvention.create({
+      data: {
+        exercice,
+        label: labelCampagne(exercice),
+        ouvertureDate: parseYmdUtc(d.ouverture),
+        clotureDate: parseYmdUtc(d.cloture),
+        status,
+        consignes:
+          status === "ouverte"
+            ? "Un dossier incomplet ou déposé après la clôture n'est pas instruit. Pensez à joindre le procès-verbal de la dernière assemblée générale, les comptes approuvés et un RIB récent."
+            : null,
+        createdBy: sophie?.nom ?? null,
+        createdAt: ilYA(exercice === annee ? 400 : 60),
+      },
+    });
+    campagnes.set(exercice, c.id);
+    compter("campagnes_subvention");
+  }
   for (const s of specs) {
     const org = ctx.orgs.get(s.org);
     if (!org) continue;
     const createdAt = ilYA(s.depuis, entre(1, 10));
-    const numero = await prochainNumero("SUB", createdAt.getFullYear());
+    const numero = await prochainNumero("SUB", s.exercice);
     const decision = ["votee", "versee", "refusee"].includes(s.status)
       ? plusTot(new Date(createdAt.getTime() + 60 * 86_400_000))
       : null;
+    const nature = NATURES[s.org] ?? "renouvellement";
+    const dossier = dossierDemo(s, org, nature);
+    const signeAt = new Date(createdAt.getTime() - 3_600_000);
     const sub = await prisma.subvention.create({
       data: {
         numero,
         organisationId: org.id,
+        campagneId: campagnes.get(s.exercice) ?? null,
         exercice: s.exercice,
+        nature,
         objet: s.objet,
         description: s.description,
         type: s.type,
@@ -3315,10 +3381,55 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
         beneficiaires: s.beneficiaires,
         decisionAt: decision,
         decisionNote: s.note,
+        verseAt:
+          s.status === "versee" && decision ? new Date(decision.getTime() + 30 * 86_400_000) : null,
         instructeur: s.status === "deposee" ? null : (sophie?.nom ?? null),
         depositedBy: org.user.nom,
-        createdAt,
+        recuAt: createdAt,
+        dossier: dossier as unknown as Prisma.InputJsonValue,
+        signeAt,
+        signeNom: org.user.nom,
+        signeQualite: "Président(e)",
+        signeChannel: "sms",
+        signeIp: `92.154.${entre(1, 250)}.${entre(1, 250)}`,
+        createdAt: new Date(createdAt.getTime() - 5 * 86_400_000),
         updatedAt: decision ?? createdAt,
+        histories: {
+          create: [
+            {
+              action: "Dossier commencé",
+              performedBy: org.user.nom,
+              performedAt: new Date(createdAt.getTime() - 5 * 86_400_000),
+            },
+            {
+              action: "Attestation signée",
+              comment: `par ${org.user.nom}`,
+              performedBy: org.user.nom,
+              performedAt: signeAt,
+            },
+            { action: "Dossier déposé", performedBy: org.user.nom, performedAt: createdAt },
+            ...(s.status !== "deposee"
+              ? [
+                  {
+                    action: "En instruction",
+                    performedBy: sophie?.nom ?? "agent",
+                    performedAt: plusTot(new Date(createdAt.getTime() + 7 * 86_400_000)),
+                  },
+                ]
+              : []),
+            ...(decision
+              ? [
+                  {
+                    action:
+                      s.status === "versee" ? "Votée" : s.status === "votee" ? "Votée" : "Refusée",
+                    comment: s.accorde !== null ? montant(s.accorde) : null,
+                    performedBy: sophie?.nom ?? "agent",
+                    performedAt: decision,
+                  },
+                ]
+              : []),
+          ],
+        },
       },
     });
     compter("subventions");
@@ -3335,24 +3446,303 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
       });
       compter("avis");
     }
-    if (s.org === "ascb") {
-      const csv =
-        "Poste;Dépenses;Recettes\nEngagements championnat;6 200;\nFormation entraîneurs;3 100;\nMatériel école de basket;2 400;\nCotisations;;21 500\nSubvention Ville de Châtillon;;4 500\nPartenariats;;4 800\n";
+    // Les pièces : complètes pour les dossiers instruits, partielles pour le dossier tout juste déposé.
+    const pieces: [string, string, string][] = [
+      ["pv_ag", "pv-assemblee-generale.txt", "Procès-verbal de l'assemblée générale"],
+      ["comptes", "comptes-approuves.csv", "Comptes approuvés"],
+      ["rib", "rib.txt", "RIB de l'association"],
+      ["compte_rendu", "compte-rendu-actions.txt", "Compte rendu des actions subventionnées"],
+    ];
+    const aFournir =
+      s.status === "deposee"
+        ? pieces.slice(0, 2)
+        : nature === "premiere"
+          ? pieces.slice(0, 3)
+          : pieces;
+    for (const [kind, nom, titre] of aFournir) {
       await deposerDocument({
         kind: "subvention",
         parentId: sub.id,
         fichier: {
-          nom: "budget-previsionnel.csv",
-          mime: "text/csv",
-          octets: Buffer.from(csv, "utf8"),
+          nom,
+          mime: nom.endsWith(".csv") ? "text/csv" : "text/plain",
+          octets: Buffer.from(
+            `${titre} · ${org.name} · exercice ${s.exercice - 1} (document de démonstration)\n`,
+            "utf8",
+          ),
         },
-        docKind: "piece",
-        title: "Budget prévisionnel",
+        docKind: kind,
+        title: titre,
         uploadedById: org.user.id,
       });
       compter("documents");
     }
   }
+  // Un dossier en cours de rédaction sur la campagne ouverte (association non sportive).
+  const yoga = ctx.orgs.get("espace-yoga");
+  if (yoga) {
+    const d = dossierDemo(
+      {
+        org: "espace-yoga",
+        exercice: annee + 1,
+        type: "fonctionnement",
+        objet: "Ateliers de yoga adapté pour les seniors",
+        montant: 1200,
+        budget: 7800,
+        beneficiaires: 40,
+        description: "",
+      },
+      yoga,
+      "premiere",
+    );
+    d.budget.charges = {};
+    d.tresorerie.soldeFin = null;
+    d.attestation = {
+      ...d.attestation,
+      obligationsAJour: false,
+      informationsSinceres: false,
+      cumulAides: "",
+      engagementRepublicain: false,
+    };
+    await prisma.subvention.create({
+      data: {
+        numero: `prov-${annee + 1}-${yoga.id}-1234`,
+        organisationId: yoga.id,
+        campagneId: campagnes.get(annee + 1) ?? null,
+        exercice: annee + 1,
+        nature: "premiere",
+        objet: "Ateliers de yoga adapté pour les seniors",
+        type: "fonctionnement",
+        montantDemande: 1200,
+        status: "brouillon",
+        depositedBy: yoga.user.nom,
+        dossier: d as unknown as Prisma.InputJsonValue,
+        createdAt: ilYA(3),
+        histories: {
+          create: [
+            { action: "Dossier commencé", performedBy: yoga.user.nom, performedAt: ilYA(3) },
+          ],
+        },
+      },
+    });
+    compter("subventions");
+  }
+}
+
+type SpecDossier = {
+  org: string;
+  exercice: number;
+  type: string;
+  objet: string;
+  montant: number;
+  budget: number | null;
+  beneficiaires: number | null;
+  description: string;
+};
+
+/** Un dossier de demande rempli de façon plausible à partir de la demande de démonstration. */
+function dossierDemo(
+  s: SpecDossier,
+  org: OrgRow,
+  nature: "premiere" | "renouvellement",
+): DossierSubvention {
+  const sportive = org.sportive;
+  const d = dossierVide(sportive);
+  const [prenom, ...nomParts] = org.user.nom.split(" ");
+  const budget = s.budget ?? 10_000;
+  const r = (x: number) => Math.round(x);
+  d.presentation = {
+    ...d.presentation,
+    sigle: org.name.includes(" - ") ? (org.name.split(" - ").pop() ?? "") : "",
+    dateJo: `${2005 + (org.id % 15)}-0${1 + (org.id % 9)}-15`,
+    affiliation: sportive ? "Fédération française de la discipline" : "",
+    commissaireAuxComptes: false,
+    changementDepuisDerniereDemande: false,
+  };
+  d.bureau.president = {
+    nom: nomParts.join(" ") || org.user.nom,
+    prenom,
+    adresse: org.address ?? "",
+    codePostal: org.postalCode,
+    commune: org.city,
+    telephone: org.phone ?? "",
+    courriel: org.email ?? "",
+  };
+  d.bureau.tresorier = {
+    ...d.bureau.tresorier,
+    nom: "Lemoine",
+    prenom: "Claire",
+    courriel: `tresorerie.${org.id}@exemple.fr`,
+  };
+  d.bureau.secretaire = { ...d.bureau.secretaire, nom: "Petit", prenom: "Marc" };
+  d.bureau.chargeDossier = {
+    nom: org.user.nom,
+    fonction: "Président(e)",
+    adresse: "",
+    telephone: org.phone ?? "",
+    courriel: org.user.email,
+  };
+  const adherents = s.beneficiaires ?? 60;
+  d.effectifs = {
+    ...d.effectifs,
+    benevoles: r(adherents / 10) + 2,
+    volontaires: 0,
+    salaries: sportive ? 1 : 0,
+    etpt: sportive ? 0.5 : 0,
+    adherents,
+    exercicePrecedent: {
+      total: adherents,
+      chatillonnais: r(adherents * 0.7),
+      exterieurs: r(adherents * 0.3),
+      majeurs: r(adherents * 0.6),
+      mineurs: r(adherents * 0.4),
+      hommes: r(adherents * 0.45),
+      femmes: r(adherents * 0.55),
+      licencies: sportive ? r(adherents * 0.9) : null,
+    },
+    previsionnel: {
+      total: r(adherents * 1.05),
+      chatillonnais: r(adherents * 0.72),
+      exterieurs: r(adherents * 0.33),
+      majeurs: null,
+      mineurs: null,
+      hommes: null,
+      femmes: null,
+      licencies: sportive ? r(adherents * 0.95) : null,
+    },
+    cotisations: [
+      { libelle: "Adultes", montant: sportive ? 180 : 120, nombre: r(adherents * 0.6) },
+      {
+        libelle: "Jeunes (moins de 18 ans)",
+        montant: sportive ? 140 : 90,
+        nombre: r(adherents * 0.4),
+      },
+    ],
+  };
+  d.rayonnement = {
+    orientations: `${s.description || "Activité ouverte à tous les publics châtillonnais."} Accueil des jeunes et des seniors, tarifs réduits pour les familles, participation aux temps forts de la Ville.`,
+    participation: {
+      forum: true,
+      feteDuSport: sportive,
+      reunionAssociationsSportives: sportive,
+      solidarite: "Séances découvertes gratuites",
+      inclusion: "Accueil adapté sur demande",
+      handicap: "",
+      culturel: sportive ? "" : "Spectacle de fin d'année",
+      autres: "",
+    },
+    moyens: {
+      locaux: [
+        {
+          designation: "Salle municipale (créneaux hebdomadaires)",
+          heures: 160,
+          par: "La commune",
+        },
+      ],
+      personnel: [],
+      transport: [],
+      documents: [
+        { designation: "Affiches et programme", heures: null, par: "Service communication" },
+      ],
+    },
+  };
+  const produits: Montants = sportive
+    ? {
+        subv_commune: s.montant,
+        cotisations_adherents: r(budget * 0.55),
+        parrainage: r(budget * 0.1),
+        champ_buvette: r(budget * 0.05),
+      }
+    : {
+        subv_commune: s.montant,
+        cotisations: r(budget * 0.55),
+        ventes: r(budget * 0.1),
+        subv_departement: r(budget * 0.05),
+      };
+  const charges: Montants = sportive
+    ? {
+        licences: r(budget * 0.25),
+        achat_materiel: r(budget * 0.15),
+        champ_deplacements: r(budget * 0.2),
+        salaire_entraineur: r(budget * 0.25),
+        assurances: r(budget * 0.05),
+      }
+    : {
+        locations: r(budget * 0.1),
+        honoraires: r(budget * 0.35),
+        achats_matieres: r(budget * 0.2),
+        assurance: r(budget * 0.05),
+        publicite: r(budget * 0.1),
+      };
+  d.budget = {
+    exerciceDebut: `${s.exercice}-01-01`,
+    exerciceFin: `${s.exercice}-12-31`,
+    charges,
+    produits,
+    contributions: { benevolat: r(budget * 0.2), personnel_benevole: r(budget * 0.2) },
+    financeurs: sportive ? "Conseil départemental des Hauts-de-Seine (demande en cours)" : "",
+  };
+  d.motivation = {
+    justification:
+      s.description || "Couvrir les charges de fonctionnement et maintenir des tarifs accessibles.",
+    explicationsPostes: "",
+    actions:
+      s.type === "projet" || s.type === "exceptionnelle"
+        ? [
+            {
+              intitule: s.objet,
+              descriptif: s.description,
+              date: `${s.exercice}`,
+              lieu: "Châtillon",
+              public: "Adhérents et public",
+              beneficiaires: s.beneficiaires,
+              cout: r(budget * 0.4),
+              recettes: "Entrées et buvette",
+            },
+          ]
+        : [],
+  };
+  d.tresorerie = {
+    ...d.tresorerie,
+    soldeDebut: r(budget * 0.3),
+    resultat: r(budget * 0.02),
+    soldeFin: r(budget * 0.32),
+    compteCourant: r(budget * 0.25),
+    epargne: r(budget * 0.07),
+    caisse: 0,
+    natures: "Livret A",
+  };
+  const realise = Object.fromEntries(
+    Object.entries({ ...charges, ...produits }).map(([k, v]) => [k, r(v * 0.95)]),
+  );
+  d.bilan = {
+    subventionPrecedente: nature === "renouvellement" ? r(s.montant * 0.9) : null,
+    justification:
+      nature === "renouvellement"
+        ? "Subvention employée au fonctionnement courant conformément à la demande."
+        : "",
+    actions: [],
+    exerciceDebut: `${s.exercice - 1}-01-01`,
+    exerciceFin: `${s.exercice - 1}-12-31`,
+    budget: { ...charges, ...produits },
+    realise,
+    contributionsBudget: {},
+    contributionsRealise: {},
+    synthese:
+      nature === "renouvellement"
+        ? "Année conforme aux prévisions ; effectifs stables, bilan financier équilibré, rapport moral approuvé à l'unanimité."
+        : "",
+  };
+  d.attestation = {
+    obligationsAJour: true,
+    informationsSinceres: true,
+    cumulAides: "inf",
+    engagementRepublicain: true,
+    mandataire: false,
+    signataireNom: org.user.nom,
+    signataireQualite: "Président(e)",
+  };
+  return d;
 }
 
 // ── Personnel de service ──

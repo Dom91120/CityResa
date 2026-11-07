@@ -2,72 +2,104 @@
 
 Ce chapitre couvre le module destiné aux associations : le circuit des demandes de subvention, de leur dépôt à leur versement en passant par l'avis des élus, puis la valorisation annuelle des mises à disposition de salles, qui alimente les attestations remises aux associations et le suivi des seuils réglementaires.
 
-## 7.1 La liste des demandes de subvention
+## 7.1 La liste des dossiers et la campagne en cours
 
-**À quoi ça sert** — Suivre toutes les demandes de subvention des associations, par exercice et par étape, et voir d'un coup d'œil les montants demandés, accordés et versés.
+**À quoi ça sert** — Suivre tous les dossiers de demande de subvention des associations, par campagne, par exercice et par étape, et voir d'un coup d'œil les montants demandés, accordés et versés.
 
 **Qui** — Tous les agents peuvent consulter (les agents en lecture seule par défaut). Les gestionnaires instruisent et décident ; les élus donnent leur avis. Le module Subventions doit être activé dans les paramètres.
 
 ![Liste des subventions](captures/subventions.webp)
 
-*Figure — la page Subventions : quatre compteurs de l'exercice, les onglets par statut et les 4 demandes.*
+*Figure — la page Subventions : la campagne 2027 ouverte, quatre compteurs de l'exercice, les onglets par statut et les dossiers.*
 
 **Ce que l'on voit**
 
-- En haut à droite, **Export 2027** (export de l'exercice affiché) et **Déposer une demande**.
-- Quatre cartes cliquables : **Demandé** pour l'exercice (4 800 €, 2 dossiers), **Accordé** (montant et nombre de subventions votées), **Versé** (montant et nombre de versements) et **En cours d'instruction** (dossiers à instruire, soumettre ou voter).
-- Les onglets **Déposées**, **En instruction**, **Avis**, **Votées**, **Refusées**, **Versées** et **Toutes**.
-- La recherche (numéro, association, objet) et les filtres **Tous les exercices**, **Tous les types**, **Toutes les associations**, puis **Filtrer**.
-- Pour chaque demande : le **Numéro** (SUB-ANNÉE-NNNN) avec l'exercice et la date de dépôt, l'**Association**, l'**Objet** avec le type (Fonctionnement, Projet, Exceptionnelle, Investissement) et le nombre de bénéficiaires, les montants **Demandé** et **Accordé**, et le **Statut**.
+- En haut à droite, **Campagnes**, **Export 2027** (export de l'exercice affiché) et **Commencer un dossier**.
+- La carte de la **campagne en cours** : intitulé, pastille d'état (Dépôt ouvert, Ouvre bientôt, Dépôt clos), dates de dépôt, consignes affichées aux associations, nombre de dossiers déposés et en rédaction, bouton **Gérer les campagnes**.
+- Quatre cartes cliquables : **Demandé** pour l'exercice, **Accordé** (montant et nombre de subventions votées), **Versé** (montant et nombre de versements) et **En cours d'instruction**.
+- Les onglets **Brouillons**, **Déposées**, **En instruction**, **Avis**, **Votées**, **Refusées**, **Versées** et **Toutes**.
+- La recherche (numéro, association, objet) et les filtres **Tous les exercices**, **Toutes les campagnes**, **Tous les types**, **Toutes les associations**, puis **Filtrer**.
+- Pour chaque dossier : le **Numéro** (SUB-ANNÉE-NNNN, ou un numéro provisoire en rédaction) avec l'exercice, la date de dépôt et la mention « sportive », l'**Association**, l'**Objet** avec le type et le nombre de bénéficiaires, les montants **Demandé** et **Accordé**, et le **Statut**.
 
-**Comment faire — déposer une demande au nom d'une association**
+**Comment faire — commencer un dossier au nom d'une association**
 
-L'association dépose normalement sa demande elle-même depuis « Mes subventions » sur le portail. Pour une demande reçue sur papier ou par courriel :
+L'association remplit normalement son dossier elle-même depuis « Mes subventions » sur le portail. Pour un dossier reçu sur papier ou par courriel :
 
-1. Cliquez sur **Déposer une demande**.
-2. Choisissez l'**Association demandeuse** et l'**Exercice**.
-3. Choisissez le **Type**, puis saisissez l'**Objet** et la **Description**.
-4. Indiquez le **Montant demandé (€)**, le **Budget total du projet (€)** et le nombre de **Bénéficiaires**.
-5. Cliquez sur **Déposer la demande**. Elle reçoit son numéro et le statut « Déposée ».
+1. Cliquez sur **Commencer un dossier**.
+2. Choisissez l'**Association demandeuse**, l'**Exercice** (rattaché à sa campagne si elle existe) et la **Nature** (première demande ou renouvellement).
+3. Cliquez sur **Commencer le dossier** : il s'ouvre sur sa première fiche, pré-rempli depuis la fiche de l'association et son dossier précédent. Remplissez les fiches (7.2), déposez les pièces, puis **Vérifier et déposer** depuis la fiche Attestation.
+4. Hors période de campagne, indiquez le **Motif de dérogation** avant de déposer : il est conservé dans l'historique du dossier.
 
 **Règles à connaître**
 
-- Seules les organisations de type « association » peuvent demander une subvention.
+- Seules les organisations de type « association » peuvent demander une subvention. La case **Association sportive** de la fiche de l'organisation choisit la variante du dossier et du plan de budget.
+- Un dossier déposé par un agent n'a pas besoin de la signature en ligne : le dossier papier signé en tient lieu.
 - L'exercice proposé par défaut est l'année suivante à partir du mois d'octobre.
 
-## 7.2 Le circuit d'une demande et son instruction
+![Campagnes de subventions](captures/subventions-campagne.webp)
 
-**À quoi ça sert** — Faire avancer une demande étape par étape, en gardant la trace de chaque décision.
+*Figure — la page Campagnes : une campagne par exercice, ses dates de dépôt, son état et le nombre de dossiers.*
+
+**Comment faire — gérer les campagnes**
+
+1. Depuis la page Subventions, cliquez sur **Campagnes**, puis sur **Nouvelle campagne**.
+2. L'exercice, l'intitulé et les dates (du 1er octobre au 20 novembre de l'année précédente) sont proposés ; ajoutez des **Consignes affichées aux associations** si besoin, puis **Créer**.
+3. La campagne est créée « En préparation » : cliquez sur l'icône **Ouvrir** pour permettre le dépôt pendant la période. **Clôturer** ferme le dépôt sur le portail ; **Modifier** change les dates ou les consignes.
+
+**Règles à connaître**
+
+- Une seule campagne par exercice ; elle ne se supprime que sans dossier rattaché.
+- Le portail accepte un dépôt si la campagne est ouverte **et** que la date du jour est entre l'ouverture et la clôture incluses. Un dossier incomplet ou déposé hors délai n'est pas instruit : la carte de campagne le rappelle aux associations.
+
+## 7.2 Le dossier et son instruction
+
+**À quoi ça sert** — Lire le dossier reçu fiche par fiche, vérifier ses pièces, le renvoyer s'il est incomplet, puis le faire avancer étape par étape en gardant la trace de chaque décision.
 
 **Qui** — Les utilisateurs qui ont le droit d'écriture sur « Subventions » (gestionnaires et élus par défaut).
 
-![Fiche d'une demande en cours d'instruction](captures/subvention-instruction.webp)
+![Fiche d'un dossier en cours d'instruction](captures/subvention-instruction.webp)
 
-*Figure — la demande SUB-2026-0003 d'Around dance, ouverte aux avis des élus, vue par la gestionnaire qui l'instruit.*
+*Figure — le dossier SUB-2027-0001 d'Around dance, ouvert aux avis des élus, vu par la gestionnaire qui l'instruit.*
 
 **Ce que l'on voit**
 
-- En haut : le numéro, le type, le statut (**Avis des élus**), l'association, l'exercice et le montant demandé ; le bouton **Modifier** et le menu « … ».
-- Le bloc **Demande** : numéro, exercice, type, statut, montant demandé, budget total (et la part que représente la demande : « 32 % demandés »), bénéficiaires, date de dépôt, auteur du dépôt, **Instructeur**, objet et description.
-- Le bloc **Association** (replié) : coordonnées, validation de la fiche et comptes du portail.
-- Le bloc **Pièces** : budget prévisionnel, bilan, RIB… avec le formulaire de dépôt (**Fichier**, **Nature**, **Catégorie**, **Intitulé**, bouton **Déposer**).
-- À droite, le bloc **Instruction** avec la frise des étapes (**Déposée**, **Instruction**, **Avis des élus**, **Votée**, **Versée**), une phrase qui dit ce qu'il reste à faire, et les boutons de l'étape suivante (ici **Voter la subvention** et **Refuser**).
-- Le bloc **Avis** : les avis déjà donnés et le formulaire pour donner le sien (voir 7.3).
+- En haut : le numéro, le type, le statut, les pastilles « Sportive » et de campagne, l'association, l'exercice, la nature et le montant demandé ; les boutons **Renvoyer comme incomplet** et **PDF** ; le menu « … » (fiche de l'association, parcourir les fiches, campagnes, modifier l'objet et le montant, export, suppression).
+- Le **Cadre réservé à l'administration** : numéro, date de réception, campagne et date limite, auteur du dépôt, instructeur, signature électronique (ou « Dossier papier signé »), montant accordé, dates de décision et de versement, note, et le **Secteur d'instruction** (Sport, Culture, Solidarité, Jeunesse et éducation, Cadre de vie, Autre) à enregistrer.
+- La **Synthèse de la demande** : objet, type, montant demandé, total des produits prévus et part de la subvention, subvention de l'an dernier, adhérents, bénévoles et salariés.
+- Les neuf fiches du dossier, repliées, en lecture : **Présentation**, **Bureau**, **Effectifs**, **Rayonnement**, **Budget prévisionnel** (charges et produits par poste avec totaux), **Demande et actions**, **Trésorerie**, **Bilan N-1** (budget, réalisé et écart par poste), **Attestation**. Une pastille « incomplète » signale une fiche à compléter.
+- Le bloc **Association** (replié) et le bloc **Pièces** : les pièces attendues avec leur état **Fournie** / **Manquante**, les pièces déposées et le formulaire de dépôt (**Fichier**, **Nature**, **Catégorie**, **Intitulé**, bouton **Déposer**).
+- À droite, le bloc **Instruction** avec la frise des étapes (**Rédaction**, **Déposé**, **Instruction**, **Avis des élus**, **Voté**, **Versé**), une phrase qui dit ce qu'il reste à faire et les boutons de l'étape suivante ; le bloc **Avis** (7.3) ; l'**Historique** du dossier (dépôt, signature, renvoi, dérogation, étapes).
 
-**Comment faire — faire avancer la demande**
+![Fiche Budget d'un dossier en rédaction](captures/subvention-dossier-fiche.webp)
 
-1. **Déposée** : cliquez sur **Prendre en instruction**. Vous devenez l'instructeur du dossier.
-2. **En instruction** : vérifiez la demande et ses pièces, demandez les compléments à l'association, puis cliquez sur **Soumettre aux élus**.
+*Figure — un agent complète la fiche « Budget prévisionnel » d'un dossier en rédaction : les mêmes fiches que sur le portail.*
+
+**Comment faire — renvoyer un dossier incomplet**
+
+1. Sur un dossier **Déposé** ou **En instruction**, cliquez sur **Renvoyer comme incomplet**.
+2. Le champ **Ce qui manque ou est à corriger** est pré-rempli avec les manques détectés ; complétez-le.
+3. Cliquez sur **Renvoyer à l'association** : le dossier repasse en rédaction, garde son numéro, et l'association reçoit un courriel avec vos remarques et la date limite. Elle le redépose depuis le portail.
+
+**Comment faire — compléter un dossier au nom de l'association**
+
+1. Sur un dossier en rédaction, cliquez sur **Compléter le dossier** (ou sur « modifier » à droite d'une fiche).
+2. Remplissez les fiches comme l'association le ferait, déposez les pièces, puis depuis la fiche **Attestation** cliquez sur **Déposer le dossier** (avec un **Motif de dérogation** hors période).
+
+**Comment faire — faire avancer le dossier**
+
+1. **Déposé** : vérifiez les pièces et le cadre réservé, puis cliquez sur **Prendre en instruction**. Vous devenez l'instructeur du dossier.
+2. **En instruction** : examinez le dossier, demandez les compléments à l'association, puis cliquez sur **Soumettre aux élus**.
 3. **Avis des élus** : recueillez les avis (7.3), puis votez ou refusez (7.4).
-4. **Votée** : une fois le paiement effectué, enregistrez le versement (7.4).
+4. **Voté** : une fois le paiement effectué, enregistrez le versement (7.4).
 
 À chaque étape, **Refuser** reste possible jusqu'au vote.
 
 **Règles à connaître**
 
-- Les étapes s'enchaînent toujours dans cet ordre : Déposée → En instruction → Avis des élus → Votée → Versée. Le refus clôt la demande depuis les trois premières étapes.
-- Une demande votée, refusée ou versée est close : elle ne peut plus être modifiée et ne reçoit plus d'avis.
-- Seule une demande simplement déposée, sans aucun avis, peut être supprimée ; sinon, refusez-la.
+- Les étapes s'enchaînent toujours dans cet ordre : Rédaction → Déposé → En instruction → Avis des élus → Voté → Versé. Le refus clôt le dossier depuis les trois premières étapes ; le renvoi comme incomplet ramène en rédaction.
+- Un dossier voté, refusé ou versé est clos : il ne peut plus être modifié et ne reçoit plus d'avis.
+- Seul un dossier en rédaction ou simplement déposé, sans aucun avis, peut être supprimé ; sinon, refusez-le.
+- Le PDF du dossier est généré au dépôt et accroché aux pièces ; le bouton **PDF** le rend à jour à tout moment.
 
 ## 7.3 L'avis des élus
 
@@ -127,7 +159,7 @@ L'association dépose normalement sa demande elle-même depuis « Mes subvention
 **Règles à connaître**
 
 - Le vote et le refus envoient un courriel à l'association et une notification à chacun de ses membres ; l'association suit sa demande dans « Mes subventions ».
-- Le versement prévient les membres de l'association par une notification ; la date du versement est ajoutée à la note de décision.
+- Le versement prévient les membres de l'association par une notification ; la date du versement est enregistrée dans le cadre réservé du dossier et affichée à l'association.
 - Les subventions votées ou versées sont reprises dans la valorisation des aides (7.5).
 
 ## 7.5 La valorisation des avantages en nature

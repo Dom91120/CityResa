@@ -206,6 +206,16 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
                       )
                     }
                   />
+                  <Lu
+                    label="Sportive"
+                    valeur={
+                      org.sportive ? (
+                        <Chip teinte="sky">Oui</Chip>
+                      ) : (
+                        <span className="text-muted">Non</span>
+                      )
+                    }
+                  />
                 </>
               ) : null}
               <Lu

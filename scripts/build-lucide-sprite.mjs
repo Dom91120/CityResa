@@ -12,6 +12,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ICONES = [
+  "circle-alert",
+  "award",
+  "user-round",
+  "compass",
+  "arrow-down-right",
+  "arrow-up-right",
+  "lock-open",
   // Navigation et modules
   "layout-dashboard",
   "calendar-days",

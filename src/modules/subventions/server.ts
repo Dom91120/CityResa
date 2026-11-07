@@ -20,8 +20,9 @@ import { prochainNumero } from "@/server/numerotation";
 import { normaliser, type Params, param } from "@/server/paging";
 
 export const INCLUDE_SUBVENTION_LISTE = {
-  organisation: { select: { id: true, name: true, type: true } },
+  organisation: { select: { id: true, name: true, type: true, sportive: true } },
   avis: { select: { avis: true } },
+  campagne: { select: { id: true, label: true } },
 } satisfies Prisma.SubventionInclude;
 
 export type SubventionLigne = Prisma.SubventionGetPayload<{
@@ -41,6 +42,10 @@ export const INCLUDE_SUBVENTION = {
     include: { author: { select: { id: true, firstName: true, lastName: true, role: true } } },
     orderBy: { createdAt: "desc" as const },
   },
+  campagne: true,
+  secteur: true,
+  dossierDocument: { select: { id: true, filename: true, createdAt: true } },
+  histories: { orderBy: { performedAt: "desc" as const } },
 } satisfies Prisma.SubventionInclude;
 
 export type SubventionComplete = Prisma.SubventionGetPayload<{
@@ -73,7 +78,7 @@ export const TRANSITIONS_SUBVENTION: Record<string, string[]> = {
 
 /** Libellé du bouton de chaque transition. */
 export const TRANSITION_LIBELLES: Record<string, { label: string; icone: string; aide: string }> = {
-  deposee: { label: "Déposer", icone: "send", aide: "Enregistre la demande." },
+  deposee: { label: "Déposer", icone: "send", aide: "Enregistre le dossier." },
   instruction: {
     label: "Prendre en instruction",
     icone: "search",
@@ -129,12 +134,14 @@ export function compterAvis(avis: { avis: string }[]): Record<string, number> {
 export type FiltresSubventions = {
   statut: string;
   exercice: number | null;
+  campagne: number | null;
   type: string;
   organisation: number | null;
   q: string;
 };
 
 export const ONGLETS_SUBVENTIONS: [string, string][] = [
+  ["brouillon", "Brouillons"],
   ["deposee", "Déposées"],
   ["instruction", "En instruction"],
   ["avis", "Avis"],
@@ -147,9 +154,11 @@ export const ONGLETS_SUBVENTIONS: [string, string][] = [
 export function lireFiltres(params: Params): FiltresSubventions {
   const ex = Number.parseInt(param(params, "exercice") ?? "", 10);
   const org = Number.parseInt(param(params, "organisation") ?? "", 10);
+  const camp = Number.parseInt(param(params, "campagne") ?? "", 10);
   return {
     statut: (param(params, "statut") ?? "").trim(),
     exercice: Number.isInteger(ex) && ex > 2000 ? ex : null,
+    campagne: Number.isInteger(camp) && camp > 0 ? camp : null,
     type: (param(params, "type") ?? "").trim(),
     organisation: Number.isInteger(org) && org > 0 ? org : null,
     q: (param(params, "q") ?? "").trim(),
@@ -164,6 +173,7 @@ export function filtrerSubventions(
   return rows.filter((s) => {
     if (fl.statut && s.status !== fl.statut) return false;
     if (fl.exercice && s.exercice !== fl.exercice) return false;
+    if (fl.campagne && s.campagneId !== fl.campagne) return false;
     if (fl.type && s.type !== fl.type) return false;
     if (fl.organisation && s.organisationId !== fl.organisation) return false;
     if (ql && !normaliser(`${s.numero} ${s.organisation.name} ${s.objet}`).includes(ql))
@@ -221,7 +231,7 @@ export function syntheseExercice(rows: SubventionLigne[], exercice: number): Syn
     enCours: 0,
   };
   for (const r of rows) {
-    if (r.exercice !== exercice) continue;
+    if (r.exercice !== exercice || r.status === "brouillon") continue;
     s.nb += 1;
     s.demande += r.montantDemande;
     if (r.status === "votee" || r.status === "versee") {
@@ -529,10 +539,17 @@ export async function changerStatutSubvention(
   } else if (nouveau === "versee") {
     const d = opts.dateVersement ?? now;
     detail = dateCourte(d);
-    // Le schéma n'a pas de date de versement : elle est consignée dans la note de décision.
-    data.decisionNote = `${s.decisionNote ? `${s.decisionNote}\n` : ""}Versement effectué le ${dateCourte(d)}.`;
+    data.verseAt = d;
   }
   await prisma.subvention.update({ where: { id }, data });
+  await prisma.subventionHistory.create({
+    data: {
+      subventionId: id,
+      action: SUBVENTION_STATUS[nouveau]?.label ?? nouveau,
+      comment: detail || null,
+      performedBy: acteur.name,
+    },
+  });
   invalidateNavCounts();
   await auditRecord(
     `subvention ${nouveau}`,

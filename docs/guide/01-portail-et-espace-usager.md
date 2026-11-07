@@ -450,74 +450,88 @@ Les agents municipaux y trouveront aussi de quoi accompagner un usager au télé
 
 ## 1.18 Mes subventions
 
-**À quoi ça sert** — Suivre les demandes de subvention déposées par l'association.
+**À quoi ça sert** — Suivre la campagne de subventions en cours et les dossiers de demande déposés par l'association.
 
 **Qui** — Les membres d'une association, si la Ville a activé le module des subventions.
 
 ![Mes subventions](captures/asso-mes-subventions.webp)
-*Figure — « Mes subventions » d'Around dance : une demande de 3 000 € au stade « Avis des élus ».*
+*Figure — « Mes subventions » d'Around dance : la campagne 2027 ouverte et le dossier SUB-2027-0001 au stade « Avis des élus ».*
 
 **Ce que l'on voit**
-- Le bouton **Nouvelle demande**.
-- Un tableau des demandes : **Numéro** (SUB-2026-0003), **Exercice**, **Type**, **Objet**, montant **Demandé**, montant **Accordé**, **Statut** et bouton **Voir**.
+- La carte de la **campagne** : son intitulé, la pastille « Dépôt ouvert », « Ouvre bientôt » ou « Dépôt clos », les dates de dépôt, les consignes de la Ville et, selon le cas, le bouton **Commencer mon dossier**, **Reprendre mon dossier** ou **Voir mon dossier**.
+- Un tableau des dossiers : **Dossier** (numéro, exercice, date de dépôt, première demande ou renouvellement), **Objet** et type, montant **Demandé**, montant **Accordé**, **Statut** (avec la date de versement) et le bouton **Voir** ou **Reprendre**.
 
 **Comment faire**
-1. Cliquez sur **Voir** pour ouvrir une demande (section 1.20).
-2. Cliquez sur **Nouvelle demande** pour en déposer une autre (section 1.19).
+1. Pendant la campagne, cliquez sur **Commencer mon dossier** : le dossier de l'exercice est créé, pré-rempli, et s'ouvre sur sa première fiche (section 1.19).
+2. Cliquez sur **Reprendre** pour continuer un dossier en rédaction, sur **Voir** pour consulter un dossier déposé (section 1.20).
 
 **Règles à connaître**
-- Les statuts d'une demande : Déposée, En instruction, Avis des élus, Votée, Refusée, Versée.
-- Le montant accordé s'affiche une fois la subvention votée.
+- Le dépôt n'est possible qu'entre les dates de la campagne (en général du 1er octobre au 20 novembre pour l'exercice suivant). Hors période, la carte l'indique et le bouton disparaît.
+- Un seul dossier par exercice ; un dossier renvoyé par la Ville comme incomplet repasse en rédaction et se redépose avant la clôture.
+- Les statuts d'un dossier : Brouillon, Déposée, En instruction, Avis des élus, Votée, Refusée, Versée.
 
-## 1.19 Déposer une demande de subvention
+## 1.19 Remplir et déposer le dossier de demande
 
-**À quoi ça sert** — Demander une aide financière pour le fonctionnement de l'association ou pour un projet.
-
-**Qui** — Les membres d'une association.
-
-![Nouvelle demande de subvention](captures/asso-nouvelle-subvention.webp)
-*Figure — le formulaire « Nouvelle demande de subvention » au nom d'Around dance.*
-
-**Ce que l'on voit**
-- L'astuce : « Décrivez clairement le projet ou l'activité à financer. Après l'envoi, vous pourrez joindre vos pièces… »
-- Les champs **Exercice**, **Type de subvention**, **Montant demandé (€)**, **Objet de la demande**, **Description du projet ou de l'activité**, **Budget total du projet (€)** et **Nombre de bénéficiaires**.
-- La case **Je certifie l'exactitude des informations fournies** et les boutons **Annuler** et **Déposer la demande**.
-
-**Comment faire**
-1. Choisissez l'exercice et le type (fonctionnement, projet, exceptionnelle, investissement).
-2. Indiquez le montant demandé et l'objet, puis décrivez le projet : objectifs, public, calendrier, partenaires.
-3. Renseignez le budget total et le nombre de bénéficiaires.
-4. Cochez la certification et cliquez sur **Déposer la demande**. Un courriel de réception est envoyé.
-5. Ouvrez ensuite la demande pour joindre vos pièces (section 1.20).
-
-## 1.20 Suivre une demande de subvention
-
-**À quoi ça sert** — Voir où en est une demande et y joindre les pièces justificatives.
+**À quoi ça sert** — Constituer en ligne le dossier de demande de subvention de la Ville (le même que le formulaire papier), fiche par fiche, puis le signer et le déposer.
 
 **Qui** — Les membres de l'association.
 
-![Demande de subvention](captures/asso-subvention.webp)
-*Figure — la demande SUB-2026-0003 au statut « Avis des élus », sans pièce jointe pour l'instant.*
+![Fiche Budget prévisionnel](captures/asso-dossier-subvention.webp)
+*Figure — la fiche « Budget prévisionnel » du dossier 2027 d'Espace Yoga : les postes de charges et de produits du plan associatif.*
 
 **Ce que l'on voit**
-- En tête : objet, statut, numéro, exercice et type.
-- Un bandeau qui explique l'étape : « Votre demande est soumise à l'avis des élus. »
-- **Demande** : objet, type, exercice, montant demandé, budget total, bénéficiaires, date de dépôt et auteur, description.
-- **Pièces justificatives** : la liste des pièces (« Aucune pièce jointe. ») et le formulaire **Fichier**, **Nature**, **Intitulé**, bouton **Déposer**.
+- En haut, le bandeau des dix fiches numérotées, chacune avec une coche verte (complète) ou un point orange (il manque quelque chose) : **Présentation**, **Bureau**, **Effectifs**, **Rayonnement**, **Budget prévisionnel**, **Demande et actions**, **Trésorerie**, **Bilan N-1**, **Pièces**, **Attestation**.
+- Le bouton **Aperçu PDF** qui montre le dossier tel qu'il sera remis.
+- Pour chaque fiche, ses champs regroupés par section et, en bas, **Retour au dossier**, **Enregistrer** et **Enregistrer et continuer**.
 
 **Comment faire**
-1. Dans **Pièces justificatives**, choisissez le fichier (budget prévisionnel, bilan et compte de résultat, rapport d'activité, RIB…).
-2. Indiquez sa nature et, si besoin, un intitulé, puis cliquez sur **Déposer**.
+1. Parcourez les fiches dans l'ordre ; beaucoup de champs sont déjà remplis d'après la fiche de l'association, votre dossier de l'an dernier et vos réservations de salles municipales (fiche Rayonnement, locaux mis à disposition).
+2. Dans **Budget prévisionnel** et **Bilan N-1**, saisissez un montant par poste : les totaux, le résultat et la part de la subvention sont calculés. Les associations sportives ont un plan de budget propre (licences, engagements, arbitrage, manifestations, stages…).
+3. Dans **Demande et actions**, indiquez le type, le montant demandé, l'objet et la justification ; une ligne par action spécifique.
+4. Enregistrez chaque fiche : vous pouvez quitter et reprendre plus tard, le dossier reste en rédaction.
+
+![Fiche Pièces](captures/asso-subvention-pieces.webp)
+*Figure — la fiche « Pièces » : les pièces attendues avec leur état Fournie / Manquante, puis le dépôt d'une pièce avec sa nature.*
+
+5. Dans **Pièces**, déposez chaque document attendu en choisissant sa **Nature** (procès-verbal d'assemblée générale, comptes approuvés, RIB, compte rendu des actions subventionnées, statuts…). La liste s'adapte à votre situation : première demande, commissaire aux comptes, changement de statuts, signature par mandataire, actions spécifiques.
+
+![Fiche Attestation](captures/asso-subvention-attestation.webp)
+*Figure — la fiche « Attestation » : les engagements à cocher, le signataire, la signature par code et le bloc « Déposer le dossier » qui liste ce qui manque.*
+
+6. Dans **Attestation**, cochez les engagements de l'attestation sur l'honneur, indiquez votre situation au regard des aides publiques, acceptez le **contrat d'engagement républicain**, nommez le signataire et enregistrez.
+7. Cliquez sur **Recevoir mon code** : un code à six chiffres arrive par SMS (ou par courriel). Saisissez-le, cochez la case et cliquez sur **Signer**.
+8. Le bloc **Déposer le dossier** liste ce qui manque encore, fiche par fiche. Quand tout est complet, cliquez sur **Déposer mon dossier** : le dossier reçoit son numéro, son PDF est généré et un accusé de réception vous est envoyé.
+
+**Règles à connaître**
+- Un dossier incomplet ne peut pas être déposé : chaque manque renvoie vers la fiche concernée.
+- Modifier une fiche après la signature annule celle-ci : il faut signer à nouveau.
+- Le montant demandé ne peut pas dépasser le total des produits prévisionnels.
+- Après le dépôt, le dossier ne se modifie plus, sauf si la Ville le renvoie comme incomplet (vous recevez un courriel avec ses remarques).
+
+## 1.20 Suivre un dossier déposé
+
+**À quoi ça sert** — Voir où en est un dossier, relire ses fiches, télécharger son PDF et ajouter une pièce demandée par les services.
+
+**Qui** — Les membres de l'association.
+
+![Dossier de subvention](captures/asso-subvention.webp)
+*Figure — le dossier SUB-2027-0001 au statut « Avis des élus » : bandeau d'étape, fiches en lecture, pièces et historique.*
+
+**Ce que l'on voit**
+- En tête : numéro, statut, exercice, nature, objet, montant demandé, campagne, et le bouton **Dossier PDF**.
+- Un bandeau qui explique l'étape, la date de réception et la signature.
+- Le bloc **Décision** une fois la subvention votée, refusée ou versée (montant accordé, dates, note).
+- Les fiches du dossier en lecture seule, le bloc **Pièces** (état des pièces attendues, pièces déposées, dépôt d'une pièce complémentaire) et l'**Historique** du dossier.
 
 **Règles à connaître**
 - Les phrases d'étape selon le statut :
-  - « Votre demande est enregistrée ; elle sera instruite par les services » ;
+  - « Votre dossier est enregistré ; il sera instruit après la clôture de la campagne » ;
   - « en cours d'instruction » ;
-  - « soumise à l'avis des élus » ;
+  - « soumis à l'avis des élus » ;
   - « La subvention a été votée » ;
   - « La collectivité n'a pas retenu cette demande » ;
   - « La subvention a été versée ».
-- La décision est envoyée par courriel.
+- La décision est envoyée par courriel ; la date de versement s'affiche dans « Mes subventions ».
 
 ## 1.21 Mon compte
 

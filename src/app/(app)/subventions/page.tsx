@@ -12,6 +12,7 @@ import {
 import { StatutSubvention } from "@/components/macros";
 import { SUBVENTION_TYPES } from "@/lib/constantes";
 import { dateCourte, montant } from "@/lib/libelles";
+import { CarteCampagne } from "@/modules/subventions/dossier-vues";
 import {
   chargerSubventions,
   compterOnglets,
@@ -24,6 +25,11 @@ import {
   syntheseExercice,
 } from "@/modules/subventions/server";
 import { CartesExercice, CompteurAvis, TypeSubvention } from "@/modules/subventions/vues";
+import {
+  campagneCourante,
+  chargerCampagnes,
+  depotPortailOuvert,
+} from "@/server/campagnes-subvention";
 import { contexteModule } from "@/server/module";
 import { type Params, paginate, resolvePerPage } from "@/server/paging";
 
@@ -33,7 +39,11 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
   const page = await contexteModule("subventions", "subventions");
   const params = await searchParams;
   const fl = lireFiltres(params);
-  const toutes = await chargerSubventions();
+  const [toutes, campagne, campagnes] = await Promise.all([
+    chargerSubventions(),
+    campagneCourante(),
+    chargerCampagnes(),
+  ]);
   const exercices = exercicesDe(toutes);
   // Les cartes portent sur l'exercice choisi, sinon le plus récent qui a des dossiers.
   const exerciceCartes =
@@ -76,6 +86,9 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
           </p>
         </div>
         <div className="page-actions">
+          <a href="/subventions/campagnes" className="btn btn-outline-secondary btn-sm">
+            <Icone nom="calendar" taille={14} /> Campagnes
+          </a>
           <a
             href={`/subventions/export.csv?exercice=${exerciceCartes}`}
             className="btn btn-outline-secondary btn-sm"
@@ -84,11 +97,37 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
           </a>
           {peutEditer ? (
             <a href="/subventions/nouvelle" className="btn btn-primary btn-sm">
-              <Icone nom="plus" taille={14} /> Déposer une demande
+              <Icone nom="plus" taille={14} /> Commencer un dossier
             </a>
           ) : null}
         </div>
       </div>
+
+      <CarteCampagne
+        c={campagne}
+        depotOuvert={depotPortailOuvert(campagne)}
+        compteurs={
+          campagne ? (
+            <span className="text-muted small">
+              {
+                toutes.filter((s) => s.campagneId === campagne.id && s.status !== "brouillon")
+                  .length
+              }{" "}
+              dossier(s) déposé(s) ·{" "}
+              {
+                toutes.filter((s) => s.campagneId === campagne.id && s.status === "brouillon")
+                  .length
+              }{" "}
+              en rédaction
+            </span>
+          ) : undefined
+        }
+        actions={
+          <a href="/subventions/campagnes" className="btn btn-outline-secondary btn-sm">
+            <Icone nom="calendar" taille={14} /> Gérer les campagnes
+          </a>
+        }
+      />
 
       <CartesExercice s={synth} base="/subventions" />
 
@@ -110,6 +149,7 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
         hidden={{
           statut: fl.statut,
           exercice: fl.exercice ? String(fl.exercice) : null,
+          campagne: fl.campagne ? String(fl.campagne) : null,
           type: fl.type,
           organisation: fl.organisation ? String(fl.organisation) : null,
         }}
@@ -122,6 +162,13 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
               options={exercices.map((e) => [String(e), `Exercice ${e}`])}
               blank="Tous les exercices"
               ariaLabel="Exercice"
+            />
+            <Filtre
+              name="campagne"
+              value={fl.campagne ? String(fl.campagne) : ""}
+              options={campagnes.map((c) => [String(c.id), c.label])}
+              blank="Toutes les campagnes"
+              ariaLabel="Campagne"
             />
             <Filtre
               name="type"
@@ -173,7 +220,11 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
                           {s.numero}
                         </a>
                         <small>
-                          Exercice {s.exercice} · déposée le {dateCourte(s.createdAt)}
+                          Exercice {s.exercice} ·{" "}
+                          {s.status === "brouillon"
+                            ? "en rédaction"
+                            : `déposé le ${dateCourte(s.recuAt ?? s.createdAt)}`}
+                          {s.organisation.sportive ? " · sportive" : ""}
                         </small>
                       </span>
                     </td>
@@ -236,14 +287,14 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
                   colonnes={8}
                   icone="hand-coins"
                   message={
-                    fl.q || fl.type || fl.organisation || fl.exercice
+                    fl.q || fl.type || fl.organisation || fl.exercice || fl.campagne
                       ? "Aucune demande ne correspond à ces critères."
                       : fl.statut
                         ? "Aucune demande dans cet état."
-                        : "Aucune demande de subvention : déposez la première pour une association."
+                        : "Aucun dossier de subvention : commencez le premier pour une association."
                   }
                   urlAjout={peutEditer && !fl.q ? "/subventions/nouvelle" : null}
-                  libelleAjout="Déposer une demande"
+                  libelleAjout="Commencer un dossier"
                 />
               )}
             </tbody>

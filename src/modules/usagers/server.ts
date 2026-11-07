@@ -49,6 +49,8 @@ export type OrganisationEntree = {
   legalAppointedAt: Date | null;
   /** Association conventionnée avec la Ville (priorité dans les campagnes de créneaux). */
   conventionnee: boolean;
+  /** Association sportive : dossier de subvention et plan de budget sportifs. */
+  sportive: boolean;
   profilId: number | null;
   notes: string | null;
 };
@@ -75,6 +77,7 @@ export function lireOrganisation(form: FormData): OrganisationEntree {
     legalLastName: borne("legal_last_name", 80),
     legalAppointedAt: parseDate(form.get("legal_appointed_at")),
     conventionnee: type === "association" && coche(form, "conventionnee"),
+    sportive: type === "association" && coche(form, "sportive"),
     profilId: idOuNull(form, "profil_id"),
     notes: champOuNull(form, "notes"),
   };

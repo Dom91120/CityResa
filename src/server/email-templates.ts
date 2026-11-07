@@ -276,11 +276,29 @@ export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
   {
     key: "subvention_recue",
     label: "Demande de subvention reçue",
-    subject: "Votre demande de subvention {{numero}} est enregistrée",
+    subject: "Votre dossier de subvention {{numero}} est enregistré",
     body:
-      "<p>Bonjour {{prenom}},</p><p>Votre demande de subvention <strong>{{numero}}</strong> ({{objet}}, {{montant}}) est bien enregistrée pour l'exercice {{exercice}}. Vous serez informé de son instruction.</p>" +
+      '<p>Bonjour {{prenom}},</p><p>Votre dossier de demande de subvention <strong>{{numero}}</strong> ({{objet}}, {{montant}}) est bien enregistré pour l\'exercice {{exercice}} ({{campagne}}). Il sera instruit après la clôture de la campagne ({{date_limite}}). Vous pouvez le consulter et télécharger son PDF : <a href="{{lien}}">{{lien}}</a>.</p>' +
       SIGNATURE,
-    aide: "Module ASSO.",
+    aide: "Module ASSO : accusé de réception du dépôt.",
+  },
+  {
+    key: "subvention_incomplete",
+    label: "Dossier de subvention à compléter",
+    subject: "Votre dossier de subvention {{numero}} est à compléter",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>Votre dossier de demande de subvention <strong>{{numero}}</strong> (exercice {{exercice}}) ne peut pas être instruit en l\'état :</p><p><em>{{motif}}</em></p><p>Merci de le compléter puis de le déposer à nouveau avant le {{date_limite}} : <a href="{{lien}}">{{lien}}</a>.</p>' +
+      SIGNATURE,
+    aide: "Module ASSO : renvoi d'un dossier incomplet à l'association.",
+  },
+  {
+    key: "subvention_code",
+    label: "Code de signature du dossier de subvention",
+    subject: "Votre code de signature : {{code}}",
+    body:
+      "<p>Bonjour {{prenom}},</p><p>Votre code pour signer l'attestation du dossier de subvention {{exercice}} de <strong>{{organisation}}</strong> est : <strong style=\"font-size:1.4em;letter-spacing:.2em\">{{code}}</strong></p><p>Il est valable {{validite}}. Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.</p>" +
+      SIGNATURE,
+    aide: "Module ASSO : code à usage unique, envoyé par courriel si le SMS n'est pas disponible.",
   },
   {
     key: "subvention_decision",
@@ -369,3 +387,19 @@ export function versTexte(html: string): string {
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
+
+/**
+ * Les anciens textes par défaut d'un modèle, remplacés depuis : un modèle en base qui porte
+ * encore l'un d'eux n'a jamais été édité et reçoit le texte courant à l'amorçage ; un modèle
+ * modifié par la collectivité est laissé tel quel.
+ */
+export const EMAIL_TEMPLATE_ANCIENS: Record<string, { subject: string; body: string }[]> = {
+  subvention_recue: [
+    {
+      subject: "Votre demande de subvention {{numero}} est enregistrée",
+      body:
+        "<p>Bonjour {{prenom}},</p><p>Votre demande de subvention <strong>{{numero}}</strong> ({{objet}}, {{montant}}) est bien enregistrée pour l'exercice {{exercice}}. Vous serez informé de son instruction.</p>" +
+        SIGNATURE,
+    },
+  ],
+};

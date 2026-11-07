@@ -12,7 +12,7 @@ import { PERMISSION_CATEGORIES, REFERENTIAL_SEEDS, ROLE_SEEDS } from "@/lib/cons
 import { seedSaison } from "@/server/calendrier";
 import { getSettings, saveSettings, seedFromEnv } from "@/server/config-store";
 import { prisma } from "@/server/db";
-import { EMAIL_TEMPLATE_SEEDS } from "@/server/email-templates";
+import { EMAIL_TEMPLATE_ANCIENS, EMAIL_TEMPLATE_SEEDS } from "@/server/email-templates";
 import { hashPassword, verifyPassword } from "@/server/password";
 
 export async function seedRoles(): Promise<void> {
@@ -65,13 +65,26 @@ export async function seedReferentials(): Promise<void> {
   }
 }
 
-/** Les modèles de courriel manquants sont créés ; ceux déjà édités sont laissés tels quels. */
+/**
+ * Les modèles de courriel manquants sont créés ; un modèle qui porte encore un ancien texte
+ * par défaut est mis à jour ; ceux édités par la collectivité sont laissés tels quels.
+ */
 export async function seedEmailTemplates(): Promise<void> {
   for (const s of EMAIL_TEMPLATE_SEEDS) {
     const existe = await prisma.emailTemplate.findUnique({ where: { key: s.key } });
-    if (!existe)
+    if (!existe) {
       await prisma.emailTemplate.create({
         data: { key: s.key, label: s.label, subject: s.subject, body: s.body },
+      });
+      continue;
+    }
+    const perime = (EMAIL_TEMPLATE_ANCIENS[s.key] ?? []).some(
+      (a) => a.subject === existe.subject && a.body === existe.body,
+    );
+    if (perime)
+      await prisma.emailTemplate.update({
+        where: { id: existe.id },
+        data: { label: s.label, subject: s.subject, body: s.body },
       });
   }
 }

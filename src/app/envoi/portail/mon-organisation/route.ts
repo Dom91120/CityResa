@@ -1,5 +1,5 @@
 import { manquesSur, phraseManques } from "@/lib/dossier-usager";
-import { champ, champOuNull, parseDate } from "@/lib/forms-util";
+import { champ, champOuNull, coche, parseDate } from "@/lib/forms-util";
 import { auditRecord } from "@/server/audit";
 import { prisma } from "@/server/db";
 import { requireUsager } from "@/server/guards";
@@ -51,6 +51,7 @@ export async function POST(req: Request) {
               legalFirstName: champOuNull(form, "legal_first_name")?.slice(0, 80) ?? null,
               legalLastName: champOuNull(form, "legal_last_name")?.slice(0, 80) ?? null,
               legalAppointedAt: org.type === "association" ? nommeLe : null,
+              sportive: org.type === "association" ? coche(form, "sportive") : false,
               siret: champOuNull(form, "siret")?.slice(0, 20) ?? null,
               rna:
                 org.type === "association"
