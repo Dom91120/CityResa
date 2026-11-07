@@ -18,7 +18,11 @@ export default async function PersonnesPage({ searchParams }: { searchParams: Pr
   const etat = String(param(params, "etat") ?? "");
   const [rows, couleur] = await Promise.all([
     prisma.personnel.findMany({
-      include: { _count: { select: { vacations: { where: { endAt: { gte: new Date() } } } } } },
+      include: {
+        _count: { select: { vacations: { where: { endAt: { gte: new Date() } } } } },
+        contratType: { select: { label: true } },
+        sites: { include: { site: { select: { name: true } } } },
+      },
       orderBy: [{ isActive: "desc" }, { lastName: "asc" }, { firstName: "asc" }],
     }),
     couleurLibre(),
@@ -93,6 +97,8 @@ export default async function PersonnesPage({ searchParams }: { searchParams: Pr
                   pathname={page.pathname}
                   search={page.search}
                 />
+                <th>Contrat</th>
+                <th>Sites</th>
                 <th>Calendrier</th>
                 <th>État</th>
               </tr>
@@ -123,6 +129,35 @@ export default async function PersonnesPage({ searchParams }: { searchParams: Pr
                         {p.aVenir}
                       </a>
                     </td>
+                    <td className="small">
+                      {p.contratType ? (
+                        <>
+                          {p.contratType.label}
+                          <div className="text-muted">
+                            {p.quotite} %{p.horaires ? " · horaires fixes" : " · sans cycle"}
+                          </div>
+                        </>
+                      ) : (
+                        <span className="text-faint">—</span>
+                      )}
+                    </td>
+                    <td>
+                      {p.sites.length ? (
+                        <span
+                          className="chip chip-slate"
+                          title={p.sites
+                            .map((s) => `${s.site.name}${s.principal ? " (principal)" : ""}`)
+                            .join("\n")}
+                        >
+                          <Icone nom="map-pin" taille={12} /> {p.sites.length} site
+                          {p.sites.length > 1 ? "s" : ""}
+                        </span>
+                      ) : (
+                        <span className="text-faint" title="Aucun site : non affectable">
+                          —
+                        </span>
+                      )}
+                    </td>
                     <td>
                       {p.icsToken ? (
                         <Chip teinte="sky">
@@ -147,7 +182,7 @@ export default async function PersonnesPage({ searchParams }: { searchParams: Pr
                 ))
               ) : (
                 <Vide
-                  colonnes={6}
+                  colonnes={8}
                   message={
                     q || etat
                       ? "Aucune personne ne correspond."

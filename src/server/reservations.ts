@@ -473,6 +473,10 @@ export async function creerReservation(
   });
   invalidateNavCounts();
   await auditRecord("creation reservation", `${r.numero} · ${r.title}`, "reservations", acteur);
+  if (STATUTS_FERMES.includes(statut) && enabledIn(cfg, "personnel")) {
+    const { affecterDossier } = await import("@/server/affectation");
+    await affecterDossier(r.id, acteur).catch((err) => console.error("[affectation]", err));
+  }
   if (e.sansCourriel) return r;
   const lienBo = `${cfg.APP_BASE_URL}/reservations/${r.id}`;
   const dates =
@@ -718,6 +722,15 @@ export async function changerStatut(
   }
   await auditRecord(`reservation ${effectif}`, r.numero, "reservations", acteur.name);
   invalidateNavCounts();
+  // Un dossier qui devient ferme : le personnel de service est affecté ou proposé.
+  if (
+    STATUTS_FERMES.includes(effectif) &&
+    !STATUTS_FERMES.includes(r.status as ReservationStatus) &&
+    enabledIn(cfg, "personnel")
+  ) {
+    const { affecterDossier } = await import("@/server/affectation");
+    await affecterDossier(id, acteur.name).catch((e) => console.error("[affectation]", e));
+  }
   const maj = (await chargerReservation(id)) as ReservationComplete;
 
   if (effectif === "acceptee") {

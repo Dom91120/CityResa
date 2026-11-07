@@ -20,6 +20,8 @@ const ICONES_KIND: Record<string, string> = {
   profil: "users",
   materiel_categorie: "boxes",
   doc_categorie: "paperclip",
+  contrat_type: "id-card",
+  absence_motif: "calendar-x",
 };
 
 const AIDES: Record<string, string> = {
@@ -32,6 +34,10 @@ const AIDES: Record<string, string> = {
     "Le profil tarifaire d'un usager. Le CODE est stable : il sert aux profils autorisés d'un espace (ne pas le changer à la légère).",
   materiel_categorie: "Les catégories du matériel mobilisable.",
   doc_categorie: "Les catégories proposées au dépôt d'une pièce jointe.",
+  contrat_type:
+    "Le type de contrat d'une personne de service (titulaire, contractuel, vacataire…), à titre d'information sur sa fiche.",
+  absence_motif:
+    "Les motifs d'absence du personnel de service (congés, RTT, maladie, formation…). L'icône est un nom Lucide.",
 };
 
 export default async function ReferentielsPage() {

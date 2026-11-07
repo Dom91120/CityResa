@@ -11,13 +11,23 @@ import {
 } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { Chip } from "@/components/macros";
-import { dateHeure, plage } from "@/lib/libelles";
+import { heuresAttendues, heuresDuCycle, libellePlages, plagesDuJour } from "@/lib/affectation";
+import { JOURS_ISO } from "@/lib/constantes";
+import { lireHoraires } from "@/lib/creneaux";
+import { dateCourte, dateHeure, plage } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
-import { nomPersonne } from "@/lib/personnel";
+import { libelleAbsence, nomPersonne } from "@/lib/personnel";
+import { ChampsAbsence, ChampsContrat } from "@/modules/personnel/vues";
 import { prisma } from "@/server/db";
 import { idDeRoute } from "@/server/guards";
 import { contexteModule } from "@/server/module";
-import { chargerPersonne, couleurLibre } from "@/server/personnel";
+import {
+  absencesDe,
+  chargerPersonneComplete,
+  couleurLibre,
+  referentiel,
+  sitesDuPerimetre,
+} from "@/server/personnel";
 import { ChampsPersonne } from "../page";
 
 export const metadata = { title: "Personne de service - CityRésa" };
@@ -25,34 +35,55 @@ export const metadata = { title: "Personne de service - CityRésa" };
 export default async function PersonnePage({ params }: { params: Promise<{ id: string }> }) {
   const page = await contexteModule("personnel", "personnel");
   const id = idDeRoute((await params).id);
-  const p = await chargerPersonne(id);
+  const p = await chargerPersonneComplete(id);
   if (!p) notFound();
   const now = new Date();
-  const [aVenir, passees, epingles, couleur] = await Promise.all([
-    prisma.vacation.findMany({
-      where: { personnelId: id, endAt: { gte: now } },
-      include: { site: { select: { name: true } } },
-      orderBy: { startAt: "asc" },
-      take: 30,
-    }),
-    prisma.vacation.count({ where: { personnelId: id, endAt: { lt: now } } }),
-    prisma.creneau.findMany({
-      where: { personnelId: id, status: "prevu", endAt: { gte: now } },
-      include: {
-        reservation: { select: { id: true, numero: true, title: true } },
-        espace: { select: { name: true, site: { select: { name: true } } } },
-      },
-      orderBy: { startAt: "asc" },
-      take: 30,
-    }),
-    couleurLibre(),
-  ]);
+  const [aVenir, passees, epingles, proposes, absences, couleur, types, motifs, sites] =
+    await Promise.all([
+      prisma.vacation.findMany({
+        where: { personnelId: id, endAt: { gte: now } },
+        include: { site: { select: { name: true } } },
+        orderBy: { startAt: "asc" },
+        take: 30,
+      }),
+      prisma.vacation.count({ where: { personnelId: id, endAt: { lt: now } } }),
+      prisma.creneau.findMany({
+        where: { personnelId: id, status: "prevu", endAt: { gte: now } },
+        include: {
+          reservation: { select: { id: true, numero: true, title: true } },
+          espace: { select: { name: true, site: { select: { name: true } } } },
+        },
+        orderBy: { startAt: "asc" },
+        take: 30,
+      }),
+      prisma.creneau.count({
+        where: {
+          personnelProposeId: id,
+          proposeAt: { not: null },
+          status: "prevu",
+          endAt: { gte: now },
+        },
+      }),
+      absencesDe(id, new Date(now.getTime() - 30 * 86_400_000)),
+      couleurLibre(),
+      referentiel("contrat_type"),
+      referentiel("absence_motif"),
+      sitesDuPerimetre(page.user),
+    ]);
   const { csrf, user } = page;
   const peutEditer = user.canEdit("personnel");
   const peutSupprimer = user.canDelete("personnel");
   const fiche = `/personnel/personnes/${id}`;
   const nom = nomPersonne(p);
   const lienIcs = p.icsToken ? `${user.settings.APP_BASE_URL}/ics/personnel/${p.icsToken}` : null;
+  const horaires = lireHoraires(p.horaires);
+  const heuresCycle = heuresDuCycle(horaires);
+  const attendues = heuresAttendues({
+    quotite: p.quotite,
+    heuresHebdo: p.heuresHebdo === null ? null : Number(p.heuresHebdo),
+  });
+  const ecart = horaires ? Math.round((heuresCycle - attendues) * 10) / 10 : 0;
+  const aujourdhui = todayParisISO();
   return (
     <>
       <Entete
@@ -62,7 +93,12 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
             {nom}
           </span>
         }
-        sousTitre={p.fonction ?? "Personnel de service"}
+        sousTitre={[
+          p.fonction ?? "Personnel de service",
+          p.contratType ? `${p.contratType.label} · ${p.quotite} %` : null,
+        ]
+          .filter(Boolean)
+          .join(" · ")}
         retour="/personnel/personnes"
         badges={
           p.isActive ? null : (
@@ -76,6 +112,14 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
             <a href={`/personnel?personne=${p.id}`} className="btn btn-outline-secondary">
               <Icone nom="calendar-days" taille={14} /> Son planning
             </a>
+            {peutEditer ? (
+              <BoutonOuvrir
+                cible="modal-absence"
+                libelle="Ajouter une absence"
+                icone="calendar-x"
+                classe="btn-outline-secondary"
+              />
+            ) : null}
             {peutEditer ? (
               <BoutonOuvrir cible="modal-modifier" libelle="Modifier" icone="pencil" />
             ) : null}
@@ -100,6 +144,11 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
                   csrf={csrf}
                   libelle={p.isActive ? "Plus en service" : "Remettre en service"}
                   icone={p.isActive ? "user-x" : "user-check"}
+                  confirm={
+                    p.isActive
+                      ? `${nom} ne sera plus proposé(e) ; ses affectations à venir seront retirées. Continuer ?`
+                      : undefined
+                  }
                 />,
                 peutSupprimer ? <MenuSep key="sep" /> : null,
                 peutSupprimer ? (
@@ -130,12 +179,99 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
                 <Lu label="Ajouté le" valeur={dateHeure(p.createdAt)} />
               </Lus>
             </Section>
+            <Section titre="Contrat et temps de travail" icone="briefcase">
+              <Lus intitule="110px">
+                <Lu label="Contrat" valeur={p.contratType?.label} tiret />
+                <Lu
+                  label="Quotité"
+                  valeur={`${p.quotite} %${p.heuresHebdo !== null ? ` · ${String(p.heuresHebdo).replace(".", ",")} h / semaine` : ""}`}
+                />
+                <Lu
+                  label="Période"
+                  valeur={
+                    p.contratDebut || p.contratFin
+                      ? `${p.contratDebut ? `du ${dateCourte(p.contratDebut)}` : ""}${p.contratFin ? ` au ${dateCourte(p.contratFin)}` : " sans terme"}`.trim()
+                      : null
+                  }
+                  tiret
+                />
+                <Lu
+                  label="Horaires"
+                  valeur={
+                    horaires ? (
+                      <>
+                        <table className="table table-sm mb-1" style={{ maxWidth: 420 }}>
+                          <tbody>
+                            {JOURS_ISO.map((j) => {
+                              const plages = plagesDuJour(horaires, j.iso);
+                              return (
+                                <tr key={j.iso}>
+                                  <td className="text-muted" style={{ width: 90 }}>
+                                    {j.long}
+                                  </td>
+                                  <td>
+                                    {plages.length ? (
+                                      libellePlages(plages)
+                                    ) : (
+                                      <span className="text-faint">Repos</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                        <span className="small text-muted">
+                          {String(heuresCycle).replace(".", ",")} h par semaine
+                          {ecart ? (
+                            <Chip
+                              teinte="amber"
+                              classes="ms-2"
+                              titre="Écart avec la quotité (information)"
+                            >
+                              {ecart > 0 ? "+" : ""}
+                              {String(ecart).replace(".", ",")} h par rapport aux{" "}
+                              {String(attendues).replace(".", ",")} h attendues
+                            </Chip>
+                          ) : null}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-muted">
+                        Pas de cycle fixe : affectable à toute heure, hors absences.
+                      </span>
+                    )
+                  }
+                  pleine
+                />
+              </Lus>
+            </Section>
+            <Section titre="Sites d'intervention" icone="map-pin" nb={p.sites.length}>
+              {p.sites.length ? (
+                <div className="d-flex flex-wrap gap-1">
+                  {p.sites.map((s) => (
+                    <Chip
+                      key={s.siteId}
+                      teinte={s.principal ? "emerald" : "slate"}
+                      titre={s.principal ? "Site principal" : undefined}
+                    >
+                      {s.principal ? <Icone nom="star" taille={11} /> : null} {s.site.name}
+                    </Chip>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted small mb-0">
+                  Aucun site : la personne ne peut pas être affectée. Cochez ses sites dans «
+                  Modifier ».
+                </p>
+              )}
+            </Section>
             <Section titre="Calendrier (ICS)" icone="calendar" ouverte={!!lienIcs}>
               {lienIcs ? (
                 <>
                   <p className="small text-muted mb-2">
                     À coller dans l'agenda de la personne (Outlook, Google Agenda, téléphone) : ses
-                    vacations et les créneaux où elle est épinglée s'y mettent à jour seuls.
+                    vacations et les créneaux où elle est affectée s'y mettent à jour seuls.
                   </p>
                   <code className="d-block mb-2" style={{ wordBreak: "break-all" }}>
                     {lienIcs}
@@ -173,6 +309,57 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
           </div>
         </div>
         <div className="data-card">
+          <Section titre="Absences" icone="calendar-x" nb={absences.length}>
+            {absences.length ? (
+              <table className="table table-sm mb-2">
+                <tbody>
+                  {absences.map((a) => (
+                    <tr key={a.id} className={a.endAt < now ? "text-muted" : undefined}>
+                      <td className="text-nowrap">{libelleAbsence(a)}</td>
+                      <td>
+                        {a.motif ? (
+                          <Chip teinte="amber">
+                            {a.motif.icon ? <Icone nom={a.motif.icon} taille={11} /> : null}{" "}
+                            {a.motif.label}
+                          </Chip>
+                        ) : (
+                          <span className="text-faint">Sans motif</span>
+                        )}
+                      </td>
+                      <td className="text-muted small">{a.note}</td>
+                      <td className="actions text-nowrap">
+                        {peutEditer ? (
+                          <form
+                            method="POST"
+                            action={`${fiche}/absences_supprimer`}
+                            className="d-inline"
+                          >
+                            <input type="hidden" name="csrf_token" value={csrf} />
+                            <input type="hidden" name="absence_id" value={a.id} />
+                            <button
+                              type="submit"
+                              className="btn btn-ghost btn-ghost-danger btn-icone btn-sm"
+                              title="Supprimer cette absence"
+                              aria-label="Supprimer cette absence"
+                              data-confirm={`Supprimer l'absence du ${plage(a.startAt, a.endAt)} ?`}
+                            >
+                              <Icone nom="x" taille={14} />
+                            </button>
+                          </form>
+                        ) : null}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="text-muted small mb-2">Aucune absence récente ou à venir.</p>
+            )}
+            <p className="small text-muted mb-0">
+              Une absence retire la personne des créneaux où elle était affectée ou proposée ; ils
+              repassent en affectation.
+            </p>
+          </Section>
           <Section titre="Vacations à venir" icone="calendar-clock" nb={aVenir.length}>
             {aVenir.length ? (
               <table className="table table-sm mb-2">
@@ -214,13 +401,13 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
             </p>
           </Section>
           <Section
-            titre="Créneaux épinglés"
+            titre="Créneaux affectés"
             icone="bookmark"
             nb={epingles.length}
             ouverte={epingles.length > 0}
           >
             {epingles.length ? (
-              <table className="table table-sm mb-0">
+              <table className="table table-sm mb-2">
                 <tbody>
                   {epingles.map((c) => (
                     <tr key={c.id}>
@@ -236,25 +423,48 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
                 </tbody>
               </table>
             ) : (
-              <p className="text-muted small mb-0">
-                Aucun créneau épinglé : on épingle une personne sur un créneau précis depuis la
-                fiche de la réservation.
+              <p className="text-muted small mb-2">
+                Aucun créneau affecté : l'affectation se fait automatiquement ou sur proposition
+                (planning de service), ou à la main depuis la fiche de la réservation.
               </p>
             )}
+            {proposes ? (
+              <p className="small text-muted mb-0">
+                <a href="/personnel?onglet=propositions">
+                  {proposes} proposition{proposes > 1 ? "s" : ""} en attente de validation
+                </a>
+                .
+              </p>
+            ) : null}
           </Section>
         </div>
       </div>
 
       {peutEditer ? (
-        <ModalAction
-          id="modal-modifier"
-          titre="Modifier la fiche"
-          action={`${fiche}/modifier`}
-          csrf={csrf}
-          icone="pencil"
-        >
-          <ChampsPersonne p={p} couleur={couleur} />
-        </ModalAction>
+        <>
+          <ModalAction
+            id="modal-modifier"
+            titre="Modifier la fiche"
+            action={`${fiche}/modifier`}
+            csrf={csrf}
+            icone="pencil"
+            taille="lg"
+          >
+            <ChampsPersonne p={p} couleur={couleur} />
+            <ChampsContrat p={p} types={types} sites={sites} />
+          </ModalAction>
+          <ModalAction
+            id="modal-absence"
+            titre={`Ajouter une absence · ${nom}`}
+            action={`${fiche}/absences_ajouter`}
+            csrf={csrf}
+            bouton="Ajouter"
+            icone="calendar-x"
+            aide="Congés, RTT, maladie, formation… La personne n'est pas proposée sur la période ; ses affectations déjà posées sont retirées et remises en affectation."
+          >
+            <ChampsAbsence motifs={motifs} aujourdhui={aujourdhui} />
+          </ModalAction>
+        </>
       ) : null}
     </>
   );

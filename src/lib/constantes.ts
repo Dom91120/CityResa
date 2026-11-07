@@ -358,6 +358,8 @@ export const REFERENTIAL_KINDS: Record<string, string> = {
   profil: "Profils tarifaires",
   materiel_categorie: "Catégories de matériel",
   doc_categorie: "Catégories de pièces",
+  contrat_type: "Types de contrat du personnel",
+  absence_motif: "Motifs d'absence du personnel",
 };
 export const REFERENTIAL_SEEDS: Record<string, { label: string; code?: string; icon?: string }[]> =
   {
@@ -438,6 +440,23 @@ export const REFERENTIAL_SEEDS: Record<string, { label: string; code?: string; i
       { label: "Plan" },
       { label: "Programme de l'événement" },
       { label: "Autre" },
+    ],
+    contrat_type: [
+      { label: "Fonctionnaire titulaire", code: "titulaire" },
+      { label: "Fonctionnaire stagiaire", code: "stagiaire" },
+      { label: "Contractuel CDD", code: "cdd" },
+      { label: "Contractuel CDI", code: "cdi" },
+      { label: "Vacataire", code: "vacataire" },
+      { label: "Apprenti", code: "apprenti" },
+      { label: "Mis à disposition", code: "mad" },
+    ],
+    absence_motif: [
+      { label: "Congés annuels", code: "conges", icon: "sun" },
+      { label: "RTT", code: "rtt", icon: "calendar-minus" },
+      { label: "Maladie", code: "maladie", icon: "thermometer" },
+      { label: "Formation", code: "formation", icon: "graduation-cap" },
+      { label: "Récupération", code: "recuperation", icon: "clock" },
+      { label: "Autre", code: "autre" },
     ],
   };
 

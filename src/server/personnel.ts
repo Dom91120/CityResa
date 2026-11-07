@@ -5,12 +5,29 @@
  */
 import { randomBytes } from "node:crypto";
 import type { Prisma } from "@/generated/prisma/client";
-import { COULEURS_ESPACE, STATUTS_FERMES } from "@/lib/constantes";
-import type { Intervalle } from "@/lib/creneaux";
+import { RE_YMD } from "@/lib/calendrier";
+import { COULEURS_ESPACE, JOURS_ISO, STATUTS_FERMES } from "@/lib/constantes";
+import type { Horaires, Intervalle } from "@/lib/creneaux";
+import { parseYmdUtc } from "@/lib/date-utc";
 import { joursDeLaSemaine } from "@/lib/editions";
-import { champ, champOuNull, coche, emailValide, idOuNull } from "@/lib/forms-util";
+import {
+  champ,
+  champOuNull,
+  coche,
+  emailValide,
+  idOuNull,
+  ids,
+  parseFloat_,
+  parseInt_,
+} from "@/lib/forms-util";
 import { nomCourt, plage } from "@/lib/libelles";
-import { parisMidnight, todayParisISO } from "@/lib/paris-time";
+import {
+  addParisDays,
+  minutesDe,
+  parisDateTimeToInstant,
+  parisMidnight,
+  todayParisISO,
+} from "@/lib/paris-time";
 import {
   type CreneauACouvrir,
   type CreneauCouvert,
@@ -20,6 +37,7 @@ import {
   type EtatCouverture,
   etatsCouverture,
   evtsVacations,
+  libelleAbsence,
   nomFichierPlanningPersonnel,
   nomPersonne,
   type RepetitionVacation,
@@ -498,6 +516,8 @@ export type ServiceCreneau = {
   etat: EtatCouverture;
   noms: string[];
   epingle: boolean;
+  /** Proposition d'affectation en attente de validation. */
+  propose: { id: number; nom: string } | null;
 };
 
 export type ServiceDossier = {
@@ -514,6 +534,8 @@ export async function serviceDossier(r: {
     endAt: Date;
     status: string;
     personnelId: number | null;
+    personnelProposeId?: number | null;
+    proposeAt?: Date | null;
   }[];
 }): Promise<ServiceDossier> {
   const prevus = r.creneaux.filter((c) => c.status === "prevu");
@@ -545,11 +567,181 @@ export async function serviceDossier(r: {
       },
       vacations,
     );
+    const proposeId = c.proposeAt && c.personnelProposeId ? c.personnelProposeId : null;
     parCreneau.set(c.id, {
       etat: cv.etat,
       noms: cv.personnelIds.map((id) => noms.get(id) ?? `#${id}`),
       epingle: cv.epingle,
+      propose: proposeId ? { id: proposeId, nom: noms.get(proposeId) ?? `#${proposeId}` } : null,
     });
   }
   return { personnes: toutes, parCreneau };
+}
+
+// ── Contrat, horaires de travail, sites ──
+
+export type ContratEntree = {
+  contratTypeId: number | null;
+  quotite: number;
+  heuresHebdo: number | null;
+  contratDebut: Date | null;
+  contratFin: Date | null;
+  horaires: Horaires | null;
+};
+
+/** Le cycle hebdomadaire d'horaires de travail : par jour, repos ou jusqu'à deux plages. */
+export function lireHorairesTravail(form: FormData): Horaires | null {
+  if (!coche(form, "horaires_fixes")) return null;
+  const out: Horaires = {};
+  for (const j of JOURS_ISO) {
+    if (coche(form, `repos_${j.iso}`)) {
+      out[String(j.iso)] = [];
+      continue;
+    }
+    const plages: [string, string][] = [];
+    for (const k of [1, 2]) {
+      const de = champ(form, `h${k}_de_${j.iso}`);
+      const a = champ(form, `h${k}_a_${j.iso}`);
+      if (!de && !a) continue;
+      const d = minutesDe(de);
+      const f = minutesDe(a);
+      if (d === null || f === null)
+        throw new UserFacingError(`${j.long} : indiquez le début et la fin de chaque plage.`);
+      if (f !== 0 && f <= d)
+        throw new UserFacingError(`${j.long} : la fin d'une plage doit suivre son début.`);
+      const finPrecedente = plages.length ? minutesDe(plages[plages.length - 1][1]) : null;
+      if (finPrecedente !== null && d < finPrecedente)
+        throw new UserFacingError(`${j.long} : la seconde plage doit suivre la première.`);
+      plages.push([de, a]);
+    }
+    out[String(j.iso)] = plages;
+  }
+  return out;
+}
+
+export function lireContrat(form: FormData): ContratEntree {
+  const quotite = parseInt_(form.get("quotite"), 100, 1) ?? 100;
+  if (quotite > 100) throw new UserFacingError("La quotité ne peut pas dépasser 100 %.");
+  const heures = champ(form, "heures_hebdo");
+  const heuresHebdo = heures ? parseFloat_(heures.replace(",", "."), null) : null;
+  if (heures && (heuresHebdo === null || heuresHebdo <= 0 || heuresHebdo > 48))
+    throw new UserFacingError("La durée hebdomadaire doit être comprise entre 1 et 48 heures.");
+  const debut = champ(form, "contrat_debut");
+  const fin = champ(form, "contrat_fin");
+  if (debut && fin && fin < debut)
+    throw new UserFacingError("La fin du contrat précède son début.");
+  return {
+    contratTypeId: idOuNull(form, "contrat_type_id"),
+    quotite,
+    heuresHebdo,
+    contratDebut: RE_YMD.test(debut) ? parseYmdUtc(debut) : null,
+    contratFin: RE_YMD.test(fin) ? parseYmdUtc(fin) : null,
+    horaires: lireHorairesTravail(form),
+  };
+}
+
+/** Les sites cochés et le principal (qui doit être coché, sinon le premier). */
+export function lireSitesPersonne(form: FormData): { siteIds: number[]; principal: number | null } {
+  const siteIds = ids(form, "site");
+  const voulu = idOuNull(form, "site_principal");
+  const principal = voulu && siteIds.includes(voulu) ? voulu : (siteIds[0] ?? null);
+  return { siteIds, principal };
+}
+
+export async function mettreAJourSites(
+  personnelId: number,
+  s: { siteIds: number[]; principal: number | null },
+): Promise<void> {
+  await prisma.$transaction([
+    prisma.personnelSite.deleteMany({ where: { personnelId } }),
+    prisma.personnelSite.createMany({
+      data: s.siteIds.map((siteId) => ({ personnelId, siteId, principal: siteId === s.principal })),
+    }),
+  ]);
+}
+
+export const INCLUDE_PERSONNE = {
+  contratType: true,
+  sites: { include: { site: { select: { id: true, name: true } } } },
+} satisfies Prisma.PersonnelInclude;
+
+export type PersonneComplete = Prisma.PersonnelGetPayload<{ include: typeof INCLUDE_PERSONNE }>;
+
+export async function chargerPersonneComplete(id: number): Promise<PersonneComplete | null> {
+  return prisma.personnel.findUnique({ where: { id }, include: INCLUDE_PERSONNE });
+}
+
+export async function referentiel(kind: "contrat_type" | "absence_motif") {
+  return prisma.referential.findMany({
+    where: { kind, isActive: true },
+    orderBy: [{ position: "asc" }, { label: "asc" }],
+  });
+}
+
+// ── Absences ──
+
+export type AbsenceEntree = {
+  motifId: number | null;
+  intervalle: Intervalle;
+  note: string | null;
+};
+
+export function lireAbsence(form: FormData): AbsenceEntree {
+  const du = champ(form, "du");
+  const au = champ(form, "au") || du;
+  if (!RE_YMD.test(du) || !RE_YMD.test(au))
+    throw new UserFacingError("Indiquez le premier et le dernier jour de l'absence.");
+  if (au < du) throw new UserFacingError("Le dernier jour précède le premier.");
+  let intervalle: Intervalle;
+  if (coche(form, "journee")) {
+    intervalle = { startAt: parisMidnight(du), endAt: addParisDays(parisMidnight(au), 1) };
+  } else {
+    const startAt = parisDateTimeToInstant(du, champ(form, "heure_debut"));
+    const endAt = parisDateTimeToInstant(au, champ(form, "heure_fin"));
+    if (!startAt || !endAt) throw new UserFacingError("Indiquez les heures de début et de fin.");
+    if (endAt <= startAt) throw new UserFacingError("La fin de l'absence précède son début.");
+    intervalle = { startAt, endAt };
+  }
+  return {
+    motifId: idOuNull(form, "motif_id"),
+    intervalle,
+    note: champOuNull(form, "note")?.slice(0, 200) ?? null,
+  };
+}
+
+export async function creerAbsence(
+  personnelId: number,
+  e: AbsenceEntree,
+  user: CurrentUser,
+): Promise<string> {
+  const motif = e.motifId
+    ? await prisma.referential.findUnique({ where: { id: e.motifId } })
+    : null;
+  await prisma.absence.create({
+    data: {
+      personnelId,
+      motifId: motif?.id ?? null,
+      startAt: e.intervalle.startAt,
+      endAt: e.intervalle.endAt,
+      note: e.note,
+      createdBy: user.email,
+    },
+  });
+  return `Absence enregistrée : ${motif?.label ?? "sans motif"}, ${libelleAbsence(e.intervalle)}.`;
+}
+
+export async function supprimerAbsence(id: number, personnelId: number): Promise<string> {
+  const a = await prisma.absence.findUnique({ where: { id }, include: { motif: true } });
+  if (!a || a.personnelId !== personnelId) throw new UserFacingError("Absence introuvable.");
+  await prisma.absence.delete({ where: { id } });
+  return `Absence supprimée (${a.motif?.label ?? "sans motif"}, ${libelleAbsence(a)}).`;
+}
+
+/** Les absences d'une personne qui finissent après `depuis`, avec leur motif. */
+export async function absencesDe(personnelId: number, depuis: Date) {
+  return prisma.absence.findMany({
+    where: { personnelId, endAt: { gt: depuis } },
+    include: { motif: { select: { label: true, icon: true } } },
+    orderBy: { startAt: "asc" },
+  });
 }

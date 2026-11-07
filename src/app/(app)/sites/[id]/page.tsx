@@ -111,6 +111,14 @@ export default async function SitePage({ params }: { params: Promise<{ id: strin
               <Lu label="Description" valeur={site.description} pleine pre />
               <Lu label="Accès et transports" valeur={site.accessInfo} pleine pre />
               <Lu label="Position" valeur={String(site.position)} />
+              <Lu
+                label="Personnel de service"
+                valeur={
+                  site.affectationAuto
+                    ? "Affectation automatique sur les créneaux réservés"
+                    : "Affectation sur proposition au gestionnaire"
+                }
+              />
               <Lu label="Créé le" valeur={dateCourte(site.createdAt)} />
             </Lus>
           </Section>

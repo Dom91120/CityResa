@@ -18,6 +18,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import "dotenv/config";
+import { Prisma } from "@/generated/prisma/client";
 import { saisonDe } from "@/lib/calendrier";
 import type { ReservationStatus } from "@/lib/constantes";
 import { COULEURS_ESPACE, FACTURE_TYPES, RESERVATION_STATUS } from "@/lib/constantes";
@@ -33,6 +34,7 @@ import {
   todayParisISO,
   toParisWall,
 } from "@/lib/paris-time";
+import { affecterCreneaux, reverifierAffectations } from "@/server/affectation";
 import { amorcer, poserMotDePasse } from "@/server/amorcage";
 import { creerSaison, joursExclus, saisons } from "@/server/calendrier";
 import { getSettings } from "@/server/config-store";
@@ -321,7 +323,8 @@ async function remettreAZero(): Promise<void> {
      reservation_option, reservation_materiel, mouvement_materiel, avenant, etat_des_lieux, voeu,
      campagne_espace, campagne, liste_attente, brouillon_demande, valorisation, creneau,
      document_content, document, reservation, notification, mail_log, action_log, scheduler_run,
-     indisponibilite, espace_gestionnaire, horaires_saison, vacation, personnel,
+     indisponibilite, espace_gestionnaire, horaires_saison, vacation, absence, personnel_site,
+     personnel,
      tarif, "option", espace_equipement, espace, site, materiel, sequence RESTART IDENTITY`,
   );
   await prisma.organisation.deleteMany({});
@@ -3354,7 +3357,39 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
 
 // ── Personnel de service ──
 
-const PERSONNEL = [
+type PersonnelSpec = {
+  cle: string;
+  prenom: string;
+  nom: string;
+  fonction: string;
+  email: string | null;
+  phone: string | null;
+  color: string;
+  note: string | null;
+  /** Code du type de contrat (référentiel contrat_type). */
+  contrat: string;
+  quotite: number;
+  heures: number | null;
+  /** Cycle hebdomadaire d'horaires ; null = affectable à toute heure. */
+  horaires: Horaires | null;
+  /** Mots des sites d'intervention (le premier est le principal). */
+  sites: string[];
+};
+
+const SOIRS_SEMAINE: Horaires = Object.fromEntries(
+  ["1", "2", "3", "4", "5"].map((j) => [j, [["16:30", "23:30"]]]),
+);
+const MATINS_SEMAINE: Horaires = Object.fromEntries(
+  ["1", "2", "3", "4", "5", "6"].map((j) => [j, [["08:30", "12:00"]]]),
+);
+const JEUDI_DIMANCHE: Horaires = {
+  "4": [["14:00", "23:00"]],
+  "5": [["14:00", "23:00"]],
+  "6": [["08:00", "13:00"]],
+  "7": [["08:00", "13:00"]],
+};
+
+const PERSONNEL: PersonnelSpec[] = [
   {
     cle: "ali",
     prenom: "Ali",
@@ -3364,6 +3399,11 @@ const PERSONNEL = [
     phone: "06 12 34 56 78",
     color: "#3b82f6",
     note: "Clés de la Maison Blanche et du gymnase. Astreinte téléphonique le week-end.",
+    contrat: "titulaire",
+    quotite: 100,
+    heures: 35,
+    horaires: SOIRS_SEMAINE,
+    sites: ["maison blanche", "gabriel"],
   },
   {
     cle: "nadia",
@@ -3373,7 +3413,12 @@ const PERSONNEL = [
     email: "nadia.benmoussa@exemple.fr",
     phone: "06 23 45 67 89",
     color: "#10b981",
-    note: null,
+    note: "À 80 % : du jeudi au dimanche.",
+    contrat: "cdi",
+    quotite: 80,
+    heures: 28,
+    horaires: JEUDI_DIMANCHE,
+    sites: ["sablons", "folie"],
   },
   {
     cle: "lucas",
@@ -3384,6 +3429,11 @@ const PERSONNEL = [
     phone: null,
     color: "#f59e0b",
     note: "Accueil du public, ouverture le matin.",
+    contrat: "vacataire",
+    quotite: 60,
+    heures: 21,
+    horaires: MATINS_SEMAINE,
+    sites: ["maison blanche", "gabriel"],
   },
   {
     cle: "fatou",
@@ -3394,6 +3444,22 @@ const PERSONNEL = [
     phone: "07 98 76 54 32",
     color: "#8b5cf6",
     note: "Renfort sur les événements ; joignable par SMS uniquement.",
+    contrat: "vacataire",
+    quotite: 100,
+    heures: null,
+    horaires: null,
+    sites: [
+      "sablons",
+      "gambetta",
+      "doret",
+      "môquet",
+      "roland",
+      "langevin",
+      "république",
+      "maison blanche",
+      "gabriel",
+      "folie",
+    ],
   },
 ];
 
@@ -3411,6 +3477,18 @@ async function creerPersonnel(): Promise<void> {
   const maisonBlanche = siteDe("maison blanche");
   const gymnase = siteDe("sablons");
   const personnes = new Map<string, { id: number; email: string | null }>();
+  const contrats = new Map(
+    (await prisma.referential.findMany({ where: { kind: "contrat_type" } })).map((r) => [
+      r.code,
+      r.id,
+    ]),
+  );
+  const motifs = new Map(
+    (await prisma.referential.findMany({ where: { kind: "absence_motif" } })).map((r) => [
+      r.code,
+      r.id,
+    ]),
+  );
   for (const p of PERSONNEL) {
     const row = await prisma.personnel.create({
       data: {
@@ -3422,11 +3500,44 @@ async function creerPersonnel(): Promise<void> {
         color: p.color,
         note: p.note,
         icsToken: p.cle === "ali" ? "demo-ali-keita-planning-de-service-0001" : null,
+        contratTypeId: contrats.get(p.contrat) ?? null,
+        quotite: p.quotite,
+        heuresHebdo: p.heures,
+        contratDebut: parseYmdUtc(`${new Date().getUTCFullYear() - 1}-09-01`),
+        horaires: p.horaires ?? Prisma.DbNull,
+        sites: {
+          create: p.sites.map((motif, i) => ({ siteId: siteDe(motif).id, principal: i === 0 })),
+        },
       },
     });
     personnes.set(p.cle, { id: row.id, email: row.email });
     compter("personnel de service");
   }
+  // La Maison Blanche affecte d'office ; les autres sites proposent au gestionnaire.
+  await prisma.site.update({ where: { id: maisonBlanche.id }, data: { affectationAuto: true } });
+  // Absences : Nadia en congés la semaine prochaine, Lucas en formation mercredi prochain.
+  const lundiProchain = js(1, 1);
+  await prisma.absence.createMany({
+    data: [
+      {
+        personnelId: personnes.get("nadia")?.id as number,
+        motifId: motifs.get("conges") ?? null,
+        startAt: a(lundiProchain + 3, "00:00"),
+        endAt: a(lundiProchain + 7, "00:00"),
+        note: "Congés posés en septembre",
+        createdBy: "sophie.martin@exemple.fr",
+      },
+      {
+        personnelId: personnes.get("lucas")?.id as number,
+        motifId: motifs.get("formation") ?? null,
+        startAt: a(lundiProchain + 2, "08:00"),
+        endAt: a(lundiProchain + 2, "12:30"),
+        note: "Formation accueil du public",
+        createdBy: "sophie.martin@exemple.fr",
+      },
+    ],
+  });
+  compter("absences", 2);
   const id = (cle: string) => personnes.get(cle)?.id as number;
   const lundi = js(1, -7);
   const vac = async (
@@ -3497,13 +3608,19 @@ async function creerPersonnel(): Promise<void> {
     (c) => c.espace.siteId !== maisonBlanche.id && c.espace.siteId !== gymnase.id,
   );
   for (const [c, cle] of [
-    [surMaisonBlanche, "fatou"],
+    [surMaisonBlanche, "lucas"],
     [ailleurs, "nadia"],
   ] as const) {
     if (!c) continue;
     await prisma.creneau.update({ where: { id: c.id }, data: { personnelId: id(cle) } });
     compter("créneaux épinglés");
   }
+  // Un épinglage incompatible avec le contrat ou une absence est retiré, comme dans l'application.
+  for (const cle of ["lucas", "nadia"]) await reverifierAffectations(id(cle), "démonstration");
+  // L'affectation automatique ou proposée sur les 30 prochains jours, comme la tâche quotidienne.
+  const bilan = await affecterCreneaux({ de: now, a: addParisDays(now, 30) }, "démonstration");
+  compter("créneaux affectés d'office", bilan.affectes);
+  compter("propositions d'affectation", bilan.proposes);
 }
 
 async function creerNotificationsEtJournal(

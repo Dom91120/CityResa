@@ -12,7 +12,8 @@ import {
   type Recurrence,
 } from "@/lib/creneaux";
 import { type EvtSemaine, projeter } from "@/lib/editions";
-import { hm } from "@/lib/paris-time";
+import { dateMoyenne, plage } from "@/lib/libelles";
+import { hm, parisParts } from "@/lib/paris-time";
 
 export type PersonneRef = {
   id: number;
@@ -230,4 +231,20 @@ export function resumeSemainePersonne(
 
 export function nomFichierPlanningPersonnel(lundi: string): string {
   return `planning-service-${lundi}.pdf`;
+}
+
+/**
+ * Le libellé d'une absence : « Sam. 28 nov. 2026 · journée entière », « du Jeu. 12 nov. 2026 au
+ * Dim. 15 nov. 2026 · journées entières », sinon la plage horaire.
+ */
+export function libelleAbsence(a: Intervalle): string {
+  const debut = parisParts(a.startAt);
+  const fin = parisParts(a.endAt);
+  if (debut.min === 0 && fin.min === 0) {
+    const dernier = new Date(a.endAt.getTime() - 1);
+    if (parisParts(dernier).dateKey === debut.dateKey)
+      return `${dateMoyenne(a.startAt)} · journée entière`;
+    return `du ${dateMoyenne(a.startAt)} au ${dateMoyenne(dernier)} · journées entières`;
+  }
+  return plage(a.startAt, a.endAt);
 }

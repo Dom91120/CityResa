@@ -197,6 +197,32 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 - **Courriel et agenda** : flux ICS personnel par jeton (vacations et créneaux épinglés) ; envoi
   hebdomadaire des vacations de la semaine à chaque personne ayant une adresse (PDF joint),
   le même jour que le planning hebdomadaire des gestionnaires, ou à la demande depuis sa fiche.
+- **Contrat et temps de travail** : type de contrat (référentiel : fonctionnaire titulaire ou
+  stagiaire, contractuel CDD ou CDI, vacataire, apprenti, mis à disposition), quotité (100, 90,
+  80 %…), durée hebdomadaire de référence (temps non complet), dates de début et de fin, et un
+  **cycle hebdomadaire d'horaires** (par jour : repos ou jusqu'à deux plages, pour la coupure
+  méridienne). Sans cycle, la personne est affectable à toute heure (vacataire). La fiche compare
+  les heures du cycle aux heures attendues de la quotité (information, jamais bloquant).
+- **Absences** : périodes datées (journées entières ou plage horaire) avec un motif du référentiel
+  (congés annuels, RTT, maladie, formation, récupération, autre) et une note ; une absence retire
+  la personne des créneaux où elle était affectée ou proposée sur la période, qui repassent en
+  affectation.
+- **Sites d'intervention** : chaque personne est rattachée à un ou plusieurs sites, dont un
+  principal ; elle n'est jamais proposée ailleurs.
+- **Disponibilité** d'une personne sur un créneau : en service, rattachée au site, en période de
+  contrat, en poste d'après son cycle, pas absente, pas déjà affectée au même moment sur un autre
+  site (plusieurs créneaux d'un même site sont compatibles). Les candidats sont classés : site
+  principal d'abord, puis la plus faible charge déjà affectée sur la semaine (équité), puis le nom.
+- **Affectation** : sur un site en **affectation automatique** (réglage de la fiche du site), la
+  première personne disponible est épinglée d'office et le dossier garde la trace dans son
+  historique ; sinon elle est **proposée** et le gestionnaire valide (ou choisit un autre candidat,
+  ou écarte la proposition : la personne écartée n'est plus proposée sur ce créneau). Le calcul se
+  fait dès qu'un dossier devient accepté, signé ou confirmé (y compris créé directement ferme par
+  un agent ou une campagne), chaque matin sur les 30 prochains jours (tâche planifiée), et à la
+  demande depuis le planning de service (bouton « Affecter » sur la période et le site affichés).
+  Les gestionnaires du site sont notifiés ; les propositions en attente comptent dans le menu et
+  dans les alertes du tableau de bord. Les créneaux déjà couverts par des vacations ne sont pas
+  traités.
 
 ### Sites, espaces, sous-espaces, équipements, tarifs, options
 

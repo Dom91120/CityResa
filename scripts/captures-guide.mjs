@@ -236,7 +236,13 @@ const CAPTURES = [
     url: "/personnel/personnes",
     hauteur: 1100,
   },
-  { nom: "personnel-fiche", compte: "gestionnaire", url: "/personnel/personnes/1", hauteur: 2000 },
+  { nom: "personnel-fiche", compte: "gestionnaire", url: "/personnel/personnes/2", hauteur: 2600 },
+  {
+    nom: "personnel-propositions",
+    compte: "gestionnaire",
+    url: "/personnel?onglet=propositions",
+    hauteur: 1400,
+  },
 
   // Paiements
   { nom: "paiements", compte: "gestionnaire", url: "/paiements", hauteur: 1500 },

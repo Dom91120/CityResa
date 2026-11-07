@@ -22,6 +22,7 @@ export type SiteEntree = {
   email: string | null;
   accessInfo: string | null;
   isActive: boolean;
+  affectationAuto: boolean;
   position: number;
 };
 
@@ -54,6 +55,7 @@ export function lireSite(form: FormData): SiteEntree {
     email: champOuNull(form, "email")?.slice(0, 160) ?? null,
     accessInfo: champOuNull(form, "access_info"),
     isActive: coche(form, "is_active"),
+    affectationAuto: coche(form, "affectation_auto"),
     position: parseInt_(form.get("position"), 0, 0) ?? 0,
   };
 }

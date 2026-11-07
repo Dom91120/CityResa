@@ -75,6 +75,14 @@ export const TACHES: Tache[] = [
     actif: (c) => Boolean(c.PERSONNEL_ENABLED && c.PLANNING_PERSONNEL_ENABLED),
   },
   {
+    id: "affectation_personnel",
+    label:
+      "Personnel de service : affectation ou proposition sur les créneaux des 30 prochains jours",
+    heure: 6,
+    minute: 50,
+    actif: (c) => Boolean(c.PERSONNEL_ENABLED),
+  },
+  {
     id: "alertes_pieces",
     label: "Alertes d'expiration des pièces justificatives",
     heure: 7,

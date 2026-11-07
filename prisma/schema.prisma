@@ -218,6 +218,8 @@ model Referential {
   reservations  Reservation[]      @relation("ReservationNature")
   materiels     Materiel[]
   documents     Document[]
+  personnelsContrat Personnel[] @relation("PersonnelContrat")
+  absences          Absence[]   @relation("AbsenceMotif")
 
   @@unique([kind, label])
   @@index([kind, position])
@@ -261,9 +263,13 @@ model Site {
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  espaces   Espace[]
-  documents Document[]
-  vacations Vacation[]
+  /// Module Personnel : les créneaux de ce site sont affectés sans validation du gestionnaire.
+  affectationAuto Boolean @default(false) @map("affectation_auto")
+
+  espaces    Espace[]
+  documents  Document[]
+  vacations  Vacation[]
+  personnels PersonnelSite[]
 
   @@map("site")
 }
@@ -478,11 +484,55 @@ model Personnel {
   icsToken  String?  @unique @map("ics_token") @db.VarChar(64)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  vacations Vacation[]
-  creneaux  Creneau[]
+  // ── Contrat et temps de travail ──
+  contratTypeId Int?         @map("contrat_type_id")
+  contratType   Referential? @relation("PersonnelContrat", fields: [contratTypeId], references: [id])
+  /// Quotité de temps de travail en pourcentage (100, 90, 80, 50…).
+  quotite      Int       @default(100)
+  /// Durée hebdomadaire de référence en heures (35, 28…) ; null = non renseignée.
+  heuresHebdo  Decimal?  @map("heures_hebdo") @db.Decimal(4, 1)
+  contratDebut DateTime? @map("contrat_debut") @db.Date
+  contratFin   DateTime? @map("contrat_fin") @db.Date
+  /// Cycle hebdomadaire d'horaires de travail (jours ISO → plages « HH:MM ») ; null = pas de contrainte horaire.
+  horaires Json?
+
+  vacations        Vacation[]
+  creneaux         Creneau[]       @relation("CreneauService")
+  creneauxProposes Creneau[]       @relation("CreneauPropose")
+  sites            PersonnelSite[]
+  absences         Absence[]
 
   @@index([isActive, lastName])
   @@map("personnel")
+}
+
+/// Les sites où une personne de service intervient ; le principal passe en tête des candidats.
+model PersonnelSite {
+  personnelId Int       @map("personnel_id")
+  personnel   Personnel @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+  siteId      Int       @map("site_id")
+  site        Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  principal   Boolean   @default(false)
+
+  @@id([personnelId, siteId])
+  @@map("personnel_site")
+}
+
+/// Une absence (congés, RTT, maladie, formation…) : la personne n'est pas disponible sur la période.
+model Absence {
+  id          Int          @id @default(autoincrement())
+  personnelId Int          @map("personnel_id")
+  personnel   Personnel    @relation(fields: [personnelId], references: [id], onDelete: Cascade)
+  startAt     DateTime     @map("start_at") @db.Timestamptz
+  endAt       DateTime     @map("end_at") @db.Timestamptz
+  motifId     Int?         @map("motif_id")
+  motif       Referential? @relation("AbsenceMotif", fields: [motifId], references: [id])
+  note        String?      @db.VarChar(200)
+  createdBy   String?      @map("created_by") @db.VarChar(160)
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([personnelId, startAt])
+  @@map("absence")
 }
 
 /// Une vacation : la personne est de service sur un site entier, d'un instant à un autre.
@@ -740,11 +790,16 @@ model Creneau {
   presenceAt   DateTime? @map("presence_at") @db.Timestamptz
   /// Personne de service épinglée sur ce créneau (module Personnel) ; null = déduite des vacations.
   personnelId Int?       @map("personnel_id")
-  personnel   Personnel? @relation(fields: [personnelId], references: [id], onDelete: SetNull)
+  personnel   Personnel? @relation("CreneauService", fields: [personnelId], references: [id], onDelete: SetNull)
+  /// Proposition d'affectation en attente de validation par le gestionnaire.
+  personnelProposeId Int?       @map("personnel_propose_id")
+  personnelPropose   Personnel? @relation("CreneauPropose", fields: [personnelProposeId], references: [id], onDelete: SetNull)
+  proposeAt          DateTime?  @map("propose_at") @db.Timestamptz
 
   @@index([espaceId, startAt])
   @@index([reservationId])
   @@index([personnelId])
+  @@index([personnelProposeId])
   @@map("creneau")
 }
 
