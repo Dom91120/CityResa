@@ -171,7 +171,7 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
 .sidebar-link {
     display: flex; align-items: center; gap: 10px;
     padding: 9px 10px; margin: 2px 0; border-radius: 10px;
-    color: var(--body); font-weight: 500; font-size: 0.86rem;
+    color: var(--body); font-weight: 500; font-size: 0.86rem; line-height: 1.15;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
 /* Chaque icône a sa couleur (--ico, posée par l'entrée de menu), même sur le lien actif. */
