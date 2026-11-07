@@ -6,6 +6,7 @@ import { dateCourte, dateHeure, montant } from "@/lib/libelles";
 import { STATUTS_OPTION, trierOptions } from "@/lib/options";
 import { addParisDays, parisMidnight, todayParisISO } from "@/lib/paris-time";
 import { joursRestants } from "@/lib/pieces";
+import { affecterProchainsJours } from "@/server/affectation";
 import { courrielAvenantASigner } from "@/server/avenant";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
@@ -362,6 +363,10 @@ async function planningPersonnel(): Promise<Resultat> {
   return { ok: true, message: await envoyerPlanningsPersonnel() };
 }
 
+async function affectationPersonnel(): Promise<Resultat> {
+  return { ok: true, message: await affecterProchainsJours() };
+}
+
 async function sauvegarde(): Promise<Resultat> {
   const cfg = await getSettings();
   const chemin = await backupDatabase(cfg);
@@ -381,6 +386,7 @@ export const TACHES: Record<string, () => Promise<Resultat>> = {
   digest_agents: digest,
   planning_hebdo: planningHebdo,
   planning_personnel: planningPersonnel,
+  affectation_personnel: affectationPersonnel,
   alertes_pieces: alertesPieces,
 };
 

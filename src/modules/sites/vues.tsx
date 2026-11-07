@@ -83,6 +83,12 @@ export function FormulaireSite({
             coche={site ? site.isActive : true}
             aide="Un site inactif n'apparaît plus sur le portail ni dans les listes de choix."
           />
+          <Interrupteur
+            label="Affectation automatique du personnel de service"
+            name="affectation_auto"
+            coche={site ? site.affectationAuto : false}
+            aide="Module Personnel : sur ce site, la personne disponible est affectée d'office aux créneaux réservés ; sinon elle est proposée au gestionnaire, qui valide."
+          />
           <Champ
             label="Position"
             name="position"

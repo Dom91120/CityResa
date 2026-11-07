@@ -3,11 +3,22 @@
  * la ligne « À couvrir », le formulaire de vacation (modale d'ajout, page de modification),
  * la pastille d'état de couverture.
  */
+import { Fragment } from "react";
 import { ModalAction } from "@/components/fiche";
+import { Champ, Coches, Grille, Select } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
 import { Chip } from "@/components/macros";
+import {
+  type AbsenceRef,
+  absencesDuJour,
+  libellePlages,
+  type PersonneAffectable,
+  periodesTravaillees,
+} from "@/lib/affectation";
 import { JOURS_ISO } from "@/lib/constantes";
-import { heure, isoParis, plageHoraire } from "@/lib/libelles";
+import { lireHoraires } from "@/lib/creneaux";
+import { ymdUtc } from "@/lib/date-utc";
+import { heure, isoParis, nomCourt, plageHoraire } from "@/lib/libelles";
 import { parisMidnight, parisParts, toParisWall } from "@/lib/paris-time";
 import {
   type CreneauCouvert,
@@ -16,7 +27,8 @@ import {
   nomPersonne,
 } from "@/lib/personnel";
 import { bornesJour, duJour, estWeekend, type Fenetre } from "@/modules/planning/server";
-import type { PersonneRow, SiteRef, VacationRow } from "@/server/personnel";
+import type { AffectationRow } from "@/server/affectation";
+import type { PersonneComplete, PersonneRow, SiteRef, VacationRow } from "@/server/personnel";
 
 export function ChipCouverture({ etat, titre }: { etat: EtatCouverture; titre?: string }) {
   const e = ETATS_COUVERTURE[etat];
@@ -105,6 +117,69 @@ function ACouvrir({
   );
 }
 
+/** Un créneau affecté (ou proposé) à une personne, dans sa case du planning. */
+function Affectation({ c, jour }: { c: AffectationRow; jour: string }) {
+  const propose = !c.personnelId;
+  const titre = `${c.reservation.numero} · ${c.reservation.title} · ${nomCourt(c.espace)}${propose ? " · proposition à valider" : " · affecté"}`;
+  return (
+    <a
+      href={`/reservations/${c.reservation.id}`}
+      className={`evt${propose ? " evt--propose" : ""}`}
+      style={{ borderLeftColor: propose ? "var(--amber-text)" : "var(--emerald-text)" }}
+      title={titre}
+    >
+      <span className="evt-titre">
+        <Icone nom={propose ? "hourglass" : "bookmark"} taille={10} /> {c.reservation.title}
+      </span>
+      <span className="evt-heure">
+        {heuresDuJour(c, jour)} · {nomCourt(c.espace)}
+      </span>
+      {propose ? <span className="evt-qui">Proposé · à valider</span> : null}
+    </a>
+  );
+}
+
+/** Les plages travaillées d'une personne un jour donné, et ses absences hachurées. */
+function JourTravail({
+  p,
+  jour,
+  absences,
+}: {
+  p: PersonneAffectable;
+  jour: string;
+  absences: readonly AbsenceRef[];
+}) {
+  const t = periodesTravaillees(p, jour, absences);
+  const abs = absencesDuJour(absences, p.id, jour);
+  return (
+    <>
+      {t.etat === "repos" ? (
+        <span className="plages-jour">Repos</span>
+      ) : t.etat === "hors_contrat" ? (
+        <span className="plages-jour">Hors contrat</span>
+      ) : t.etat === "travail" ? (
+        <span className="plages-jour" title="Plages de travail du cycle, absences déduites">
+          {t.plages.length ? libellePlages(t.plages) : "Absent toute la journée"}
+        </span>
+      ) : null}
+      {abs.map((a, i) => (
+        <span
+          key={`a${i}`}
+          className="evt evt--absence"
+          title={`Absence${a.motif ? ` : ${a.motif}` : ""}`}
+        >
+          <span className="evt-titre">
+            <Icone nom="calendar-x" taille={10} /> {a.motif ?? "Absence"}
+          </span>
+          <span className="evt-heure">
+            {a.debutMin === 0 && a.finMin === 1440 ? "Toute la journée" : libellePlages([a])}
+          </span>
+        </span>
+      ))}
+    </>
+  );
+}
+
 export function GrilleService({
   fen,
   personnes,
@@ -112,6 +187,8 @@ export function GrilleService({
   etats,
   peutEditer,
   aujourdhui,
+  contexte,
+  affectations,
 }: {
   fen: Fenetre;
   personnes: PersonneRow[];
@@ -119,10 +196,15 @@ export function GrilleService({
   etats: CreneauCouvert[];
   peutEditer: boolean;
   aujourdhui: string;
+  /** Contrats, horaires et absences (module d'affectation). */
+  contexte: { personnes: PersonneAffectable[]; absences: AbsenceRef[] };
+  /** Créneaux affectés ou proposés sur la fenêtre. */
+  affectations: AffectationRow[];
 }) {
   const noms = new Map(personnes.map((p) => [p.id, nomPersonne(p)]));
   for (const v of vacations)
     if (!noms.has(v.personnelId)) noms.set(v.personnelId, nomPersonne(v.personnel));
+  const affectables = new Map(contexte.personnes.map((p) => [p.id, p]));
   return (
     <div className="planning">
       <table>
@@ -178,16 +260,29 @@ export function GrilleService({
                   </span>
                 </div>
               </td>
-              {fen.jours.map((j) => (
-                <td key={j} className={estWeekend(j) ? "weekend" : undefined}>
-                  {duJour(
-                    vacations.filter((v) => v.personnelId === p.id),
-                    j,
-                  ).map((v) => (
-                    <Vac key={v.id} v={v} jour={j} peutEditer={peutEditer} />
-                  ))}
-                </td>
-              ))}
+              {fen.jours.map((j) => {
+                const aff = affectables.get(p.id);
+                return (
+                  <td key={j} className={estWeekend(j) ? "weekend" : undefined}>
+                    {aff ? <JourTravail p={aff} jour={j} absences={contexte.absences} /> : null}
+                    {duJour(
+                      vacations.filter((v) => v.personnelId === p.id),
+                      j,
+                    ).map((v) => (
+                      <Vac key={v.id} v={v} jour={j} peutEditer={peutEditer} />
+                    ))}
+                    {duJour(
+                      affectations.filter(
+                        (c) =>
+                          (c.personnelId ?? (c.proposeAt ? c.personnelProposeId : null)) === p.id,
+                      ),
+                      j,
+                    ).map((c) => (
+                      <Affectation key={`c${c.id}`} c={c} jour={j} />
+                    ))}
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>
@@ -420,4 +515,215 @@ export function valeursDe(v: VacationRow) {
     heureFin: isoParis(v.endAt).time,
     note: v.note,
   };
+}
+
+// ── Contrat, horaires de travail, sites, absences ──
+
+const DEFAUT_SEMAINE: [string, string][] = [
+  ["08:00", "12:00"],
+  ["13:30", "17:00"],
+];
+
+/** Le cycle hebdomadaire d'horaires de travail : par jour, repos ou jusqu'à deux plages. */
+export function GrilleHorairesTravail({ horaires }: { horaires: unknown }) {
+  const h = lireHoraires(horaires);
+  return (
+    <div style={{ gridColumn: "1 / -1" }}>
+      <div className="form-check form-switch mb-2">
+        <input
+          className="form-check-input"
+          type="checkbox"
+          role="switch"
+          name="horaires_fixes"
+          id="f-horaires_fixes"
+          defaultChecked={!!h}
+        />
+        <label className="form-check-label" htmlFor="f-horaires_fixes">
+          Horaires de travail fixes (cycle hebdomadaire)
+        </label>
+        <div className="form-text">
+          Décoché : la personne peut être affectée à toute heure de ses jours (vacataire sans
+          cycle). Coché : seuls les créneaux compris dans ses plages lui sont proposés.
+        </div>
+      </div>
+      <div className="horaires-travail">
+        <span className="entete">Jour</span>
+        <span className="entete">Repos</span>
+        <span className="entete">Début</span>
+        <span className="entete">Fin</span>
+        <span className="entete">2e début</span>
+        <span className="entete">2e fin</span>
+        {JOURS_ISO.map((j) => {
+          const plages = h ? (h[String(j.iso)] ?? []) : j.iso <= 5 ? DEFAUT_SEMAINE : [];
+          const repos = plages.length === 0;
+          const [p1, p2] = plages;
+          const champs: [string, string, string][] = [
+            ["h1_de", p1?.[0] ?? "", "début"],
+            ["h1_a", p1?.[1] ?? "", "fin"],
+            ["h2_de", p2?.[0] ?? "", "second début"],
+            ["h2_a", p2?.[1] ?? "", "seconde fin"],
+          ];
+          return (
+            <Fragment key={j.iso}>
+              <label className="jour" htmlFor={`f-h1_de_${j.iso}`}>
+                {j.long}
+              </label>
+              <div className="form-check m-0">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  name={`repos_${j.iso}`}
+                  id={`f-repos_${j.iso}`}
+                  defaultChecked={repos}
+                  aria-label={`${j.long} : repos`}
+                />
+              </div>
+              {champs.map(([cle, val, libelle]) => (
+                <input
+                  key={cle}
+                  type="time"
+                  name={`${cle}_${j.iso}`}
+                  id={`f-${cle}_${j.iso}`}
+                  className="form-control form-control-sm"
+                  defaultValue={val}
+                  step={300}
+                  aria-label={`${j.long} : ${libelle}`}
+                />
+              ))}
+            </Fragment>
+          );
+        })}
+      </div>
+      <div className="form-text">
+        Une case « Repos » cochée ignore les heures du jour. La seconde plage sert à la coupure
+        méridienne.
+      </div>
+    </div>
+  );
+}
+
+/** Les champs du contrat et des sites d'une personne (modale « Modifier la fiche »). */
+export function ChampsContrat({
+  p,
+  types,
+  sites,
+}: {
+  p: PersonneComplete;
+  types: { id: number; label: string }[];
+  sites: SiteRef[];
+}) {
+  const principal = p.sites.find((s) => s.principal)?.siteId ?? p.sites[0]?.siteId ?? null;
+  return (
+    <>
+      <h6 className="mt-3 mb-2">Contrat et temps de travail</h6>
+      <Grille colonnes={2}>
+        <Select
+          label="Type de contrat"
+          name="contrat_type_id"
+          valeur={p.contratTypeId}
+          blank="Non renseigné"
+          options={types.map((t) => [String(t.id), t.label])}
+        />
+        <Champ
+          label="Quotité (%)"
+          name="quotite"
+          type="number"
+          min={1}
+          max={100}
+          valeur={p.quotite}
+          aide="100 = temps complet, 80 = quatre cinquièmes…"
+        />
+        <Champ
+          label="Durée hebdomadaire (h)"
+          name="heures_hebdo"
+          type="number"
+          step={0.5}
+          min={1}
+          max={48}
+          valeur={p.heuresHebdo === null ? "" : String(p.heuresHebdo)}
+          aide="Temps non complet : la durée du contrat (28 h…). Vide = 35 h × quotité."
+        />
+        <div />
+        <Champ
+          label="Début du contrat"
+          name="contrat_debut"
+          type="date"
+          valeur={p.contratDebut ? ymdUtc(p.contratDebut) : ""}
+        />
+        <Champ
+          label="Fin du contrat"
+          name="contrat_fin"
+          type="date"
+          valeur={p.contratFin ? ymdUtc(p.contratFin) : ""}
+          aide="Vide = sans terme. Hors de ces dates, la personne n'est jamais proposée."
+        />
+        <GrilleHorairesTravail horaires={p.horaires} />
+      </Grille>
+      <h6 className="mt-3 mb-2">Sites d'intervention</h6>
+      <Grille colonnes={2}>
+        <Coches
+          name="site"
+          options={sites.map((s) => ({ value: s.id, label: s.name }))}
+          cochees={p.sites.map((s) => s.siteId)}
+          label="Sites où la personne peut être affectée"
+        />
+        <Select
+          label="Site principal"
+          name="site_principal"
+          valeur={principal}
+          blank="Le premier coché"
+          options={sites.map((s) => [String(s.id), s.name])}
+          aide="Passe en tête des candidats sur ce site."
+        />
+      </Grille>
+    </>
+  );
+}
+
+/** Les champs d'une absence (modale « Ajouter une absence »). */
+export function ChampsAbsence({
+  motifs,
+  aujourdhui,
+}: {
+  motifs: { id: number; label: string }[];
+  aujourdhui: string;
+}) {
+  return (
+    <Grille colonnes={2}>
+      <Select
+        label="Motif"
+        name="motif_id"
+        blank="Sans motif"
+        options={motifs.map((m) => [String(m.id), m.label])}
+        pleine
+      />
+      <Champ label="Du" name="du" type="date" valeur={aujourdhui} requis />
+      <Champ
+        label="Au (inclus)"
+        name="au"
+        type="date"
+        valeur={aujourdhui}
+        aide="Vide = le même jour."
+      />
+      <div style={{ gridColumn: "1 / -1" }} className="form-check form-switch">
+        <input
+          className="form-check-input"
+          type="checkbox"
+          role="switch"
+          name="journee"
+          id="f-journee"
+          defaultChecked
+        />
+        <label className="form-check-label" htmlFor="f-journee">
+          Journée(s) entière(s)
+        </label>
+        <div className="form-text">
+          Décochez pour indiquer des heures (demi-journée, rendez-vous).
+        </div>
+      </div>
+      <Champ label="Heure de début" name="heure_debut" type="time" valeur="08:00" />
+      <Champ label="Heure de fin" name="heure_fin" type="time" valeur="12:00" />
+      <Champ label="Note" name="note" valeur="" pleine placeholder="Facultatif" />
+    </Grille>
+  );
 }

@@ -13,6 +13,7 @@ export type NotifType =
   | "usager"
   | "subvention"
   | "rappel"
+  | "personnel"
   | "systeme";
 
 /** Pose une notification pour un utilisateur. */

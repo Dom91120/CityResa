@@ -382,7 +382,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 
 ## 9.15 Les référentiels
 
-**À quoi ça sert** — Gérer les listes de valeurs proposées dans les formulaires : natures d'espace, natures d'événement, équipements, profils tarifaires, catégories de matériel et de pièces.
+**À quoi ça sert** — Gérer les listes de valeurs proposées dans les formulaires : natures d'espace, natures d'événement, équipements, profils tarifaires, catégories de matériel et de pièces, types de contrat et motifs d'absence du personnel de service.
 
 **Qui** — Administrateurs.
 
@@ -391,7 +391,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 
 **Ce que l'on voit**
 
-- Six onglets avec leur nombre de valeurs : **Natures d'espace**, **Natures d'événement**, **Équipements d'un espace**, **Profils tarifaires**, **Catégories de matériel**, **Catégories de pièces**.
+- Huit onglets avec leur nombre de valeurs : **Natures d'espace**, **Natures d'événement**, **Équipements d'un espace**, **Profils tarifaires**, **Catégories de matériel**, **Catégories de pièces**, **Types de contrat du personnel** (fonctionnaire titulaire ou stagiaire, contractuel CDD ou CDI, vacataire, apprenti, mis à disposition) et **Motifs d'absence du personnel** (congés annuels, RTT, maladie, formation, récupération, autre), ces deux derniers pour le module Personnel de service (chapitre 11).
 - Pour l'onglet ouvert : une phrase d'explication (par exemple, la nature d'un espace sert aux filtres et au catalogue du portail) et le bouton **Ajouter une valeur**.
 - Le tableau : **Ordre** (flèches monter / descendre), **Libellé**, **Code**, **Icône**, **Couleur**, **Utilisation** (par exemple « 3 espaces » ou « Non utilisé »), **État** (Actif / Inactif).
 - À droite de chaque ligne : le crayon (modifier), l'œil barré (désactiver) et soit une corbeille rouge (supprimer), soit un cadenas quand la valeur est utilisée.
@@ -557,6 +557,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 | Récapitulatif quotidien des agents | 7 h 45 | Courriel aux administrateurs, gestionnaires et agents : demandes à traiter, messages, signatures, factures, créneaux du jour | toujours (seuls les agents qui acceptent les courriels le reçoivent) |
 | Planning hebdomadaire envoyé aux gestionnaires | 6 h 30, le jour choisi | Envoie aux gestionnaires et agents notifiés de chaque espace son planning de la semaine en PDF | planning hebdomadaire activé (onglet Réservations) |
 | Planning de service envoyé au personnel | 6 h 45, le jour choisi | Envoie à chaque personne de service ayant une adresse ses vacations de la semaine en PDF | module Personnel de service et planning de service par courriel activés |
+| Personnel de service : affectation ou proposition | 6 h 50 | Sur les créneaux réservés des 30 prochains jours sans personne de service, affecte d'office (sites en affectation automatique) ou propose au gestionnaire une personne disponible | module Personnel de service activé |
 | Alertes d'expiration des pièces justificatives | 7 h 50 | Prévient les usagers dont une pièce expire bientôt ou aujourd'hui | module Pièces jointes activé |
 
 **Comment faire**

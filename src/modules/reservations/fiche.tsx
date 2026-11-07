@@ -66,11 +66,15 @@ function ServiceCreneauCell({
   s,
   aVenir,
   creneauId,
+  reservationId,
+  csrf,
   peutEpingler,
 }: {
   s: ServiceCreneau | undefined;
   aVenir: boolean;
   creneauId: number;
+  reservationId: number;
+  csrf: string;
   peutEpingler: boolean;
 }) {
   const etat = s ? ETATS_COUVERTURE[s.etat] : null;
@@ -81,12 +85,52 @@ function ServiceCreneauCell({
           {s.epingle ? <Icone nom="bookmark" taille={11} /> : null} {s.noms.join(", ")}
         </span>
       ) : null}
-      {etat && aVenir && (s?.etat !== "couvert" || !s.noms.length) ? (
+      {s?.propose && aVenir ? (
+        <Chip teinte="amber" dot titre="Proposition d'affectation à valider">
+          Proposé : {s.propose.nom}
+        </Chip>
+      ) : etat && aVenir && (s?.etat !== "couvert" || !s.noms.length) ? (
         <Chip teinte={etat.teinte} dot>
           {etat.label}
         </Chip>
       ) : null}
       {!aVenir && !s?.noms.length ? <span className="text-faint">—</span> : null}
+      {s?.propose && aVenir && peutEpingler ? (
+        <>
+          <form
+            method="POST"
+            action={`/personnel/propositions/${creneauId}/valider`}
+            className="d-inline"
+          >
+            <input type="hidden" name="csrf_token" value={csrf} />
+            <input type="hidden" name="next" value={`/reservations/${reservationId}`} />
+            <button
+              type="submit"
+              className="btn btn-ghost btn-icone btn-sm"
+              title={`Valider : ${s.propose.nom} de service sur ce créneau`}
+              aria-label="Valider la proposition"
+            >
+              <Icone nom="check" taille={14} />
+            </button>
+          </form>
+          <form
+            method="POST"
+            action={`/personnel/propositions/${creneauId}/ecarter`}
+            className="d-inline"
+          >
+            <input type="hidden" name="csrf_token" value={csrf} />
+            <input type="hidden" name="next" value={`/reservations/${reservationId}`} />
+            <button
+              type="submit"
+              className="btn btn-ghost btn-icone btn-sm"
+              title="Écarter la proposition"
+              aria-label="Écarter la proposition"
+            >
+              <Icone nom="x" taille={14} />
+            </button>
+          </form>
+        </>
+      ) : null}
       {peutEpingler && aVenir ? (
         <BoutonOuvrir
           cible={`modal-service-${creneauId}`}
@@ -1172,6 +1216,8 @@ export function SectionEvenement({
                       s={service.parCreneau.get(c.id)}
                       aVenir={c.endAt > new Date()}
                       creneauId={c.id}
+                      reservationId={r.id}
+                      csrf={csrf}
                       peutEpingler={peutEpingler}
                     />
                   )}
@@ -1249,7 +1295,7 @@ export function SectionEvenement({
                   name="personnel_id"
                   id={`service-${c.id}-personne`}
                   className="form-select"
-                  defaultValue={c.personnelId ?? ""}
+                  defaultValue={c.personnelId ?? service.parCreneau.get(c.id)?.propose?.id ?? ""}
                 >
                   <option value="">Aucune (vacations du site)</option>
                   {service.personnes.map((p) => (

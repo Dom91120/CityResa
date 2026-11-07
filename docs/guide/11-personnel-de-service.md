@@ -122,3 +122,80 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 3. La tâche planifiée **Planning de service envoyé au personnel** part à 6 h 45 le jour choisi ; elle s'envoie une seule fois par personne et par jour (journal des courriels).
 
 **Imprimer** — Dans le planning de service, **Imprimer › Semaine en PDF** : une page par site, les vacations en couleur et les créneaux à couvrir hachurés, à afficher à la loge ou à l'accueil.
+
+## 11.6 Le contrat et les horaires de travail
+
+**À quoi ça sert** — Décrire le temps de travail de chaque personne pour que l'application sache quand elle est en poste : type de contrat, quotité, durée hebdomadaire, dates, et le cycle hebdomadaire d'horaires.
+
+**Qui** — Agents et gestionnaires en écriture sur « Personnel de service ».
+
+![Fiche d'une personne avec son contrat](captures/personnel-fiche.webp)
+
+*Figure — la fiche de Nadia Benmoussa, gardienne contractuelle à 80 % : contrat, cycle du jeudi au dimanche, sites d'intervention, absence de congés et créneaux affectés.*
+
+**Ce que l'on voit** — Dans la section **Contrat et temps de travail** : le **Contrat** (type), la **Quotité** et la durée hebdomadaire, la **Période** du contrat, et le tableau des **Horaires** jour par jour (« Repos » ou les plages, par exemple « 8h00 – 12h00 · 13h30 – 17h00 »), suivi du total d'heures du cycle. Quand ce total s'écarte des heures attendues (35 h × quotité, ou la durée saisie pour un temps non complet), une pastille orange le signale : c'est une information, pas un blocage. La section **Sites d'intervention** liste les sites où la personne peut être affectée, le principal marqué d'une étoile.
+
+**Comment faire**
+
+1. Sur la fiche, cliquez sur **Modifier** : la fenêtre comporte l'identité, puis **Contrat et temps de travail** et **Sites d'intervention**.
+2. Choisissez le **Type de contrat** (fonctionnaire titulaire ou stagiaire, contractuel CDD ou CDI, vacataire, apprenti, mis à disposition ; liste dans Administration › Référentiels), la **Quotité (%)** (100 pour un temps complet, 80 pour un quatre-cinquièmes…) et, pour un temps non complet, la **Durée hebdomadaire (h)** du contrat (28 h par exemple).
+3. Renseignez le **Début** et la **Fin du contrat** si elle est connue : hors de ces dates, la personne n'est jamais proposée.
+4. Cochez **Horaires de travail fixes** pour saisir le cycle : pour chaque jour, cochez **Repos** ou indiquez le **Début** et la **Fin**, et au besoin une seconde plage (coupure méridienne). Décoché, la personne est affectable à toute heure de tous les jours, hors absences (vacataire appelé selon les besoins).
+5. Cochez les **Sites où la personne peut être affectée** et choisissez son **Site principal**.
+6. Cliquez sur **Enregistrer**. Les affectations à venir qui ne tiennent plus (site retiré, horaire modifié) sont retirées et les créneaux repassent en affectation ; le message le dit.
+
+**Règles à connaître**
+
+- Un créneau ne convient que s'il tient **entièrement** dans une plage du cycle : une personne en poste de 14 h à 21 h n'est pas proposée pour un créneau de 20 h à 22 h 30.
+- Quotité et durée hebdomadaire sont descriptives : l'application ne limite pas les heures affectées, mais elle classe les candidats pour répartir la charge (section 11.8).
+- Une personne sans site d'intervention n'est jamais proposée ; la liste des personnes le signale par un tiret dans la colonne **Sites**.
+
+## 11.7 Les absences
+
+**À quoi ça sert** — Tenir les congés, RTT, maladies, formations et récupérations, pour que la personne ne soit ni proposée ni affectée pendant ses absences.
+
+**Qui** — Agents et gestionnaires en écriture sur « Personnel de service ».
+
+**Ce que l'on voit** — Sur la fiche, la section **Absences** liste les absences récentes et à venir : période (« Sam. 28 nov. 2026 · journée entière », ou la plage horaire), **motif** (pastille) et note, avec la croix pour supprimer. Dans le planning de service, une absence apparaît hachurée en orange dans la case du jour, et les plages travaillées du jour en sont réduites.
+
+**Comment faire**
+
+1. Sur la fiche, cliquez sur **Ajouter une absence**.
+2. Choisissez le **Motif** (congés annuels, RTT, maladie, formation, récupération, autre ; liste dans Administration › Référentiels), le premier jour (**Du**) et le dernier (**Au**, inclus).
+3. Laissez **Journée(s) entière(s)** coché, ou décochez-le pour une demi-journée ou un rendez-vous et indiquez l'**Heure de début** et l'**Heure de fin**.
+4. Cliquez sur **Ajouter**. Si la personne était affectée ou proposée sur un créneau de la période, l'affectation est retirée et le créneau repasse en affectation : le message indique combien.
+
+**Règles à connaître**
+
+- La suppression d'une absence ne réaffecte rien d'elle-même ; la tâche quotidienne ou le bouton **Affecter** s'en chargent.
+- L'historique du dossier de réservation garde la trace d'une personne retirée (« Personne de service retirée … plus disponible »).
+
+## 11.8 L'affectation automatique et les propositions
+
+**À quoi ça sert** — Placer une personne disponible sur chaque créneau réservé sans que le gestionnaire ait à chercher qui est libre : d'office sur les sites qui le souhaitent, sur proposition ailleurs.
+
+**Qui** — Le calcul est automatique ; la validation des propositions demande le droit d'écriture sur « Personnel de service » et la charge de l'espace.
+
+![Propositions d'affectation](captures/personnel-propositions.webp)
+
+*Figure — l'onglet Propositions : pour chaque créneau, la personne proposée, les autres candidats et les boutons Valider et Écarter.*
+
+**Ce que l'on voit**
+
+- Dans le planning de service, les créneaux **affectés** apparaissent dans la case de la personne (signet vert, titre de la réservation, espace), les **propositions** en pointillé orange avec la mention « Proposé · à valider ». Le sous-titre de la page rappelle combien de sites sont en affectation automatique.
+- L'onglet **Propositions** (compteur dans le menu **Personnel** et dans les alertes du tableau de bord) : une ligne par créneau avec la **Personne proposée**, la liste des **Autres candidats** (site principal, heures déjà affectées cette semaine) et le nombre d'indisponibles (survolez pour lire le motif de chacun : hors horaires, absente, hors site…).
+- Sur la fiche d'une réservation, la colonne **Service** affiche « Proposé : … » avec une coche pour valider et une croix pour écarter.
+
+**Comment faire**
+
+- **Choisir le mode d'un site** : fiche du site › **Modifier** › **Affectation automatique du personnel de service**. Coché, la première personne disponible est affectée d'office et les gestionnaires du site sont notifiés ; décoché (par défaut), elle est proposée.
+- **Valider une proposition** : cliquez sur **Valider**, ou choisissez une autre personne dans la liste puis **Affecter**.
+- **Écarter une proposition** : cliquez sur **Écarter** ; la personne écartée ne sera plus proposée sur ce créneau, un autre candidat le sera au prochain passage.
+- **Lancer le calcul à la demande** : dans le planning, bouton **Affecter** (période et site affichés), après confirmation. Le message résume : affectés, proposés, propositions conservées, créneaux sans personne disponible.
+
+**Règles à connaître**
+
+- Le calcul se fait dès qu'un dossier devient accepté, signé ou confirmé, puis chaque matin à 6 h 50 sur les 30 prochains jours (tâche **Personnel de service : affectation ou proposition**). Une proposition encore valable est conservée d'un passage à l'autre.
+- Une personne est **disponible** si elle est en service, rattachée au site, dans sa période de contrat, en poste d'après son cycle, pas absente, et pas déjà affectée au même moment sur un autre site. Plusieurs créneaux d'un même site au même moment restent compatibles (un gardien couvre tout le site).
+- Les candidats sont classés : site principal d'abord, puis la plus faible charge déjà affectée sur la semaine, puis le nom.
+- Les créneaux déjà **couverts par des vacations** ne sont pas traités : les vacations restent le moyen de planifier une présence régulière sur un site, l'affectation complète le reste.

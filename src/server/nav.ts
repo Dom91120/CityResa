@@ -81,5 +81,9 @@ export async function navCounts(user: CurrentUser): Promise<Record<string, numbe
   if (user.canView("usagers")) counts.usagers_a_valider = c.usagers_a_valider;
   if (user.canView("paiements")) counts.factures_a_payer = c.factures_a_payer;
   if (user.canView("subventions")) counts.subventions_a_traiter = c.subventions_a_traiter;
+  if (user.canView("personnel")) {
+    const { nbPropositions } = await import("@/server/affectation");
+    counts.propositions_personnel = await nbPropositions(user).catch(() => 0);
+  }
   return counts;
 }

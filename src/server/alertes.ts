@@ -7,6 +7,7 @@ import { parseYmdUtc } from "@/lib/date-utc";
 import { STATUTS_OPTION } from "@/lib/options";
 import { addParisDays, parisMidnight, todayParisISO } from "@/lib/paris-time";
 import { etatValidite, type PieceJugee } from "@/lib/pieces";
+import { nbPropositions } from "@/server/affectation";
 import type { AppSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { allFlagsIn } from "@/server/features";
@@ -111,6 +112,17 @@ export async function alertes(
   }
 
   if (features.personnel && user.canView("personnel")) {
+    const propositions = await nbPropositions(user).catch(() => 0);
+    if (propositions)
+      out.push({
+        cle: "personnel_propositions",
+        niveau: "warning",
+        icone: "hourglass",
+        titre: `${propositions} proposition${propositions > 1 ? "s" : ""} d'affectation du personnel à valider`,
+        detail: "Une personne disponible est proposée sur un créneau réservé : validez ou écartez.",
+        nb: propositions,
+        href: "/personnel?onglet=propositions",
+      });
     const n = await nbCreneauxACouvrir(user, minuit, addParisDays(minuit, 7));
     if (n)
       out.push({

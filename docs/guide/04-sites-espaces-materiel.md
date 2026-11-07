@@ -25,7 +25,7 @@ Ce chapitre explique comment décrire les lieux de la Ville (sites), ce qui s'y 
 2. Renseignez le **Nom du site**. L'**Adresse courte (slug)** se propose toute seule d'après le nom ; elle sert à construire l'adresse des pages du portail.
 3. Complétez l'adresse, le code postal et la ville. Si vous connaissez la **Latitude** et la **Longitude**, saisissez-les : la fiche proposera alors un lien vers la carte.
 4. Ajoutez le téléphone, le courriel et les informations **Accès, transports, stationnement** (elles sont reprises sur le portail).
-5. Laissez **Site actif** coché et réglez la **Position** (ordre d'affichage, le plus petit en premier).
+5. Laissez **Site actif** coché et réglez la **Position** (ordre d'affichage, le plus petit en premier). Si le module Personnel de service est actif, l'interrupteur **Affectation automatique du personnel de service** décide, pour ce site, si la personne disponible est affectée d'office aux créneaux réservés ou seulement proposée au gestionnaire (chapitre 11).
 6. Enregistrez.
 
 **Règles à connaître**
