@@ -29,7 +29,7 @@ function teinte(nom?: string): React.CSSProperties | undefined {
 export function FlashMessages({ flashes, nonce }: { flashes: Flash[]; nonce?: string }) {
   if (!flashes.length) return null;
   return (
-    <div className="mb-3">
+    <div className="mb-3 flash-zone">
       {flashes.map(([category, message], i) => {
         const cat = category in FLASH_ICONS ? category : "info";
         return (

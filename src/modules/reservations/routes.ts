@@ -347,7 +347,7 @@ async function serviceCreneau(
     "personnel",
     user.email,
   );
-  return redirigerAvecMessage(fiche, message, "success");
+  return redirigerAvecMessage(`${fiche}#creneau-${cid}`, message, "success");
 }
 
 /**

@@ -134,7 +134,7 @@ export default async function UsagersPage({
       />
       <div className="data-card">
         <div className="table-responsive">
-          <table className="table table-hover align-middle mb-0">
+          <table className="table table-hover align-middle mb-0 table-compacte">
             <thead>
               <tr>
                 <Th col="nom" label="Organisation" pathname={page.pathname} search={page.search} />
@@ -160,8 +160,8 @@ export default async function UsagersPage({
                     <td>
                       <a href={`/usagers/${o.id}`} className="d-flex align-items-center gap-2">
                         <Avatar nom={o.name} taille="sm" />
-                        <span className="cell2">
-                          <strong>{o.name}</strong>
+                        <span className="cell2" style={{ maxWidth: 280 }}>
+                          <strong title={o.name}>{o.name}</strong>
                           <small>{o.representant || o.email || ""}</small>
                         </span>
                       </a>
@@ -169,7 +169,9 @@ export default async function UsagersPage({
                     <td>
                       <TypeOrganisation type={o.type} />
                     </td>
-                    <td>{o.city ?? <span className="text-faint">—</span>}</td>
+                    <td className="text-nowrap">
+                      {o.city ?? <span className="text-faint">—</span>}
+                    </td>
                     <td>
                       {o.users.length ? (
                         <span className="avatar-pile" title={o.membres}>
@@ -187,7 +189,7 @@ export default async function UsagersPage({
                       )}
                     </td>
                     <td className="text-end tabular">{o._count.reservations}</td>
-                    <td className="small">
+                    <td className="small" style={{ lineHeight: 1.15, minWidth: 130 }}>
                       {o.profil?.label ?? <span className="text-faint">—</span>}
                     </td>
                     <td>

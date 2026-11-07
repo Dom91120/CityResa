@@ -230,6 +230,7 @@ export function ModalAction({
   multipart,
   danger = false,
   taille,
+  formAttrs,
 }: {
   id: string;
   titre: string;
@@ -242,6 +243,8 @@ export function ModalAction({
   multipart?: boolean;
   danger?: boolean;
   taille?: "lg" | "xl";
+  /** Attributs ajoutés au formulaire (ex. data-sur-place). */
+  formAttrs?: Record<string, string>;
 }) {
   return (
     <div
@@ -258,6 +261,7 @@ export function ModalAction({
           className="modal-content"
           encType={multipart ? "multipart/form-data" : undefined}
           data-double-envoi
+          {...formAttrs}
         >
           <input type="hidden" name="csrf_token" value={csrf} />
           <div className="modal-header">

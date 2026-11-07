@@ -94,7 +94,7 @@ export function TableResa({
 }) {
   return (
     <div className="table-responsive">
-      <table className="table table-hover">
+      <table className="table table-hover table-compacte">
         <thead>
           <tr>
             <Th col="numero" label="Dossier" pathname={pathname} search={search} />
@@ -117,31 +117,31 @@ export function TableResa({
           {rows.map((r) => (
             <tr key={r.id}>
               <td>
-                <span className="cell2">
+                <span className="cell2" style={{ maxWidth: 220 }}>
                   <a
                     href={`/reservations/${r.id}`}
                     className="fw-medium"
                     style={{ color: "var(--strong)" }}
+                    title={r.title}
                   >
                     {r.title}
                   </a>
-                  <small>
-                    {r.numero} · reçue {depuis(r.createdAt)}
-                  </small>
+                  <small>{r.numero}</small>
+                  <small>reçue {depuis(r.createdAt)}</small>
                 </span>
               </td>
               <td>
                 <span className="d-flex align-items-center gap-2">
                   <PastilleEspace couleur={r.espace.color} />
-                  <span className="cell2">
-                    <span>{nomCourt(r.espace)}</span>
-                    <small>{r.espace.site.name}</small>
+                  <span className="cell2" style={{ maxWidth: 170 }}>
+                    <span title={r.espace.name}>{nomCourt(r.espace)}</span>
+                    <small title={r.espace.site.name}>{r.espace.site.name}</small>
                   </span>
                 </span>
               </td>
               <td>
-                <span className="cell2">
-                  <span>{demandeurDe(r) || "—"}</span>
+                <span className="cell2" style={{ maxWidth: 180 }}>
+                  <span title={demandeurDe(r) || undefined}>{demandeurDe(r) || "—"}</span>
                   <small>
                     <TypeOrganisation type={r.organisation?.type ?? null} />
                   </small>
@@ -150,16 +150,14 @@ export function TableResa({
               <td className="text-nowrap">
                 <span className="cell2">
                   <span>{dateMoyenne(r.startAt)}</span>
-                  <small>
-                    {plageHoraire(r.startAt, r.endAt)}
-                    {r._count.creneaux > 1 ? ` · ${r._count.creneaux} créneaux` : ""}
-                  </small>
+                  <small>{plageHoraire(r.startAt, r.endAt)}</small>
+                  {r._count.creneaux > 1 ? <small>{r._count.creneaux} créneaux</small> : null}
                 </span>
               </td>
               <td>
                 <StatutResa status={r.status} />
               </td>
-              <td>
+              <td className="text-nowrap">
                 {r.agent ? (
                   `${r.agent.firstName} ${r.agent.lastName}`.trim()
                 ) : (
