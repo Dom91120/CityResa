@@ -7,12 +7,15 @@ export function EnteteForm({
   sousTitre,
   libelle = "Enregistrer",
   form = "form-principal",
+  actions,
 }: {
   titre: React.ReactNode;
   retour: string;
   sousTitre?: React.ReactNode;
   libelle?: string;
   form?: string;
+  /** Actions secondaires, placées avant Annuler. */
+  actions?: React.ReactNode;
 }) {
   return (
     <div className="page-header">
@@ -26,6 +29,7 @@ export function EnteteForm({
         </div>
       </div>
       <div className="page-actions">
+        {actions}
         <a href={retour} className="btn btn-outline-secondary js-retour">
           Annuler
         </a>

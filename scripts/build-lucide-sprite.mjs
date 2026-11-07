@@ -12,6 +12,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ICONES = [
+  "bold",
+  "italic",
+  "quote",
+  "pilcrow",
   "circle-alert",
   "award",
   "user-round",

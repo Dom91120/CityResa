@@ -1,6 +1,7 @@
-import { Icone, IconePastille } from "@/components/icones";
+import { Icone } from "@/components/icones";
 import { Avatar, Delta, PastilleEspace, StatutResa } from "@/components/macros";
 import { DonneesGraphique, ScriptDiffere } from "@/components/scripts";
+import { CarteStat } from "@/components/stats";
 import { ORGANISATION_TYPES } from "@/lib/constantes";
 import {
   dateLongue,
@@ -162,16 +163,15 @@ export default async function DashboardPage({
 
       <div className="stat-grid">
         {cartes.map((c) => (
-          <a key={c.href} href={c.href} className="stat-card">
-            <div className="d-flex align-items-center justify-content-between">
-              <IconePastille nom={c.icone} teinte={c.teinte} />
-              {c.delta !== null ? <Delta valeur={c.delta} /> : null}
-            </div>
-            <div>
-              <div className="stat-label">{c.label}</div>
-              <div className="stat-number">{c.valeur}</div>
-            </div>
-          </a>
+          <CarteStat
+            key={c.href}
+            href={c.href}
+            icone={c.icone}
+            teinte={c.teinte}
+            label={c.label}
+            valeur={c.valeur}
+            droite={c.delta !== null ? <Delta valeur={c.delta} /> : undefined}
+          />
         ))}
       </div>
 
@@ -292,7 +292,15 @@ export default async function DashboardPage({
             </div>
             {aTraiter.length ? (
               <div className="table-responsive">
-                <table className="table table-hover">
+                <table className="table table-hover table-serree">
+                  <colgroup>
+                    <col />
+                    <col style={{ width: "18%" }} />
+                    <col style={{ width: "17%" }} />
+                    <col style={{ width: 140 }} />
+                    <col style={{ width: 108 }} />
+                    <col style={{ width: 96 }} />
+                  </colgroup>
                   <thead>
                     <tr>
                       <th>Demande</th>
@@ -312,23 +320,30 @@ export default async function DashboardPage({
                               href={`/reservations/${r.id}`}
                               className="fw-medium"
                               style={{ color: "var(--strong)" }}
+                              title={r.title}
                             >
                               {r.title}
                             </a>
-                            <small>
-                              {r.numero} · reçue {depuis(r.createdAt)}
-                            </small>
+                            <small>{r.numero}</small>
+                            <small>reçue {depuis(r.createdAt)}</small>
                           </span>
                         </td>
                         <td>
-                          <span className="d-flex align-items-center gap-2">
+                          <span className="d-flex align-items-center gap-2 text-nowrap">
                             <PastilleEspace couleur={r.espace.color} />
-                            {nomCourt(r.espace)}
+                            <span className="text-truncate" title={r.espace.name}>
+                              {nomCourt(r.espace)}
+                            </span>
                           </span>
                         </td>
                         <td>
                           <span className="cell2">
-                            <span>
+                            <span
+                              title={
+                                r.organisation?.name ??
+                                (r.user ? `${r.user.firstName} ${r.user.lastName}` : undefined)
+                              }
+                            >
                               {r.organisation?.name ??
                                 (r.user ? `${r.user.firstName} ${r.user.lastName}` : "—")}
                             </span>
@@ -340,10 +355,10 @@ export default async function DashboardPage({
                         <td className="text-nowrap">
                           <span className="cell2">
                             <span>{dateMoyenne(r.startAt)}</span>
-                            <small>
-                              {plageHoraire(r.startAt, r.endAt)}
-                              {r._count.creneaux > 1 ? ` · ${r._count.creneaux} créneaux` : ""}
-                            </small>
+                            <small>{plageHoraire(r.startAt, r.endAt)}</small>
+                            {r._count.creneaux > 1 ? (
+                              <small>{r._count.creneaux} créneaux</small>
+                            ) : null}
                           </span>
                         </td>
                         <td>
@@ -425,7 +440,7 @@ export default async function DashboardPage({
           <div className="data-card">
             <div className="card-header-custom">
               <h6>
-                <Icone nom="triangle-alert" taille={16} classes="text-primary" /> Alertes
+                <Icone nom="triangle-alert" taille={16} classes="text-ambre" /> Alertes
                 {alertesDuJour.length ? (
                   <span className="chip chip-red">{alertesDuJour.length}</span>
                 ) : null}
@@ -534,8 +549,10 @@ export default async function DashboardPage({
                             : "")}
                       </small>
                     </span>
-                    <span className="quand">
-                      {dateMoyenne(c.startAt)} · {heure(c.startAt)}
+                    <span className="quand text-end" style={{ lineHeight: 1.15 }}>
+                      {dateMoyenne(c.startAt)}
+                      <br />
+                      {heure(c.startAt)}
                     </span>
                   </li>
                 ))}

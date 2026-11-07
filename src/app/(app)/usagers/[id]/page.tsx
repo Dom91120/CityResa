@@ -160,7 +160,7 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
       />
 
       {manques.length ? (
-        <div className="astuce mb-3">
+        <div className="alert alert-warning d-flex gap-2 align-items-start mb-3">
           <Icone nom="triangle-alert" taille={16} />
           <span>
             <strong>Dossier incomplet pour réserver.</strong> {phraseManques(manques)}{" "}

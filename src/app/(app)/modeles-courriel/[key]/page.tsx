@@ -1,13 +1,22 @@
 import { notFound } from "next/navigation";
-import { Section } from "@/components/fiche";
 import { EnteteForm, Interrupteur } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
 import { Chip } from "@/components/macros";
+import { ScriptDiffere } from "@/components/scripts";
 import { contexteAdmin, exemplesVariables, variablesDe } from "@/modules/admin/server";
 import { prisma } from "@/server/db";
-import { EMAIL_TEMPLATE_SEEDS, rendre } from "@/server/email-templates";
+import { EMAIL_TEMPLATE_SEEDS } from "@/server/email-templates";
 
 export const metadata = { title: "Modèle de courriel - CityRésa" };
+
+const OUTILS: { outil: string; icone: string; titre: string }[] = [
+  { outil: "gras", icone: "bold", titre: "Gras" },
+  { outil: "italique", icone: "italic", titre: "Italique" },
+  { outil: "lien", icone: "link", titre: "Lien" },
+  { outil: "liste", icone: "list", titre: "Liste à puces" },
+  { outil: "citation", icone: "quote", titre: "Citation" },
+  { outil: "paragraphe", icone: "pilcrow", titre: "Paragraphe simple" },
+];
 
 export default async function ModeleCourrielPage({ params }: { params: Promise<{ key: string }> }) {
   const page = await contexteAdmin();
@@ -19,153 +28,214 @@ export default async function ModeleCourrielPage({ params }: { params: Promise<{
   const subject = row?.subject ?? seed?.subject ?? "";
   const body = row?.body ?? seed?.body ?? "";
   const actif = row?.isActive ?? true;
-  const variables = variablesDe(seed?.subject ?? subject, seed?.body ?? body);
-  const exemples = exemplesVariables(
-    page.user.settings.APP_BASE_URL,
-    page.user.settings.COLLECTIVITE_NOM,
-  );
-  const vars: Record<string, string> = {};
-  for (const v of ["collectivite", "base_url", ...variables]) vars[v] = exemples[v] ?? `[${v}]`;
-  const apercuSujet = rendre(subject, vars)
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, "&");
-  const apercuCorps = rendre(body, vars);
+  const cfg = page.user.settings;
+  const variables = [
+    ...new Set([
+      "collectivite",
+      "base_url",
+      ...variablesDe(seed?.subject ?? subject, seed?.body ?? body),
+    ]),
+  ];
+  const exemples = exemplesVariables(cfg.APP_BASE_URL, cfg.COLLECTIVITE_NOM);
+  const valeurs: Record<string, string> = {};
+  for (const v of variables) valeurs[v] = exemples[v] ?? `[${v}]`;
   const ici = `/modeles-courriel/${key}`;
   const personnalise = seed && row ? row.subject !== seed.subject || row.body !== seed.body : false;
+  const pied = [cfg.COLLECTIVITE_NOM, cfg.COLLECTIVITE_ADRESSE, cfg.COLLECTIVITE_EMAIL]
+    .filter(Boolean)
+    .join(" · ");
   return (
     <>
-      <EnteteForm
-        titre={label}
-        retour="/modeles-courriel"
-        sousTitre={
-          <>
-            <code>{key}</code>
-            {seed ? ` · ${seed.aide}` : null}
-          </>
-        }
-      />
-      <div className="fiche-colonnes fiche-colonnes--50-50">
-        <div>
-          <form method="POST" action={ici} id="form-principal" data-double-envoi>
-            <input type="hidden" name="csrf_token" value={page.csrf} />
-            <input type="hidden" name="action" value="enregistrer" />
-            <fieldset className="form-section">
-              <legend className="form-section-titre">
-                <Icone nom="mail" taille={14} />
-                Contenu
-              </legend>
-              <div className="mb-3">
-                <Interrupteur
-                  label="Modèle actif (le courriel est envoyé)"
-                  name="is_active"
-                  coche={actif}
-                />
+      <EnteteForm titre={label} retour="/modeles-courriel" sousTitre={seed?.aide} />
+      <form
+        method="POST"
+        action={ici}
+        id="form-principal"
+        className="form-seul"
+        data-double-envoi
+        style={{ maxWidth: 960 }}
+      >
+        <input type="hidden" name="csrf_token" value={page.csrf} />
+        <input type="hidden" name="action" value="enregistrer" />
+        <fieldset className="form-section">
+          <legend className="form-section-titre">
+            <Icone nom="mail" taille={14} />
+            Le courriel
+          </legend>
+          <div className="mb-3 d-flex flex-wrap align-items-center gap-3">
+            <Interrupteur
+              label="Modèle actif (le courriel est envoyé)"
+              name="is_active"
+              coche={actif}
+            />
+            {personnalise ? (
+              <Chip teinte="violet">Personnalisé</Chip>
+            ) : (
+              <Chip teinte="slate">Texte d'origine</Chip>
+            )}
+          </div>
+          <div className="mb-3">
+            <label className="form-label" htmlFor="f-subject">
+              Sujet
+            </label>
+            <input
+              type="text"
+              name="subject"
+              id="f-subject"
+              className="form-control"
+              defaultValue={subject}
+              required
+              maxLength={200}
+            />
+          </div>
+          <div
+            className="editeur-courriel"
+            data-editeur-courriel
+            data-exemples={JSON.stringify(valeurs)}
+          >
+            <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+              <span className="form-label mb-0">Corps</span>
+              <span className="d-flex align-items-center gap-3 small">
+                <span className="form-check form-switch mb-0 zone-editeur">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="f-exemples"
+                    data-exemples-toggle
+                  />
+                  <label className="form-check-label" htmlFor="f-exemples">
+                    Voir avec des valeurs d'exemple
+                  </label>
+                </span>
+                <button type="button" className="btn btn-link btn-sm p-0" data-basculer-html>
+                  Afficher le HTML
+                </button>
+              </span>
+            </div>
+            <div className="zone-editeur">
+              <div className="barre-outils" role="toolbar" aria-label="Mise en forme et variables">
+                {OUTILS.map((o) => (
+                  <button
+                    key={o.outil}
+                    type="button"
+                    className="btn btn-ghost btn-icone btn-sm"
+                    data-outil={o.outil}
+                    title={o.titre}
+                    aria-label={o.titre}
+                  >
+                    <Icone nom={o.icone} taille={15} />
+                  </button>
+                ))}
+                <span className="sep" />
+                <span className="variables-boutons">
+                  {variables.map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      data-variable={v}
+                      title={`Insérer au curseur · exemple : ${valeurs[v]}`}
+                    >
+                      {`{{${v}}}`}
+                    </button>
+                  ))}
+                </span>
               </div>
-              <div className="mb-3">
-                <label className="form-label" htmlFor="f-subject">
-                  Sujet
+              <div className="lien-saisie" data-lien-saisie hidden>
+                <label className="small text-muted mb-0" htmlFor="f-lien-url">
+                  Adresse du lien
                 </label>
                 <input
                   type="text"
-                  name="subject"
-                  id="f-subject"
-                  className="form-control"
-                  defaultValue={subject}
-                  required
-                  maxLength={200}
+                  id="f-lien-url"
+                  className="form-control form-control-sm"
+                  placeholder="https://… ou {{lien}}"
                 />
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-primary"
+                  data-lien-appliquer
+                >
+                  Appliquer
+                </button>
               </div>
-              <div className="mb-2">
-                <label className="form-label" htmlFor="f-body">
-                  Corps (HTML simple)
-                </label>
-                <textarea
-                  name="body"
-                  id="f-body"
-                  className="form-control font-monospace"
-                  rows={14}
-                  defaultValue={body}
-                  required
-                  style={{ fontSize: ".82rem" }}
-                />
-                <div className="form-text">
-                  Balises admises : <code>&lt;p&gt;</code>, <code>&lt;strong&gt;</code>,{" "}
-                  <code>&lt;a href&gt;</code>, <code>&lt;ul&gt;&lt;li&gt;</code>,{" "}
-                  <code>&lt;blockquote&gt;</code>, <code>&lt;br&gt;</code>. Les variables sont
-                  échappées ; <code>{"{{{x}}}"}</code> insère du HTML brut.
+              <div className="courriel-cadre">
+                <div className="courriel-carte">
+                  <div className="courriel-bandeau">
+                    {cfg.COLLECTIVITE_NOM} · Réservation d'espaces
+                  </div>
+                  <div
+                    className="courriel-corps"
+                    contentEditable
+                    suppressContentEditableWarning
+                    data-zone
+                    role="textbox"
+                    tabIndex={0}
+                    aria-multiline="true"
+                    aria-label="Corps du courriel"
+                    spellCheck
+                  />
+                  <div className="courriel-pied">{pied}</div>
                 </div>
               </div>
-            </fieldset>
-            <div className="form-pied">
-              <a href="/modeles-courriel" className="btn btn-outline-secondary js-retour">
-                Annuler
-              </a>
-              <button type="submit" className="btn btn-primary">
-                <Icone nom="check" taille={14} /> Enregistrer
+            </div>
+            <div className="zone-html">
+              <textarea
+                name="body"
+                id="f-body"
+                className="form-control font-monospace"
+                rows={14}
+                defaultValue={body}
+                required
+                style={{ fontSize: ".82rem" }}
+              />
+              <div className="form-text">
+                Balises admises : <code>&lt;p&gt;</code>, <code>&lt;strong&gt;</code>,{" "}
+                <code>&lt;em&gt;</code>, <code>&lt;a href&gt;</code>,{" "}
+                <code>&lt;ul&gt;&lt;li&gt;</code>, <code>&lt;blockquote&gt;</code>,{" "}
+                <code>&lt;br&gt;</code> ; le reste est retiré à l'enregistrement. Les variables sont
+                échappées ; <code>{"{{{x}}}"}</code> insère du HTML brut.
+              </div>
+            </div>
+          </div>
+        </fieldset>
+        <div className="form-pied">
+          <div className="form-pied-supprimer d-flex gap-2 flex-wrap">
+            <button
+              type="submit"
+              form="form-test"
+              className="btn btn-outline-secondary"
+              title={`Envoie le modèle enregistré, avec des valeurs d'exemple, à ${page.user.email}`}
+            >
+              <Icone nom="send" taille={14} /> M'envoyer un test
+            </button>
+            {seed ? (
+              <button
+                type="submit"
+                form="form-retablir"
+                className="btn btn-outline-secondary"
+                disabled={!personnalise}
+                title="Remplace le sujet et le corps par le texte livré avec l'application"
+                data-confirm="Remplacer le sujet et le corps par le texte d'origine ?"
+                data-confirm-form="#form-retablir"
+              >
+                <Icone nom="rotate-ccw" taille={14} /> Rétablir le texte d'origine
               </button>
-            </div>
-          </form>
+            ) : null}
+          </div>
         </div>
-        <div className="data-card overflow-visible">
-          <Section titre="Variables disponibles" icone="hash">
-            <div className="coches mb-2">
-              {/* Sans doublon : la graine peut déjà citer collectivite ou base_url. */}
-              {[...new Set(["collectivite", "base_url", ...variables])].map((v) => (
-                <span key={v} className="chip chip-sky" title={exemples[v] ?? ""}>
-                  {`{{${v}}}`}
-                </span>
-              ))}
-            </div>
-            <p className="small text-muted mb-0">
-              Déduites du texte d'origine du modèle. Une variable absente est remplacée par une
-              chaîne vide à l'envoi.
-            </p>
-          </Section>
-
-          <Section titre="Aperçu avec des valeurs d'exemple" icone="eye">
-            <div className="small text-muted mb-1">Sujet</div>
-            <p className="fw-medium mb-3">{apercuSujet}</p>
-            <div className="small text-muted mb-1">Corps</div>
-            <div
-              className="border rounded p-3"
-              style={{ borderColor: "var(--line)", fontSize: ".9rem", lineHeight: 1.55 }}
-              // biome-ignore lint/security/noDangerouslySetInnerHtml: contenu rédigé par un administrateur, variables échappées par rendre().
-              dangerouslySetInnerHTML={{ __html: apercuCorps }}
-            />
-          </Section>
-
-          <Section titre="Actions" icone="sliders-horizontal">
-            <div className="d-flex gap-2 flex-wrap align-items-center">
-              <form method="POST" action={ici}>
-                <input type="hidden" name="csrf_token" value={page.csrf} />
-                <input type="hidden" name="action" value="test" />
-                <button type="submit" className="btn btn-outline-primary btn-sm">
-                  <Icone nom="send" taille={14} /> M'envoyer un test ({page.user.email})
-                </button>
-              </form>
-              {seed ? (
-                <form method="POST" action={ici}>
-                  <input type="hidden" name="csrf_token" value={page.csrf} />
-                  <input type="hidden" name="action" value="retablir" />
-                  <button
-                    type="submit"
-                    className="btn btn-outline-secondary btn-sm"
-                    disabled={!personnalise}
-                    data-confirm="Remplacer le sujet et le corps par le texte d'origine ?"
-                  >
-                    <Icone nom="rotate-ccw" taille={14} /> Rétablir le texte d'origine
-                  </button>
-                </form>
-              ) : null}
-              {personnalise ? (
-                <Chip teinte="violet">Personnalisé</Chip>
-              ) : (
-                <Chip teinte="slate">Texte d'origine</Chip>
-              )}
-            </div>
-          </Section>
-        </div>
-      </div>
+      </form>
+      <form method="POST" action={ici} id="form-test">
+        <input type="hidden" name="csrf_token" value={page.csrf} />
+        <input type="hidden" name="action" value="test" />
+      </form>
+      {seed ? (
+        <form method="POST" action={ici} id="form-retablir">
+          <input type="hidden" name="csrf_token" value={page.csrf} />
+          <input type="hidden" name="action" value="retablir" />
+        </form>
+      ) : null}
+      <ScriptDiffere src="/js/modeles-courriel.js" nonce={page.nonce} />
     </>
   );
 }

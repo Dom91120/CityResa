@@ -1,3 +1,4 @@
+import { corpsVide, normaliserCorps } from "@/lib/courriel-html";
 import { champ, coche } from "@/lib/forms-util";
 import { exemplesVariables, variablesDe } from "@/modules/admin/server";
 import { auditRecord } from "@/server/audit";
@@ -59,8 +60,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ key: st
       }
 
       const subject = champ(form, "subject").slice(0, 200);
-      const body = String(form.get("body") ?? "").trim();
-      if (!subject || !body)
+      const body = normaliserCorps(String(form.get("body") ?? ""));
+      if (!subject || corpsVide(body))
         return redirigerAvecMessage(ici, "Le sujet et le corps sont obligatoires.", "danger");
       await prisma.emailTemplate.upsert({
         where: { key },

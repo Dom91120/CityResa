@@ -472,38 +472,37 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 
 ## 9.18 Modifier un modèle de courriel
 
-**À quoi ça sert** — Adapter le sujet et le texte d'un courriel automatique, le tester, ou le désactiver.
+**À quoi ça sert** — Adapter le sujet et le texte d'un courriel automatique en l'écrivant directement dans le courriel tel qu'il sera reçu, le tester, ou le désactiver.
 
 **Qui** — Administrateurs.
 
 ![Modification d'un modèle de courriel](captures/modele-courriel.webp)
-*Figure — Le modèle « Demande acceptée (usager) » : le contenu à gauche, les variables disponibles, l'aperçu et les actions à droite.*
+*Figure — Le modèle « Demande acceptée (usager) » : le courriel se rédige dans son habillage (bandeau, pied) ; la barre d'outils porte la mise en forme et les variables à insérer, l'en-tête les actions.*
 
 **Ce que l'on voit**
 
-- **CONTENU** :
-  - l'interrupteur **Modèle actif (le courriel est envoyé)** ;
+- **LE COURRIEL** :
+  - l'interrupteur **Modèle actif (le courriel est envoyé)** et l'étiquette **Texte d'origine** ou **Personnalisé** ;
   - le **Sujet** ;
-  - le **Corps (HTML simple)**, avec la liste des balises de mise en forme admises (paragraphe, gras, lien, liste, citation, retour à la ligne).
-- **Variables disponibles** : les mots entre doubles accolades propres à ce modèle, par exemple `{{prenom}}`, `{{numero}}`, `{{espace}}`, `{{dates}}`, `{{suite}}`, `{{lien}}`, `{{collectivite}}`. Ils sont remplacés à l'envoi par les vraies valeurs.
-- **Aperçu avec des valeurs d'exemple** : le sujet et le corps tels que l'usager les recevra (ici « Bonjour Camille, … votre demande RES-2026-0042 pour Salle des fêtes … est acceptée »).
-- **Actions** : **M'envoyer un test** (à votre adresse), **Rétablir le texte d'origine** et une étiquette **Texte d'origine** ou **Personnalisé**.
-- Les boutons **Annuler** et **Enregistrer**, en haut et en bas.
+  - le **Corps**, rédigé directement dans le courriel habillé aux couleurs de la collectivité : une barre d'outils avec la mise en forme (gras, italique, lien, liste à puces, citation, paragraphe simple) puis les variables du modèle ; dans le texte, les variables sont des pastilles bleues `{{prenom}}`, `{{numero}}`… que l'on déplace ou supprime d'un bloc ;
+  - l'interrupteur **Voir avec des valeurs d'exemple**, qui remplace les pastilles par « Camille », « RES-2026-0042 », « Salle des fêtes »… pour relire le résultat ;
+  - le lien **Afficher le HTML**, qui montre le code du corps pour les cas particuliers (et le ramène aux balises admises à l'enregistrement).
+- En haut à droite, **Annuler** et **Enregistrer** ; en bas du formulaire, **M'envoyer un test** (le modèle enregistré, à votre adresse, avec les valeurs d'exemple) et **Rétablir le texte d'origine**.
 
 **Comment faire**
 
-1. Modifiez le **Sujet** et le **Corps**. Pour insérer une information du dossier, recopiez une variable de la liste, accolades comprises, par exemple `{{prenom}}`.
-2. Cliquez sur **Enregistrer**.
-3. Cliquez sur **M'envoyer un test** pour recevoir le courriel avec des valeurs d'exemple et vérifier sa mise en forme.
-4. Pour revenir au texte livré avec l'application, cliquez sur **Rétablir le texte d'origine** et confirmez (bouton actif seulement si le modèle a été personnalisé).
-5. Pour ne plus envoyer ce courriel, désactivez **Modèle actif** puis enregistrez.
+1. Modifiez le **Sujet**, puis écrivez dans le corps comme dans un traitement de texte : sélectionnez un mot et cliquez sur **Gras**, sur **Lien** pour saisir une adresse (ou `{{lien}}`), sur **Liste** pour une énumération.
+2. Pour insérer une information du dossier, placez le curseur (dans le sujet ou dans le corps) puis cliquez sur la variable voulue dans la barre d'outils : elle apparaît en pastille.
+3. Cochez **Voir avec des valeurs d'exemple** pour relire le courriel avec des données réalistes, puis cliquez sur **Enregistrer**.
+4. Cliquez sur **M'envoyer un test** pour recevoir le courriel et vérifier sa mise en forme dans votre messagerie.
+5. Pour revenir au texte livré avec l'application, cliquez sur **Rétablir le texte d'origine** et confirmez (bouton actif seulement si le modèle a été personnalisé).
+6. Pour ne plus envoyer ce courriel, désactivez **Modèle actif** puis enregistrez.
 
 **Règles à connaître**
 
-- Une variable absente de la liste est remplacée par un texte vide à l'envoi : vérifiez l'orthographe des variables.
-- Certaines variables changent selon la situation : par exemple `{{suite}}` indique l'étape suivante (signature, paiement ou rien) et `{{motif}}` reprend le motif de refus saisi par l'agent.
-
-> **Attention** — Désactiver un modèle supprime l'envoi pour tous les dossiers. Ne désactivez pas les codes de signature si la signature électronique est utilisée.
+- Un texte collé depuis un autre logiciel arrive sans mise en forme ; seules les balises admises (paragraphe, gras, italique, lien, liste, citation, retour à la ligne) sont conservées à l'enregistrement, le reste est retiré.
+- Les liens n'acceptent que des adresses `https://`, `mailto:` ou une variable.
+- Sans JavaScript, la page revient au champ HTML classique : rien n'est perdu.
 
 ## 9.19 Le journal d'audit
 

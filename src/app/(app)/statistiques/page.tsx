@@ -1,6 +1,7 @@
-import { Icone, IconePastille } from "@/components/icones";
+import { Icone } from "@/components/icones";
 import { Delta, PastilleEspace, TypeOrganisation } from "@/components/macros";
 import { DonneesGraphique, ScriptDiffere } from "@/components/scripts";
+import { CarteStat } from "@/components/stats";
 import { ORGANISATION_TYPES, RESERVATION_STATUS, type ReservationStatus } from "@/lib/constantes";
 import { montant, pluriel } from "@/lib/libelles";
 import { PERIODES } from "@/lib/periodes";
@@ -252,17 +253,15 @@ export default async function StatistiquesPage({
 
       <div className="stat-grid">
         {cartes.map((c) => (
-          <div key={c.label} className="stat-card">
-            <div className="d-flex align-items-center justify-content-between">
-              <IconePastille nom={c.icone} teinte={c.teinte} />
-              {c.delta !== undefined ? <Delta valeur={c.delta} /> : null}
-            </div>
-            <div>
-              <div className="stat-label">{c.label}</div>
-              <div className="stat-number">{c.valeur}</div>
-              <div className="text-muted small mt-1">{c.detail}</div>
-            </div>
-          </div>
+          <CarteStat
+            key={c.label}
+            icone={c.icone}
+            teinte={c.teinte}
+            label={c.label}
+            valeur={c.valeur}
+            detail={c.detail}
+            droite={c.delta !== undefined ? <Delta valeur={c.delta} /> : undefined}
+          />
         ))}
       </div>
 
