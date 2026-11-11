@@ -4,6 +4,7 @@ import { Icone } from "@/components/icones";
 import { Chip, OuiNon } from "@/components/macros";
 import { ROLE_LABELS } from "@/lib/constantes";
 import { dateHeure, depuis, nomCourt } from "@/lib/libelles";
+import { libelleSecteur } from "@/lib/secteurs";
 import { contexteAdmin } from "@/modules/admin/server";
 import { donneesLiees, espacesGeresPar, nomComplet } from "@/modules/utilisateurs/server";
 import { prisma } from "@/server/db";
@@ -127,6 +128,9 @@ export default async function UtilisateurPage({ params }: { params: Promise<{ id
                 valeur={u.kind === "agent" ? "Agent de la collectivité" : "Usager du portail"}
               />
               <Lu label="Rôle" valeur={role?.label ?? u.role} />
+              {u.kind === "agent" ? (
+                <Lu label="Secteur" valeur={libelleSecteur(u.secteur)} />
+              ) : null}
               <Lu label="Courriel" valeur={<a href={`mailto:${u.email}`}>{u.email}</a>} />
               <Lu label="Téléphone" valeur={u.phone} tiret />
               <Lu label="Fonction" valeur={u.fonction} tiret />

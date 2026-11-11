@@ -66,6 +66,8 @@ export type CurrentUser = {
   isUsager: boolean;
   isAdmin: boolean;
   organisationId: number | null;
+  /** Secteur de l'agent (salle | sport) ; null = transversal. */
+  secteur: string | null;
   hasTwoFactor: boolean;
   createdAt: Date;
   icsToken: string | null;
@@ -74,7 +76,10 @@ export type CurrentUser = {
   notifEmail: boolean;
   totpFailedCount: number;
   totpLockedUntil: Date | null;
-  /** Les espaces dont l'agent a la charge (vide = tous, pour un gestionnaire ou un admin). */
+  /**
+   * Les espaces dont l'agent a la charge (vide = tous). Un agent d'un secteur sans aucun
+   * rattachement a pour périmètre tous les espaces de son secteur.
+   */
   espacesGeres: number[];
   settings: AppSettings;
   permLevel: (category: string) => number;
@@ -126,6 +131,7 @@ export function buildCurrentUser(
     isUsager,
     isAdmin,
     organisationId: row.organisationId,
+    secteur: row.secteur ?? null,
     hasTwoFactor: Boolean(row.twoFactorEnabled),
     createdAt: row.createdAt,
     icsToken: row.icsToken,
@@ -157,12 +163,22 @@ export async function loadUser(userId: string): Promise<CurrentUser | null> {
     row.role ? prisma.role.findUnique({ where: { name: row.role } }) : null,
     prisma.espaceGestionnaire.findMany({ where: { userId }, select: { espaceId: true } }),
   ]);
-  return buildCurrentUser(
-    row,
-    roleObj,
-    settings,
-    espaces.map((e) => e.espaceId),
-  );
+  return buildCurrentUser(row, roleObj, settings, await perimetre(row, espaces));
+}
+
+/**
+ * Le périmètre d'un agent : ses rattachements ; à défaut, tous les espaces de son secteur ;
+ * sans secteur ni rattachement, tout (liste vide). Un secteur sans aucun espace ne donne accès
+ * à rien : l'identifiant 0, qu'aucun espace ne porte, tient lieu de périmètre vide.
+ */
+async function perimetre(row: UserRow, rattachements: { espaceId: number }[]): Promise<number[]> {
+  if (rattachements.length) return rattachements.map((e) => e.espaceId);
+  if (row.kind !== "agent" || !row.secteur) return [];
+  const duSecteur = await prisma.espace.findMany({
+    where: { secteur: row.secteur },
+    select: { id: true },
+  });
+  return duSecteur.length ? duSecteur.map((e) => e.id) : [0];
 }
 
 /** `current_user` : null si personne n'est connecté. Mémoïsé par requête. */

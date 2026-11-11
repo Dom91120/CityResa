@@ -61,6 +61,15 @@ lecture, écriture, suppression). Un agent peut en plus être rattaché à des e
 (gestionnaire, lecteur ou simplement notifié) : c'est la **gestion des accès par service ou
 par lieu** demandée par le cahier des charges.
 
+Chaque agent porte un **secteur** (Salles ou Sports), ou aucun : il est alors transversal
+(administrateur, financier, élu). Un agent d'un secteur ne se rattache qu'aux espaces de ce
+secteur ; sans aucun rattachement, son périmètre est l'ensemble des espaces de son secteur
+(tous les espaces pour un agent transversal). « Mon équipe » montre à un agent ses collègues du
+même secteur et les agents transversaux, sans les administrateurs. Le secteur d'un agent ou
+d'un espace ne se change pas tant que des rattachements le contredisent. À défaut de
+gestionnaire sur un espace, les notifications vont aux gestionnaires et administrateurs du
+secteur de l'espace ou transversaux.
+
 ---
 
 ## 3. Parcours en étapes
@@ -236,7 +245,7 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 
 - Site : nom, description, adresse, code postal, ville, latitude / longitude, téléphone,
   courriel, informations d'accès, photos.
-- Espace : nature (référentiel), secteur (salles ou sports, pour les sélections et les statistiques), description, capacités debout / assise, surface, étage,
+- Espace : nature (référentiel), secteur (salles ou sports : sélections, statistiques et périmètre des agents), description, capacités debout / assise, surface, étage,
   couleur, visibilité publique, profils autorisés, validation requise ou confirmation
   automatique, horaires d'ouverture par jour (plusieurs plages, fermeture possible à minuit),
   pas de saisie, durée minimale / maximale, délai minimal et horizon, temps de montage et

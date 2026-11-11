@@ -31,7 +31,10 @@ export async function notifier(
   }
 }
 
-/** Les agents à prévenir pour un espace : ses gestionnaires, sinon tous les gestionnaires et admins. */
+/**
+ * Les agents à prévenir pour un espace : ses gestionnaires, sinon tous les gestionnaires et
+ * admins, hors ceux qui relèvent d'un autre secteur que l'espace.
+ */
 export async function agentsPour(
   espaceId: number | null,
 ): Promise<{ id: string; email: string; name: string }[]> {
@@ -47,8 +50,17 @@ export async function agentsPour(
         name: `${l.user.firstName} ${l.user.lastName}`.trim(),
       }));
   }
+  const secteur = espaceId
+    ? (await prisma.espace.findUnique({ where: { id: espaceId }, select: { secteur: true } }))
+        ?.secteur
+    : null;
   const tous = await prisma.user.findMany({
-    where: { kind: "agent", isActive: true, role: { in: ["admin", "gestionnaire"] } },
+    where: {
+      kind: "agent",
+      isActive: true,
+      role: { in: ["admin", "gestionnaire"] },
+      ...(secteur ? { OR: [{ secteur: null }, { secteur }] } : {}),
+    },
     select: { id: true, email: true, firstName: true, lastName: true },
   });
   return tous.map((u) => ({

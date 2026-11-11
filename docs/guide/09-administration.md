@@ -280,7 +280,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 *Créer un compte agent*
 1. Cliquez sur **Nouvel agent**.
 2. Renseignez **Courriel (identifiant)**, **Prénom**, **Nom**, et si besoin **Fonction** et **Téléphone**.
-3. Choisissez le **Rôle** (« Agent » est proposé par défaut ; la description de chaque rôle est rappelée à côté).
+3. Choisissez le **Rôle** (« Agent » est proposé par défaut ; la description de chaque rôle est rappelée à côté) et le **Secteur** : Salles, Sports, ou **Aucun (transversal)** pour un administrateur, un financier ou un élu. Un agent d'un secteur ne se rattache qu'aux espaces de ce secteur et, sans rattachement, les voit tous ; un agent transversal voit tous les espaces.
 4. Cliquez sur **Créer le compte**.
 5. Un mot de passe provisoire s'affiche **une seule fois** dans le message de confirmation : transmettez-le à la personne par un moyen sûr. Elle pourra le changer depuis son profil.
 
@@ -303,7 +303,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 **Ce que l'on voit**
 
 - **En-tête** : le nom, l'étiquette du rôle, le courriel et la fonction ; les boutons **Modifier** et **…** (autres actions).
-- **Compte** : nature (agent de la collectivité ou usager), rôle, courriel, téléphone, fonction, compte actif ou non, date de création, dernière connexion, sessions ouvertes.
+- **Compte** : nature (agent de la collectivité ou usager), rôle, secteur d'un agent (Salles, Sports ou Transversal), courriel, téléphone, fonction, compte actif ou non, date de création, dernière connexion, sessions ouvertes. Le secteur se change par **Modifier** ; le changement est refusé tant que l'agent est rattaché à des espaces d'un autre secteur, et le message les nomme.
 - **Sécurité** : double authentification, notifications par courriel, lien d'agenda personnel (Oui / Non).
 - **Espaces en charge** : les espaces confiés à l'agent et son rôle sur chacun (ici « gestionnaire »). Si la liste est vide, l'agent intervient sur tous les espaces selon son rôle.
 - **Données liées** : par exemple « 9 réservation(s) assignée(s) », et l'indication que le compte ne peut pas être supprimé.
