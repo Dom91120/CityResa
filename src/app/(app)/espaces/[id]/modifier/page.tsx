@@ -18,8 +18,8 @@ export default async function ModifierEspacePage({ params }: { params: Promise<{
     where: { id },
     include: { _count: { select: { reservations: true } } },
   });
-  if (!espace) notFound();
-  const [sites, refs, parents, saisons] = await Promise.all([
+  if (!espace || !page.user.voitEspace(id)) notFound();
+  const [sites, refs, tousParents, saisons] = await Promise.all([
     sitesPourSelect(),
     referentielsEspaces(),
     prisma.espace.findMany({
@@ -29,6 +29,7 @@ export default async function ModifierEspacePage({ params }: { params: Promise<{
     }),
     saisonsPourFormulaire(id),
   ]);
+  const parents = tousParents.filter((p) => page.user.voitEspace(p.id));
   return (
     <>
       <EnteteForm titre={espace.name} retour={`/espaces/${id}`} sousTitre="Modifier l'espace" />
@@ -36,6 +37,7 @@ export default async function ModifierEspacePage({ params }: { params: Promise<{
         espace={espace}
         action={`/espaces/${id}/modifier`}
         csrf={page.csrf}
+        secteurImpose={page.user.secteur}
         sites={sites}
         parents={parents.map((p) => ({ id: p.id, name: p.name, siteName: p.site.name }))}
         natures={refs.natures}

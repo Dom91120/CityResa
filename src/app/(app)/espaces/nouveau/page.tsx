@@ -19,7 +19,7 @@ export default async function NouvelEspacePage({
   await requireEdit("espaces");
   const params = await searchParams;
   const siteParDefaut = Number.parseInt(param(params, "site") ?? "", 10) || null;
-  const [sites, refs, parents, saisons] = await Promise.all([
+  const [sites, refs, tousParents, saisons] = await Promise.all([
     sitesPourSelect(),
     referentielsEspaces(),
     prisma.espace.findMany({
@@ -29,6 +29,7 @@ export default async function NouvelEspacePage({
     }),
     saisonsPourFormulaire(null),
   ]);
+  const parents = tousParents.filter((p) => page.user.voitEspace(p.id));
   return (
     <>
       <EnteteForm
@@ -41,6 +42,7 @@ export default async function NouvelEspacePage({
         espace={null}
         action="/espaces/nouveau"
         csrf={page.csrf}
+        secteurImpose={page.user.secteur}
         sites={sites}
         parents={parents.map((p) => ({ id: p.id, name: p.name, siteName: p.site.name }))}
         natures={refs.natures}

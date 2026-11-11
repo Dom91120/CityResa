@@ -1,4 +1,4 @@
-import { lireSite, supprimerSite, verifierSlugSite } from "@/modules/sites/server";
+import { lireSite, siteAccessible, supprimerSite, verifierSlugSite } from "@/modules/sites/server";
 import { auditRecord } from "@/server/audit";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
@@ -20,13 +20,15 @@ export async function POST(
       try {
         if (p.action === "supprimer") {
           const user = await requireDelete("espaces");
+          // Supprimer ou désactiver un site touche tous ses espaces : il faut les voir tous.
+          if (!(await siteAccessible(user, id, true))) return pasTrouve();
           const message = await supprimerSite(id);
           await auditRecord("suppression site", `#${id}`, "espaces", user.email);
           return redirigerAvecMessage("/sites", message, "success");
         }
         const user = await requireEdit("espaces");
         const existant = await prisma.site.findUnique({ where: { id }, select: { id: true } });
-        if (!existant) return pasTrouve();
+        if (!existant || !(await siteAccessible(user, id))) return pasTrouve();
         const data = lireSite(form);
         await verifierSlugSite(data.slug, id);
         const site = await prisma.site.update({ where: { id }, data });

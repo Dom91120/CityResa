@@ -70,6 +70,10 @@ d'un espace ne se change pas tant que des rattachements le contredisent. À déf
 gestionnaire sur un espace, les notifications vont aux gestionnaires et administrateurs du
 secteur de l'espace ou transversaux.
 
+Le périmètre d'un agent s'applique aussi aux écrans **Espaces** et **Sites** : il ne voit, ne
+modifie et ne supprime que les espaces de son périmètre, ne crée que des espaces de son
+secteur, et ne voit que les sites qui portent au moins un de ses espaces (ou aucun espace).
+
 ---
 
 ## 3. Parcours en étapes

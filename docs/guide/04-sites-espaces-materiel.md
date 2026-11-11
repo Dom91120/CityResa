@@ -6,11 +6,11 @@ Ce chapitre explique comment décrire les lieux de la Ville (sites), ce qui s'y 
 
 **À quoi ça sert** — Un site est un lieu physique (bâtiment, complexe sportif, parc) qui regroupe un ou plusieurs espaces réservables. La liste donne une vue d'ensemble des lieux de la Ville.
 
-**Qui** — Tous les agents peuvent la consulter. La création et la modification demandent le droit d'écriture sur « Sites et espaces » (gestionnaires et agents par défaut) ; la suppression est réservée aux gestionnaires et administrateurs.
+**Qui** — Tous les agents peuvent la consulter, chacun dans son périmètre : un agent ne voit que les sites qui portent au moins un de ses espaces (ceux de son secteur, ou ceux auxquels il est rattaché), et n'y compte que ses espaces. Un site encore sans espace reste visible de tous ; un agent transversal voit tout. La création et la modification demandent le droit d'écriture sur « Sites et espaces » (gestionnaires et agents par défaut) ; la suppression est réservée aux gestionnaires et administrateurs, et n'est proposée que si l'on voit tous les espaces du site.
 
 ![Liste des sites](captures/sites.webp)
 
-*Figure — la liste des 13 sites de la Ville, avec leur vignette, leur adresse, le nombre d'espaces rattachés et leur état.*
+*Figure — la liste des sites vue par une gestionnaire du secteur Salles : ses 5 sites, avec leur vignette, leur adresse, le nombre d'espaces rattachés et leur état. La Ville en compte 13.*
 
 **Ce que l'on voit**
 
@@ -63,11 +63,11 @@ Ce chapitre explique comment décrire les lieux de la Ville (sites), ce qui s'y 
 
 **À quoi ça sert** — Un espace est ce qui se réserve réellement : salle, gymnase, dojo, terrain. La liste permet de retrouver un espace, de voir d'un coup d'œil qui peut le demander et qui le gère.
 
-**Qui** — Tous les agents en lecture ; création et modification avec le droit d'écriture sur « Sites et espaces ».
+**Qui** — Tous les agents en lecture, chacun dans son périmètre : la liste ne montre que les espaces de son secteur (ou ceux auxquels il est rattaché), et la fiche d'un autre espace lui est fermée, en lecture comme en modification. Un agent transversal voit tous les espaces. Création et modification avec le droit d'écriture sur « Sites et espaces » ; un agent d'un secteur ne crée et ne garde que des espaces de ce secteur.
 
 ![Liste des espaces](captures/espaces.webp)
 
-*Figure — les 16 espaces de la Ville avec leur nature et leur secteur, leur capacité, leur site, leur visibilité, leur statut et leur gestionnaire.*
+*Figure — la liste des espaces vue par une gestionnaire du secteur Salles : ses 8 salles avec leur nature et leur secteur, leur capacité, leur site, leur visibilité, leur statut et leur gestionnaire. La Ville compte 16 espaces.*
 
 **Ce que l'on voit**
 

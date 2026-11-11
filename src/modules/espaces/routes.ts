@@ -4,6 +4,7 @@
  * sous-ressource lit le champ `faire` (ajouter par défaut · modifier · supprimer).
  */
 import { champ, idOuNull, ids } from "@/lib/forms-util";
+import { libelleSecteur } from "@/lib/secteurs";
 import {
   ajouterGestionnaire,
   ajouterIndisponibilite,
@@ -44,6 +45,14 @@ export const ACTIONS_ESPACE = [
 ] as const;
 export type ActionEspace = (typeof ACTIONS_ESPACE)[number];
 
+/** Un agent d'un secteur ne crée et ne garde que des espaces de son secteur. */
+function verifierSecteurSaisi(user: CurrentUser, secteur: string): void {
+  if (user.secteur && secteur !== user.secteur)
+    throw new UserFacingError(
+      `Vous relevez du secteur ${libelleSecteur(user.secteur)} : l'espace doit rester dans ce secteur.`,
+    );
+}
+
 async function codesProfils(): Promise<string[]> {
   const rows = await prisma.referential.findMany({
     where: { kind: "profil", code: { not: null } },
@@ -56,6 +65,7 @@ export async function creer(form: FormData): Promise<Response> {
   const user = await requireEdit("espaces");
   try {
     const data = lireEspace(form, await codesProfils());
+    verifierSecteurSaisi(user, data.secteur);
     await verifierSlugEspace(data.slug, null);
     await verifierParent(data.parentId, null);
     const site = await prisma.site.findUnique({ where: { id: data.siteId }, select: { id: true } });
@@ -63,6 +73,11 @@ export async function creer(form: FormData): Promise<Response> {
     const saisons = await saisonsPourFormulaire(null);
     const horairesSaisons = lireHorairesSaisonsForm(form, saisons);
     const e = await prisma.espace.create({ data });
+    // Un agent au périmètre nominatif garde la main sur l'espace qu'il vient de créer.
+    if (user.perimetreExplicite)
+      await prisma.espaceGestionnaire.create({
+        data: { espaceId: e.id, userId: user.id, role: "gestionnaire" },
+      });
     await enregistrerHorairesSaisons(e.id, horairesSaisons);
     await auditRecord("creation espace", e.name, "espaces", user.email);
     return redirigerAvecMessage(
@@ -79,6 +94,7 @@ export async function creer(form: FormData): Promise<Response> {
 
 async function modifier(user: CurrentUser, id: number, form: FormData): Promise<Response> {
   const data = lireEspace(form, await codesProfils());
+  verifierSecteurSaisi(user, data.secteur);
   await verifierSlugEspace(data.slug, id);
   await verifierParent(data.parentId, id);
   const horairesSaisons = lireHorairesSaisonsForm(form, await saisonsPourFormulaire(id));
@@ -190,13 +206,14 @@ export async function agir(id: number, action: ActionEspace, form: FormData): Pr
   try {
     if (action === "supprimer") {
       const user = await requireDelete("espaces");
+      if (!user.voitEspace(id)) return pasTrouve();
       const message = await supprimerEspace(id);
       await auditRecord("suppression espace", `#${id}`, "espaces", user.email);
       return redirigerAvecMessage("/espaces", message, "success");
     }
     const user = await requireEdit("espaces");
     const existant = await prisma.espace.findUnique({ where: { id }, select: { id: true } });
-    if (!existant) return pasTrouve();
+    if (!existant || !user.voitEspace(id)) return pasTrouve();
     if (action === "modifier") return await modifier(user, id, form);
     return await sousRessource(user, id, action, form);
   } catch (e) {

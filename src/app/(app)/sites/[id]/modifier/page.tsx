@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { EnteteForm, PiedForm } from "@/components/formulaire";
+import { siteAccessible } from "@/modules/sites/server";
 import { FormulaireSite } from "@/modules/sites/vues";
 import { prisma } from "@/server/db";
 import { idDeRoute, requireEdit } from "@/server/guards";
@@ -15,7 +16,7 @@ export default async function ModifierSitePage({ params }: { params: Promise<{ i
     where: { id },
     include: { _count: { select: { espaces: true } } },
   });
-  if (!site) notFound();
+  if (!site || !(await siteAccessible(page.user, id))) notFound();
   const peutSupprimer = page.user.canDelete("espaces");
   return (
     <>

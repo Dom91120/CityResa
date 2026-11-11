@@ -7,6 +7,7 @@ import {
   lireSecteur,
   rattachable,
   secteurDeduit,
+  siteVisible,
 } from "@/lib/secteurs";
 
 describe("lecture et libellé", () => {
@@ -48,6 +49,18 @@ describe("collègues dans « Mon équipe »", () => {
     expect(collegue(null, "salle")).toBe(true);
     expect(collegue(null, "sport")).toBe(true);
     expect(collegue(null, null)).toBe(true);
+  });
+});
+
+describe("visibilité d'un site", () => {
+  it("se voit dès qu'un de ses espaces est dans le périmètre", () => {
+    expect(siteVisible([1, 2], [2, 9])).toBe(true);
+    expect(siteVisible([1, 2], [8, 9])).toBe(false);
+  });
+
+  it("reste visible sans périmètre restreint, ou tant qu'il n'a aucun espace", () => {
+    expect(siteVisible([], [8, 9])).toBe(true);
+    expect(siteVisible([1, 2], [])).toBe(true);
   });
 });
 
