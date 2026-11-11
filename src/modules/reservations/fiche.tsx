@@ -145,7 +145,7 @@ function ServiceCreneauCell({
         <BoutonOuvrir
           cible={`modal-service-${creneauId}`}
           libelle="Personne de service"
-          icone="shield"
+          icone="user-plus"
           classe="btn-ghost btn-sm"
           sansTexte
         />
@@ -1300,7 +1300,7 @@ export function SectionEvenement({
                   action={`/reservations/${r.id}/creneaux/${c.id}/service`}
                   csrf={csrf}
                   bouton="Enregistrer"
-                  icone="shield"
+                  icone="user-plus"
                   formAttrs={{ "data-sur-place": `creneau-${c.id}` }}
                   aide="Épingler une personne sur ce créneau précis (état des lieux, événement) : elle est alors de service même sans vacation sur le site. Laissez vide pour s'en remettre aux vacations."
                 >
