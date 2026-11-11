@@ -15,14 +15,15 @@ Ce chapitre présente les écrans qui vous servent tous les jours, quel que soit
 - **La barre latérale** (à gauche) :
   - en haut, le logo et le nom de la collectivité (« Ville de Châtillon ») ; un clic ramène au tableau de bord ;
   - la rubrique **GÉNÉRAL** : Tableau de bord, Réservations, Planning, Campagnes, Sites, Espaces, Matériel, Messages, Usagers, Mon équipe, Paiements, Subventions, Valorisation, Statistiques. Une entrée n'apparaît que si votre rôle vous donne accès au domaine et si le module correspondant est activé ;
-  - des **pastilles chiffrées** à droite de certaines entrées : demandes à traiter (Réservations), messages non lus (Messages), fiches d'usager à valider (Usagers), factures à payer (Paiements), demandes de subvention à traiter (Subventions). Les pastilles vertes (Réservations, Messages) signalent ce qui demande une action rapide ;
+  - des **pastilles chiffrées** à droite de certaines entrées : demandes à traiter (Réservations), conversations à répondre (Messages), fiches d'usager à valider (Usagers), factures à payer (Paiements), demandes de subvention à traiter (Subventions). Les pastilles vertes (Réservations, Messages) signalent ce qui demande une action rapide ;
   - la rubrique **ADMINISTRATION**, visible uniquement par les administrateurs, repliable d'un clic sur son titre (voir le chapitre 9) ;
-  - en bas, **votre nom et votre rôle**. Un clic ouvre un menu : **Mon profil**, **Sécurité**, **Voir le portail** (ouvre le portail des usagers dans un nouvel onglet), **Thème clair / sombre**, **Déconnexion**.
+  - en bas, **votre nom et votre rôle**. Un clic ouvre un menu : **Mon profil** (identité, notifications, agenda, mot de passe et double authentification), **Thème clair / sombre**, **Déconnexion**.
 - **La barre du haut** :
   - à gauche, le titre de la page en cours ;
-  - le champ **Rechercher partout**, avec le rappel du raccourci **Ctrl K** ;
-  - le lien **Astuces** (voir 8.9) ;
+  - le champ **Rechercher partout**, avec le rappel du raccourci **Ctrl K** (plus large sur les grands écrans) ;
   - le lien **+ Nouvelle réservation**, présent seulement si vous avez le droit de créer des réservations ;
+  - le lien **Portail**, qui ouvre le portail des usagers dans un nouvel onglet (présent si le module Portail est activé) ;
+  - le lien **Astuces** (voir 8.9) ;
   - la **cloche** des notifications. Un point de couleur apparaît sur la cloche quand vous avez des notifications non lues.
 
 **Comment faire**
@@ -46,7 +47,7 @@ Ce chapitre présente les écrans qui vous servent tous les jours, quel que soit
 
 **Ce que l'on voit**
 
-- **En-tête** : le sélecteur **PÉRIODE** (ici « Ce mois-ci »), puis une phrase de synthèse : la date du jour et le nombre de demandes à traiter, de messages sans réponse et de signatures en attente (« rien d'urgent » s'il n'y a rien). À droite, les boutons **Exporter les données** et **Planning**.
+- **En-tête** : le sélecteur **PÉRIODE** (ici « Ce mois-ci »), puis une phrase de synthèse : la date du jour et le nombre de demandes à traiter, de conversations à répondre et de signatures en attente (« rien d'urgent » s'il n'y a rien). À droite, les boutons **Exporter les données** et **Planning**.
 - **Quatre cartes indicateurs** :
   - **Espaces en ligne** : espaces actifs et visibles sur le portail ;
   - **Demandes de réservation** : demandes déposées pendant la période ;
@@ -60,7 +61,7 @@ Ce chapitre présente les écrans qui vous servent tous les jours, quel que soit
 - **Notifications** : vos cinq dernières notifications, avec le nombre de non lues.
 - **À traiter** : les demandes en attente de décision, les plus anciennes en tête, avec l'intitulé, le numéro, la date de réception, l'espace et le demandeur. **Tout voir** ouvre la liste filtrée des demandes à traiter.
 - **Les 7 prochains jours** : les prochains créneaux réservés, avec l'espace, la date et l'heure. **Planning** ouvre le planning.
-- **En un coup d'œil** : le nombre de conventions à signer, de factures à encaisser, de messages sans réponse, et le rappel du compte connecté.
+- **En un coup d'œil** : le nombre de conventions à signer, de factures à encaisser, de conversations à répondre, et le rappel du compte connecté.
 - **Demandes et revenus sur 12 mois** : un graphique avec, en barres vertes, le nombre de demandes par mois et, en courbe bleue, les sommes encaissées (hors cautions). Le total encaissé sur la période est rappelé en haut à droite.
 
 **Comment faire**
@@ -113,7 +114,7 @@ Les alertes possibles, des plus urgentes (en rouge) aux simples informations :
 | Retenues sur caution à valider | Réservé aux administrateurs : retenue au-delà du seuil de double validation | Réservations, filtre caution |
 | Demandes sans réponse depuis plus de 7 jours | Demande à traiter ou en traitement depuis plus d'une semaine | Réservations à traiter |
 | Fiches d'usager à valider | Organisation inscrite mais pas encore validée | Usagers, filtre à valider |
-| Messages d'usager sans réponse | Message d'un usager non lu dans un fil de dossier | Messages |
+| Conversations à répondre | Fil de dossier où l'usager a écrit en dernier, sans réponse d'un agent | Messages |
 
 Les alertes liées à un module (pièces jointes, matériel, paiements, signature, subventions) disparaissent si ce module est désactivé.
 
@@ -129,7 +130,7 @@ Les alertes liées à un module (pièces jointes, matériel, paiements, signatur
 **Ce que l'on voit**
 
 - Les mêmes indicateurs, graphiques, alertes et le bloc **À traiter** (ici huit demandes, toutes les salles confondues, puisque l'élu n'est pas limité à certains espaces).
-- Dans la barre du haut, seuls **Rechercher partout**, **Astuces** et la cloche apparaissent : le lien **+ Nouvelle réservation** est absent, faute de droit d'écriture sur les réservations.
+- Dans la barre du haut, seuls **Rechercher partout**, **Portail**, **Astuces** et la cloche apparaissent : le lien **+ Nouvelle réservation** est absent, faute de droit d'écriture sur les réservations.
 - Le bloc **Notifications** indique « Aucune notification. » quand l'élu n'a rien reçu.
 
 **Comment faire**

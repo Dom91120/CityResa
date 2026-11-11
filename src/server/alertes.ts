@@ -4,6 +4,7 @@
  * correspondante ; elle n'est montrée qu'aux agents qui ont le droit de voir le domaine.
  */
 import { parseYmdUtc } from "@/lib/date-utc";
+import { libelleARepondre } from "@/lib/messages";
 import { STATUTS_OPTION } from "@/lib/options";
 import { addParisDays, parisMidnight, todayParisISO } from "@/lib/paris-time";
 import { etatValidite, type PieceJugee } from "@/lib/pieces";
@@ -13,6 +14,7 @@ import { prisma } from "@/server/db";
 import { allFlagsIn } from "@/server/features";
 import type { CurrentUser } from "@/server/guards";
 import { controlesEnRetard } from "@/server/materiel-stock";
+import { compterARepondre } from "@/server/messages-attente";
 import { nbCreneauxACouvrir } from "@/server/personnel";
 import { organisationsSansConvention } from "@/server/valorisation";
 
@@ -277,16 +279,14 @@ export async function alertes(
   }
 
   if (user.canView("messages")) {
-    const n = await prisma.message.count({
-      where: { readAt: null, authorKind: "usager", isInternal: false },
-    });
+    const n = await compterARepondre();
     if (n)
       out.push({
         cle: "messages",
         niveau: "info",
         icone: "message-circle",
-        titre: `${n} message${n > 1 ? "s" : ""} d'usager sans réponse`,
-        detail: "Fil de discussion d'un dossier.",
+        titre: libelleARepondre(n),
+        detail: "L'usager a écrit en dernier : un agent doit lui répondre.",
         nb: n,
         href: "/messages",
       });

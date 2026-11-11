@@ -13,6 +13,7 @@ import { prisma } from "@/server/db";
 import { backupDatabase } from "@/server/db-backup";
 import { TACHES as REGISTRE } from "@/server/jobs-registre";
 import { envoyerDepuisModele } from "@/server/mailer";
+import { compterARepondre } from "@/server/messages-attente";
 import { notifier, notifierAgents } from "@/server/notifications";
 import { envoyerPlanningsPersonnel } from "@/server/personnel";
 import { envoyerPlanningsHebdo } from "@/server/planning-hebdo";
@@ -175,7 +176,7 @@ async function digest(): Promise<Resultat> {
   const fin = addParisDays(debut, 1);
   const [a_traiter, messages, signatures, factures, aujourdhui] = await Promise.all([
     prisma.reservation.count({ where: { status: { in: ["a_traiter", "en_traitement"] } } }),
-    prisma.message.count({ where: { readAt: null, authorKind: "usager", isInternal: false } }),
+    compterARepondre(),
     prisma.reservation.count({ where: { status: "acceptee", signedAt: null } }),
     prisma.facture.count({ where: { status: "a_payer" } }),
     prisma.creneau.count({

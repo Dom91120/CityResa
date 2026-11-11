@@ -12,6 +12,8 @@ import {
   nomCourt,
   plageHoraire,
 } from "@/lib/libelles";
+import { libelleARepondre } from "@/lib/messages";
+
 import { PERIODES, periode, precedente } from "@/lib/periodes";
 import { alertes } from "@/server/alertes";
 import {
@@ -67,7 +69,7 @@ export default async function DashboardPage({
   const jourLong = dateLongue(now);
   const sousTitre = [
     kpi.a_traiter ? `${kpi.a_traiter} demande${kpi.a_traiter > 1 ? "s" : ""} à traiter` : null,
-    kpi.messages ? `${kpi.messages} message${kpi.messages > 1 ? "s" : ""} sans réponse` : null,
+    kpi.messages ? libelleARepondre(kpi.messages) : null,
     kpi.signatures
       ? `${kpi.signatures} signature${kpi.signatures > 1 ? "s" : ""} en attente`
       : null,
@@ -578,8 +580,8 @@ export default async function DashboardPage({
                 <strong className="ms-auto">{kpi.factures}</strong>
               </li>
               <li>
-                <Icone nom="message-circle" taille={16} classes="text-muted" /> Messages sans
-                réponse
+                <Icone nom="message-circle" taille={16} classes="text-muted" /> Conversations à
+                répondre
                 <strong className="ms-auto">{kpi.messages}</strong>
               </li>
               <li>

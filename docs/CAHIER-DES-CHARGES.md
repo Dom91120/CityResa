@@ -146,7 +146,7 @@ tant que le délai d'annulation est respecté ; flux ICS personnel de l'usager.
 
 ### Étape 9 — Statistiques et tableaux de bord
 
-Tableau de bord des agents (à traiter, messages sans réponse, conventions en attente,
+Tableau de bord des agents (à traiter, conversations à répondre, conventions en attente,
 factures à encaisser, réservations du jour), **bloc d'alertes** à compteurs cliquables vers la
 liste filtrée (pièces expirées ou à renouveler, factures échues, conventions non signées
 malgré la relance, demandes sans réponse depuis plus de sept jours, fiches à valider,
@@ -184,12 +184,19 @@ disposition gracieuses accordées aux associations, top organisations ; export *
   avec une note ; répétition hebdomadaire jusqu'à une date (hors jours fériés et vacances
   scolaires au choix), chaque occurrence étant une vacation propre (suppression d'une seule ou
   de la série à partir d'elle). Une même personne ne peut pas être de service deux fois sur des
-  horaires qui se recouvrent.
+  horaires qui se recouvrent. Une vacation est refusée pendant une absence (une répétition saute
+  seulement les dates d'absence), hors période de contrat, ou si la personne est déjà affectée à
+  un créneau d'un autre site ; hors de ses sites de rattachement ou de ses horaires de travail,
+  elle est enregistrée avec un avertissement.
 - **Couverture des créneaux** : chaque créneau d'un dossier accepté, signé ou confirmé est
   « couvert » (une ou plusieurs vacations du site, mises bout à bout, l'englobent), « partiel »
   (une vacation le touche sans tout couvrir) ou « à couvrir ». Depuis la fiche d'une
   réservation, on peut **épingler** une personne sur un créneau précis (état des lieux,
-  événement) : il est alors couvert même sans vacation.
+  événement) : il est alors couvert même sans vacation. Une affectation décidée à la main
+  (épinglage, validation d'une proposition avec un autre candidat) est refusée si la personne
+  n'est plus en service, est hors contrat, absente ou déjà sur un autre site au même moment ;
+  hors de ses sites ou de ses horaires de travail, elle passe avec un avertissement. Les
+  vacations d'une personne absente ne comptent pas dans la couverture.
 - **Planning de service** : semaine ou jour, une ligne par personne et une ligne « À couvrir »
   avec les créneaux réservés et leur état ; filtres site et personne ; onglet « À couvrir » ;
   PDF de la semaine (une page par site, créneaux à couvrir hachurés) ; alerte du tableau de bord
@@ -206,13 +213,14 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 - **Absences** : périodes datées (journées entières ou plage horaire) avec un motif du référentiel
   (congés annuels, RTT, maladie, formation, récupération, autre) et une note ; une absence retire
   la personne des créneaux où elle était affectée ou proposée sur la période, qui repassent en
-  affectation.
+  affectation, de même que les créneaux que ses vacations couvraient.
 - **Sites d'intervention** : chaque personne est rattachée à un ou plusieurs sites, dont un
   principal ; elle n'est jamais proposée ailleurs.
 - **Disponibilité** d'une personne sur un créneau : en service, rattachée au site, en période de
   contrat, en poste d'après son cycle, pas absente, pas déjà affectée au même moment sur un autre
   site (plusieurs créneaux d'un même site sont compatibles). Les candidats sont classés : site
-  principal d'abord, puis la plus faible charge déjà affectée sur la semaine (équité), puis le nom.
+  principal d'abord, puis la plus faible charge déjà affectée sur la semaine entière du créneau
+  (équité), puis le nom.
 - **Affectation** : sur un site en **affectation automatique** (réglage de la fiche du site), la
   première personne disponible est épinglée d'office et le dossier garde la trace dans son
   historique ; sinon elle est **proposée** et le gestionnaire valide (ou choisit un autre candidat,
@@ -228,7 +236,7 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 
 - Site : nom, description, adresse, code postal, ville, latitude / longitude, téléphone,
   courriel, informations d'accès, photos.
-- Espace : nature (référentiel), description, capacités debout / assise, surface, étage,
+- Espace : nature (référentiel), secteur (salles ou sports, pour les sélections et les statistiques), description, capacités debout / assise, surface, étage,
   couleur, visibilité publique, profils autorisés, validation requise ou confirmation
   automatique, horaires d'ouverture par jour (plusieurs plages, fermeture possible à minuit),
   pas de saisie, durée minimale / maximale, délai minimal et horizon, temps de montage et
@@ -270,7 +278,8 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 
 - Fil de discussion par dossier, usager ↔ agents, notes internes invisibles de l'usager,
   marquage lu / non lu, notification et courriel à l'autre partie, boîte « Messages » des
-  agents (sans réponse), « Mes messages » côté portail.
+  agents (conversations à répondre : l'usager a écrit en dernier, qu'un agent ait lu ou non),
+  « Mes messages » côté portail.
 
 ### Documents (pièces jointes)
 

@@ -146,14 +146,14 @@ Ce chapitre présente le fichier des usagers (organisations et leurs comptes), l
 
 ![Boîte des messages](captures/messages.webp)
 
-*Figure — la boîte des messages : 3 messages d'usagers sans réponse dans 3 dossiers, sur 6 fils de discussion.*
+*Figure — la boîte des messages : 4 conversations à répondre sur 6 fils de discussion, dont 2 messages encore non lus.*
 
 **Ce que l'on voit**
 
-- Le résumé « 3 messages d'usagers sans réponse, dans 3 dossiers » et le bouton **Tout marquer lu**.
-- Les onglets **Non lus** et **Tous**, et une recherche par numéro, titre, organisation ou espace.
+- Le résumé « 4 conversations à répondre : l'usager a écrit en dernier. 2 messages non lus. » et le bouton **Tout marquer lu**.
+- Les onglets **À répondre** et **Tous**, et une recherche par numéro, titre, organisation ou espace.
 - Pour chaque fil : le dossier (numéro, objet, espace, date et statut), le dernier message (auteur, type d'usager, pastille « 1 non lu », début du texte), la date et le nombre de messages.
-- Le bouton **Répondre** (vert) pour un fil qui contient des messages non lus, **Ouvrir** pour les autres.
+- Le bouton **Répondre** (vert, ligne en gras) pour une conversation où l'usager a écrit en dernier, **Ouvrir** pour les autres.
 
 **Comment faire — répondre à un usager**
 
@@ -170,8 +170,9 @@ Ce chapitre présente le fichier des usagers (organisations et leurs comptes), l
 
 **Règles à connaître**
 
-- Seuls les messages écrits par les usagers comptent comme « non lus ».
-- **Tout marquer lu** marque lus tous les messages d'usagers de votre périmètre, après confirmation.
+- Une conversation est **à répondre** tant que le dernier message échangé vient de l'usager. Lire le message ne suffit pas : elle n'en sort que lorsqu'un agent répond à l'usager. Une note interne ne compte pas comme une réponse.
+- La pastille « non lu » indique seulement les messages d'usager que personne n'a encore ouverts. **Tout marquer lu** les marque lus, après confirmation, sans changer les conversations à répondre.
+- Le même décompte alimente la pastille de **Messages** dans le menu, l'alerte et la ligne « Conversations à répondre » du tableau de bord, et le récapitulatif quotidien.
 
 > **Astuce** — Utilisez les notes internes pour passer le relais à un collègue (« attestation reçue par courrier, à scanner ») : elles restent attachées au dossier.
 

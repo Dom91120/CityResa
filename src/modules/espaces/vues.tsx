@@ -14,7 +14,7 @@ import {
 import { Icone } from "@/components/icones";
 import { Avatar, Chip } from "@/components/macros";
 import type { Espace, Referential } from "@/generated/prisma/client";
-import { COULEURS_ESPACE, ESPACE_STATUS, JOURS_ISO } from "@/lib/constantes";
+import { COULEURS_ESPACE, ESPACE_SECTEURS, ESPACE_STATUS, JOURS_ISO } from "@/lib/constantes";
 import { HORAIRES_DEFAUT, lireHoraires } from "@/lib/creneaux";
 import type { SaisonHoraires } from "@/server/horaires";
 
@@ -366,6 +366,14 @@ export function FormulaireEspace({
             options={natures.map((n) => [String(n.id), n.label])}
             valeur={espace?.natureId}
             blank="— Non précisée —"
+          />
+          <Select
+            label="Secteur"
+            name="secteur"
+            options={Object.entries(ESPACE_SECTEURS).map(([k, v]) => [k, v.label])}
+            valeur={espace?.secteur ?? "salle"}
+            requis
+            aide="Sert aux sélections et aux statistiques ; sans effet sur les règles de réservation."
           />
           <Select
             label="Site"

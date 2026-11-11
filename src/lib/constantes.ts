@@ -348,6 +348,11 @@ export const ESPACE_STATUS: Record<string, { label: string; teinte: string }> = 
   inactif: { label: "Inactif", teinte: "slate" },
   maintenance: { label: "En travaux", teinte: "amber" },
 };
+/** Le secteur d'un espace : une information de sélection et de statistiques, sans effet sur les règles. */
+export const ESPACE_SECTEURS: Record<string, { label: string; teinte: string }> = {
+  salle: { label: "Salles", teinte: "violet" },
+  sport: { label: "Sports", teinte: "sky" },
+};
 export const JOURS_ISO: { iso: number; court: string; long: string }[] = [
   { iso: 1, court: "Lun.", long: "Lundi" },
   { iso: 2, court: "Mar.", long: "Mardi" },

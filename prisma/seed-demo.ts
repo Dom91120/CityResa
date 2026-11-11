@@ -237,7 +237,7 @@ const PHOTOS_REELLES: Record<string, { fichier: string; titre: string }[]> = {
     { fichier: "espace-sablons-2.jpg", titre: "Côté mezzanine" },
     { fichier: "espace-sablons-3.jpg", titre: "Côté baies vitrées" },
   ],
-  "site:henri-matisse": [{ fichier: "espace-henri-matisse-1.jpg", titre: "La salle" }],
+  "site:henri-matisse": [{ fichier: "site-henri-matisse-1.jpg", titre: "" }],
   "espace:henri-matisse": [
     { fichier: "espace-henri-matisse-1.jpg", titre: "Vue d'ensemble" },
     { fichier: "espace-henri-matisse-2.jpg", titre: "Deuxième salle" },
@@ -2456,7 +2456,7 @@ async function creerSitesEtEspaces(): Promise<{
         parentId: site.id,
         fichier: { nom: p.nom, mime: "image/jpeg", octets: p.octets },
         docKind: "photo",
-        title: p.titre,
+        title: p.titre || null,
         isPublic: true,
       });
       compter("photos");
@@ -2485,6 +2485,9 @@ async function creerSitesEtEspaces(): Promise<{
               : null,
         slug: slug(e.name),
         natureId: refOuNull("espace_nature", e.nature),
+        secteur: ["Gymnase", "Stade / terrain", "Piscine", "Dojo"].includes(e.nature ?? "")
+          ? "sport"
+          : "salle",
         description: e.description,
         capacityStanding: e.standing ?? null,
         capacitySeated: e.seated ?? null,
@@ -2561,7 +2564,7 @@ async function creerSitesEtEspaces(): Promise<{
         parentId: row.id,
         fichier: { nom: p.nom, mime: "image/jpeg", octets: p.octets },
         docKind: "photo",
-        title: p.titre,
+        title: p.titre || null,
         isPublic: true,
       });
       compter("photos");

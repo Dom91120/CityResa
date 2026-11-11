@@ -16,6 +16,7 @@ import {
   lireDemande,
   lireEcheanceOption,
 } from "@/modules/reservations/formulaire";
+import { epingler } from "@/server/affectation";
 import { auditRecord } from "@/server/audit";
 import { courrielAvenantASigner, libelleAvenant, signerAvenantPapier } from "@/server/avenant";
 import {
@@ -38,7 +39,6 @@ import { notifierLiberation } from "@/server/liste-attente";
 import { retournerMateriel, sortirMateriel } from "@/server/materiel-stock";
 import { invalidateNavCounts } from "@/server/nav";
 import { notifier } from "@/server/notifications";
-import { epingler } from "@/server/personnel";
 import { requisitionner } from "@/server/priorite";
 import {
   ajouterMessage,
@@ -340,14 +340,14 @@ async function serviceCreneau(
   const c = r.creneaux.find((x) => x.id === cid);
   if (!c) return pasTrouve();
   if (c.status !== "prevu") throw new UserFacingError("Ce créneau est annulé.");
-  const message = await epingler(cid, idOuNull(form, "personnel_id"));
+  const { message, niveau } = await epingler(cid, idOuNull(form, "personnel_id"));
   await auditRecord(
     "service creneau",
     `${r.numero} · ${plage(c.startAt, c.endAt)} · ${message}`,
     "personnel",
     user.email,
   );
-  return redirigerAvecMessage(`${fiche}#creneau-${cid}`, message, "success");
+  return redirigerAvecMessage(`${fiche}#creneau-${cid}`, message, niveau);
 }
 
 /**

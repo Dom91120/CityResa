@@ -313,7 +313,7 @@ export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
     key: "digest_agents",
     label: "Récapitulatif quotidien (agents)",
     subject: "CityRésa · {{date}} : {{nb_a_traiter}} demande(s) à traiter",
-    body: '<p>Bonjour,</p><p>Au {{date}} :</p><ul><li>{{nb_a_traiter}} demande(s) à traiter</li><li>{{nb_messages}} message(s) sans réponse</li><li>{{nb_signatures}} convention(s) en attente de signature</li><li>{{nb_factures}} facture(s) à encaisser</li><li>{{nb_aujourdhui}} réservation(s) aujourd\'hui</li></ul><p><a href="{{lien}}">Ouvrir le tableau de bord</a></p>',
+    body: '<p>Bonjour,</p><p>Au {{date}} :</p><ul><li>{{nb_a_traiter}} demande(s) à traiter</li><li>{{nb_messages}} conversation(s) à répondre</li><li>{{nb_signatures}} convention(s) en attente de signature</li><li>{{nb_factures}} facture(s) à encaisser</li><li>{{nb_aujourdhui}} réservation(s) aujourd\'hui</li></ul><p><a href="{{lien}}">Ouvrir le tableau de bord</a></p>',
     aide: "Envoyé chaque matin aux agents qui ont choisi de le recevoir.",
   },
   {
@@ -394,6 +394,12 @@ export function versTexte(html: string): string {
  * modifié par la collectivité est laissé tel quel.
  */
 export const EMAIL_TEMPLATE_ANCIENS: Record<string, { subject: string; body: string }[]> = {
+  digest_agents: [
+    {
+      subject: "CityRésa · {{date}} : {{nb_a_traiter}} demande(s) à traiter",
+      body: '<p>Bonjour,</p><p>Au {{date}} :</p><ul><li>{{nb_a_traiter}} demande(s) à traiter</li><li>{{nb_messages}} message(s) sans réponse</li><li>{{nb_signatures}} convention(s) en attente de signature</li><li>{{nb_factures}} facture(s) à encaisser</li><li>{{nb_aujourdhui}} réservation(s) aujourd\'hui</li></ul><p><a href="{{lien}}">Ouvrir le tableau de bord</a></p>',
+    },
+  ],
   subvention_recue: [
     {
       subject: "Votre demande de subvention {{numero}} est enregistrée",
