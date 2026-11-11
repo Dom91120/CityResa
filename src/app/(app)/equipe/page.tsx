@@ -2,8 +2,9 @@ import { BoutonOuvrir, ModalAction } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { Barre, Vide } from "@/components/liste";
 import { Avatar, Chip } from "@/components/macros";
-import { ROLE_LABELS } from "@/lib/constantes";
+import { ROLE_LABELS, SECTEURS } from "@/lib/constantes";
 import { depuis } from "@/lib/libelles";
+import { collegue, libelleSecteur, rattachable } from "@/lib/secteurs";
 import { nomComplet } from "@/modules/utilisateurs/server";
 import { prisma } from "@/server/db";
 import { contexteModule } from "@/server/module";
@@ -42,7 +43,12 @@ export default async function EquipePage({
     prisma.role.findMany({ where: { isUsager: false } }),
     prisma.espace.findMany({
       where: { isActive: true },
-      select: { id: true, name: true, site: { select: { id: true, name: true, position: true } } },
+      select: {
+        id: true,
+        name: true,
+        secteur: true,
+        site: { select: { id: true, name: true, position: true } },
+      },
       orderBy: [
         { site: { position: "asc" } },
         { site: { name: "asc" } },
@@ -52,24 +58,40 @@ export default async function EquipePage({
     }),
   ]);
   const libelleRole = Object.fromEntries(roles.map((r) => [r.name, r.label]));
-  const enrichis = agents.map((a) => ({ ...a, nom: nomComplet(a) }));
-  const rows = textSearch(enrichis, q, ["nom", "email", "fonction", "role"]);
+  const rolesAdmin = new Set(roles.filter((r) => r.isAdmin).map((r) => r.name));
+  const moi = page.user.secteur;
+  // L'équipe : les collègues du même secteur et les agents transversaux, sans les
+  // administrateurs (leurs comptes se gèrent dans Administration › Utilisateurs).
+  const equipe = agents.filter((a) => !rolesAdmin.has(a.role) && collegue(moi, a.secteur));
+  const enrichis = equipe.map((a) => ({
+    ...a,
+    nom: nomComplet(a),
+    secteurNom: libelleSecteur(a.secteur),
+  }));
+  const rows = textSearch(enrichis, q, ["nom", "email", "fonction", "role", "secteurNom"]);
   const peutEditer = page.user.canEdit("equipe");
-  const parSite = new Map<string, typeof espaces>();
-  for (const e of espaces) {
-    const liste = parSite.get(e.site.name) ?? [];
-    liste.push(e);
-    parSite.set(e.site.name, liste);
-  }
+  /** Les espaces proposables à un agent : de son secteur, et de celui de qui répartit. */
+  const espacesPour = (secteurAgent: string | null) => {
+    const parSite = new Map<string, typeof espaces>();
+    for (const e of espaces) {
+      if (!rattachable(secteurAgent, e.secteur) || !rattachable(moi, e.secteur)) continue;
+      const liste = parSite.get(e.site.name) ?? [];
+      liste.push(e);
+      parSite.set(e.site.name, liste);
+    }
+    return parSite;
+  };
   return (
     <>
       <div className="page-header">
         <div>
           <h1 className="page-title">
-            Mon équipe <span className="page-count">{agents.length}</span>
+            Mon équipe <span className="page-count">{equipe.length}</span>
           </h1>
           <p className="page-subtitle">
-            Les agents de la collectivité et les espaces dont chacun a la charge.
+            {moi
+              ? `Les agents du secteur ${libelleSecteur(moi)} et les agents transversaux, avec les espaces dont chacun a la charge.`
+              : "Les agents de la collectivité et les espaces dont chacun a la charge."}
           </p>
         </div>
         <div className="page-actions">
@@ -84,15 +106,16 @@ export default async function EquipePage({
         q={q}
         pathname={page.pathname}
         search={page.search}
-        placeholder="Nom, courriel, fonction…"
+        placeholder="Nom, courriel, fonction, secteur…"
       />
       <div className="data-card">
         <div className="table-responsive">
-          <table className="table table-hover align-middle mb-0">
+          <table className="table table-hover align-middle mb-0 table-compacte">
             <thead>
               <tr>
                 <th>Agent</th>
                 <th>Rôle</th>
+                <th>Secteur</th>
                 <th>Espaces gérés</th>
                 <th>Contact</th>
                 <th>Dernière connexion</th>
@@ -119,7 +142,13 @@ export default async function EquipePage({
                             ) : (
                               <strong>{a.nom}</strong>
                             )}
-                            <small>{a.fonction ?? ""}</small>
+                            <small
+                              className="text-truncate"
+                              style={{ maxWidth: 360 }}
+                              title={a.fonction ?? undefined}
+                            >
+                              {a.fonction ?? ""}
+                            </small>
                           </span>
                         </span>
                       </td>
@@ -127,6 +156,20 @@ export default async function EquipePage({
                         <Chip teinte={a.role === "admin" ? "rose" : "sky"}>
                           {libelleRole[a.role] ?? ROLE_LABELS[a.role] ?? a.role}
                         </Chip>
+                      </td>
+                      <td>
+                        {a.secteur ? (
+                          <Chip teinte={SECTEURS[a.secteur]?.teinte ?? "slate"}>
+                            {a.secteurNom}
+                          </Chip>
+                        ) : (
+                          <span
+                            className="text-faint small"
+                            title="Aucun secteur : rattachable à tous les espaces"
+                          >
+                            Transversal
+                          </span>
+                        )}
                       </td>
                       <td>
                         {a.espaces.length ? (
@@ -137,9 +180,13 @@ export default async function EquipePage({
                         ) : (
                           <span
                             className="text-faint small"
-                            title="Aucun périmètre : tous les espaces"
+                            title={
+                              a.secteur
+                                ? `Aucun rattachement : tous les espaces du secteur ${a.secteurNom}`
+                                : "Aucun périmètre : tous les espaces"
+                            }
                           >
-                            Tous
+                            {a.secteur ? `Tous · ${a.secteurNom}` : "Tous"}
                           </span>
                         )}
                       </td>
@@ -166,7 +213,8 @@ export default async function EquipePage({
                               cible={`modal-espaces-${a.id}`}
                               libelle="Espaces gérés"
                               icone="door-open"
-                              classe="btn-outline-secondary btn-sm"
+                              classe="btn-ghost btn-sm"
+                              sansTexte
                             />
                           </div>
                         </td>
@@ -176,7 +224,7 @@ export default async function EquipePage({
                 })
               ) : (
                 <Vide
-                  colonnes={peutEditer ? 7 : 6}
+                  colonnes={peutEditer ? 8 : 7}
                   icone="contact-round"
                   message={q ? "Aucun agent ne correspond." : "Aucun agent pour le moment."}
                   urlAjout={page.user.isAdmin && !q ? "/utilisateurs/nouveau" : null}
@@ -192,6 +240,7 @@ export default async function EquipePage({
         ? rows.map((a) => {
             const coches = new Set(a.espaces.map((g) => g.espace.id));
             const roleActuel = a.espaces[0]?.role ?? "gestionnaire";
+            const parSite = espacesPour(a.secteur);
             return (
               <ModalAction
                 key={a.id}
@@ -200,7 +249,11 @@ export default async function EquipePage({
                 action={`/equipe/${a.id}/espaces`}
                 csrf={page.csrf}
                 taille="lg"
-                aide="Aucune case cochée = l'agent voit et traite tous les espaces (selon son rôle). Cochez des espaces pour restreindre son périmètre ou le notifier."
+                aide={
+                  a.secteur
+                    ? `Secteur ${a.secteurNom} : seuls ses espaces sont proposés. Aucune case cochée = l'agent voit et traite tous les espaces de ce secteur (selon son rôle).`
+                    : "Agent transversal. Aucune case cochée = l'agent voit et traite tous les espaces (selon son rôle). Cochez des espaces pour restreindre son périmètre ou le notifier."
+                }
               >
                 <div className="mb-3">
                   <label className="form-label" htmlFor={`role-${a.id}`}>
@@ -219,7 +272,7 @@ export default async function EquipePage({
                     ))}
                   </select>
                 </div>
-                {espaces.length ? (
+                {parSite.size ? (
                   [...parSite.entries()].map(([site, liste]) => (
                     <div key={site} className="mb-3">
                       <div className="form-label">{site}</div>
@@ -239,7 +292,7 @@ export default async function EquipePage({
                     </div>
                   ))
                 ) : (
-                  <p className="text-muted small">Aucun espace actif.</p>
+                  <p className="text-muted small">Aucun espace actif à proposer.</p>
                 )}
               </ModalAction>
             );

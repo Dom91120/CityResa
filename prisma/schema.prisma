@@ -42,6 +42,9 @@ model User {
   kind String @default("usager") @db.VarChar(10)
   /// Nom du rôle (table role) : admin, gestionnaire, lecteur, elu, usager.
   role String @default("usager") @db.VarChar(30)
+  /// Secteur d'un agent (salle | sport) ; null = transversal. Un agent d'un secteur ne se
+  /// rattache qu'aux espaces de ce secteur, et sans rattachement son périmètre est son secteur.
+  secteur String? @db.VarChar(8)
   organisationId Int?          @map("organisation_id")
   organisation   Organisation? @relation(fields: [organisationId], references: [id])
   /// Un usager peut être désactivé (compte fermé) sans perdre son historique.
@@ -290,7 +293,7 @@ model Espace {
   slug        String       @unique @db.VarChar(140)
   natureId    Int?         @map("nature_id")
   nature      Referential? @relation("EspaceNature", fields: [natureId], references: [id])
-  /// salle | sport : une information de sélection et de statistiques, sans effet sur les règles.
+  /// salle | sport : sélections et statistiques, et périmètre des agents du même secteur.
   secteur     String       @default("salle") @db.VarChar(8)
   description String?
   /// Capacité debout / assis, surface en m², étage.

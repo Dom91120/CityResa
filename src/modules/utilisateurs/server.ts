@@ -7,6 +7,7 @@ import { randomInt } from "node:crypto";
 import { headers } from "next/headers";
 import type { Role } from "@/generated/prisma/client";
 import { champ, champOuNull, emailValide } from "@/lib/forms-util";
+import { espacesHorsSecteur, libelleSecteur } from "@/lib/secteurs";
 import { poserMotDePasse } from "@/server/amorcage";
 import { auditRecord } from "@/server/audit";
 import { auth } from "@/server/auth";
@@ -76,7 +77,7 @@ export async function rolesAgents(): Promise<Role[]> {
 
 /** Crée un compte agent avec un mot de passe provisoire ; envoie le courriel de bienvenue. */
 export async function creerAgent(
-  e: Identite & { email: string; role: string },
+  e: Identite & { email: string; role: string; secteur?: string | null },
   acteur: string,
 ): Promise<{ id: string; motDePasse: string }> {
   const role = await prisma.role.findUnique({ where: { name: e.role } });
@@ -92,6 +93,7 @@ export async function creerAgent(
       fonction: e.fonction,
       kind: "agent",
       role: role.name,
+      secteur: e.secteur ?? null,
     },
   });
   await poserMotDePasse(u.id, motDePasse);
@@ -135,6 +137,26 @@ export async function donneesLiees(userId: string): Promise<{ label: string; n: 
     { label: "avis sur subvention", n: avis },
     { label: "paiement(s) enregistré(s)", n: paiements },
   ].filter((x) => x.n > 0);
+}
+
+/**
+ * Refuse de donner un secteur à un agent rattaché à des espaces d'un autre secteur : il faut
+ * d'abord retirer ces rattachements (Mon équipe, ou l'onglet Gestionnaires de l'espace).
+ */
+export async function verifierSecteurAgent(userId: string, secteur: string | null): Promise<void> {
+  if (!secteur) return;
+  const rattachements = await prisma.espaceGestionnaire.findMany({
+    where: { userId },
+    select: { espace: { select: { name: true, secteur: true } } },
+  });
+  const genants = espacesHorsSecteur(
+    secteur,
+    rattachements.map((r) => r.espace),
+  );
+  if (genants.length)
+    throw new UserFacingError(
+      `Secteur « ${libelleSecteur(secteur)} » impossible : ce compte est rattaché à ${genants.length} espace${genants.length > 1 ? "s" : ""} d'un autre secteur (${genants.map((e) => e.name).join(", ")}). Retirez d'abord ces rattachements.`,
+    );
 }
 
 /** Les espaces gérés par un agent, avec leur site. */

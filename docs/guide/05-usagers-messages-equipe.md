@@ -178,23 +178,23 @@ Ce chapitre présente le fichier des usagers (organisations et leurs comptes), l
 
 ## 5.7 Mon équipe
 
-**À quoi ça sert** — Voir les agents de la collectivité et répartir les espaces entre eux : chacun traite les demandes et reçoit les messages des espaces dont il a la charge.
+**À quoi ça sert** — Voir les agents de son équipe et répartir les espaces entre eux : chacun traite les demandes et reçoit les messages des espaces dont il a la charge. L'équipe d'un agent, ce sont les collègues de son **secteur** (Salles ou Sports) et les agents **transversaux**, qui n'ont pas de secteur (élu, financier…). Un agent transversal voit tous les agents. Les administrateurs n'y figurent pas : leurs comptes se gèrent dans Administration › Utilisateurs.
 
 **Qui** — Tous les agents en lecture ; la répartition des espaces demande le droit d'écriture sur « Mon équipe » (gestionnaires par défaut). L'invitation d'un nouvel agent est réservée aux administrateurs (bouton **Inviter un agent**).
 
 ![Mon équipe](captures/equipe.webp)
 
-*Figure — les 5 agents de la collectivité avec leur rôle, le nombre d'espaces gérés, leur contact, leur dernière connexion et leur statut.*
+*Figure — l'équipe vue par Sophie Martin, du secteur Salles : elle-même et un agent transversal, avec leur rôle, leur secteur, les espaces gérés, leur contact, leur dernière connexion et leur statut.*
 
 **Ce que l'on voit**
 
 - Une recherche par nom, courriel ou fonction.
-- Pour chaque agent : son nom et sa fonction, son **Rôle** (Agent, Administrateur, Élu, Gestionnaire…), ses **Espaces gérés** (« 8 espaces » ; survolez la pastille pour voir la liste, ou **Tous** s'il n'est rattaché à aucun espace), son contact, sa **Dernière connexion** et son **Statut**.
-- En bout de ligne, le bouton **Espaces gérés** pour modifier son rattachement.
+- Pour chaque agent : son nom et sa fonction, son **Rôle** (Agent, Élu, Gestionnaire…), son **Secteur** (Salles, Sports ou **Transversal**), ses **Espaces gérés** (« 8 espaces » ; survolez la pastille pour voir la liste ; **Tous · Sports** s'il n'est rattaché à aucun espace de son secteur, ou **Tous** pour un agent transversal sans rattachement), son contact, sa **Dernière connexion** et son **Statut**.
+- En bout de ligne, l'icône de porte (**Espaces gérés**) pour modifier son rattachement.
 
 **Comment faire — rattacher un agent à des espaces**
 
-1. Cliquez sur **Espaces gérés** sur la ligne de l'agent.
+1. Cliquez sur l'icône de porte (**Espaces gérés**) au bout de la ligne de l'agent.
 2. Choisissez son **Rôle sur ces espaces** :
    - **Gestionnaire** : décide sur les demandes ;
    - **Lecteur** : consulte seulement ;
@@ -204,7 +204,9 @@ Ce chapitre présente le fichier des usagers (organisations et leurs comptes), l
 
 **Règles à connaître**
 
-- Aucune case cochée = l'agent voit et traite **tous** les espaces, dans la limite des droits de son rôle.
+- Un agent d'un secteur ne peut être rattaché qu'aux espaces de ce secteur : la fenêtre ne propose que ceux-là. Un agent transversal peut être rattaché partout.
+- Aucune case cochée = l'agent voit et traite **tous les espaces de son secteur** (tous les espaces s'il est transversal), dans la limite des droits de son rôle.
+- Si vous avez vous-même un secteur, vous ne répartissez que les espaces de ce secteur, entre vos collègues ; les rattachements d'un agent transversal dans l'autre secteur ne sont ni affichés ni modifiés.
 - Cocher des espaces restreint son périmètre : listes de réservations, planning et messages ne montrent plus que ces espaces.
 - Le même rattachement se règle espace par espace dans l'onglet **Gestionnaires** de la fiche d'un espace (chapitre 4).
-- Le rôle général d'un agent (Gestionnaire, Agent, Financier, Élu, Lecteur, Administrateur) fixe ses droits par catégorie ; il se modifie dans Administration › Utilisateurs.
+- Le rôle général d'un agent (Gestionnaire, Agent, Financier, Élu, Lecteur, Administrateur) fixe ses droits par catégorie ; son secteur fixe son équipe et ses espaces. Les deux se modifient dans Administration › Utilisateurs.

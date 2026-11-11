@@ -20,6 +20,7 @@ import {
   supprimerOption,
   supprimerTarif,
   verifierParent,
+  verifierSecteurEspace,
   verifierSlugEspace,
 } from "@/modules/espaces/server";
 import { auditRecord } from "@/server/audit";
@@ -81,6 +82,7 @@ async function modifier(user: CurrentUser, id: number, form: FormData): Promise<
   await verifierSlugEspace(data.slug, id);
   await verifierParent(data.parentId, id);
   const horairesSaisons = lireHorairesSaisonsForm(form, await saisonsPourFormulaire(id));
+  await verifierSecteurEspace(id, data.secteur);
   const e = await prisma.espace.update({ where: { id }, data });
   await enregistrerHorairesSaisons(id, horairesSaisons);
   await auditRecord("modification espace", e.name, "espaces", user.email);

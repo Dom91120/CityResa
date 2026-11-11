@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Champ, EnteteForm, Grille, PiedForm, SectionForm, Select } from "@/components/formulaire";
+import { SECTEURS } from "@/lib/constantes";
 import { contexteAdmin } from "@/modules/admin/server";
 import { nomComplet, rolesAgents } from "@/modules/utilisateurs/server";
 import { prisma } from "@/server/db";
@@ -66,6 +67,14 @@ export default async function ModifierUtilisateurPage({
                 valeur={u.role}
                 requis
                 attrs={soiMeme ? { disabled: true } : undefined}
+              />
+              <Select
+                label="Secteur"
+                name="secteur"
+                options={Object.entries(SECTEURS).map(([k, v]) => [k, v.label])}
+                valeur={u.secteur}
+                blank="— Aucun (transversal) —"
+                aide="Un agent d'un secteur ne se rattache qu'aux espaces de ce secteur et, sans rattachement, les voit tous. Aucun = transversal (administrateur, financier, élu) : tous les espaces."
               />
             </Grille>
           </SectionForm>

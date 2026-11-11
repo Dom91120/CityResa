@@ -1,4 +1,5 @@
 import { champ } from "@/lib/forms-util";
+import { lireSecteur } from "@/lib/secteurs";
 import { messageMotDePasse } from "@/modules/usagers/server";
 import { creerAgent, lireEmailLibre, lireIdentite } from "@/modules/utilisateurs/server";
 import { UserFacingError } from "@/server/errors";
@@ -15,7 +16,12 @@ export async function POST(req: Request) {
         const ident = lireIdentite(form);
         const email = await lireEmailLibre(form);
         const { id, motDePasse } = await creerAgent(
-          { ...ident, email, role: champ(form, "role") },
+          {
+            ...ident,
+            email,
+            role: champ(form, "role"),
+            secteur: lireSecteur(champ(form, "secteur")),
+          },
           user.email,
         );
         return redirigerAvecMessage(

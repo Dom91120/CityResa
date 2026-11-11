@@ -1,5 +1,6 @@
 import { champ } from "@/lib/forms-util";
-import { lireEmailLibre, lireIdentite } from "@/modules/utilisateurs/server";
+import { lireSecteur } from "@/lib/secteurs";
+import { lireEmailLibre, lireIdentite, verifierSecteurAgent } from "@/modules/utilisateurs/server";
 import { auditRecord } from "@/server/audit";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
@@ -24,10 +25,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         if (!r || r.isUsager) throw new UserFacingError("Choisissez un rôle valide.");
         role = r.name;
       }
+      // Le secteur ne concerne que les agents ; il ne peut pas contredire leurs rattachements.
+      const secteur = u.kind === "agent" ? lireSecteur(champ(form, "secteur")) : null;
+      if (secteur !== u.secteur) await verifierSecteurAgent(id, secteur);
       await prisma.user.update({
         where: { id },
         data: {
           email,
+          secteur,
           name: `${ident.firstName} ${ident.lastName}`,
           firstName: ident.firstName,
           lastName: ident.lastName,

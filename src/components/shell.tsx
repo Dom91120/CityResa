@@ -72,7 +72,7 @@ export const NOTIF_ICONES: Record<string, [string, string]> = {
   usager: ["users", "amber"],
   subvention: ["hand-coins", "lime"],
   rappel: ["bell", "amber"],
-  personnel: ["personnel-service", "slate"],
+  personnel: ["personnel-service", "sky"],
   systeme: ["info", "slate"],
 };
 

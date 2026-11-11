@@ -373,7 +373,7 @@ export function FormulaireEspace({
             options={Object.entries(ESPACE_SECTEURS).map(([k, v]) => [k, v.label])}
             valeur={espace?.secteur ?? "salle"}
             requis
-            aide="Sert aux sélections et aux statistiques ; sans effet sur les règles de réservation."
+            aide="Sélections, statistiques et périmètre des agents : seuls les agents du même secteur, ou transversaux, s'y rattachent. Sans effet sur les règles de réservation."
           />
           <Select
             label="Site"

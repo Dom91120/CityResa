@@ -54,7 +54,12 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
   ]);
   const peutEditer = page.user.canEdit("espaces");
   const peutSupprimer = page.user.canDelete("espaces");
-  const agents = peutEditer ? await agentsDisponibles(e.gestionnaires.map((g) => g.userId)) : [];
+  const agents = peutEditer
+    ? await agentsDisponibles(
+        e.gestionnaires.map((g) => g.userId),
+        e.secteur,
+      )
+    : [];
   const libelles = libellesProfils(refs.profils);
   const fiche = `/espaces/${id}`;
   const csrf = page.csrf;

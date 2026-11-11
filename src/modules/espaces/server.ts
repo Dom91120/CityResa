@@ -32,6 +32,7 @@ import {
 } from "@/lib/forms-util";
 import { duree, montant } from "@/lib/libelles";
 import { minutesDe, parisDateTimeToInstant } from "@/lib/paris-time";
+import { agentsHorsSecteur, libelleSecteur, rattachable } from "@/lib/secteurs";
 import { occupationParEspace } from "@/server/dashboard";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
@@ -525,11 +526,18 @@ export async function ajouterGestionnaire(espaceId: number, form: FormData): Pro
   const role = champ(form, "role");
   if (!userId) throw new UserFacingError("Choisissez un agent.");
   if (!(role in ROLES_GESTIONNAIRE)) throw new UserFacingError("Rôle inconnu.");
-  const u = await prisma.user.findFirst({
-    where: { id: userId, kind: "agent", isActive: true },
-    select: { id: true },
-  });
+  const [u, espace] = await Promise.all([
+    prisma.user.findFirst({
+      where: { id: userId, kind: "agent", isActive: true },
+      select: { id: true, firstName: true, lastName: true, secteur: true },
+    }),
+    prisma.espace.findUnique({ where: { id: espaceId }, select: { secteur: true } }),
+  ]);
   if (!u) throw new UserFacingError("Agent introuvable ou inactif.");
+  if (espace && !rattachable(u.secteur, espace.secteur))
+    throw new UserFacingError(
+      `${u.firstName} ${u.lastName} est du secteur ${libelleSecteur(u.secteur)} : il ne peut pas être rattaché à un espace du secteur ${libelleSecteur(espace.secteur)}.`,
+    );
   await prisma.espaceGestionnaire.upsert({
     where: { espaceId_userId: { espaceId, userId } },
     create: { espaceId, userId, role },
@@ -541,10 +549,37 @@ export async function retirerGestionnaire(espaceId: number, userId: string): Pro
   await prisma.espaceGestionnaire.deleteMany({ where: { espaceId, userId } });
 }
 
-/** Les agents proposables comme gestionnaires (actifs, non encore rattachés). */
-export async function agentsDisponibles(dejaIds: string[]) {
+/**
+ * Refuse de changer le secteur d'un espace tant que des agents de l'ancien secteur y sont
+ * rattachés : il faut d'abord les retirer (onglet Gestionnaires).
+ */
+export async function verifierSecteurEspace(espaceId: number, secteur: string): Promise<void> {
+  const lies = await prisma.espaceGestionnaire.findMany({
+    where: { espaceId },
+    select: { user: { select: { firstName: true, lastName: true, secteur: true } } },
+  });
+  const genants = agentsHorsSecteur(
+    secteur,
+    lies.map((l) => l.user),
+  );
+  if (genants.length)
+    throw new UserFacingError(
+      `Secteur « ${libelleSecteur(secteur)} » impossible : ${genants.map((a) => `${a.firstName} ${a.lastName}`).join(", ")} ${genants.length > 1 ? "sont rattachés" : "est rattaché"} à cet espace et relève${genants.length > 1 ? "nt" : ""} d'un autre secteur. Retirez d'abord ce${genants.length > 1 ? "s" : ""} gestionnaire${genants.length > 1 ? "s" : ""}.`,
+    );
+}
+
+/**
+ * Les agents proposables comme gestionnaires d'un espace : actifs, non encore rattachés, du
+ * secteur de l'espace ou transversaux.
+ */
+export async function agentsDisponibles(dejaIds: string[], secteur: string) {
   return prisma.user.findMany({
-    where: { kind: "agent", isActive: true, id: { notIn: dejaIds } },
+    where: {
+      kind: "agent",
+      isActive: true,
+      id: { notIn: dejaIds },
+      OR: [{ secteur: null }, { secteur }],
+    },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
     select: { id: true, firstName: true, lastName: true, email: true, role: true },
   });
