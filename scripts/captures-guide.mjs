@@ -192,7 +192,7 @@ const CAPTURES = [
   {
     nom: "creneau-requisition",
     compte: "gestionnaire",
-    url: "/reservations/25/creneaux/76/requisition",
+    url: "/reservations/25/creneaux/77/requisition",
     hauteur: 1800,
   },
 
@@ -312,7 +312,7 @@ const CAPTURES = [
   {
     nom: "utilisateur",
     compte: "admin",
-    url: "/utilisateurs/cmw2g6v3u0002zgfzo519yzup",
+    url: "/utilisateurs/cmw7o11jo0002tofz3cmwjsec",
     hauteur: 2000,
   },
   { nom: "roles", compte: "admin", url: "/roles", hauteur: 2200 },
