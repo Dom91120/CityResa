@@ -108,7 +108,7 @@ export async function rechercher(
         out.push({
           type: "organisation",
           typeLabel: "Usager",
-          icone: "users",
+          icone: "book-user",
           titre: o.name,
           sousTitre: `${nomRepresentant(o) ?? ""}${o.email ? ` · ${o.email}` : ""}`,
           url: `/usagers/${o.id}`,

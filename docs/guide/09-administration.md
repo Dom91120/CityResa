@@ -193,7 +193,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 - **Matériel** : mobilisation de matériel (tables, chaises, sono…) avec une réservation, stocks suivis.
 - **Demandes de subvention (module ASSO)** : les associations déposent leurs demandes ; les élus donnent un avis.
 - **Campagnes annuelles de créneaux** : les usagers déposent leurs vœux de créneaux hebdomadaires sur une saison ; la Ville arbitre et attribue en lot.
-- **Planning du personnel de service** : gardiens, agents d'accueil et vacataires planifiés par vacations sur les sites ; créneaux réservés sans personne de service signalés (chapitre 11). Coupé, le menu **Personnel** disparaît et la colonne **Service** des fiches de réservation avec lui ; les personnes et vacations déjà saisies restent en base.
+- **Planning du personnel de service** : gardiens, agents d'accueil et vacataires planifiés par vacations sur les sites ; créneaux réservés sans personne de service signalés (chapitre 11). Coupé, le menu **Personnel de service** disparaît et la colonne **Service** des fiches de réservation avec lui ; les personnes et vacations déjà saisies restent en base.
 
 **Comment faire**
 

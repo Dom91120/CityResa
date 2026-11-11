@@ -256,7 +256,7 @@ export default async function PersonnelPage({
       {!toutes.length ? (
         <div className="data-card">
           <VideBloc
-            icone="shield"
+            icone="personnel-service"
             titre="Aucune personne de service"
             texte="Ajoutez d'abord les gardiens, agents d'accueil et vacataires à planifier."
             action={
