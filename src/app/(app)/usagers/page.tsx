@@ -214,7 +214,7 @@ export default async function UsagersPage({
               ) : (
                 <Vide
                   colonnes={8}
-                  icone="users"
+                  icone="book-user"
                   message={
                     q
                       ? "Aucun usager ne correspond à cette recherche."

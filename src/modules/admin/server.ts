@@ -87,7 +87,7 @@ export const NOTIF_ICONES: Record<string, [string, string]> = {
   message: ["message-circle", "sky"],
   signature: ["pen-line", "violet"],
   paiement: ["credit-card", "emerald"],
-  usager: ["users", "amber"],
+  usager: ["book-user", "amber"],
   subvention: ["hand-coins", "lime"],
   rappel: ["bell", "amber"],
   systeme: ["info", "slate"],

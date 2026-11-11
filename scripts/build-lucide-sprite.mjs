@@ -6,6 +6,8 @@
  *   node scripts/build-lucide-sprite.mjs
  *
  * Ajouter une icône = l'ajouter à ICONES puis relancer le script.
+ * Une icône dessinée pour l'application (absente de Lucide) se déclare dans MAISON : son nom et
+ * l'intérieur du SVG, sur la grille 24 × 24 et au trait de 2 comme les autres.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -50,6 +52,7 @@ const ICONES = [
   "users",
   "user",
   "user-plus",
+  "book-user",
   "user-x",
   "user-check",
   "user-cog",
@@ -229,6 +232,23 @@ const ICONES = [
   "move",
 ];
 
+/**
+ * Icônes maison : nom → intérieur du SVG (grille 24 × 24, trait hérité du sprite). Un motif
+ * repris de Lucide à échelle réduite garde un trait lisible grâce à son propre stroke-width.
+ */
+const MAISON = {
+  // Personnel de service : une personne, la clé du gardien (en haut à gauche, agrandie d'un
+  // quart) et le balai de l'entretien (le « broom » de Lucide réduit et redressé, debout à droite).
+  "personnel-service":
+    '<circle cx="12.5" cy="6.25" r="4" /><path d="M5.75 19.25a6.75 6.75 0 0 1 8.85-6.41" />' +
+    '<g transform="translate(3.75 1.75) scale(1.25) translate(-4.25 -1.75)" stroke-width="1.5">' +
+    '<circle cx="4.25" cy="7" r="1.25" /><path d="M4.25 1.75v4" /><path d="M4.25 3.1h1.6" /></g>' +
+    '<g transform="translate(18.55 16.56) scale(0.625) rotate(-45) translate(-12 -12)" stroke-width="2.6">' +
+    '<path d="M13.5 10.5 22 2" />' +
+    '<path d="M14.734 13.841a2 2 0 00-.314-2.42L12.58 9.58a2 2 0 00-2.421-.314l-7.657 4.461A1 1 0 002.3 15.3l6.403 6.403a1 1 0 001.571-.204z" />' +
+    '<path d="m5 18 2-2" /><path d="m7.699 10.7 5.602 5.601" /></g>',
+};
+
 const racine = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dossier = path.join(racine, "node_modules", "lucide-static", "icons");
 const symboles = [];
@@ -248,6 +268,8 @@ for (const nom of [...new Set(ICONES)].sort()) {
     .trim();
   symboles.push(`<symbol id="${nom}" viewBox="0 0 24 24">${interieur}</symbol>`);
 }
+for (const [nom, interieur] of Object.entries(MAISON))
+  symboles.push(`<symbol id="${nom}" viewBox="0 0 24 24">${interieur}</symbol>`);
 const sprite =
   `<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">\n` +
   `${symboles.join("\n")}\n</svg>\n`;

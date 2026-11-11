@@ -130,7 +130,7 @@ export async function alertes(
       out.push({
         cle: "personnel_a_couvrir",
         niveau: "warning",
-        icone: "shield",
+        icone: "personnel-service",
         titre: `${n} créneau${n > 1 ? "x" : ""} réservé${n > 1 ? "s" : ""} sans personne de service dans les 7 jours`,
         detail:
           "Aucune vacation ne couvre entièrement le créneau : ajoutez une vacation ou épinglez quelqu'un.",

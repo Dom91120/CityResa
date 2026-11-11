@@ -187,7 +187,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 **Ce que l'on voit**
 
 - Dans le planning de service, les créneaux **affectés** apparaissent dans la case de la personne (signet vert, titre de la réservation, espace), les **propositions** en pointillé orange avec la mention « Proposé · à valider ». Le sous-titre de la page rappelle combien de sites sont en affectation automatique.
-- L'onglet **Propositions** (compteur dans le menu **Personnel** et dans les alertes du tableau de bord) : une ligne par créneau avec la **Personne proposée**, la liste des **Autres candidats** (site principal, heures déjà affectées cette semaine) et le nombre d'indisponibles (survolez pour lire le motif de chacun : hors horaires, absente, hors site…).
+- L'onglet **Propositions** (compteur dans le menu **Personnel de service** et dans les alertes du tableau de bord) : une ligne par créneau avec la **Personne proposée**, la liste des **Autres candidats** (site principal, heures déjà affectées cette semaine) et le nombre d'indisponibles (survolez pour lire le motif de chacun : hors horaires, absente, hors site…).
 - Sur la fiche d'une réservation, la colonne **Service** affiche « Proposé : … » avec une coche pour valider et une croix pour écarter.
 
 **Comment faire**

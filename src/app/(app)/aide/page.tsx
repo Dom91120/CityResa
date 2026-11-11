@@ -208,7 +208,7 @@ export default async function AidePage() {
             ["/reservations", "Réservations", "clipboard-list"],
             ["/planning", "Planning", "calendar-days"],
             ["/espaces", "Espaces", "door-open"],
-            ["/usagers", "Usagers", "users"],
+            ["/usagers", "Usagers", "book-user"],
             ["/equipe", "Mon équipe", "contact-round"],
             ["/notifications", "Notifications", "bell"],
             ["/profil", "Mon profil", "circle-user"],

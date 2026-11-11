@@ -188,7 +188,7 @@ export default async function PersonnesPage({ searchParams }: { searchParams: Pr
                       ? "Aucune personne ne correspond."
                       : "Aucune personne de service pour l'instant."
                   }
-                  icone="shield"
+                  icone="personnel-service"
                 />
               )}
             </tbody>
