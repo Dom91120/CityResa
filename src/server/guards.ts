@@ -81,6 +81,8 @@ export type CurrentUser = {
    * rattachement a pour périmètre tous les espaces de son secteur.
    */
   espacesGeres: number[];
+  /** Le périmètre vient de rattachements nominatifs (et non de tout le secteur, ou de tout). */
+  perimetreExplicite: boolean;
   settings: AppSettings;
   permLevel: (category: string) => number;
   canView: (category?: string | null) => boolean;
@@ -88,6 +90,8 @@ export type CurrentUser = {
   canDelete: (category: string) => boolean;
   /** L'agent peut-il décider sur cet espace (droit + périmètre) ? */
   gereEspace: (espaceId: number) => boolean;
+  /** L'espace est-il dans le périmètre de l'agent (sans condition de droit) ? */
+  voitEspace: (espaceId: number) => boolean;
 };
 
 export function buildCurrentUser(
@@ -95,6 +99,7 @@ export function buildCurrentUser(
   roleObj: RoleRow | null,
   settings: AppSettings,
   espacesGeres: number[] = [],
+  perimetreExplicite = espacesGeres.length > 0,
 ): CurrentUser {
   const isAdmin = roleObj ? Boolean(roleObj.isAdmin) : row.role === "admin";
   const isUsager = roleObj ? Boolean(roleObj.isUsager) : row.kind === "usager";
@@ -141,6 +146,7 @@ export function buildCurrentUser(
     totpFailedCount: row.totpFailedCount,
     totpLockedUntil: row.totpLockedUntil,
     espacesGeres,
+    perimetreExplicite,
     settings,
     permLevel,
     canView: (category) =>
@@ -149,6 +155,7 @@ export function buildCurrentUser(
     canDelete: (category) => permLevel(category) >= 3,
     gereEspace: (espaceId) =>
       canEdit("reservations") && (espacesGeres.length === 0 || espacesGeres.includes(espaceId)),
+    voitEspace: (espaceId) => espacesGeres.length === 0 || espacesGeres.includes(espaceId),
   };
 }
 
@@ -163,7 +170,13 @@ export async function loadUser(userId: string): Promise<CurrentUser | null> {
     row.role ? prisma.role.findUnique({ where: { name: row.role } }) : null,
     prisma.espaceGestionnaire.findMany({ where: { userId }, select: { espaceId: true } }),
   ]);
-  return buildCurrentUser(row, roleObj, settings, await perimetre(row, espaces));
+  return buildCurrentUser(
+    row,
+    roleObj,
+    settings,
+    await perimetre(row, espaces),
+    espaces.length > 0,
+  );
 }
 
 /**

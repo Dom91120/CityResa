@@ -42,7 +42,7 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
   const page = await contexteModule("espaces");
   const id = idDeRoute((await params).id);
   const e = await chargerEspace(id);
-  if (!e) notFound();
+  if (!e || !page.user.voitEspace(id)) notFound();
   const enVigueur = new Set(grilleEnVigueur(e.tarifs, new Date()).map((t) => t.id));
   const attente = await entreesEspace(id);
   const [photos, refs, prochains, blocages, occupation] = await Promise.all([

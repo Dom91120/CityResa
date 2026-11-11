@@ -322,6 +322,7 @@ export function FormulaireEspace({
   profils,
   siteParDefaut,
   saisons = [],
+  secteurImpose = null,
 }: {
   espace: Espace | null;
   action: string;
@@ -331,6 +332,8 @@ export function FormulaireEspace({
   natures: Referential[];
   profils: Referential[];
   siteParDefaut?: number | null;
+  /** Secteur de l'agent qui saisit : il ne crée et ne garde que des espaces de son secteur. */
+  secteurImpose?: string | null;
   /** Les saisons en cours ou à venir, avec leurs horaires particuliers éventuels. */
   saisons?: SaisonHoraires[];
 }) {
@@ -370,8 +373,10 @@ export function FormulaireEspace({
           <Select
             label="Secteur"
             name="secteur"
-            options={Object.entries(ESPACE_SECTEURS).map(([k, v]) => [k, v.label])}
-            valeur={espace?.secteur ?? "salle"}
+            options={Object.entries(ESPACE_SECTEURS)
+              .filter(([k]) => !secteurImpose || k === secteurImpose)
+              .map(([k, v]) => [k, v.label])}
+            valeur={espace?.secteur ?? secteurImpose ?? "salle"}
             requis
             aide="Sélections, statistiques et périmètre des agents : seuls les agents du même secteur, ou transversaux, s'y rattachent. Sans effet sur les règles de réservation."
           />

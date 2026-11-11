@@ -6,6 +6,7 @@
  */
 import type { Prisma } from "@/generated/prisma/client";
 import { champ, champOuNull, coche, parseFloat_, parseInt_, slugifier } from "@/lib/forms-util";
+import { siteVisible } from "@/lib/secteurs";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
 
@@ -94,6 +95,19 @@ export function adresseComplete(s: {
 }): string {
   const ville = [s.postalCode, s.city].filter(Boolean).join(" ");
   return [s.address, ville].filter(Boolean).join(", ");
+}
+
+/** Les espaces d'un site, et ce que l'agent en voit : site visible, tous ses espaces visibles. */
+export async function siteAccessible(
+  user: { espacesGeres: number[] },
+  id: number,
+  tout = false,
+): Promise<boolean> {
+  const espaces = await prisma.espace.findMany({ where: { siteId: id }, select: { id: true } });
+  const ids = espaces.map((e) => e.id);
+  if (!siteVisible(user.espacesGeres, ids)) return false;
+  if (!tout || !user.espacesGeres.length) return true;
+  return ids.every((e) => user.espacesGeres.includes(e));
 }
 
 /**

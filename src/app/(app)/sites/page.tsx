@@ -2,6 +2,7 @@ import { Vignette } from "@/components/documents";
 import { Icone } from "@/components/icones";
 import { Barre, Filtre, PaginationBar, Th, trier, Vide } from "@/components/liste";
 import { Chip } from "@/components/macros";
+import { siteVisible } from "@/lib/secteurs";
 import { adresseComplete, premieresPhotosSites } from "@/modules/sites/server";
 import { prisma } from "@/server/db";
 import { contexteModule } from "@/server/module";
@@ -14,11 +15,25 @@ export default async function SitesPage({ searchParams }: { searchParams: Promis
   const params = await searchParams;
   const q = String(param(params, "q") ?? "").trim();
   const etat = String(param(params, "etat") ?? "");
-  const sites = await prisma.site.findMany({
-    include: { _count: { select: { espaces: true } } },
+  const tous = await prisma.site.findMany({
+    include: { espaces: { select: { id: true } } },
     orderBy: [{ position: "asc" }, { name: "asc" }],
   });
-  let items = sites.map((s) => ({ ...s, adresse: adresseComplete(s) }));
+  // Un agent voit les sites qui portent au moins un espace de son périmètre (ou aucun espace),
+  // et n'y compte que ses espaces.
+  const perimetre = page.user.espacesGeres;
+  let items = tous
+    .filter((s) =>
+      siteVisible(
+        perimetre,
+        s.espaces.map((e) => e.id),
+      ),
+    )
+    .map((s) => ({
+      ...s,
+      adresse: adresseComplete(s),
+      nbEspaces: s.espaces.filter((e) => page.user.voitEspace(e.id)).length,
+    }));
   if (etat === "actifs") items = items.filter((s) => s.isActive);
   if (etat === "inactifs") items = items.filter((s) => !s.isActive);
   items = textSearch(items, q, ["name", "adresse", "city", "slug"]);
@@ -28,7 +43,7 @@ export default async function SitesPage({ searchParams }: { searchParams: Promis
     {
       nom: (s) => s.name,
       ville: (s) => s.city,
-      espaces: (s) => s._count.espaces,
+      espaces: (s) => s.nbEspaces,
       position: (s) => s.position,
       actif: (s) => (s.isActive ? 0 : 1),
     },
@@ -123,7 +138,7 @@ export default async function SitesPage({ searchParams }: { searchParams: Promis
                       </span>
                     </td>
                     <td className="text-end tabular">
-                      <a href={`/espaces?site=${s.id}`}>{s._count.espaces}</a>
+                      <a href={`/espaces?site=${s.id}`}>{s.nbEspaces}</a>
                     </td>
                     <td>
                       {s.isActive ? (

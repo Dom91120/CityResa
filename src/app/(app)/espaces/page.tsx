@@ -41,7 +41,7 @@ export default async function EspacesPage({ searchParams }: { searchParams: Prom
   const siteF = String(param(params, "site") ?? "");
   const natureF = String(param(params, "nature") ?? "");
   const secteurF = String(param(params, "secteur") ?? "");
-  const [espaces, refs, sites] = await Promise.all([
+  const [tousEspaces, refs, tousSites] = await Promise.all([
     prisma.espace.findMany({
       include: {
         site: { select: { id: true, name: true } },
@@ -58,6 +58,12 @@ export default async function EspacesPage({ searchParams }: { searchParams: Prom
       select: { id: true, name: true },
     }),
   ]);
+  // Un agent ne voit que les espaces de son périmètre, et les sites qui en portent.
+  const espaces = tousEspaces.filter((e) => page.user.voitEspace(e.id));
+  const sitesVus = new Set(espaces.map((e) => e.siteId));
+  const sites = page.user.espacesGeres.length
+    ? tousSites.filter((s) => sitesVus.has(s.id))
+    : tousSites;
   const libelles = libellesProfils(refs.profils);
   const compteurs = { tous: espaces.length, actifs: 0, travaux: 0, inactifs: 0 };
   for (const e of espaces) compteurs[etatDe(e) as "actifs" | "travaux" | "inactifs"] += 1;

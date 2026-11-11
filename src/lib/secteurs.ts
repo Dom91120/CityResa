@@ -37,6 +37,18 @@ export function secteurDeduit(secteursDesEspaces: readonly string[]): string | n
   return uniques.length === 1 ? uniques[0] : null;
 }
 
+/**
+ * Un site se voit dès qu'un de ses espaces est dans le périmètre de l'agent (liste vide = tout).
+ * Un site encore sans espace reste visible de tous : il faut bien pouvoir y créer le premier.
+ */
+export function siteVisible(
+  perimetre: readonly number[],
+  espacesDuSite: readonly number[],
+): boolean {
+  if (!perimetre.length || !espacesDuSite.length) return true;
+  return espacesDuSite.some((id) => perimetre.includes(id));
+}
+
 /** Parmi des espaces, ceux qui interdisent de donner ce secteur à l'agent qui y est rattaché. */
 export function espacesHorsSecteur<T extends { secteur: string }>(
   secteurVoulu: string | null,

@@ -6,6 +6,7 @@ import { VideBloc } from "@/components/liste";
 import { Chip, PastilleEspace } from "@/components/macros";
 import { ESPACE_STATUS } from "@/lib/constantes";
 import { dateCourte } from "@/lib/libelles";
+import { siteVisible } from "@/lib/secteurs";
 import { premieresPhotos } from "@/modules/espaces/server";
 import { adresseComplete, chargerSite, lienCarte } from "@/modules/sites/server";
 import { forParent } from "@/server/documents";
@@ -17,14 +18,19 @@ export const metadata = { title: "Site - CityRésa" };
 export default async function SitePage({ params }: { params: Promise<{ id: string }> }) {
   const page = await contexteModule("espaces");
   const id = idDeRoute((await params).id);
-  const site = await chargerSite(id);
-  if (!site) notFound();
+  const complet = await chargerSite(id);
+  if (!complet) notFound();
+  const idsEspaces = complet.espaces.map((e) => e.id);
+  if (!siteVisible(page.user.espacesGeres, idsEspaces)) notFound();
+  // La fiche ne montre que les espaces du périmètre ; le site ne se supprime que si on les voit tous.
+  const site = { ...complet, espaces: complet.espaces.filter((e) => page.user.voitEspace(e.id)) };
+  const toutVu = site.espaces.length === complet.espaces.length;
   const [photos, vignettes] = await Promise.all([
     forParent("site", id, { kinds: ["photo"] }),
     premieresPhotos(site.espaces.map((e) => e.id)),
   ]);
   const peutEditer = page.user.canEdit("espaces");
-  const peutSupprimer = page.user.canDelete("espaces");
+  const peutSupprimer = page.user.canDelete("espaces") && toutVu;
   const carte = lienCarte(site);
   const adresse = adresseComplete(site);
   const retour = `/sites/${id}`;
