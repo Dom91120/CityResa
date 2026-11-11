@@ -51,7 +51,7 @@ export const GENERAL: NavDomaine = {
     t("amber", e("/espaces", "Espaces", "door-open", "espaces")),
     t("lime", e("/materiel", "Matériel", "boxes", "materiel", null, "materiel")),
     t("sky", e("/messages", "Messages", "message-circle", "messages", "messages")),
-    t("rose", e("/usagers", "Usagers", "book-user", "usagers", "usagers_a_valider")),
+    t("rose", e("/usagers", "Usagers", "users", "usagers", "usagers_a_valider")),
     t("violet", e("/equipe", "Mon équipe", "contact-round", "equipe")),
     t(
       "slate",
