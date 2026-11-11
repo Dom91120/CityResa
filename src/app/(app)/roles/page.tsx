@@ -53,16 +53,15 @@ export default async function RolesPage() {
 
       <div className="data-card">
         <div className="table-responsive">
-          <table className="table align-middle mb-0">
+          <table className="table align-middle mb-0 table-compacte table-roles">
             <thead>
               <tr>
                 <th>Rôle</th>
                 {PERMISSION_CATEGORIES.map((c) => (
-                  <th key={c} className="text-center small">
+                  <th key={c} className="text-center small col-niveau">
                     {CATEGORY_LABELS[c]}
                   </th>
                 ))}
-                <th className="text-end">Comptes</th>
                 <th />
               </tr>
             </thead>
@@ -74,7 +73,7 @@ export default async function RolesPage() {
                 const nb = nbParRole[r.name] ?? 0;
                 return (
                   <tr key={r.id}>
-                    <td>
+                    <td className="col-role">
                       <span className="cell2">
                         <strong>
                           {r.label}
@@ -88,8 +87,8 @@ export default async function RolesPage() {
                             </Chip>
                           ) : null}
                         </strong>
-                        <small>
-                          <code>{r.name}</code>
+                        <small title={r.description ?? undefined}>
+                          {nb} compte{nb > 1 ? "s" : ""}
                           {r.description ? ` · ${r.description}` : ""}
                         </small>
                       </span>
@@ -97,7 +96,7 @@ export default async function RolesPage() {
                     {PERMISSION_CATEGORIES.map((c) => {
                       const niveau = r.isAdmin ? 3 : r.isUsager ? 0 : Number(perms[c] ?? 0) || 0;
                       return (
-                        <td key={c} className="text-center">
+                        <td key={c} className="text-center col-niveau">
                           {fige ? (
                             <Chip teinte={TEINTES_NIVEAU[niveau]}>{PERMISSION_LEVELS[niveau]}</Chip>
                           ) : (
@@ -107,7 +106,6 @@ export default async function RolesPage() {
                               className="form-select form-select-sm"
                               defaultValue={String(niveau)}
                               aria-label={`${r.label} · ${CATEGORY_LABELS[c]}`}
-                              style={{ minWidth: 110 }}
                             >
                               {niveaux.map(([v, l]) => (
                                 <option key={v} value={v}>
@@ -119,7 +117,6 @@ export default async function RolesPage() {
                         </td>
                       );
                     })}
-                    <td className="text-end tabular">{nb}</td>
                     <td>
                       {fige ? null : (
                         <div className="row-actions">
@@ -128,9 +125,11 @@ export default async function RolesPage() {
                             form={formId}
                             name="action"
                             value="enregistrer"
-                            className="btn btn-primary btn-sm"
+                            className="btn btn-ghost btn-icone btn-sm"
+                            title={`Enregistrer les droits du rôle ${r.label}`}
+                            aria-label={`Enregistrer les droits du rôle ${r.label}`}
                           >
-                            <Icone nom="check" taille={13} /> Enregistrer
+                            <Icone nom="check" taille={16} />
                           </button>
                           {nb === 0 ? (
                             <button
@@ -143,7 +142,15 @@ export default async function RolesPage() {
                             >
                               <Icone nom="trash-2" taille={13} />
                             </button>
-                          ) : null}
+                          ) : (
+                            // Même place que la corbeille : les boutons d'enregistrement restent alignés.
+                            <span
+                              className="btn btn-ghost btn-icone btn-sm invisible"
+                              aria-hidden="true"
+                            >
+                              <Icone nom="trash-2" taille={13} />
+                            </span>
+                          )}
                         </div>
                       )}
                     </td>

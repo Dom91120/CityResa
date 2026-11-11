@@ -272,7 +272,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 - Les boutons **Rôles** (vers 9.14) et **Nouvel agent**.
 - Trois filtres : **Agents**, **Usagers**, **Inactifs**, avec leur nombre.
 - Un champ de recherche (nom, courriel, organisation, rôle).
-- Le tableau : **Compte** (nom, courriel, fonction), **Rôle** (étiquette colorée), **Organisation** (pour un usager), **Sécurité** (double authentification), **Dernière connexion**, **Créé le**. Les colonnes portant deux flèches se trient d'un clic.
+- Le tableau : **Compte** (nom, courriel, fonction), **Rôle** (étiquette colorée), **Organisation** (sur les onglets Usagers et Inactifs seulement : un agent n'en a pas), **Sécurité** (double authentification), **Dernière connexion**, **Créé le**. Les colonnes portant deux flèches se trient d'un clic.
 - En bas : la pagination et le nombre de lignes par page.
 
 **Comment faire**
@@ -341,7 +341,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 
 - Le bouton **Nouveau rôle**.
 - Un encadré : les rôles **Administrateur** (accès total, Paramètres et Utilisateurs compris) et **Usager** (portail) sont fixes ; un agent perd un domaine entier quand le module correspondant est désactivé.
-- Une ligne par rôle (nom, nom technique, description) et une colonne par domaine : **Réservations**, **Planning**, **Sites et espaces**, **Matériel**, **Usagers**, **Messages**, **Paiements**, **Subventions**, **Mon équipe** (faites défiler le tableau vers la droite pour voir les derniers domaines), puis le nombre de **Comptes** ayant ce rôle.
+- Une ligne par rôle (nom, puis nombre de comptes ayant ce rôle et description ; survolez la description pour la lire en entier) et une colonne par domaine : **Réservations**, **Planning**, **Sites et espaces**, **Matériel**, **Usagers**, **Messages**, **Paiements**, **Subventions**, **Mon équipe**, **Personnel de service**. Sur un écran étroit, faites défiler le tableau vers la droite pour voir les derniers domaines.
 - Pour les rôles figés, le niveau est une étiquette ; pour les autres, une liste déroulante.
 
 **Les quatre niveaux** (cumulatifs : chaque niveau comprend les précédents)
@@ -369,7 +369,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 
 *Changer les droits d'un rôle*
 1. Sur la ligne du rôle, choisissez le niveau voulu dans chaque liste déroulante.
-2. Cliquez sur **Enregistrer** au bout de la ligne.
+2. Cliquez sur la coche (**Enregistrer**) au bout de la ligne.
 
 *Créer un rôle*
 1. Cliquez sur **Nouveau rôle**.

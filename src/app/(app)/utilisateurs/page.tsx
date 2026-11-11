@@ -31,6 +31,8 @@ export default async function UtilisateursPage({
   const usagers = tous.filter((u) => u.kind === "usager" && u.isActive);
   const inactifs = tous.filter((u) => !u.isActive);
   const base = onglet === "usagers" ? usagers : onglet === "inactifs" ? inactifs : agents;
+  // Un agent n'appartient à aucune organisation usager : la colonne ne sert qu'aux autres vues.
+  const avecOrganisation = onglet === "usagers" || onglet === "inactifs";
   const enrichis = base.map((u) => ({
     ...u,
     nom: nomComplet(u),
@@ -88,7 +90,9 @@ export default async function UtilisateursPage({
         pathname={page.pathname}
         search={page.search}
         hidden={{ vue: onglet }}
-        placeholder="Nom, courriel, organisation, rôle…"
+        placeholder={
+          avecOrganisation ? "Nom, courriel, organisation, rôle…" : "Nom, courriel, fonction, rôle…"
+        }
       />
       <div className="data-card">
         <div className="table-responsive">
@@ -97,7 +101,7 @@ export default async function UtilisateursPage({
               <tr>
                 <Th col="nom" label="Compte" pathname={page.pathname} search={page.search} />
                 <Th col="role" label="Rôle" pathname={page.pathname} search={page.search} />
-                <th>Organisation</th>
+                {avecOrganisation ? <th>Organisation</th> : null}
                 <th>Sécurité</th>
                 <Th
                   col="connexion"
@@ -131,13 +135,15 @@ export default async function UtilisateursPage({
                         {u.roleLabel}
                       </Chip>
                     </td>
-                    <td className="small">
-                      {u.organisation ? (
-                        <a href={`/usagers/${u.organisation.id}`}>{u.organisation.name}</a>
-                      ) : (
-                        <span className="text-faint">—</span>
-                      )}
-                    </td>
+                    {avecOrganisation ? (
+                      <td className="small">
+                        {u.organisation ? (
+                          <a href={`/usagers/${u.organisation.id}`}>{u.organisation.name}</a>
+                        ) : (
+                          <span className="text-faint">—</span>
+                        )}
+                      </td>
+                    ) : null}
                     <td>
                       {u.twoFactorEnabled ? (
                         <Chip teinte="emerald" titre="Double authentification activée">
@@ -160,7 +166,7 @@ export default async function UtilisateursPage({
                 ))
               ) : (
                 <Vide
-                  colonnes={6}
+                  colonnes={avecOrganisation ? 6 : 5}
                   icone="user-cog"
                   message={q ? "Aucun compte ne correspond." : "Aucun compte dans cette vue."}
                   urlAjout={onglet === "agents" && !q ? "/utilisateurs/nouveau" : null}
