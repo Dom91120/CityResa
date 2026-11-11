@@ -431,6 +431,14 @@ textarea.form-control { min-height: 90px; }
 .table-compacte > :not(caption) > * > * { padding: 8px 10px; }
 .table-compacte .cell2 { line-height: 1.15; }
 .table-compacte td { letter-spacing: -0.02em; }
+/* Rôles & permissions : dix colonnes de niveaux à faire tenir sans défilement. Le rôle se replie
+   (description sur deux lignes au plus, entière en infobulle), les listes sont étroites. */
+.table-roles .col-role { width: 200px; min-width: 190px; white-space: normal; }
+.table-roles .col-role strong { white-space: normal; }
+.table-roles .col-role small { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; white-space: normal; }
+.table-roles th.col-niveau, .table-roles td.col-niveau { padding-left: 2px; padding-right: 2px; white-space: normal; line-height: 1.15; }
+.table-roles .col-niveau .form-select { width: 89px; min-width: 0; margin: 0 auto; padding: 3px 12px 3px 4px; font-size: 0.72rem; letter-spacing: -0.02em; background-position: right 3px center; background-size: 10px; }
+.table-roles .col-niveau .chip { padding-left: 7px; padding-right: 7px; }
 /* Largeurs fixes (colgroup) : le tableau tient dans sa carte, les textes longs sont tronqués ;
    en dessous de 660 px il défile. */
 .table-serree { table-layout: fixed; width: 100%; min-width: 660px; }

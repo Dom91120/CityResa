@@ -118,7 +118,7 @@ export default async function UtilisateurPage({ params }: { params: Promise<{ id
         ]}
       />
 
-      <div className="fiche-colonnes fiche-colonnes--50-50">
+      <div className="fiche-colonnes fiche-colonnes--6-5">
         <div className="data-card overflow-visible">
           <Section titre="Compte" icone="circle-user">
             <Lus>
