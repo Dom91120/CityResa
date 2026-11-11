@@ -3,7 +3,7 @@
  * d'une fiche, vignettes, règles lisibles, suppression, sous-ressources (équipements,
  * tarifs, options, gestionnaires, indisponibilités, flux ICS).
  *
- *   name · short_name · slug · site_id · parent_id · nature_id · description · capacity_standing ·
+ *   name · short_name · slug · site_id · parent_id · nature_id · secteur · description · capacity_standing ·
  *   capacity_seated · surface · floor · color · is_public · profil (codes, multiple) ·
  *   requires_validation · ferme_<j> / ouv_<j> / ferm_<j> (j = 1..7) · slot_step_min ·
  *   min_duration_min · max_duration_min · delay_min_days · horizon_max_days ·
@@ -12,6 +12,7 @@
 import type { Prisma } from "@/generated/prisma/client";
 import {
   COULEURS_ESPACE,
+  ESPACE_SECTEURS,
   ESPACE_STATUS,
   JOURS_ISO,
   OPTION_UNITES,
@@ -44,6 +45,7 @@ export type EspaceEntree = {
   siteId: number;
   parentId: number | null;
   natureId: number | null;
+  secteur: string;
   description: string | null;
   capacityStanding: number | null;
   capacitySeated: number | null;
@@ -120,6 +122,9 @@ export function lireEspace(form: FormData, profilsConnus: string[]): EspaceEntre
   const color = champ(form, "color");
   const status = champ(form, "status");
   if (!(status in ESPACE_STATUS)) throw new UserFacingError("Statut inconnu.");
+  const secteur = champ(form, "secteur");
+  if (!(secteur in ESPACE_SECTEURS))
+    throw new UserFacingError("Indiquez le secteur de l'espace : salles ou sports.");
   const connus = new Set(profilsConnus);
   const allowedProfiles = form
     .getAll("profil")
@@ -141,6 +146,7 @@ export function lireEspace(form: FormData, profilsConnus: string[]): EspaceEntre
     siteId,
     parentId: idOuNull(form, "parent_id"),
     natureId: idOuNull(form, "nature_id"),
+    secteur,
     description: champOuNull(form, "description"),
     capacityStanding: parseInt_(form.get("capacity_standing"), null, 0),
     capacitySeated: parseInt_(form.get("capacity_seated"), null, 0),

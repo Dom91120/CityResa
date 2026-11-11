@@ -3,6 +3,7 @@
  * périmètre de l'agent, avec le dernier message et le nombre de messages non lus.
  */
 import type { Prisma } from "@/generated/prisma/client";
+import { compteDansLeFil } from "@/lib/messages";
 import { perimetre } from "@/modules/reservations/requetes";
 import { prisma } from "@/server/db";
 import type { CurrentUser } from "@/server/guards";
@@ -31,6 +32,8 @@ export type Conversation = {
   dernier: MessageBoite;
   nonLus: number;
   total: number;
+  /** Le dernier message échangé vient de l'usager : un agent doit répondre. */
+  aRepondre: boolean;
 };
 
 /** Le WHERE des messages visibles par l'agent (hors notes internes). */
@@ -52,7 +55,10 @@ export function auteurDe(m: MessageBoite): string {
   return "Un agent";
 }
 
-/** Les conversations, la plus récente en tête ; `nonLus` compte les messages de l'usager non lus. */
+/**
+ * Les conversations, la plus récente en tête ; `nonLus` compte les messages de l'usager non
+ * lus, `aRepondre` dit si le dernier message échangé vient de l'usager (src/lib/messages.ts).
+ */
 export async function conversations(user: CurrentUser, q = ""): Promise<Conversation[]> {
   const messages = await prisma.message.findMany({
     where: whereMessages(user),
@@ -61,14 +67,25 @@ export async function conversations(user: CurrentUser, q = ""): Promise<Conversa
     take: 3000,
   });
   const map = new Map<number, Conversation>();
+  // Pour chaque dossier, le premier message « du fil » rencontré (ordre décroissant) décide.
+  const decide = new Set<number>();
   for (const m of messages) {
     const c = map.get(m.reservationId);
     const nonLu = m.authorKind === "usager" && !m.readAt ? 1 : 0;
+    const compte = compteDansLeFil(m) && !decide.has(m.reservationId);
+    if (compte) decide.add(m.reservationId);
     if (!c)
-      map.set(m.reservationId, { reservation: m.reservation, dernier: m, nonLus: nonLu, total: 1 });
+      map.set(m.reservationId, {
+        reservation: m.reservation,
+        dernier: m,
+        nonLus: nonLu,
+        total: 1,
+        aRepondre: compte && m.authorKind === "usager",
+      });
     else {
       c.nonLus += nonLu;
       c.total += 1;
+      if (compte) c.aRepondre = m.authorKind === "usager";
     }
   }
   let out = [...map.values()];

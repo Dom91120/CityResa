@@ -9,16 +9,18 @@ import {
   type AbsenceRef,
   type CreneauAffectable,
   candidats,
+  controleManuel,
   decisionAffectation,
   disponible,
   type Ecarte,
+  fenetreSemaines,
+  horsAbsences,
   MOTIFS_INDISPONIBLE,
   type OccupationRef,
   type PersonneAffectable,
 } from "@/lib/affectation";
 import { STATUTS_FERMES } from "@/lib/constantes";
-import { type Intervalle, lireHoraires } from "@/lib/creneaux";
-import { ymdUtc } from "@/lib/date-utc";
+import type { Intervalle } from "@/lib/creneaux";
 import { plage } from "@/lib/libelles";
 import { addParisDays } from "@/lib/paris-time";
 import { etatsCouverture, nomPersonne } from "@/lib/personnel";
@@ -28,7 +30,17 @@ import { UserFacingError } from "@/server/errors";
 import type { CurrentUser } from "@/server/guards";
 import { invalidateNavCounts } from "@/server/nav";
 import { notifierAgents } from "@/server/notifications";
-import { vacationsEntre, versVacationDatee } from "@/server/personnel";
+import {
+  absencesEntre,
+  INCLUDE_PERSONNE_AFFECTABLE,
+  type Issue,
+  texteAvertissements,
+  vacationsEntre,
+  versPersonneAffectable,
+  versVacationDatee,
+} from "@/server/personnel";
+
+export { absencesEntre, versPersonneAffectable };
 
 export type SiteAffectation = { id: number; name: string; affectationAuto: boolean };
 
@@ -39,51 +51,13 @@ export type ContexteAffectation = {
   sites: Map<number, SiteAffectation>;
 };
 
-const INCLUDE_PERSONNE_AFFECTABLE = { sites: true } satisfies Prisma.PersonnelInclude;
-
-export function versPersonneAffectable(
-  p: Prisma.PersonnelGetPayload<{ include: typeof INCLUDE_PERSONNE_AFFECTABLE }>,
-): PersonneAffectable {
-  return {
-    id: p.id,
-    firstName: p.firstName,
-    lastName: p.lastName,
-    isActive: p.isActive,
-    quotite: p.quotite,
-    heuresHebdo: p.heuresHebdo === null ? null : Number(p.heuresHebdo),
-    contratDebut: p.contratDebut ? ymdUtc(p.contratDebut) : null,
-    contratFin: p.contratFin ? ymdUtc(p.contratFin) : null,
-    horaires: lireHoraires(p.horaires),
-    sites: p.sites.map((s) => ({ siteId: s.siteId, principal: s.principal })),
-  };
-}
-
-/** Les absences qui touchent [de, a[, avec le libellé du motif. */
-export async function absencesEntre(
-  de: Date,
-  a: Date,
-  personnelId?: number,
-): Promise<AbsenceRef[]> {
-  const rows = await prisma.absence.findMany({
-    where: {
-      startAt: { lt: a },
-      endAt: { gt: de },
-      ...(personnelId ? { personnelId } : {}),
-    },
-    include: { motif: { select: { label: true } } },
-    orderBy: { startAt: "asc" },
-  });
-  return rows.map((r) => ({
-    id: r.id,
-    personnelId: r.personnelId,
-    startAt: r.startAt,
-    endAt: r.endAt,
-    motif: r.motif?.label ?? null,
-  }));
-}
-
-/** Tout ce qu'il faut pour décider sur une fenêtre : lu une fois pour un lot. */
-export async function contexteAffectation(de: Date, a: Date): Promise<ContexteAffectation> {
+/**
+ * Tout ce qu'il faut pour décider sur une fenêtre : lu une fois pour un lot. La lecture
+ * s'élargit aux semaines entières touchées, sans quoi la charge hebdomadaire d'un candidat ne
+ * compterait que ce qui chevauche les créneaux traités.
+ */
+export async function contexteAffectation(debut: Date, fin: Date): Promise<ContexteAffectation> {
+  const { startAt: de, endAt: a } = fenetreSemaines(debut, fin);
   const [personnes, absences, creneaux, vacations, sites] = await Promise.all([
     prisma.personnel.findMany({ where: { isActive: true }, include: INCLUDE_PERSONNE_AFFECTABLE }),
     absencesEntre(de, a),
@@ -203,8 +177,12 @@ export async function affecterCreneaux(
   const de = new Date(Math.min(...cibles.map((c) => c.startAt.getTime())));
   const a = new Date(Math.max(...cibles.map((c) => c.endAt.getTime())));
   const ctx = await contexteAffectation(de, a);
-  // Les créneaux déjà couverts par des vacations n'ont pas besoin d'une personne épinglée.
-  const vacations = (await vacationsEntre(de, a)).map(versVacationDatee);
+  // Les créneaux déjà couverts par des vacations n'ont pas besoin d'une personne épinglée ;
+  // une personne absente ne couvre rien.
+  const vacations = horsAbsences(
+    (await vacationsEntre(de, a)).map(versVacationDatee),
+    ctx.absences,
+  );
   const couverts = new Set(
     etatsCouverture(
       cibles.map((c) => ({
@@ -414,19 +392,73 @@ export async function candidatsDuCreneau(creneauId: number) {
   return candidats(cible, ctx.personnes, ctx);
 }
 
+/**
+ * Contrôle d'une affectation décidée à la main : refusée si la personne n'est pas là (hors
+ * service, hors contrat, absente) ou déjà sur un autre site ; hors de ses sites ou de ses
+ * horaires de travail, l'agent garde la main et reçoit un avertissement (texte renvoyé).
+ */
+async function controlerAffectationManuelle(
+  c: { id: number; reservationId: number; startAt: Date; endAt: Date; siteId: number },
+  personnelId: number,
+): Promise<{ nom: string; avertissement: string }> {
+  const row = await prisma.personnel.findUnique({
+    where: { id: personnelId },
+    include: INCLUDE_PERSONNE_AFFECTABLE,
+  });
+  if (!row) throw new UserFacingError("Personne introuvable.");
+  const nom = nomPersonne(row);
+  const ctx = await contexteAffectation(c.startAt, c.endAt);
+  const controle = controleManuel(versPersonneAffectable(row), c, ctx);
+  if (controle.bloquant)
+    throw new UserFacingError(
+      `Impossible d'affecter ${nom} sur le créneau du ${plage(c.startAt, c.endAt)} : personne ${MOTIFS_INDISPONIBLE[controle.bloquant]}.`,
+    );
+  return { nom, avertissement: texteAvertissements(controle.avertissements) };
+}
+
+/** Épingle une personne de service sur un créneau, ou la retire. */
+export async function epingler(creneauId: number, personnelId: number | null): Promise<Issue> {
+  if (!personnelId) {
+    await prisma.creneau.update({ where: { id: creneauId }, data: { personnelId: null } });
+    return { message: "Personne de service retirée du créneau.", niveau: "success" };
+  }
+  const c = await prisma.creneau.findUnique({
+    where: { id: creneauId },
+    include: { espace: { select: { siteId: true } } },
+  });
+  if (!c) throw new UserFacingError("Créneau introuvable.");
+  const { nom, avertissement } = await controlerAffectationManuelle(
+    { ...c, siteId: c.espace.siteId },
+    personnelId,
+  );
+  await prisma.creneau.update({ where: { id: creneauId }, data: { personnelId } });
+  return {
+    message: `${nom} de service sur ce créneau.${avertissement}`,
+    niveau: avertissement ? "warning" : "success",
+  };
+}
+
 /** Valide la proposition d'un créneau, avec la personne proposée ou une autre. */
 export async function validerProposition(
   creneauId: number,
   personnelId: number | null,
   acteur: string,
-): Promise<string> {
+): Promise<Issue> {
   const c = await prisma.creneau.findUnique({
     where: { id: creneauId },
-    include: { personnelPropose: true, reservation: { select: { numero: true } } },
+    include: {
+      personnelPropose: true,
+      reservation: { select: { numero: true } },
+      espace: { select: { siteId: true } },
+    },
   });
   if (!c) throw new UserFacingError("Créneau introuvable.");
   const choisi = personnelId ?? c.personnelProposeId;
   if (!choisi) throw new UserFacingError("Aucune personne à affecter sur ce créneau.");
+  const { avertissement } = await controlerAffectationManuelle(
+    { ...c, siteId: c.espace.siteId },
+    choisi,
+  );
   const p = await prisma.personnel.findUnique({ where: { id: choisi } });
   if (!p) throw new UserFacingError("Personne introuvable.");
   await prisma.creneau.update({
@@ -442,7 +474,10 @@ export async function validerProposition(
     },
   });
   invalidateNavCounts();
-  return `${nomPersonne(p)} affecté(e) sur le créneau du ${plage(c.startAt, c.endAt)} (${c.reservation.numero}).`;
+  return {
+    message: `${nomPersonne(p)} affecté(e) sur le créneau du ${plage(c.startAt, c.endAt)} (${c.reservation.numero}).${avertissement}`,
+    niveau: avertissement ? "warning" : "success",
+  };
 }
 
 /** Écarte la proposition : la personne écartée n'est plus reproposée sur ce créneau. */
@@ -556,4 +591,23 @@ export async function affectationsEntre(
     include: INCLUDE_AFFECTATION,
     orderBy: { startAt: "asc" },
   });
+}
+
+/**
+ * Après une absence : les vacations de la personne sur la période ne couvrent plus rien, donc les
+ * créneaux réservés de leurs sites repassent par l'affectation. Renvoie le nombre de vacations
+ * touchées (elles restent au planning, à supprimer ou à confier à quelqu'un d'autre).
+ */
+export async function recouvrirApresAbsence(
+  personnelId: number,
+  i: Intervalle,
+  acteur: string,
+): Promise<number> {
+  const vacations = await vacationsEntre(i.startAt, i.endAt, { personnelId });
+  if (!vacations.length) return 0;
+  const siteIds = [...new Set(vacations.map((v) => v.siteId))];
+  await affecterCreneaux({ de: i.startAt, a: i.endAt, siteIds }, acteur).catch((e) =>
+    console.error("[affectation]", e),
+  );
+  return vacations.length;
 }

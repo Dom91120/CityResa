@@ -290,6 +290,8 @@ model Espace {
   slug        String       @unique @db.VarChar(140)
   natureId    Int?         @map("nature_id")
   nature      Referential? @relation("EspaceNature", fields: [natureId], references: [id])
+  /// salle | sport : une information de sélection et de statistiques, sans effet sur les règles.
+  secteur     String       @default("salle") @db.VarChar(8)
   description String?
   /// Capacité debout / assis, surface en m², étage.
   capacityStanding Int?    @map("capacity_standing")

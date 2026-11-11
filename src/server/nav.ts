@@ -1,10 +1,11 @@
 /**
- * Compteurs de la barre latérale : demandes à traiter, messages non lus, usagers à
+ * Compteurs de la barre latérale : demandes à traiter, conversations à répondre, usagers à
  * valider, factures à payer, subventions à instruire, notifications non lues. Calculés
  * au plus une fois par minute (cache process), puis filtrés selon les droits.
  */
 import { prisma } from "@/server/db";
 import type { CurrentUser } from "@/server/guards";
+import { compterARepondre } from "@/server/messages-attente";
 
 const TTL_MS = process.env.CITYRESA_TEST ? 0 : 30_000;
 type Cache = { at: number; counts: Record<string, number> };
@@ -16,7 +17,7 @@ async function calculer(): Promise<Record<string, number>> {
   const [a_traiter, messages, usagers_a_valider, factures_a_payer, subventions_a_traiter] =
     await Promise.all([
       prisma.reservation.count({ where: { status: { in: ["a_traiter", "en_traitement"] } } }),
-      prisma.message.count({ where: { readAt: null, authorKind: "usager", isInternal: false } }),
+      compterARepondre(),
       prisma.organisation.count({ where: { validatedAt: null, isActive: true } }),
       prisma.facture.count({ where: { status: "a_payer" } }),
       prisma.subvention.count({ where: { status: { in: ["deposee", "instruction", "avis"] } } }),

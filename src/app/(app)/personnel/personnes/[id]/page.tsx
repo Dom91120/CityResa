@@ -171,7 +171,7 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
         <div className="d-flex flex-column gap-3">
           <div className="data-card">
             <Section titre="Identité" icone="id-card">
-              <Lus intitule="110px">
+              <Lus intitule="68px">
                 <Lu label="Fonction" valeur={p.fonction} tiret />
                 <Lu label="Courriel" valeur={p.email} tiret />
                 <Lu label="Téléphone" valeur={p.phone} tiret />
@@ -180,7 +180,7 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
               </Lus>
             </Section>
             <Section titre="Contrat et temps de travail" icone="briefcase">
-              <Lus intitule="110px">
+              <Lus intitule="68px">
                 <Lu label="Contrat" valeur={p.contratType?.label} tiret />
                 <Lu
                   label="Quotité"
@@ -200,13 +200,16 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
                   valeur={
                     horaires ? (
                       <>
-                        <table className="table table-sm mb-1" style={{ maxWidth: 420 }}>
+                        <table
+                          className="table table-sm mb-1 table-compacte"
+                          style={{ maxWidth: 420 }}
+                        >
                           <tbody>
                             {JOURS_ISO.map((j) => {
                               const plages = plagesDuJour(horaires, j.iso);
                               return (
                                 <tr key={j.iso}>
-                                  <td className="text-muted" style={{ width: 90 }}>
+                                  <td className="text-muted text-nowrap" style={{ width: "1%" }}>
                                     {j.long}
                                   </td>
                                   <td>

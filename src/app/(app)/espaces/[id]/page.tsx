@@ -15,7 +15,7 @@ import { Champ, Coches, Grille, Interrupteur, Select, Zone } from "@/components/
 import { Icone } from "@/components/icones";
 import { VideBloc } from "@/components/liste";
 import { Avatar, Chip, OuiNon, PastilleEspace, StatutResa } from "@/components/macros";
-import { OPTION_UNITES, TARIF_UNITES } from "@/lib/constantes";
+import { ESPACE_SECTEURS, OPTION_UNITES, TARIF_UNITES } from "@/lib/constantes";
 import { dateCourte, montantOuGratuit, plage } from "@/lib/libelles";
 import { aPartirDe, grilleEnVigueur } from "@/lib/tarification";
 import {
@@ -189,6 +189,7 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
                 <Lus>
                   <Lu label="Site" valeur={<a href={`/sites/${e.siteId}`}>{e.site.name}</a>} />
                   <Lu label="Nature" valeur={e.nature?.label} />
+                  <Lu label="Secteur" valeur={ESPACE_SECTEURS[e.secteur]?.label ?? e.secteur} />
                   <Lu label="Libellé court" valeur={e.shortName} />
                   <Lu label="Étage" valeur={e.floor} />
                   <Lu

@@ -5,10 +5,19 @@
  */
 import { randomBytes } from "node:crypto";
 import type { Prisma } from "@/generated/prisma/client";
+import {
+  type AbsenceRef,
+  controleManuel,
+  horsAbsences,
+  MOTIFS_INDISPONIBLE,
+  type MotifIndisponible,
+  type OccupationRef,
+  type PersonneAffectable,
+} from "@/lib/affectation";
 import { RE_YMD } from "@/lib/calendrier";
 import { COULEURS_ESPACE, JOURS_ISO, STATUTS_FERMES } from "@/lib/constantes";
-import type { Horaires, Intervalle } from "@/lib/creneaux";
-import { parseYmdUtc } from "@/lib/date-utc";
+import { type Horaires, type Intervalle, lireHoraires } from "@/lib/creneaux";
+import { parseYmdUtc, ymdUtc } from "@/lib/date-utc";
 import { joursDeLaSemaine } from "@/lib/editions";
 import {
   champ,
@@ -20,7 +29,7 @@ import {
   parseFloat_,
   parseInt_,
 } from "@/lib/forms-util";
-import { nomCourt, plage } from "@/lib/libelles";
+import { dateMoyenne, nomCourt, plage } from "@/lib/libelles";
 import {
   addParisDays,
   minutesDe,
@@ -141,6 +150,62 @@ export async function sitesDuPerimetre(user: CurrentUser): Promise<SiteRef[]> {
   return sites;
 }
 
+// ── Disponibilité : personne affectable, absences ──
+
+export const INCLUDE_PERSONNE_AFFECTABLE = { sites: true } satisfies Prisma.PersonnelInclude;
+
+export function versPersonneAffectable(
+  p: Prisma.PersonnelGetPayload<{ include: typeof INCLUDE_PERSONNE_AFFECTABLE }>,
+): PersonneAffectable {
+  return {
+    id: p.id,
+    firstName: p.firstName,
+    lastName: p.lastName,
+    isActive: p.isActive,
+    quotite: p.quotite,
+    heuresHebdo: p.heuresHebdo === null ? null : Number(p.heuresHebdo),
+    contratDebut: p.contratDebut ? ymdUtc(p.contratDebut) : null,
+    contratFin: p.contratFin ? ymdUtc(p.contratFin) : null,
+    horaires: lireHoraires(p.horaires),
+    sites: p.sites.map((s) => ({ siteId: s.siteId, principal: s.principal })),
+  };
+}
+
+/** Les absences qui touchent [de, a[, avec le libellé du motif. */
+export async function absencesEntre(
+  de: Date,
+  a: Date,
+  personnelId?: number,
+): Promise<AbsenceRef[]> {
+  const rows = await prisma.absence.findMany({
+    where: {
+      startAt: { lt: a },
+      endAt: { gt: de },
+      ...(personnelId ? { personnelId } : {}),
+    },
+    include: { motif: { select: { label: true } } },
+    orderBy: { startAt: "asc" },
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    personnelId: r.personnelId,
+    startAt: r.startAt,
+    endAt: r.endAt,
+    motif: r.motif?.label ?? null,
+  }));
+}
+
+/** Le résultat d'une écriture : son message et le niveau du flash (avertissement = à relire). */
+export type Issue = { message: string; niveau: "success" | "warning" };
+
+/** « Attention : personne non rattachée au site, hors horaires de travail. » ou rien. */
+export function texteAvertissements(motifs: readonly MotifIndisponible[]): string {
+  const uniques = [...new Set(motifs)];
+  return uniques.length
+    ? ` Attention : personne ${uniques.map((m) => MOTIFS_INDISPONIBLE[m]).join(", ")}.`
+    : "";
+}
+
 // ── Vacations ──
 
 export const INCLUDE_VACATION = {
@@ -232,11 +297,13 @@ export async function etatService(
   a: Date,
   f: { siteIds?: number[]; personnelId?: number | null } = {},
 ): Promise<EtatService> {
-  const [vacations, creneaux] = await Promise.all([
+  const [vacations, creneaux, absences] = await Promise.all([
     vacationsEntre(de, a, { siteIds: f.siteIds }),
     creneauxACouvrir(user, de, a, f.siteIds),
+    absencesEntre(de, a),
   ]);
-  const etats = etatsCouverture(creneaux, vacations.map(versVacationDatee));
+  // Une personne absente ne couvre rien : ses vacations sont rognées de ses absences.
+  const etats = etatsCouverture(creneaux, horsAbsences(vacations.map(versVacationDatee), absences));
   return {
     vacations: f.personnelId ? vacations.filter((v) => v.personnelId === f.personnelId) : vacations,
     etats,
@@ -308,19 +375,99 @@ async function verifierChevauchements(
     );
 }
 
+/**
+ * Contrôle des vacations demandées pour une personne sur un site : refuse hors contrat, pendant
+ * une absence (une série saute seulement les jours d'absence) et quand la personne est déjà
+ * affectée à un créneau d'un autre site ; avertit hors des sites de rattachement ou des horaires
+ * de travail. Renvoie les vacations retenues.
+ */
+async function controlerVacations(
+  personne: Prisma.PersonnelGetPayload<{ include: typeof INCLUDE_PERSONNE_AFFECTABLE }>,
+  siteId: number,
+  demandees: Intervalle[],
+): Promise<{ retenues: Intervalle[]; absentes: number; avertissements: MotifIndisponible[] }> {
+  const de = new Date(Math.min(...demandees.map((i) => i.startAt.getTime())));
+  const a = new Date(Math.max(...demandees.map((i) => i.endAt.getTime())));
+  const [absences, creneaux] = await Promise.all([
+    absencesEntre(de, a, personne.id),
+    prisma.creneau.findMany({
+      where: {
+        status: "prevu",
+        startAt: { lt: a },
+        endAt: { gt: de },
+        OR: [
+          { personnelId: personne.id },
+          { personnelProposeId: personne.id, proposeAt: { not: null } },
+        ],
+      },
+      select: { id: true, startAt: true, endAt: true, espace: { select: { siteId: true } } },
+    }),
+  ]);
+  const occupations: OccupationRef[] = creneaux.map((c) => ({
+    personnelId: personne.id,
+    siteId: c.espace.siteId,
+    startAt: c.startAt,
+    endAt: c.endAt,
+    creneauId: c.id,
+  }));
+  const p = versPersonneAffectable(personne);
+  const nom = nomPersonne(personne);
+  const retenues: Intervalle[] = [];
+  const avertissements: MotifIndisponible[] = [];
+  let absentes = 0;
+  for (const i of demandees) {
+    const controle = controleManuel(
+      p,
+      { id: 0, reservationId: 0, siteId, startAt: i.startAt, endAt: i.endAt },
+      { absences, occupations },
+    );
+    if (controle.bloquant === "absente" && demandees.length > 1) {
+      absentes += 1;
+      continue;
+    }
+    if (controle.bloquant === "absente")
+      throw new UserFacingError(
+        `${nom} est absent(e) sur cette période (${plage(i.startAt, i.endAt)}).`,
+      );
+    if (controle.bloquant === "hors_contrat")
+      throw new UserFacingError(
+        `La vacation du ${dateMoyenne(i.startAt)} est hors de la période de contrat de ${nom}.`,
+      );
+    if (controle.bloquant === "occupee")
+      throw new UserFacingError(
+        `${nom} est déjà affecté(e) à un créneau réservé sur un autre site (${plage(i.startAt, i.endAt)}).`,
+      );
+    if (controle.bloquant)
+      throw new UserFacingError(`${nom} : personne ${MOTIFS_INDISPONIBLE[controle.bloquant]}.`);
+    avertissements.push(...controle.avertissements);
+    retenues.push(i);
+  }
+  if (!retenues.length)
+    throw new UserFacingError(`${nom} est absent(e) sur toutes les dates de la série.`);
+  return { retenues, absentes, avertissements };
+}
+
 /** Crée une vacation, ou toute la série de sa répétition ; refuse les chevauchements. */
-export async function creerVacations(e: VacationEntree, user: CurrentUser): Promise<string> {
+export async function creerVacations(e: VacationEntree, user: CurrentUser): Promise<Issue> {
   const [personne, site] = await Promise.all([
-    prisma.personnel.findUnique({ where: { id: e.personnelId } }),
+    prisma.personnel.findUnique({
+      where: { id: e.personnelId },
+      include: INCLUDE_PERSONNE_AFFECTABLE,
+    }),
     prisma.site.findUnique({ where: { id: e.siteId }, select: { id: true, name: true } }),
   ]);
   if (!personne) throw new UserFacingError("Personne introuvable.");
   if (!personne.isActive) throw new UserFacingError("Cette personne n'est plus en service.");
   if (!site) throw new UserFacingError("Site introuvable.");
   const exclus = await joursExclus(e.intervalle, recurrenceDe(e.repetition));
-  const occurrences = developperVacations(e.intervalle, e.repetition, exclus);
-  if (!occurrences.length)
+  const demandees = developperVacations(e.intervalle, e.repetition, exclus);
+  if (!demandees.length)
     throw new UserFacingError("Aucune vacation à créer sur cette période (jours exclus).");
+  const {
+    retenues: occurrences,
+    absentes,
+    avertissements,
+  } = await controlerVacations(personne, e.siteId, demandees);
   await verifierChevauchements(e.personnelId, occurrences, null);
   const serieId = occurrences.length > 1 ? randomBytes(12).toString("hex") : null;
   await prisma.vacation.createMany({
@@ -335,22 +482,34 @@ export async function creerVacations(e: VacationEntree, user: CurrentUser): Prom
     })),
   });
   const n = occurrences.length;
-  return n > 1
-    ? `${n} vacations créées pour ${nomPersonne(personne)} (${site.name}), chaque semaine jusqu'au ${e.repetition?.until.split("-").reverse().join("/")}.`
-    : `${nomPersonne(personne)} de service ${plage(e.intervalle.startAt, e.intervalle.endAt)} (${site.name}).`;
+  const base =
+    demandees.length > 1
+      ? `${n} vacation${n > 1 ? "s" : ""} créée${n > 1 ? "s" : ""} pour ${nomPersonne(personne)} (${site.name}), chaque semaine jusqu'au ${e.repetition?.until.split("-").reverse().join("/")}.`
+      : `${nomPersonne(personne)} de service ${plage(e.intervalle.startAt, e.intervalle.endAt)} (${site.name}).`;
+  const sautees = absentes
+    ? ` ${absentes} date${absentes > 1 ? "s" : ""} sautée${absentes > 1 ? "s" : ""} : absence.`
+    : "";
+  return {
+    message: `${base}${sautees}${texteAvertissements(avertissements)}`,
+    niveau: absentes || avertissements.length ? "warning" : "success",
+  };
 }
 
 export async function modifierVacation(
   id: number,
   e: Omit<VacationEntree, "repetition">,
-): Promise<string> {
+): Promise<Issue> {
   const v = await prisma.vacation.findUnique({ where: { id } });
   if (!v) throw new UserFacingError("Vacation introuvable.");
   const [personne, site] = await Promise.all([
-    prisma.personnel.findUnique({ where: { id: e.personnelId } }),
+    prisma.personnel.findUnique({
+      where: { id: e.personnelId },
+      include: INCLUDE_PERSONNE_AFFECTABLE,
+    }),
     prisma.site.findUnique({ where: { id: e.siteId }, select: { name: true } }),
   ]);
   if (!personne || !site) throw new UserFacingError("Personne ou site introuvable.");
+  const { avertissements } = await controlerVacations(personne, e.siteId, [e.intervalle]);
   await verifierChevauchements(e.personnelId, [e.intervalle], id);
   await prisma.vacation.update({
     where: { id },
@@ -362,7 +521,10 @@ export async function modifierVacation(
       note: e.note,
     },
   });
-  return `Vacation modifiée : ${nomPersonne(personne)}, ${plage(e.intervalle.startAt, e.intervalle.endAt)} (${site.name}).`;
+  return {
+    message: `Vacation modifiée : ${nomPersonne(personne)}, ${plage(e.intervalle.startAt, e.intervalle.endAt)} (${site.name}).${texteAvertissements(avertissements)}`,
+    niveau: avertissements.length ? "warning" : "success",
+  };
 }
 
 /** Supprime une vacation, ou toute sa série à partir d'elle (`serie`). */
@@ -377,19 +539,6 @@ export async function supprimerVacation(id: number, serie: boolean): Promise<str
   }
   await prisma.vacation.delete({ where: { id } });
   return `Vacation de ${nomPersonne(v.personnel)} du ${plage(v.startAt, v.endAt)} supprimée.`;
-}
-
-// ── Épinglage sur un créneau ──
-
-export async function epingler(creneauId: number, personnelId: number | null): Promise<string> {
-  if (personnelId) {
-    const p = await prisma.personnel.findUnique({ where: { id: personnelId } });
-    if (!p) throw new UserFacingError("Personne introuvable.");
-    await prisma.creneau.update({ where: { id: creneauId }, data: { personnelId } });
-    return `${nomPersonne(p)} de service sur ce créneau.`;
-  }
-  await prisma.creneau.update({ where: { id: creneauId }, data: { personnelId: null } });
-  return "Personne de service retirée du créneau.";
 }
 
 // ── Édition PDF ──
@@ -545,9 +694,11 @@ export async function serviceDossier(r: {
   if (!prevus.length) return { personnes: toutes, parCreneau };
   const de = new Date(Math.min(...prevus.map((c) => c.startAt.getTime())));
   const a = new Date(Math.max(...prevus.map((c) => c.endAt.getTime())));
-  const vacations = (await vacationsEntre(de, a, { siteIds: [r.espace.siteId] })).map(
-    versVacationDatee,
-  );
+  const [brutes, absences] = await Promise.all([
+    vacationsEntre(de, a, { siteIds: [r.espace.siteId] }),
+    absencesEntre(de, a),
+  ]);
+  const vacations = horsAbsences(brutes.map(versVacationDatee), absences);
   for (const v of vacations)
     if (!noms.has(v.personnelId)) noms.set(v.personnelId, nomPersonne(v.personne));
   for (const c of prevus) {

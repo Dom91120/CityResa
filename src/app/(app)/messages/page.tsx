@@ -3,6 +3,7 @@ import { Barre, PaginationBar, SegTabs, urlAvec, VideBloc } from "@/components/l
 import { Avatar, Chip, PastilleEspace, StatutResa, TypeOrganisation } from "@/components/macros";
 import { ScriptDiffere } from "@/components/scripts";
 import { dateMoyenne, depuis, nomCourt } from "@/lib/libelles";
+import { libelleARepondre } from "@/lib/messages";
 import { auteurDe, conversations } from "@/modules/messages/server";
 import { contexteModule } from "@/server/module";
 import { paginate, param, resolvePerPage } from "@/server/paging";
@@ -22,10 +23,11 @@ export default async function MessagesPage({
   const page = await contexteModule("messages");
   const params = await searchParams;
   const q = (param(params, "q") ?? "").trim();
-  const onglet = param(params, "onglet") === "nonlus" ? "nonlus" : "tous";
+  const onglet = param(params, "onglet") === "arepondre" ? "arepondre" : "tous";
   const toutes = await conversations(page.user, q);
   const nonLues = toutes.filter((c) => c.nonLus > 0);
-  const liste = onglet === "nonlus" ? nonLues : toutes;
+  const aRepondre = toutes.filter((c) => c.aRepondre);
+  const liste = onglet === "arepondre" ? aRepondre : toutes;
   const perPage = await resolvePerPage(params, page.user, "messages.list");
   const [rows, p] = paginate(liste, params, perPage);
   const totalNonLus = nonLues.reduce((s, c) => s + c.nonLus, 0);
@@ -39,9 +41,12 @@ export default async function MessagesPage({
             Messages <span className="page-count">{toutes.length}</span>
           </h1>
           <p className="page-subtitle">
+            {aRepondre.length
+              ? `${libelleARepondre(aRepondre.length)} : l'usager a écrit en dernier.`
+              : "Aucune conversation n'attend de réponse."}
             {totalNonLus
-              ? `${totalNonLus} message${totalNonLus > 1 ? "s" : ""} d'usagers sans réponse, dans ${nonLues.length} dossier${nonLues.length > 1 ? "s" : ""}.`
-              : "Tous les messages des usagers ont été lus."}
+              ? ` ${totalNonLus} message${totalNonLus > 1 ? "s" : ""} non lu${totalNonLus > 1 ? "s" : ""}.`
+              : ""}
           </p>
         </div>
         <div className="page-actions">
@@ -64,10 +69,10 @@ export default async function MessagesPage({
       <SegTabs
         tabs={[
           {
-            href: urlAvec(page.pathname, page.search, { onglet: "nonlus", page: null }),
-            label: "Non lus",
-            count: nonLues.length,
-            active: onglet === "nonlus",
+            href: urlAvec(page.pathname, page.search, { onglet: "arepondre", page: null }),
+            label: "À répondre",
+            count: aRepondre.length,
+            active: onglet === "arepondre",
           },
           {
             href: urlAvec(page.pathname, page.search, { onglet: null, page: null }),
@@ -83,7 +88,7 @@ export default async function MessagesPage({
         pathname={page.pathname}
         search={page.search}
         placeholder="Numéro, titre, organisation, espace, texte…"
-        hidden={{ onglet: onglet === "nonlus" ? "nonlus" : null }}
+        hidden={{ onglet: onglet === "arepondre" ? "arepondre" : null }}
       />
 
       <div className="data-card">
@@ -103,7 +108,7 @@ export default async function MessagesPage({
                   const r = c.reservation;
                   const lien = `/reservations/${r.id}#discussion`;
                   return (
-                    <tr key={r.id} className={c.nonLus ? "fw-medium" : undefined}>
+                    <tr key={r.id} className={c.aRepondre ? "fw-medium" : undefined}>
                       <td style={{ maxWidth: 320 }}>
                         <span className="d-flex align-items-center gap-2">
                           <PastilleEspace couleur={r.espace.color} />
@@ -153,9 +158,9 @@ export default async function MessagesPage({
                       <td className="actions">
                         <a
                           href={lien}
-                          className={`btn btn-sm ${c.nonLus ? "btn-primary" : "btn-outline-secondary"}`}
+                          className={`btn btn-sm ${c.aRepondre ? "btn-primary" : "btn-outline-secondary"}`}
                         >
-                          {c.nonLus ? "Répondre" : "Ouvrir"}
+                          {c.aRepondre ? "Répondre" : "Ouvrir"}
                         </a>
                       </td>
                     </tr>
@@ -166,23 +171,23 @@ export default async function MessagesPage({
           </div>
         ) : (
           <VideBloc
-            icone={onglet === "nonlus" ? "circle-check" : "message-circle"}
+            icone={onglet === "arepondre" ? "circle-check" : "message-circle"}
             titre={
               q
                 ? "Aucune conversation ne correspond"
-                : onglet === "nonlus"
-                  ? "Aucun message en attente de réponse"
+                : onglet === "arepondre"
+                  ? "Aucune conversation à répondre"
                   : "Aucune conversation"
             }
             texte={
               q
                 ? "Essayez un autre mot-clé."
-                : onglet === "nonlus"
-                  ? "Les messages des usagers que vous n'avez pas encore lus apparaîtront ici."
+                : onglet === "arepondre"
+                  ? "Les conversations où l'usager a écrit en dernier apparaîtront ici, jusqu'à ce qu'un agent lui réponde."
                   : "Les échanges avec les usagers se font depuis le fil de discussion de chaque dossier."
             }
             action={
-              onglet === "nonlus" && toutes.length ? (
+              onglet === "arepondre" && toutes.length ? (
                 <a
                   href={urlAvec(page.pathname, page.search, { onglet: null })}
                   className="btn btn-outline-secondary btn-sm"

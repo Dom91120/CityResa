@@ -146,7 +146,7 @@ sept prochains jours.*
 
 | Moment | Action | Écran | Voir |
 | --- | --- | --- | --- |
-| Arrivée | Lit le tableau de bord : demandes à traiter, alertes, messages sans réponse, sept prochains jours ; la cloche signale les nouveautés | Tableau de bord | 8 |
+| Arrivée | Lit le tableau de bord : demandes à traiter, alertes, conversations à répondre, sept prochains jours ; la cloche signale les nouveautés | Tableau de bord | 8 |
 | Matin | Traite les demandes « À traiter » : vérifie le créneau (conflits signalés), le demandeur, le devis ; **Approuver**, **Décliner** avec motif, ou **J'ai besoin d'informations** | Réservations › fiche | 2 |
 | Matin | Répond aux messages des usagers ; note interne pour les collègues | Messages, fil du dossier | 5 |
 | Au téléphone | Saisit une demande pour un usager (**Nouvelle réservation**) ; en cas de conflit, choisit une des alternatives proposées | Nouvelle réservation | 2 |

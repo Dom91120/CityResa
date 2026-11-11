@@ -12,6 +12,7 @@ import {
   Vide,
 } from "@/components/liste";
 import { PastilleEspace } from "@/components/macros";
+import { ESPACE_SECTEURS } from "@/lib/constantes";
 import { aPartirDe } from "@/lib/tarification";
 import { libellesProfils, premieresPhotos, referentielsEspaces } from "@/modules/espaces/server";
 import {
@@ -39,6 +40,7 @@ export default async function EspacesPage({ searchParams }: { searchParams: Prom
   const onglet = String(param(params, "etat") ?? "");
   const siteF = String(param(params, "site") ?? "");
   const natureF = String(param(params, "nature") ?? "");
+  const secteurF = String(param(params, "secteur") ?? "");
   const [espaces, refs, sites] = await Promise.all([
     prisma.espace.findMany({
       include: {
@@ -65,12 +67,14 @@ export default async function EspacesPage({ searchParams }: { searchParams: Prom
     etat: etatDe(e),
     siteNom: e.site.name,
     natureNom: e.nature?.label ?? "",
+    secteurNom: ESPACE_SECTEURS[e.secteur]?.label ?? e.secteur,
     capacite: e.capacityStanding ?? e.capacitySeated ?? null,
   }));
   if (onglet) items = items.filter((e) => e.etat === onglet);
   if (siteF) items = items.filter((e) => String(e.siteId) === siteF);
   if (natureF) items = items.filter((e) => String(e.natureId ?? "") === natureF);
-  items = textSearch(items, q, ["name", "slug", "siteNom", "natureNom", "floor"]);
+  if (secteurF) items = items.filter((e) => e.secteur === secteurF);
+  items = textSearch(items, q, ["name", "slug", "siteNom", "natureNom", "secteurNom", "floor"]);
   items = trier(
     items,
     page.search,
@@ -141,7 +145,7 @@ export default async function EspacesPage({ searchParams }: { searchParams: Prom
         q={q}
         pathname={page.pathname}
         search={page.search}
-        hidden={{ etat: onglet, site: siteF, nature: natureF }}
+        hidden={{ etat: onglet, site: siteF, nature: natureF, secteur: secteurF }}
         placeholder="Nom, site, nature…"
         filtres={
           <>
@@ -160,12 +164,19 @@ export default async function EspacesPage({ searchParams }: { searchParams: Prom
               blank="Toutes les natures"
               options={refs.natures.map((n) => [String(n.id), n.label])}
             />
+            <Filtre
+              name="secteur"
+              value={secteurF}
+              ariaLabel="Secteur"
+              blank="Salles et sports"
+              options={Object.entries(ESPACE_SECTEURS).map(([k, v]) => [k, v.label])}
+            />
           </>
         }
       />
       <div className="data-card">
         <div className="table-responsive">
-          <table className="table table-hover">
+          <table className="table table-hover align-middle mb-0 table-compacte">
             <thead>
               <tr>
                 <th style={{ width: 56 }} />
@@ -222,7 +233,10 @@ export default async function EspacesPage({ searchParams }: { searchParams: Prom
                         </span>
                       </td>
                       <td className="text-nowrap">
-                        {e.natureNom || <span className="text-faint">—</span>}
+                        <span className="cell2">
+                          {e.natureNom || <span className="text-faint">—</span>}
+                          <small>{e.secteurNom}</small>
+                        </span>
                       </td>
                       <td className="text-center tabular">
                         {e.capacite !== null ? (
@@ -306,12 +320,14 @@ export default async function EspacesPage({ searchParams }: { searchParams: Prom
                 <Vide
                   colonnes={10}
                   message={
-                    q || onglet || siteF || natureF
+                    q || onglet || siteF || natureF || secteurF
                       ? "Aucun espace ne correspond à ces critères."
                       : "Aucun espace pour l'instant : créez le premier."
                   }
                   urlAjout={
-                    peutEditer && !q && !onglet && !siteF && !natureF ? "/espaces/nouveau" : null
+                    peutEditer && !q && !onglet && !siteF && !natureF && !secteurF
+                      ? "/espaces/nouveau"
+                      : null
                   }
                   libelleAjout="Créer un espace"
                   icone="door-open"

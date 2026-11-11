@@ -7,6 +7,7 @@ import { type Horaires, lireHoraires } from "@/lib/creneaux";
 import { minutesDe, parisParts } from "@/lib/paris-time";
 import { prisma } from "@/server/db";
 import type { CurrentUser } from "@/server/guards";
+import { compterARepondre } from "@/server/messages-attente";
 
 export type Periode = { de: Date; a: Date; label: string };
 
@@ -57,7 +58,7 @@ export async function indicateurs(p: Periode, prec: Periode, espacesGeres: numbe
       }),
       prisma.reservation.count({ where: { status: "acceptee", signedAt: null } }),
       prisma.facture.count({ where: { status: "a_payer" } }),
-      prisma.message.count({ where: { readAt: null, authorKind: "usager", isInternal: false } }),
+      compterARepondre(),
     ],
   );
   const delta = (a: number, b: number) => (b ? Math.round(((a - b) / b) * 1000) / 10 : null);

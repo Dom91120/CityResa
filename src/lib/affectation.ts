@@ -6,7 +6,7 @@
  * Logique PURE : testée dans affectation.test.ts.
  */
 import { chevauche, dansHoraires, type Horaires, type Intervalle } from "@/lib/creneaux";
-import { minutesDe, parisParts } from "@/lib/paris-time";
+import { addParisDays, minutesDe, parisMidnight, parisParts } from "@/lib/paris-time";
 
 export type PersonneAffectable = {
   id: number;
@@ -116,18 +116,84 @@ export function occupeeAilleurs(
 
 export type Disponibilite = { ok: true } | { ok: false; motif: MotifIndisponible };
 
+/** Tous les motifs qui écartent la personne du créneau, dans l'ordre de `disponible`. */
+export function motifsIndisponible(
+  p: PersonneAffectable,
+  c: CreneauAffectable,
+  ctx: ContexteDisponibilite,
+): MotifIndisponible[] {
+  const out: MotifIndisponible[] = [];
+  if (!p.isActive) out.push("inactive");
+  if (!p.sites.some((s) => s.siteId === c.siteId)) out.push("hors_site");
+  if (!enContrat(p, c)) out.push("hors_contrat");
+  if (!travaille(p.horaires, c)) out.push("hors_horaires");
+  if (absente(ctx.absences, p.id, c)) out.push("absente");
+  if (occupeeAilleurs(ctx.occupations, p.id, c)) out.push("occupee");
+  return out;
+}
+
 export function disponible(
   p: PersonneAffectable,
   c: CreneauAffectable,
   ctx: ContexteDisponibilite,
 ): Disponibilite {
-  if (!p.isActive) return { ok: false, motif: "inactive" };
-  if (!p.sites.some((s) => s.siteId === c.siteId)) return { ok: false, motif: "hors_site" };
-  if (!enContrat(p, c)) return { ok: false, motif: "hors_contrat" };
-  if (!travaille(p.horaires, c)) return { ok: false, motif: "hors_horaires" };
-  if (absente(ctx.absences, p.id, c)) return { ok: false, motif: "absente" };
-  if (occupeeAilleurs(ctx.occupations, p.id, c)) return { ok: false, motif: "occupee" };
-  return { ok: true };
+  const [motif] = motifsIndisponible(p, c, ctx);
+  return motif ? { ok: false, motif } : { ok: true };
+}
+
+/**
+ * Ce qu'un agent ne peut pas forcer à la main : la personne n'est pas là (hors service, hors
+ * contrat, absente) ou est déjà ailleurs. Le rattachement au site et les horaires de travail
+ * restent à sa main (remplacement, heures supplémentaires) et n'appellent qu'un avertissement.
+ */
+export const MOTIFS_BLOQUANTS: readonly MotifIndisponible[] = [
+  "inactive",
+  "hors_contrat",
+  "absente",
+  "occupee",
+];
+
+export type ControleManuel = {
+  bloquant: MotifIndisponible | null;
+  avertissements: MotifIndisponible[];
+};
+
+/** Le contrôle d'une affectation ou d'une vacation décidée à la main. */
+export function controleManuel(
+  p: PersonneAffectable,
+  c: CreneauAffectable,
+  ctx: ContexteDisponibilite,
+): ControleManuel {
+  const motifs = motifsIndisponible(p, c, ctx);
+  return {
+    bloquant: motifs.find((m) => MOTIFS_BLOQUANTS.includes(m)) ?? null,
+    avertissements: motifs.filter((m) => !MOTIFS_BLOQUANTS.includes(m)),
+  };
+}
+
+/**
+ * Retire d'intervalles datés (vacations) les périodes d'absence de leur personne : une vacation
+ * à cheval sur une absence est rognée ou coupée en deux, une vacation entièrement dans
+ * l'absence disparaît. Sert à la couverture : une personne absente ne couvre rien.
+ */
+export function horsAbsences<T extends Intervalle & { personnelId: number }>(
+  items: readonly T[],
+  absences: readonly AbsenceRef[],
+): T[] {
+  let out: T[] = [...items];
+  for (const a of absences) {
+    const suivant: T[] = [];
+    for (const v of out) {
+      if (v.personnelId !== a.personnelId || !chevauche(v, a)) {
+        suivant.push(v);
+        continue;
+      }
+      if (a.startAt > v.startAt) suivant.push({ ...v, endAt: a.startAt });
+      if (a.endAt < v.endAt) suivant.push({ ...v, startAt: a.endAt });
+    }
+    out = suivant;
+  }
+  return out;
 }
 
 export type Candidat = {
@@ -145,6 +211,19 @@ function lundiDe(d: Date): string {
   const [y, m, j] = p.dateKey.split("-").map(Number);
   const date = new Date(Date.UTC(y, m - 1, j - (p.weekday - 1)));
   return date.toISOString().slice(0, 10);
+}
+
+/**
+ * La fenêtre élargie aux semaines de Paris entières (du lundi 0 h au lundi suivant 0 h) que
+ * touche [de, a[ : la charge hebdomadaire d'un candidat se lit sur toute la semaine du créneau,
+ * pas seulement sur le créneau lui-même.
+ */
+export function fenetreSemaines(de: Date, a: Date): Intervalle {
+  const dernier = new Date(Math.max(de.getTime(), a.getTime() - 1));
+  return {
+    startAt: parisMidnight(lundiDe(de)),
+    endAt: addParisDays(parisMidnight(lundiDe(dernier)), 7),
+  };
 }
 
 function heuresAffecteesSemaine(

@@ -277,18 +277,6 @@ export function Shell({
               <a href="/profil" className="sidebar-user-item" role="menuitem">
                 <Icone nom="circle-user" taille={14} /> Mon profil
               </a>
-              <a href="/profil#securite" className="sidebar-user-item" role="menuitem">
-                <Icone nom="shield-check" taille={14} /> Sécurité
-              </a>
-              <a
-                href="/portail"
-                className="sidebar-user-item"
-                role="menuitem"
-                target="_blank"
-                rel="noopener"
-              >
-                <Icone nom="external-link" taille={14} /> Voir le portail
-              </a>
               <span
                 className="sidebar-user-item"
                 role="menuitem"
@@ -337,14 +325,25 @@ export function Shell({
             />
             <kbd aria-hidden="true">Ctrl K</kbd>
           </form>
-          <a href="/aide" className="topbar-link">
-            <Icone nom="lightbulb" taille={15} /> Astuces
-          </a>
           {user.canEdit("reservations") ? (
             <a href="/reservations/nouvelle" className="topbar-link">
               <Icone nom="plus" taille={15} /> Nouvelle réservation
             </a>
           ) : null}
+          {features.portail ? (
+            <a
+              href="/portail"
+              className="topbar-link"
+              target="_blank"
+              rel="noopener"
+              title="Ouvrir le portail des usagers dans un nouvel onglet"
+            >
+              <Icone nom="globe" taille={15} /> Portail
+            </a>
+          ) : null}
+          <a href="/aide" className="topbar-link">
+            <Icone nom="lightbulb" taille={15} /> Astuces
+          </a>
           <Cloche
             notifications={notifications}
             nonLues={nonLues}

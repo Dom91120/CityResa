@@ -13,6 +13,7 @@ import { fenetre, lireDate, lireVue } from "@/modules/planning/server";
 import {
   affecterCreneaux,
   ecarterProposition,
+  recouvrirApresAbsence,
   resumeBilan,
   reverifierAffectations,
   validerProposition,
@@ -93,17 +94,17 @@ export async function actionProposition(
     if (!c) return pasTrouve();
     if (!user.gereEspace(c.espaceId))
       throw new UserFacingError("Ce créneau n'est pas dans votre périmètre.");
-    const message =
+    const { message, niveau } =
       action === "valider"
         ? await validerProposition(creneauId, idOuNull(form, "personnel_id"), user.email)
-        : await ecarterProposition(creneauId, user.email);
+        : { message: await ecarterProposition(creneauId, user.email), niveau: "success" as const };
     await auditRecord(
       `proposition ${action === "valider" ? "validee" : "ecartee"}`,
       message,
       CATEGORIE,
       user.email,
     );
-    return redirigerAvecMessage(retour, message, "success");
+    return redirigerAvecMessage(retour, message, niveau);
   } catch (err) {
     if (err instanceof UserFacingError) return redirigerAvecMessage(retour, err.message, "danger");
     throw err;
@@ -115,12 +116,12 @@ export async function ajouterVacation(form: FormData): Promise<Response> {
   const retour = suite(form, "/personnel");
   try {
     const e = lireVacation(form);
-    const message = await creerVacations(e, user);
+    const { message, niveau } = await creerVacations(e, user);
     await auditRecord("ajout vacation", message, CATEGORIE, user.email);
     const ou = retour.startsWith("/personnel")
       ? retour
       : `/personnel?date=${isoParis(e.intervalle.startAt).date}&site=${e.siteId}`;
-    return redirigerAvecMessage(ou, message, "success");
+    return redirigerAvecMessage(ou, message, niveau);
   } catch (err) {
     if (err instanceof UserFacingError) return redirigerAvecMessage(retour, err.message, "danger");
     throw err;
@@ -145,9 +146,9 @@ export async function actionVacation(
       return redirigerAvecMessage(retour, message, "success");
     }
     const e = lireVacation(form);
-    const message = await modifierVacation(id, e);
+    const { message, niveau } = await modifierVacation(id, e);
     await auditRecord("modification vacation", message, CATEGORIE, user.email);
-    return redirigerAvecMessage(retour, message, "success");
+    return redirigerAvecMessage(retour, message, niveau);
   } catch (err) {
     if (err instanceof UserFacingError)
       return redirigerAvecMessage(`/personnel/vacations/${id}`, err.message, "danger");
@@ -228,12 +229,19 @@ export async function actionPersonne(
         const message = await creerAbsence(id, e, user);
         await auditRecord("ajout absence personnel", `${nom} · ${message}`, CATEGORIE, user.email);
         const retires = await reverifierAffectations(id, user.email);
+        const vacations = await recouvrirApresAbsence(id, e.intervalle, user.email);
+        const suites = [
+          retires
+            ? `${retires} affectation${retires > 1 ? "s" : ""} retirée${retires > 1 ? "s" : ""} sur la période et remise${retires > 1 ? "s" : ""} en affectation.`
+            : null,
+          vacations
+            ? `${vacations} vacation${vacations > 1 ? "s" : ""} sur la période ne compte${vacations > 1 ? "nt" : ""} plus dans la couverture : les créneaux concernés sont remis en affectation.`
+            : null,
+        ].filter(Boolean);
         return redirigerAvecMessage(
           fiche,
-          retires
-            ? `${message} ${retires} affectation${retires > 1 ? "s" : ""} retirée${retires > 1 ? "s" : ""} sur la période et remise${retires > 1 ? "s" : ""} en affectation.`
-            : message,
-          "success",
+          [message, ...suites].join(" "),
+          vacations ? "warning" : "success",
         );
       }
       case "absences_supprimer": {

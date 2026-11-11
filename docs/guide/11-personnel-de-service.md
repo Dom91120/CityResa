@@ -41,6 +41,8 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 **Règles à connaître**
 
 - Une même personne ne peut pas être de service deux fois sur des horaires qui se recouvrent : l'application refuse la vacation et dit laquelle gêne. Deux personnes peuvent en revanche être de service en même temps sur le même site.
+- Une vacation est **refusée** si la personne est absente sur la période, hors de sa période de contrat, ou déjà affectée à un créneau réservé sur un autre site. Dans une répétition, les dates qui tombent pendant une absence sont simplement sautées, et le message dit combien.
+- Hors des sites de rattachement de la personne ou de ses horaires de travail, la vacation est enregistrée avec un **avertissement** (bandeau orange) : c'est à vous de juger (remplacement, heures supplémentaires).
 - Une répétition crée une vacation par semaine, chacune modifiable séparément ; au plus 200 occurrences.
 - Seuls les créneaux des dossiers **acceptés, signés ou confirmés** sont à couvrir : une demande encore à l'étude n'apparaît pas.
 - Les créneaux à couvrir des 7 prochains jours remontent aussi dans les **alertes** du tableau de bord (chapitre 8).
@@ -108,7 +110,8 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 **Règles à connaître**
 
 - Un créneau épinglé est toujours **Couvert**, et la personne apparaît en tête, marquée d'un signet.
-- L'épinglage ne crée pas de vacation : il n'empêche pas la personne d'être de service ailleurs au même moment. Pour une présence régulière, préférez une vacation.
+- L'épinglage ne crée pas de vacation. Pour une présence régulière, préférez une vacation.
+- L'épinglage est **refusé** si la personne n'est plus en service, est hors de sa période de contrat, est absente, ou est déjà de service au même moment sur un autre site (créneau affecté ou vacation) : le message donne la raison. Hors de ses sites de rattachement ou de ses horaires de travail, il est enregistré avec un **avertissement**. La même règle s'applique quand vous validez une proposition en choisissant un autre candidat.
 - Les séances passées ne s'épinglent plus ; elles gardent le nom déjà enregistré.
 
 ## 11.5 Courriel hebdomadaire et PDF
@@ -163,10 +166,11 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 1. Sur la fiche, cliquez sur **Ajouter une absence**.
 2. Choisissez le **Motif** (congés annuels, RTT, maladie, formation, récupération, autre ; liste dans Administration › Référentiels), le premier jour (**Du**) et le dernier (**Au**, inclus).
 3. Laissez **Journée(s) entière(s)** coché, ou décochez-le pour une demi-journée ou un rendez-vous et indiquez l'**Heure de début** et l'**Heure de fin**.
-4. Cliquez sur **Ajouter**. Si la personne était affectée ou proposée sur un créneau de la période, l'affectation est retirée et le créneau repasse en affectation : le message indique combien.
+4. Cliquez sur **Ajouter**. Si la personne était affectée ou proposée sur un créneau de la période, l'affectation est retirée et le créneau repasse en affectation : le message indique combien. Si elle avait des vacations sur la période, le message le signale aussi.
 
 **Règles à connaître**
 
+- Une personne absente **ne couvre rien** : ses vacations restent affichées au planning (à vous de les supprimer ou de les confier à quelqu'un d'autre), mais elles ne comptent plus dans la couverture pendant l'absence. Les créneaux réservés qu'elles couvraient repassent **À couvrir** ou **Partiel** et sont remis en affectation.
 - La suppression d'une absence ne réaffecte rien d'elle-même ; la tâche quotidienne ou le bouton **Affecter** s'en chargent.
 - L'historique du dossier de réservation garde la trace d'une personne retirée (« Personne de service retirée … plus disponible »).
 
@@ -197,5 +201,5 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 
 - Le calcul se fait dès qu'un dossier devient accepté, signé ou confirmé, puis chaque matin à 6 h 50 sur les 30 prochains jours (tâche **Personnel de service : affectation ou proposition**). Une proposition encore valable est conservée d'un passage à l'autre.
 - Une personne est **disponible** si elle est en service, rattachée au site, dans sa période de contrat, en poste d'après son cycle, pas absente, et pas déjà affectée au même moment sur un autre site. Plusieurs créneaux d'un même site au même moment restent compatibles (un gardien couvre tout le site).
-- Les candidats sont classés : site principal d'abord, puis la plus faible charge déjà affectée sur la semaine, puis le nom.
+- Les candidats sont classés : site principal d'abord, puis la plus faible charge déjà affectée sur la semaine (du lundi au dimanche du créneau, créneaux affectés et proposés compris), puis le nom.
 - Les créneaux déjà **couverts par des vacations** ne sont pas traités : les vacations restent le moyen de planifier une présence régulière sur un site, l'affectation complète le reste.

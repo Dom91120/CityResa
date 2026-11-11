@@ -4,11 +4,14 @@ import {
   absencesDuJour,
   type CreneauAffectable,
   candidats,
+  controleManuel,
   decisionAffectation,
   disponible,
   enContrat,
+  fenetreSemaines,
   heuresAttendues,
   heuresDuCycle,
+  horsAbsences,
   libellePlages,
   type OccupationRef,
   type PersonneAffectable,
@@ -261,5 +264,119 @@ describe("périodes travaillées d'un jour", () => {
         { debutMin: 810, finMin: 1020 },
       ]),
     ).toBe("8h00 – 12h00 · 13h30 – 17h00");
+  });
+});
+
+describe("fenêtre de la charge hebdomadaire", () => {
+  it("s'élargit à la semaine entière du créneau, du lundi au lundi", () => {
+    // Jeudi 12 novembre 2026, 18 h – 22 h.
+    const f = fenetreSemaines(t("2026-11-12", "18:00"), t("2026-11-12", "22:00"));
+    expect(f.startAt).toEqual(t("2026-11-09", "00:00"));
+    expect(f.endAt).toEqual(t("2026-11-16", "00:00"));
+  });
+
+  it("couvre toutes les semaines d'un lot, sans déborder quand il finit un lundi à 0 h", () => {
+    const f = fenetreSemaines(t("2026-11-11", "08:00"), t("2026-11-23", "00:00"));
+    expect(f.startAt).toEqual(t("2026-11-09", "00:00"));
+    expect(f.endAt).toEqual(t("2026-11-23", "00:00"));
+  });
+});
+
+describe("affectation décidée à la main", () => {
+  const c = cren(1, "2026-11-09", "18:00", "22:00");
+  const absences: AbsenceRef[] = [
+    {
+      id: 1,
+      personnelId: 1,
+      startAt: t("2026-11-09", "00:00"),
+      endAt: t("2026-11-10", "00:00"),
+      motif: "Congés",
+    },
+  ];
+
+  it("laisse passer une personne disponible", () => {
+    expect(controleManuel(personne(1, "A"), c, vide)).toEqual({
+      bloquant: null,
+      avertissements: [],
+    });
+  });
+
+  it("avertit sans bloquer hors du site ou des horaires de travail", () => {
+    const p = personne(1, "A", {
+      sites: [{ siteId: 2, principal: true }],
+      horaires: JOURNEE_COUPEE,
+    });
+    expect(controleManuel(p, c, vide)).toEqual({
+      bloquant: null,
+      avertissements: ["hors_site", "hors_horaires"],
+    });
+  });
+
+  it("bloque une personne absente, hors contrat, hors service ou déjà ailleurs", () => {
+    expect(controleManuel(personne(1, "A"), c, { absences, occupations: [] }).bloquant).toBe(
+      "absente",
+    );
+    expect(controleManuel(personne(1, "A", { contratFin: "2026-11-01" }), c, vide).bloquant).toBe(
+      "hors_contrat",
+    );
+    expect(controleManuel(personne(1, "A", { isActive: false }), c, vide).bloquant).toBe(
+      "inactive",
+    );
+    const occupations: OccupationRef[] = [
+      {
+        personnelId: 1,
+        siteId: 2,
+        startAt: t("2026-11-09", "20:00"),
+        endAt: t("2026-11-09", "23:00"),
+      },
+    ];
+    expect(controleManuel(personne(1, "A"), c, { absences: [], occupations }).bloquant).toBe(
+      "occupee",
+    );
+  });
+
+  it("garde l'avertissement à côté du motif bloquant", () => {
+    const p = personne(1, "A", { sites: [{ siteId: 2, principal: true }] });
+    expect(controleManuel(p, c, { absences, occupations: [] })).toEqual({
+      bloquant: "absente",
+      avertissements: ["hors_site"],
+    });
+  });
+});
+
+describe("vacations hors absences", () => {
+  const vac = (personnelId: number, de: string, a: string) => ({
+    id: personnelId,
+    personnelId,
+    startAt: t("2026-11-09", de),
+    endAt: t("2026-11-09", a),
+  });
+  const abs = (personnelId: number, de: string, a: string): AbsenceRef => ({
+    id: 1,
+    personnelId,
+    startAt: t("2026-11-09", de),
+    endAt: t("2026-11-09", a),
+    motif: null,
+  });
+  const plages = (xs: { startAt: Date; endAt: Date }[]) =>
+    xs.map((x) => [x.startAt.getTime(), x.endAt.getTime()]);
+
+  it("laisse intactes les vacations des autres et celles hors de l'absence", () => {
+    const v = [vac(1, "08:00", "12:00"), vac(2, "14:00", "18:00")];
+    expect(horsAbsences(v, [abs(1, "14:00", "18:00")])).toEqual(v);
+  });
+
+  it("supprime une vacation entièrement dans l'absence", () => {
+    expect(horsAbsences([vac(1, "08:00", "12:00")], [abs(1, "07:00", "13:00")])).toEqual([]);
+  });
+
+  it("rogne une vacation à cheval et coupe en deux autour d'une absence au milieu", () => {
+    expect(plages(horsAbsences([vac(1, "08:00", "12:00")], [abs(1, "10:00", "13:00")]))).toEqual([
+      [t("2026-11-09", "08:00").getTime(), t("2026-11-09", "10:00").getTime()],
+    ]);
+    expect(plages(horsAbsences([vac(1, "08:00", "18:00")], [abs(1, "12:00", "14:00")]))).toEqual([
+      [t("2026-11-09", "08:00").getTime(), t("2026-11-09", "12:00").getTime()],
+      [t("2026-11-09", "14:00").getTime(), t("2026-11-09", "18:00").getTime()],
+    ]);
   });
 });
