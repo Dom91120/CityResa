@@ -104,7 +104,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 **Comment faire**
 
 1. Ouvrez la fiche de la réservation ; dans la liste des **Créneaux** de la section **Événement**, une colonne montre pour chaque séance à venir qui est de service.
-2. Cliquez sur le bouclier (**Personne de service**) de la séance voulue.
+2. Cliquez sur la silhouette suivie d'un « + » (**Personne de service**) de la séance voulue.
 3. Choisissez la personne, ou **Aucune (vacations du site)** pour retirer l'épinglage, puis **Enregistrer**.
 
 **Règles à connaître**
