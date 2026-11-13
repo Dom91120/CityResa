@@ -326,7 +326,7 @@ Quand un seul espace est affiché, un bouton **Feuille de salle** apparaît à c
 
 ![Fiche d'une campagne](captures/campagne.webp)
 
-*Figure — une campagne en instruction : compteurs, consignes, et pour la Salle de la Folie Desmares un vœu refusé, un vœu en attente (créneau indisponible) et un vœu attribué.*
+*Figure — une campagne en instruction : compteurs, consignes, et pour la Salle de la Folie Desmares un vœu attribué (avec son dossier), un vœu en attente qui le chevauche (« 1 conflit ») et un vœu refusé avec son motif.*
 
 **Ce que l'on voit**
 

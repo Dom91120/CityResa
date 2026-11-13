@@ -88,9 +88,9 @@ Le parcours d'une association suit le rythme de la saison sportive et culturelle
 | Subvention | Remplit pendant la campagne le dossier de demande de subvention (fiches, budget par postes, pièces, attestation signée par code), le dépose et en suit l'avancement | Mes subventions | Instruction, avis des élus, vote, versement | 1, 7 |
 | Fin d'exercice | Reçoit l'attestation de valorisation des avantages en nature (mises à disposition gratuites) | Mes subventions | Valorisation | 7 |
 
-![Dépôt des vœux de créneaux par une association](captures/asso-mes-voeux.webp)
-*Figure — « Mes vœux » pendant le dépôt d'une campagne : les vœux déjà déposés avec leur sort,
-puis le formulaire d'un nouveau vœu.*
+![Les vœux de créneaux d'une association et leur sort](captures/asso-mes-voeux.webp)
+*Figure — « Mes vœux » après la clôture du dépôt : les vœux de l'association avec leur sort,
+l'un attribué (et son dossier), l'autre refusé (et son motif).*
 
 > **Astuce** — Tant que la fiche de l'association est incomplète (président, date d'AG,
 > adresse du siège…), le portail bloque le dépôt et renvoie vers « Mon organisation ».

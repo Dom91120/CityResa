@@ -423,11 +423,13 @@ Les agents municipaux y trouveront aussi de quoi accompagner un usager au télé
 **Qui** — Les organisations (associations surtout), quand la Ville a ouvert une campagne.
 
 ![Mes vœux](captures/asso-mes-voeux.webp)
-*Figure — « Mes vœux de créneaux » pendant la campagne « Créneaux annuels 2026-2027 » : un vœu déjà refusé et le formulaire « Nouveau vœu ».*
+*Figure — « Mes vœux de créneaux » une fois le dépôt clos : les deux vœux de l'association pour la campagne « Créneaux annuels 2026-2027 », l'un attribué avec son dossier, l'autre refusé avec le motif de la Ville.*
 
 **Ce que l'on voit**
-- Le bandeau de la campagne ouverte : nom, saison, date limite (« dépôt jusqu'au 30/11/2026 ») et consignes de la Ville (« Attestation d'assurance à jour exigée… »).
-- **Vos vœux pour Créneaux annuels 2026-2027** : jour et horaire, espace, activité, « Hors vacances » ou « Vacances comprises », et statut (ici **Refusé**).
+
+Pendant le dépôt (la figure montre la page après sa clôture) :
+- Le bandeau de la campagne ouverte : nom, saison, date limite (« dépôt jusqu'au … ») et consignes de la Ville (« Attestation d'assurance à jour exigée… »).
+- **Vos vœux pour Créneaux annuels 2026-2027** : jour et horaire, espace, activité, « Hors vacances » ou « Vacances comprises », et statut.
 - **Nouveau vœu** : **Espace souhaité**, **Jour**, **Horaire** (début et fin), **Activité**, **Participants habituels**, **Précisions**, interrupteur **Hors vacances scolaires** et bouton **Déposer ce vœu**.
 
 **Comment faire**
@@ -446,7 +448,7 @@ Les agents municipaux y trouveront aussi de quoi accompagner un usager au télé
   4. autres associations ;
   5. entreprises, particuliers et autres.
 - Un vœu attribué devient une réservation pour toute la saison, visible dans « Mes réservations » : à signer, ou déjà confirmée si aucune signature n'est attendue.
-- Hors campagne, la page affiche « Aucune campagne n'est ouverte au dépôt pour l'instant ».
+- Hors campagne, ou une fois le dépôt clos, la page affiche « Aucune campagne n'est ouverte au dépôt pour l'instant » ; vos vœux des campagnes passées restent listés avec leur sort : **Attribué** et le numéro du dossier créé, ou **Refusé** et le motif.
 
 ## 1.18 Mes subventions
 
