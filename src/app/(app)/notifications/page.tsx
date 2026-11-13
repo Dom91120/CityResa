@@ -108,7 +108,7 @@ export default async function NotificationsPage({
                       title="Ouvrir"
                       aria-label="Ouvrir"
                     >
-                      <Icone nom="arrow-right" taille={14} />
+                      <Icone nom="eye" taille={14} />
                     </a>
                   ) : null}
                 </span>

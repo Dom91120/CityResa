@@ -9,7 +9,7 @@ describe("fenetre du planning", () => {
     expect(f.jours[6]).toBe("2026-11-15");
     expect(f.precedent).toBe("2026-11-02");
     expect(f.suivant).toBe("2026-11-16");
-    expect(f.label).toContain("Semaine du");
+    expect(f.label).toBe("Semaine du 9/11 au 15/11/2026");
   });
 
   it("mois : des semaines entières qui couvrent le mois, navigation au 1er", () => {

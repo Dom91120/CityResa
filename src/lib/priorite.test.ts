@@ -94,7 +94,7 @@ describe("textes", () => {
       { mode: "deplacer", nouveau },
       { dossierAnnule: false, avenant: true, montantChange: false },
     );
-    expect(dep).toContain("déplacé au Dim. 06 déc. 2026");
+    expect(dep).toContain("déplacé au Dim. 06/12/2026");
     expect(dep).toContain("avenant");
     expect(
       phraseSuite(

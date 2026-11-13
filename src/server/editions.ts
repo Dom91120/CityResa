@@ -205,7 +205,7 @@ export async function pdfPlanningSemaine(q: ParamsPlanning): Promise<Buffer> {
   );
 }
 
-/** Les libellés des colonnes d'une semaine datée : « Lun. 16 nov. ». */
+/** Les libellés des colonnes d'une semaine datée : « Lun. 16/11/2026 ». */
 export function libellesJours(lundi: string): string[] {
   return joursDeLaSemaine(lundi).map((j) => dateMoyenne(parisMidnight(j)));
 }

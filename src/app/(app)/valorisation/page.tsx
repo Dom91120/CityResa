@@ -1,6 +1,7 @@
 import { Icone } from "@/components/icones";
 import { VideBloc } from "@/components/liste";
 import { Chip, TypeOrganisation } from "@/components/macros";
+import { CarteStat } from "@/components/stats";
 import { dateCourte, montant, pluriel } from "@/lib/libelles";
 import { seuilsFranchis, totaux } from "@/lib/valorisation";
 import { contexteModule } from "@/server/module";
@@ -114,30 +115,32 @@ export default async function ValorisationPage({
         </noscript>
       </form>
 
-      <div className="grille grille-4 mb-3">
-        {[
-          { label: "Organisations aidées", valeur: String(t.organisations), icone: "users" },
-          {
-            label: "Heures mises à disposition",
-            valeur: `${t.heures.toLocaleString("fr-FR")} h`,
-            icone: "clock",
-          },
-          { label: "Avantages en nature", valeur: montant(t.avantage), icone: "handshake" },
-          {
-            label: "Total des aides (avec subventions)",
-            valeur: montant(t.total),
-            icone: "hand-coins",
-          },
-        ].map((k) => (
-          <div key={k.label} className="data-card p-3">
-            <div className="text-muted small">
-              <Icone nom={k.icone} taille={14} /> {k.label}
-            </div>
-            <div className="fs-4 fw-semibold" style={{ color: "var(--strong)" }}>
-              {k.valeur}
-            </div>
-          </div>
-        ))}
+      {/* Les mêmes cartes de synthèse que sur le tableau de bord. */}
+      <div className="stat-grid">
+        <CarteStat
+          icone="users"
+          teinte="rose"
+          label="Organisations aidées"
+          valeur={t.organisations}
+        />
+        <CarteStat
+          icone="clock"
+          teinte="sky"
+          label="Heures mises à disposition"
+          valeur={`${t.heures.toLocaleString("fr-FR")} h`}
+        />
+        <CarteStat
+          icone="handshake"
+          teinte="lime"
+          label="Avantages en nature"
+          valeur={montant(t.avantage)}
+        />
+        <CarteStat
+          icone="hand-coins"
+          teinte="amber"
+          label="Total des aides (avec subventions)"
+          valeur={montant(t.total)}
+        />
       </div>
 
       {alertes.length ? (

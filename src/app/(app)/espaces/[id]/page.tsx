@@ -15,6 +15,7 @@ import { Champ, Coches, Grille, Interrupteur, Select, Zone } from "@/components/
 import { Icone } from "@/components/icones";
 import { VideBloc } from "@/components/liste";
 import { Avatar, Chip, OuiNon, PastilleEspace, StatutResa } from "@/components/macros";
+import { CarteStat } from "@/components/stats";
 import { ESPACE_SECTEURS, OPTION_UNITES, TARIF_UNITES } from "@/lib/constantes";
 import { dateCourte, montantOuGratuit, plage } from "@/lib/libelles";
 import { aPartirDe, grilleEnVigueur } from "@/lib/tarification";
@@ -991,26 +992,30 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
               {occupation ? (
                 <>
                   <div className="stat-grid">
-                    <div className="stat-card">
-                      <div className="stat-label">Taux d'occupation</div>
-                      <div className="stat-number">
-                        {String(occupation.taux).replace(".", ",")} %
-                      </div>
-                    </div>
-                    <div className="stat-card">
-                      <div className="stat-label">Heures réservées</div>
-                      <div className="stat-number">
-                        {String(occupation.heures).replace(".", ",")} h
-                      </div>
-                    </div>
-                    <div className="stat-card">
-                      <div className="stat-label">Créneaux fermes</div>
-                      <div className="stat-number">{occupation.nb}</div>
-                    </div>
-                    <div className="stat-card">
-                      <div className="stat-label">Réservations (total)</div>
-                      <div className="stat-number">{e._count.reservations}</div>
-                    </div>
+                    <CarteStat
+                      icone="percent"
+                      teinte="emerald"
+                      label="Taux d'occupation"
+                      valeur={`${String(occupation.taux).replace(".", ",")} %`}
+                    />
+                    <CarteStat
+                      icone="clock"
+                      teinte="sky"
+                      label="Heures réservées"
+                      valeur={`${String(occupation.heures).replace(".", ",")} h`}
+                    />
+                    <CarteStat
+                      icone="calendar-check"
+                      teinte="violet"
+                      label="Créneaux fermes"
+                      valeur={occupation.nb}
+                    />
+                    <CarteStat
+                      icone="clipboard-list"
+                      teinte="amber"
+                      label="Réservations"
+                      valeur={occupation.dossiers}
+                    />
                   </div>
                   <div className="occupation-ligne mt-3">
                     <span className="small text-muted">Heures réservées / heures d'ouverture</span>

@@ -508,7 +508,9 @@ export function CarteDecision({
     <div className="data-card decision">
       <div className="d-flex align-items-center gap-2 mb-2">
         <StatutResa status={r.status} lg />
-        <span className="text-muted small">{RESERVATION_STATUS[st]?.aide}</span>
+        <span className="text-muted small" style={{ lineHeight: 1 }}>
+          {RESERVATION_STATUS[st]?.aide}
+        </span>
       </div>
       <h5>{titre}</h5>
       <p className="mb-3" style={{ fontSize: ".88rem" }}>

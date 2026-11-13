@@ -4,6 +4,7 @@ import { BoutonOuvrir, Entete, Lu, Lus, MenuPost, MenuSep, Section } from "@/com
 import { Icone } from "@/components/icones";
 import { VideBloc } from "@/components/liste";
 import { Chip, PastilleEspace, StatutResa } from "@/components/macros";
+import { CarteStat } from "@/components/stats";
 import { dateCourte, dateMoyenne, heure, plageHoraire } from "@/lib/libelles";
 import { decrireControle, stockUtilisable } from "@/lib/materiel-stock";
 import {
@@ -99,37 +100,41 @@ export default async function MaterielFichePage({ params }: { params: Promise<{ 
         ]}
       />
 
-      <div className="stat-grid">
-        <div className="stat-card">
-          <div className="stat-label">Stock total</div>
-          <div className="stat-number">{m.stockTotal}</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Hors service</div>
-          <div
-            className="stat-number"
-            style={{ color: m.horsService ? "var(--danger)" : undefined }}
-          >
-            {m.horsService}
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Mobilisé au plus fort (à venir)</div>
-          <div className="stat-number">{mob}</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Disponible</div>
-          <div
-            className="stat-number"
-            style={{ color: disponible ? "var(--success)" : "var(--danger)" }}
-          >
-            {disponible}
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Dossiers (total)</div>
-          <div className="stat-number">{m._count.reservations}</div>
-        </div>
+      {/* Les mêmes cartes de synthèse que sur le tableau de bord. */}
+      <div className="stat-grid stat-grid--5">
+        <CarteStat icone="boxes" teinte="lime" label="Stock total" valeur={m.stockTotal} />
+        <CarteStat
+          icone="wrench"
+          teinte={m.horsService ? "red" : "slate"}
+          label="Hors service"
+          valeur={
+            <span style={{ color: m.horsService ? "var(--danger)" : undefined }}>
+              {m.horsService}
+            </span>
+          }
+        />
+        <CarteStat
+          icone="calendar-check"
+          teinte="violet"
+          label="Mobilisé au plus fort (à venir)"
+          valeur={mob}
+        />
+        <CarteStat
+          icone="circle-check"
+          teinte={disponible ? "emerald" : "red"}
+          label="Disponible"
+          valeur={
+            <span style={{ color: disponible ? "var(--success)" : "var(--danger)" }}>
+              {disponible}
+            </span>
+          }
+        />
+        <CarteStat
+          icone="clipboard-list"
+          teinte="sky"
+          label="Dossiers (total)"
+          valeur={m._count.reservations}
+        />
       </div>
 
       <div className="fiche-colonnes">

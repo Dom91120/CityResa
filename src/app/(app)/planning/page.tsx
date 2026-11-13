@@ -77,7 +77,7 @@ export default async function PlanningPage({
 
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-header--planning">
         <div>
           <h1 className="page-title">
             Planning <span className="page-count">{fen.label}</span>
@@ -89,7 +89,12 @@ export default async function PlanningPage({
             {blocages.length
               ? ` · ${blocages.length} blocage${blocages.length > 1 ? "s" : ""}`
               : ""}
-            {peutEditer ? " · cliquez sur une case pour réserver." : ""}
+            {peutEditer ? (
+              <>
+                <br />
+                Cliquez sur une case pour réserver.
+              </>
+            ) : null}
           </p>
         </div>
         <div className="page-actions">

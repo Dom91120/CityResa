@@ -33,8 +33,10 @@ export default async function CampagnesPage() {
             Campagnes de créneaux <span className="page-count">{liste.length}</span>
           </h1>
           <p className="page-subtitle">
-            Chaque saison, les usagers déposent leurs vœux de créneaux hebdomadaires ; la Ville
-            arbitre les conflits par priorité et attribue en lot, un dossier par vœu retenu.
+            Chaque saison, les usagers déposent leurs vœux de créneaux hebdomadaires.
+            <br />
+            La Ville arbitre les conflits par priorité et attribue en lot, un dossier par vœu
+            retenu.
           </p>
         </div>
         <div className="page-actions">
@@ -58,10 +60,10 @@ export default async function CampagnesPage() {
                 <th>Saison</th>
                 <th>État</th>
                 <th>Date limite</th>
-                <th>Espaces</th>
-                <th>En attente</th>
-                <th>Attribués</th>
-                <th>Refusés</th>
+                <th className="text-end">Espaces</th>
+                <th className="text-end">En attente</th>
+                <th className="text-end">Attribués</th>
+                <th className="text-end">Refusés</th>
                 <th />
               </tr>
             </thead>
@@ -77,18 +79,20 @@ export default async function CampagnesPage() {
                       <StatutCampagne status={c.status} />
                     </td>
                     <td>{c.closeDate ? dateCourte(c.closeDate) : "—"}</td>
-                    <td>{c.espaces.length ? c.espaces.length : "Tous"}</td>
-                    <td>{compte(c, "en_attente")}</td>
-                    <td>{compte(c, "attribue")}</td>
-                    <td>{compte(c, "refuse")}</td>
+                    <td className="text-end tabular">
+                      {c.espaces.length ? c.espaces.length : "Tous"}
+                    </td>
+                    <td className="text-end tabular">{compte(c, "en_attente")}</td>
+                    <td className="text-end tabular">{compte(c, "attribue")}</td>
+                    <td className="text-end tabular">{compte(c, "refuse")}</td>
                     <td className="actions">
                       <a
                         href={`/campagnes/${c.id}`}
                         className="btn btn-ghost btn-icone btn-sm"
-                        title="Ouvrir"
-                        aria-label="Ouvrir"
+                        title="Voir la fiche"
+                        aria-label="Voir la fiche"
                       >
-                        <Icone nom="chevron-right" taille={14} />
+                        <Icone nom="eye" taille={14} />
                       </a>
                     </td>
                   </tr>

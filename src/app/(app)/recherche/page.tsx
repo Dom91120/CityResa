@@ -90,10 +90,10 @@ export default async function RecherchePage({
                     <a
                       href={r.url}
                       className="btn btn-ghost btn-icone btn-sm"
-                      title="Ouvrir"
-                      aria-label="Ouvrir"
+                      title="Voir la fiche"
+                      aria-label="Voir la fiche"
                     >
-                      <Icone nom="arrow-right" taille={14} />
+                      <Icone nom="eye" taille={14} />
                     </a>
                   </li>
                 ))}
