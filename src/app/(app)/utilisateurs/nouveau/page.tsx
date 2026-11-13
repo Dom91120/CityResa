@@ -3,7 +3,7 @@ import { SECTEURS } from "@/lib/constantes";
 import { contexteAdmin } from "@/modules/admin/server";
 import { rolesAgents } from "@/modules/utilisateurs/server";
 
-export const metadata = { title: "Nouvel agent - CityRésa" };
+export const metadata = { title: "Nouveau compte - CityRésa" };
 
 export default async function NouvelAgentPage() {
   const page = await contexteAdmin();
@@ -11,9 +11,9 @@ export default async function NouvelAgentPage() {
   return (
     <>
       <EnteteForm
-        titre="Nouvel agent"
+        titre="Nouveau compte"
         retour="/utilisateurs"
-        sousTitre="Un compte du back-office. Un mot de passe provisoire sera généré et affiché une seule fois ; l'agent recevra aussi un courriel de bienvenue."
+        sousTitre="Un compte du back-office. Un mot de passe provisoire sera généré et affiché une seule fois ; la personne recevra aussi un courriel de bienvenue."
         libelle="Créer le compte"
       />
       <form

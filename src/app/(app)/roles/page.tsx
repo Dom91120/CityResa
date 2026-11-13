@@ -45,9 +45,9 @@ export default async function RolesPage() {
       <div className="astuce mb-3">
         <Icone nom="info" taille={16} />
         <span>
-          Les rôles <strong>Administrateur</strong> (accès total, Paramètres et Utilisateurs
-          compris) et <strong>Usager</strong> (portail) sont fixes. Un agent perd un domaine entier
-          quand le module correspondant est désactivé dans Paramètres.
+          Les rôles <strong>Administrateur</strong> (accès total, Paramètres et Comptes compris) et{" "}
+          <strong>Usager</strong> (portail) sont fixes. Un agent perd un domaine entier quand le
+          module correspondant est désactivé dans Paramètres.
         </span>
       </div>
 

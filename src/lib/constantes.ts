@@ -7,7 +7,7 @@
 export type Statut = "danger" | "warning" | "info" | "success";
 
 // ── Droits ──
-/** Catégories soumises aux permissions par rôle (Paramètres et Utilisateurs restent réservés aux administrateurs). */
+/** Catégories soumises aux permissions par rôle (Paramètres et comptes restent réservés aux administrateurs). */
 export const PERMISSION_CATEGORIES = [
   "reservations",
   "planning",
@@ -74,7 +74,7 @@ export const ROLE_SEEDS: {
     description: "Traite les demandes des espaces dont il a la charge ; pas de suppression.",
     isAdmin: false,
     isUsager: false,
-    level: (c) => (c === "subventions" || c === "equipe" ? 1 : 2),
+    level: (c) => (c === "equipe" ? 0 : c === "subventions" ? 1 : 2),
   },
   {
     name: "financier",
@@ -82,7 +82,7 @@ export const ROLE_SEEDS: {
     description: "Suit les factures et les paiements, consulte le reste.",
     isAdmin: false,
     isUsager: false,
-    level: (c) => (c === "paiements" ? 3 : 1),
+    level: (c) => (c === "equipe" ? 0 : c === "paiements" ? 3 : 1),
   },
   {
     name: "elu",
@@ -90,7 +90,7 @@ export const ROLE_SEEDS: {
     description: "Consulte l'activité et donne un avis sur les demandes de subvention.",
     isAdmin: false,
     isUsager: false,
-    level: (c) => (c === "subventions" ? 2 : 1),
+    level: (c) => (c === "equipe" ? 0 : c === "subventions" ? 2 : 1),
   },
   {
     name: "lecteur",
@@ -98,7 +98,7 @@ export const ROLE_SEEDS: {
     description: "Lecture seule.",
     isAdmin: false,
     isUsager: false,
-    level: () => 1,
+    level: (c) => (c === "equipe" ? 0 : 1),
   },
   {
     name: "usager",

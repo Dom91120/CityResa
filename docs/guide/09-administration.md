@@ -8,7 +8,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 
 **Qui** — Uniquement les comptes au rôle **Administrateur**. Les autres agents ne voient pas cette rubrique et ne peuvent pas ouvrir ces pages. Les figures de ce chapitre ont été prises avec le compte « Admin CityRésa », administrateur.
 
-**Ce que l'on voit** — Sous la rubrique GÉNÉRAL, la rubrique **ADMINISTRATION** contient : **Paramètres**, **Utilisateurs**, **Rôles & permissions**, **Référentiels**, **Calendrier des saisons**, **Modèles de courriel**, **Journal d'audit**, **Tâches planifiées**, **Sauvegardes**.
+**Ce que l'on voit** — Sous la rubrique GÉNÉRAL, la rubrique **ADMINISTRATION** contient : **Paramètres**, **Comptes**, **Rôles & permissions**, **Référentiels**, **Calendrier des saisons**, **Modèles de courriel**, **Journal d'audit**, **Tâches planifiées**, **Sauvegardes**.
 
 **Comment faire**
 
@@ -258,46 +258,54 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 
 **Règles à connaître** — Les usagers peuvent aussi télécharger leurs données et demander la suppression de leur compte depuis « Mon compte » sur le portail.
 
-## 9.12 Les utilisateurs
+## 9.12 Les comptes
 
-**À quoi ça sert** — Voir et gérer tous les comptes : agents de la collectivité et usagers du portail.
+**À quoi ça sert** — Voir et gérer les comptes du back-office : agents, élus, administrateurs. Les comptes des usagers du portail n'y figurent pas : ils se gèrent depuis la fiche de leur organisation (écran **Usagers**).
 
-**Qui** — Administrateurs.
+**Qui** — Administrateurs. Les gestionnaires voient la même liste, limitée à leur équipe, dans **Mon équipe** (chapitre 5) ; l'administrateur n'a pas cette entrée dans son menu.
 
-![Liste des utilisateurs](captures/utilisateurs.webp)
-*Figure — L'onglet Agents de la liste des utilisateurs : cinq comptes avec leur rôle, leur dernière connexion et leur date de création.*
+![Liste des comptes](captures/utilisateurs.webp)
+*Figure — L'écran Comptes : les quatre comptes du back-office avec leur rôle, leur secteur, leurs espaces, leur sécurité et leur dernière connexion.*
 
 **Ce que l'on voit**
 
-- Les boutons **Rôles** (vers 9.14) et **Nouvel agent**.
-- Trois filtres : **Agents**, **Usagers**, **Inactifs**, avec leur nombre.
-- Un champ de recherche (nom, courriel, organisation, rôle).
-- Le tableau : **Compte** (nom, courriel, fonction), **Rôle** (étiquette colorée), **Organisation** (sur les onglets Usagers et Inactifs seulement : un agent n'en a pas), **Sécurité** (double authentification), **Dernière connexion**, **Créé le**. Les colonnes portant deux flèches se trient d'un clic.
+- Les boutons **Rôles** (vers 9.14) et **Nouveau compte**.
+- Un champ de recherche (nom, courriel, fonction, rôle, secteur) et, dès qu'un compte est désactivé, les onglets **Actifs** et **Inactifs**.
+- Le tableau : **Nom** (et fonction), **Rôle**, **Secteur** (Salles, Sports ou Transversal), **Espaces gérés**, **Contact**, **Sécurité** (pastille **2FA** si la double authentification est activée), **Dernière connexion**. Les colonnes portant deux flèches se trient d'un clic.
+- En bout de ligne, l'icône de porte (**Espaces gérés**) pour répartir les espaces, comme dans Mon équipe (chapitre 5).
 - En bas : la pagination et le nombre de lignes par page.
 
 **Comment faire**
 
-*Créer un compte agent*
-1. Cliquez sur **Nouvel agent**.
+*Créer un compte*
+1. Cliquez sur **Nouveau compte**.
 2. Renseignez **Courriel (identifiant)**, **Prénom**, **Nom**, et si besoin **Fonction** et **Téléphone**.
 3. Choisissez le **Rôle** (« Agent » est proposé par défaut ; la description de chaque rôle est rappelée à côté) et le **Secteur** : Salles, Sports, ou **Aucun (transversal)** pour un administrateur, un financier ou un élu. Un agent d'un secteur ne se rattache qu'aux espaces de ce secteur et, sans rattachement, les voit tous ; un agent transversal voit tous les espaces.
 4. Cliquez sur **Créer le compte**.
 5. Un mot de passe provisoire s'affiche **une seule fois** dans le message de confirmation : transmettez-le à la personne par un moyen sûr. Elle pourra le changer depuis son profil.
 
-*Retrouver un compte*
-1. Choisissez le filtre **Agents**, **Usagers** ou **Inactifs**.
-2. Tapez un nom ou une adresse dans le champ de recherche.
-3. Cliquez sur la ligne pour ouvrir la fiche.
+*Retrouver un compte du back-office*
+1. Tapez un nom ou une adresse dans le champ de recherche ; passez sur l'onglet **Inactifs** pour un compte désactivé.
+2. Cliquez sur le nom pour ouvrir la fiche.
 
-**Règles à connaître** — Les comptes usagers sont normalement créés par les usagers eux-mêmes sur le portail, ou par un agent depuis l'écran Usagers.
+*Retrouver le compte d'un usager*
+1. Ouvrez **Usagers** et tapez le nom ou le courriel de la personne : la recherche porte aussi sur les membres. La recherche générale (Ctrl K) les trouve également.
+2. Ouvrez la fiche de l'organisation : le bloc **Membres** liste ses comptes.
+3. Cliquez sur le nom du membre pour ouvrir la fiche de son compte.
 
-## 9.13 La fiche d'un utilisateur
+**Règles à connaître**
 
-**À quoi ça sert** — Consulter un compte, le modifier, réinitialiser son accès ou le désactiver.
+- Tout compte usager appartient à une organisation ; un particulier est une organisation dont il est le seul membre.
+- Les comptes usagers sont créés par les usagers eux-mêmes sur le portail, ou par un agent depuis la fiche de l'organisation. Les agents qui ont le droit d'écriture sur « Usagers » y modifient un membre, lui envoient un lien de réinitialisation ou désactivent son compte (chapitre 5), sans passer par un administrateur.
+- La réinitialisation de la double authentification et la suppression définitive d'un compte restent réservées aux administrateurs, depuis la fiche du compte.
+
+## 9.13 La fiche d'un compte
+
+**À quoi ça sert** — Consulter un compte, le modifier, réinitialiser son accès ou le désactiver. On l'ouvre en cliquant sur un nom dans **Comptes**, ou sur le nom d'un membre dans la fiche d'une organisation ; la flèche de retour ramène à l'écran d'où l'on vient.
 
 **Qui** — Administrateurs.
 
-![Fiche d'un utilisateur](captures/utilisateur.webp)
+![Fiche d'un compte](captures/utilisateur.webp)
 *Figure — La fiche de Karim Benali, agent : compte, sécurité, huit espaces en charge, données liées et journal.*
 
 **Ce que l'on voit**
@@ -326,7 +334,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 
 - Vous ne pouvez ni changer votre propre rôle, ni désactiver votre propre compte.
 - Un compte lié à des réservations ou à d'autres données ne se supprime pas : désactivez-le.
-- Les espaces confiés à un agent se règlent depuis **Mon équipe**, pas depuis cette fiche.
+- Les espaces confiés à un agent se règlent depuis **Comptes** ou **Mon équipe** (icône de porte), pas depuis cette fiche.
 
 ## 9.14 Rôles et permissions
 
@@ -340,7 +348,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 **Ce que l'on voit**
 
 - Le bouton **Nouveau rôle**.
-- Un encadré : les rôles **Administrateur** (accès total, Paramètres et Utilisateurs compris) et **Usager** (portail) sont fixes ; un agent perd un domaine entier quand le module correspondant est désactivé.
+- Un encadré : les rôles **Administrateur** (accès total, Paramètres et Comptes compris) et **Usager** (portail) sont fixes ; un agent perd un domaine entier quand le module correspondant est désactivé.
 - Une ligne par rôle (nom, puis nombre de comptes ayant ce rôle et description ; survolez la description pour la lire en entier) et une colonne par domaine : **Réservations**, **Planning**, **Sites et espaces**, **Matériel**, **Usagers**, **Messages**, **Paiements**, **Subventions**, **Mon équipe**, **Personnel de service**. Sur un écran étroit, faites défiler le tableau vers la droite pour voir les derniers domaines.
 - Pour les rôles figés, le niveau est une étiquette ; pour les autres, une liste déroulante.
 
@@ -359,7 +367,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 |---|---|
 | Administrateur | Accès total, y compris l'administration. |
 | Gestionnaire | Suppression partout. |
-| Agent | Écriture partout, sauf Subventions et Mon équipe en lecture. |
+| Agent | Écriture partout, sauf Subventions en lecture et Mon équipe sans accès. |
 | Financier | Suppression sur Paiements, lecture ailleurs. |
 | Élu | Écriture sur Subventions (pour donner un avis), lecture ailleurs. |
 | Lecteur | Lecture partout. |

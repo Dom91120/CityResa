@@ -5,6 +5,7 @@ import {
   dateJourMois,
   dateLongue,
   dateMoyenne,
+  datesEnChiffres,
   delai,
   depuis,
   diffJours,
@@ -15,6 +16,7 @@ import {
   libelleAction,
   moisAnnee,
   montant,
+  montantAuCentime,
   montantOuGratuit,
   plage,
   plageHoraire,
@@ -200,5 +202,28 @@ describe("libelleAction", () => {
   it("laisse les mots inconnus tels quels", () => {
     expect(libelleAction("connexion")).toBe("Connexion");
     expect(libelleAction("caution retenue")).toBe("Caution retenue");
+  });
+});
+
+describe("montantAuCentime", () => {
+  it("garde toujours deux décimales", () => {
+    expect(montantAuCentime(650)).toBe("650,00 €");
+    expect(montantAuCentime(85.5)).toBe("85,50 €");
+    expect(montantAuCentime(1141)).toBe("1 141,00 €");
+    expect(montantAuCentime(-12.345)).toBe("-12,35 €");
+    expect(montantAuCentime(null)).toBe("");
+  });
+});
+
+describe("datesEnChiffres", () => {
+  it("remplace le mois abrégé par son numéro", () => {
+    expect(datesEnChiffres("Acompte · Salle · Dim. 06 déc. 2026 · 14h00 – 19h00")).toBe(
+      "Acompte · Salle · Dim. 06/12/2026 · 14h00 – 19h00",
+    );
+    expect(datesEnChiffres("Sam. 9 mai 2026")).toBe("Sam. 09/05/2026");
+  });
+  it("laisse le reste du texte intact", () => {
+    expect(datesEnChiffres("Salle 12 places 2026")).toBe("Salle 12 places 2026");
+    expect(datesEnChiffres("Caution")).toBe("Caution");
   });
 });

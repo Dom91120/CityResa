@@ -1,7 +1,7 @@
 /**
  * Comptes (agents et usagers) : mot de passe provisoire, création d'un agent, lien de
- * réinitialisation, suppression sûre. Partagé par les écrans Utilisateurs, Usagers,
- * Équipe et Profil.
+ * réinitialisation, suppression sûre. Partagé par les écrans Comptes, Mon équipe, Usagers,
+ * la fiche d'un compte et Profil.
  */
 import { randomInt } from "node:crypto";
 import { headers } from "next/headers";
@@ -141,7 +141,7 @@ export async function donneesLiees(userId: string): Promise<{ label: string; n: 
 
 /**
  * Refuse de donner un secteur à un agent rattaché à des espaces d'un autre secteur : il faut
- * d'abord retirer ces rattachements (Mon équipe, ou l'onglet Gestionnaires de l'espace).
+ * d'abord retirer ces rattachements (Comptes ou Mon équipe, ou l'onglet Gestionnaires de l'espace).
  */
 export async function verifierSecteurAgent(userId: string, secteur: string | null): Promise<void> {
   if (!secteur) return;

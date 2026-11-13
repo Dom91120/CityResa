@@ -14,7 +14,7 @@ Ce chapitre présente les écrans qui vous servent tous les jours, quel que soit
 
 - **La barre latérale** (à gauche) :
   - en haut, le logo et le nom de la collectivité (« Ville de Châtillon ») ; un clic ramène au tableau de bord ;
-  - la rubrique **GÉNÉRAL** : Tableau de bord, Réservations, Planning, Campagnes, Sites, Espaces, Matériel, Messages, Usagers, Mon équipe, Paiements, Subventions, Valorisation, Statistiques. Une entrée n'apparaît que si votre rôle vous donne accès au domaine et si le module correspondant est activé ;
+  - la rubrique **GÉNÉRAL** : Tableau de bord, Réservations, Planning, Campagnes, Sites, Espaces, Matériel, Messages, Usagers, Mon équipe, Personnel de service, Paiements, Subventions, Valorisation, Statistiques. Une entrée n'apparaît que si votre rôle vous donne accès au domaine et si le module correspondant est activé ;
   - des **pastilles chiffrées** à droite de certaines entrées : demandes à traiter (Réservations), conversations à répondre (Messages), fiches d'usager à valider (Usagers), factures à payer (Paiements), demandes de subvention à traiter (Subventions). Les pastilles vertes (Réservations, Messages) signalent ce qui demande une action rapide ;
   - la rubrique **ADMINISTRATION**, visible uniquement par les administrateurs, repliable d'un clic sur son titre (voir le chapitre 9) ;
   - en bas, **votre nom et votre rôle**. Un clic ouvre un menu : **Mon profil** (identité, notifications, agenda, mot de passe et double authentification), **Thème clair / sombre**, **Déconnexion**.
@@ -213,7 +213,7 @@ Les alertes liées à un module (pièces jointes, matériel, paiements, signatur
 
 **À quoi ça sert** — Retrouver en une seule saisie une réservation, un espace, un usager, un matériel ou une demande de subvention.
 
-**Qui** — Tous les agents. Les résultats se limitent aux domaines que votre rôle vous permet de consulter ; les administrateurs trouvent aussi les membres de l'équipe.
+**Qui** — Tous les agents. Les résultats se limitent aux domaines que votre rôle vous permet de consulter ; les administrateurs trouvent aussi les comptes du back-office.
 
 ![Résultats de recherche](captures/recherche.webp)
 *Figure — La recherche « Dupont » : cinq réservations, une fiche usager et un compte usager, chacun avec son statut et une flèche pour l'ouvrir.*

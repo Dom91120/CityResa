@@ -21,6 +21,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     req,
     async (form) => {
       const user = await requireEdit("equipe");
+      const retour = user.isAdmin ? "/utilisateurs" : "/equipe";
       const agent = await prisma.user.findFirst({ where: { id, kind: "agent" } });
       if (!agent) return pasTrouve();
       try {
@@ -64,15 +65,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           ? `aucun rattachement, tous les espaces du secteur ${libelleSecteur(agent.secteur)}.`
           : "aucun périmètre restreint, tous les espaces.";
         return redirigerAvecMessage(
-          "/equipe",
+          retour,
           existants.length
             ? `${nomComplet(agent)} : ${existants.length} espace(s) en charge (${role}).`
             : `${nomComplet(agent)} : ${sansRattachement}`,
           "success",
         );
       } catch (e) {
-        if (e instanceof UserFacingError)
-          return redirigerAvecMessage("/equipe", e.message, "danger");
+        if (e instanceof UserFacingError) return redirigerAvecMessage(retour, e.message, "danger");
         throw e;
       }
     },

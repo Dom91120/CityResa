@@ -26,7 +26,7 @@ import { COULEURS_ESPACE, FACTURE_TYPES, RESERVATION_STATUS } from "@/lib/consta
 import { bornes, developperRecurrence, type Intervalle, type Recurrence } from "@/lib/creneaux";
 import { parseYmdUtc } from "@/lib/date-utc";
 import { type DossierSubvention, dossierVide } from "@/lib/dossier-subvention";
-import { montant, plage } from "@/lib/libelles";
+import { datesEnChiffres, montant, plage } from "@/lib/libelles";
 import {
   addParisDays,
   minutesDe,
@@ -3102,7 +3102,7 @@ async function creerReservations(ctx: Contexte): Promise<Map<ReservationStatus, 
             reservationId: r.id,
             organisationId: org.id,
             type,
-            libelle: `${FACTURE_TYPES[type]} · ${espace.name} · ${plage(b.startAt, b.endAt)}`,
+            libelle: `${FACTURE_TYPES[type]} · ${espace.name} · ${datesEnChiffres(plage(b.startAt, b.endAt))}`,
             montantHt: ht,
             tva: type === "caution" ? 0 : Math.round((ttc - ht) * 100) / 100,
             montantTtc: ttc,
