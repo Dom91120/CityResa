@@ -48,6 +48,7 @@ import { deviser, verifierDisponibilite } from "@/server/reservations";
 import { profilParDefaut } from "@/server/usagers";
 import { VACANCES_ZONE_C } from "./calendrier-zone-c";
 import { ASSOCIATIONS_SPORTIVES, type OrgSpec } from "./seed-associations";
+import { creerCampagneDemo } from "./seed-demo-campagne";
 
 const MOT_DE_PASSE = "Demo-2026!!";
 /** Code de signature posé sur les dossiers « acceptée » : l'usager peut signer avec. */
@@ -4241,6 +4242,12 @@ async function main(): Promise<void> {
     tva: cfg.TVA_TAUX || 0,
   };
   const parStatut = await creerReservations(ctx);
+  console.log("→ Campagne de créneaux annuels et vœux…");
+  const voeux = await creerCampagneDemo(admin.email);
+  if (voeux) {
+    compter("campagnes");
+    compter("voeux", voeux);
+  }
   await cyclerCautions();
   await creerPersonnel();
   await creerSubventions(ctx);
