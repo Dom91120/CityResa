@@ -192,7 +192,7 @@ const CAPTURES = [
   {
     nom: "creneau-requisition",
     compte: "gestionnaire",
-    url: "/reservations/25/creneaux/77/requisition",
+    url: "/reservations/25/creneaux/76/requisition",
     hauteur: 1800,
   },
 
@@ -312,7 +312,10 @@ const CAPTURES = [
   {
     nom: "utilisateur",
     compte: "admin",
-    url: "/utilisateurs/cmw7o11jo0002tofz3cmwjsec",
+    // L'identifiant d'un compte change à chaque rechargement du jeu de démonstration :
+    // la fiche s'ouvre en suivant le lien de la liste.
+    url: "/utilisateurs",
+    lien: "Karim Benali",
     hauteur: 2000,
   },
   { nom: "roles", compte: "admin", url: "/roles", hauteur: 2200 },
@@ -382,8 +385,26 @@ try {
       }
       courant = c.compte;
     }
-    const rep = await page.goto(`${BASE}${c.url}`, { waitUntil: "networkidle0", timeout: 120_000 });
-    if ((rep?.status() ?? 0) >= 400) console.warn(`! ${c.nom} : HTTP ${rep?.status()}`);
+    let rep = await page.goto(`${BASE}${c.url}`, { waitUntil: "networkidle0", timeout: 120_000 });
+    if (c.lien && (rep?.status() ?? 0) < 400) {
+      const href = await page.evaluate(
+        (texte) =>
+          [...document.querySelectorAll("main a")]
+            .find((a) => a.textContent.includes(texte))
+            ?.getAttribute("href"),
+        c.lien,
+      );
+      if (!href) {
+        console.warn(`! ${c.nom} : lien « ${c.lien} » introuvable, capture conservée`);
+        continue;
+      }
+      rep = await page.goto(`${BASE}${href}`, { waitUntil: "networkidle0", timeout: 120_000 });
+    }
+    // Une page en erreur (identifiant absent de la base…) ne remplace pas la capture existante.
+    if ((rep?.status() ?? 0) >= 400) {
+      console.warn(`! ${c.nom} : HTTP ${rep?.status()}, capture conservée`);
+      continue;
+    }
     await page.addStyleTag({
       content:
         "nextjs-portal{display:none!important} html{scroll-behavior:auto!important} *{transition:none!important;animation:none!important}",
