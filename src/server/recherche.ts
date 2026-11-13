@@ -162,7 +162,7 @@ export async function rechercher(
       if (contient(q, u.email, u.firstName, u.lastName, u.fonction))
         out.push({
           type: "agent",
-          typeLabel: "Membre de l'équipe",
+          typeLabel: "Compte",
           icone: "contact-round",
           titre: `${u.firstName} ${u.lastName}`.trim() || u.email,
           sousTitre: u.fonction ?? u.email,

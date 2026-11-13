@@ -69,6 +69,18 @@ export function dateMoyenne(d: Date | null | undefined): string {
   return `${JOURS_COURTS[p.dow]} ${String(p.da).padStart(2, "0")} ${MOIS_COURTS[p.mo - 1]} ${p.y}`;
 }
 
+/**
+ * Dans un texte, « 06 déc. 2026 » devient « 06/12/2026 » : la forme la plus courte, celle du
+ * libellé des factures, qui s'affiche dans des colonnes étroites.
+ */
+export function datesEnChiffres(texte: string): string {
+  return texte.replace(/\b(\d{1,2}) (\S+) (\d{4})\b/g, (tout, jour: string, mois: string, an) => {
+    const i = MOIS_COURTS.indexOf(mois);
+    if (i < 0) return tout;
+    return `${jour.padStart(2, "0")}/${String(i + 1).padStart(2, "0")}/${an}`;
+  });
+}
+
 /** « 8 nov. » */
 export function dateJourMois(d: Date | null | undefined): string {
   if (!d) return "";
@@ -140,6 +152,18 @@ export function montant(value: number | string | null | undefined, unite = "€"
   const groupes = partieEntiere.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
   const signe = v < 0 ? "-" : "";
   const texte = decimales !== undefined ? `${signe}${groupes},${decimales}` : `${signe}${groupes}`;
+  return unite ? `${texte} ${unite}` : texte;
+}
+
+/**
+ * Un montant toujours au centime : « 650,00 € », « 85,50 € ». Pour une colonne de montants,
+ * où les virgules doivent tomber les unes sous les autres.
+ */
+export function montantAuCentime(value: number | null | undefined, unite = "€"): string {
+  if (value === null || value === undefined || Number.isNaN(value)) return "";
+  const [partieEntiere, decimales] = Math.abs(value).toFixed(2).split(".");
+  const groupes = partieEntiere.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  const texte = `${value < 0 ? "-" : ""}${groupes},${decimales}`;
   return unite ? `${texte} ${unite}` : texte;
 }
 

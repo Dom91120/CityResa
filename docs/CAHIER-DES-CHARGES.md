@@ -64,8 +64,13 @@ par lieu** demandée par le cahier des charges.
 Chaque agent porte un **secteur** (Salles ou Sports), ou aucun : il est alors transversal
 (administrateur, financier, élu). Un agent d'un secteur ne se rattache qu'aux espaces de ce
 secteur ; sans aucun rattachement, son périmètre est l'ensemble des espaces de son secteur
-(tous les espaces pour un agent transversal). « Mon équipe » montre à un agent ses collègues du
-même secteur et les agents transversaux, sans les administrateurs. Le secteur d'un agent ou
+(tous les espaces pour un agent transversal). « Mon équipe » montre à un gestionnaire ses collègues du
+même secteur et les agents transversaux, sans les administrateurs, pour répartir les espaces ;
+les autres rôles ne l'ont pas par défaut. L'administrateur a la même liste, complète, dans
+Administration › « Comptes », où il crée et gère les comptes du back-office. Les comptes des
+usagers se gèrent depuis la fiche de leur organisation (ajout, modification, réinitialisation,
+désactivation, anonymisation), la double authentification et la suppression définitive restant
+à l'administrateur depuis la fiche du compte. Le secteur d'un agent ou
 d'un espace ne se change pas tant que des rattachements le contredisent. À défaut de
 gestionnaire sur un espace, les notifications vont aux gestionnaires et administrateurs du
 secteur de l'espace ou transversaux.
@@ -374,7 +379,7 @@ disposition gracieuses accordées aux associations, top organisations ; export *
   subventions, documents, campagnes, personnel de service), TVA, pourcentage d'acompte,
   rappels, relances, archivage, délai
   d'annulation, validité des codes, texte de la convention, agents notifiés.
-- **Utilisateurs et rôles** : agents, rôles avec permissions par catégorie, rattachement aux
+- **Comptes et rôles** : comptes du back-office, rôles avec permissions par catégorie, rattachement aux
   espaces, second facteur, désactivation.
 - **Référentiels** : natures d'espace, natures d'événement, équipements, profils tarifaires,
   catégories de matériel, catégories de pièces.

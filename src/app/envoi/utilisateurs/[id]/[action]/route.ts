@@ -88,7 +88,13 @@ export async function POST(
         );
       await prisma.user.delete({ where: { id } });
       await auditRecord("suppression compte", `${u.email} (${nom})`, "utilisateurs", admin.email);
-      return redirigerAvecMessage("/utilisateurs", `Compte de ${nom} supprimé.`, "success");
+      const liste =
+        u.kind === "agent"
+          ? "/utilisateurs"
+          : u.organisationId
+            ? `/usagers/${u.organisationId}#membres`
+            : "/usagers";
+      return redirigerAvecMessage(liste, `Compte de ${nom} supprimé.`, "success");
     }
     return pasTrouve();
   });

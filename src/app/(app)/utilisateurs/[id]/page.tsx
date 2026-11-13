@@ -41,7 +41,13 @@ export default async function UtilisateurPage({ params }: { params: Promise<{ id
     <>
       <Entete
         titre={nom}
-        retour="/utilisateurs"
+        retour={
+          u.kind === "agent"
+            ? "/utilisateurs"
+            : u.organisation
+              ? `/usagers/${u.organisation.id}#membres`
+              : "/usagers"
+        }
         sousTitre={
           <>
             {u.email}
@@ -194,7 +200,8 @@ export default async function UtilisateurPage({ params }: { params: Promise<{ id
               ) : (
                 <p className="text-muted small mb-0">
                   Aucun périmètre restreint : l'agent intervient sur tous les espaces selon son
-                  rôle. Le périmètre se règle depuis <a href="/equipe">Mon équipe</a>.
+                  rôle. Le périmètre se règle depuis <a href="/utilisateurs">Comptes</a> (icône de
+                  porte).
                 </p>
               )}
             </Section>

@@ -99,15 +99,16 @@ Ce chapitre présente le fichier des usagers (organisations et leurs comptes), l
 **Ce que l'on voit**
 
 - À gauche, le bloc **Organisation** : type, profil tarifaire, président(e), date de l'AG de nomination, **Conventionnée**, téléphone, statut, date de validation, adresse, courriel, site web et **Notes internes** (visibles des seuls agents). Si l'usager a manqué des créneaux sans prévenir, un compteur **Absences non signalées** apparaît.
-- Le bloc **Membres** : chaque compte avec son nom, sa fonction, son contact, sa dernière connexion et son statut, et le bouton **Ajouter un membre**.
-- Les blocs **Réservations** (numéro, objet, espace et date, montant, statut), puis **Factures** et **Subventions**, repliés : cliquez sur leur titre pour les ouvrir.
+- Le bloc **Membres** : chaque compte avec son nom, son statut (**Actif**, **Désactivé** ou **Anonymisé**), son courriel, son téléphone, sa fonction et sa dernière connexion, et le bouton **Ajouter un membre**. Un administrateur y voit en plus la pastille **2FA** des comptes protégés par la double authentification, et le nom de chaque membre ouvre la fiche de son compte (chapitre 9).
+- Les blocs **Réservations** (numéro, montant et statut, puis date, espace et objet) et **Factures** (numéro, montant et statut, puis libellé et échéance), et le bloc **Subventions**. Factures et Subventions sont repliés : cliquez sur leur titre pour les ouvrir.
 - À droite, le bloc **Pièces** et le bloc **Historique** des actions.
 
 **Comment faire**
 
 1. **Modifier la fiche** : cliquez sur **Modifier**. C'est là que vous changez le profil tarifaire, cochez « conventionnée » ou complétez les notes internes.
 2. **Ajouter un membre** : cliquez sur **Ajouter un membre**, saisissez prénom, nom, courriel, téléphone et fonction, puis **Créer le compte**. Un mot de passe provisoire s'affiche une seule fois et la personne reçoit le courriel de bienvenue.
-3. **Gérer un membre** : en bout de ligne, les icônes permettent d'**exporter ses données** (réponse à une demande d'accès à ses données personnelles), d'**envoyer un lien de réinitialisation** du mot de passe, de **désactiver** ou **réactiver** le compte et, pour les gestionnaires, d'**anonymiser** le compte.
+3. **Modifier un membre** : cliquez sur le crayon en bout de ligne, corrigez prénom, nom, courriel, téléphone ou fonction, puis **Enregistrer**. Le courriel est l'identifiant de connexion : s'il change, la personne se connecte avec la nouvelle adresse.
+4. **Gérer un membre** : en bout de ligne, les autres icônes permettent d'**exporter ses données** (réponse à une demande d'accès à ses données personnelles), d'**envoyer un lien de réinitialisation** du mot de passe, de **désactiver** ou **réactiver** le compte et, pour les gestionnaires, d'**anonymiser** le compte.
 
 > **Attention** — L'anonymisation efface définitivement les coordonnées de la personne et rend la connexion impossible ; ses dossiers restent archivés. Elle ne peut pas être annulée.
 
@@ -178,18 +179,18 @@ Ce chapitre présente le fichier des usagers (organisations et leurs comptes), l
 
 ## 5.7 Mon équipe
 
-**À quoi ça sert** — Voir les agents de son équipe et répartir les espaces entre eux : chacun traite les demandes et reçoit les messages des espaces dont il a la charge. L'équipe d'un agent, ce sont les collègues de son **secteur** (Salles ou Sports) et les agents **transversaux**, qui n'ont pas de secteur (élu, financier…). Un agent transversal voit tous les agents. Les administrateurs n'y figurent pas : leurs comptes se gèrent dans Administration › Utilisateurs.
+**À quoi ça sert** — Voir les agents de son équipe et répartir les espaces entre eux : chacun traite les demandes et reçoit les messages des espaces dont il a la charge. L'équipe d'un agent, ce sont les collègues de son **secteur** (Salles ou Sports) et les agents **transversaux**, qui n'ont pas de secteur (élu, financier…). Un agent transversal voit tous les agents. Les administrateurs n'y figurent pas.
 
-**Qui** — Tous les agents en lecture ; la répartition des espaces demande le droit d'écriture sur « Mon équipe » (gestionnaires par défaut). L'invitation d'un nouvel agent est réservée aux administrateurs (bouton **Inviter un agent**).
+**Qui** — Les gestionnaires par défaut : l'écran demande le droit « Mon équipe », et la répartition des espaces son niveau écriture. Les autres rôles (Agent, Financier, Élu, Lecteur) ne l'ont pas dans leur menu, sauf si un administrateur leur ouvre ce droit dans **Rôles & permissions**. L'administrateur, lui, n'a pas « Mon équipe » : il retrouve la même liste, complète, dans **Administration › Comptes** (chapitre 9), où il crée aussi les comptes.
 
 ![Mon équipe](captures/equipe.webp)
 
-*Figure — l'équipe vue par Sophie Martin, du secteur Salles : elle-même et un agent transversal, avec leur rôle, leur secteur, les espaces gérés, leur contact, leur dernière connexion et leur statut.*
+*Figure — l'équipe vue par Sophie Martin, du secteur Salles : elle-même et un agent transversal, avec leur rôle, leur secteur, les espaces gérés, leur contact et leur dernière connexion.*
 
 **Ce que l'on voit**
 
-- Une recherche par nom, courriel ou fonction.
-- Pour chaque agent : son nom et sa fonction, son **Rôle** (Agent, Élu, Gestionnaire…), son **Secteur** (Salles, Sports ou **Transversal**), ses **Espaces gérés** (« 8 espaces » ; survolez la pastille pour voir la liste ; **Tous · Sports** s'il n'est rattaché à aucun espace de son secteur, ou **Tous** pour un agent transversal sans rattachement), son contact, sa **Dernière connexion** et son **Statut**.
+- Une recherche par nom, courriel, fonction, rôle ou secteur. Si des comptes sont désactivés, deux onglets **Actifs** et **Inactifs** les séparent.
+- Pour chaque agent : son nom et sa fonction, son **Rôle** (Agent, Élu, Gestionnaire…), son **Secteur** (Salles, Sports ou **Transversal**), ses **Espaces gérés** (« 8 espaces » ; survolez la pastille pour voir la liste ; **Tous · Sports** s'il n'est rattaché à aucun espace de son secteur, ou **Tous** pour un agent transversal sans rattachement), son contact et sa **Dernière connexion**. Les colonnes portant deux flèches se trient d'un clic.
 - En bout de ligne, l'icône de porte (**Espaces gérés**) pour modifier son rattachement.
 
 **Comment faire — rattacher un agent à des espaces**
@@ -209,4 +210,4 @@ Ce chapitre présente le fichier des usagers (organisations et leurs comptes), l
 - Si vous avez vous-même un secteur, vous ne répartissez que les espaces de ce secteur, entre vos collègues ; les rattachements d'un agent transversal dans l'autre secteur ne sont ni affichés ni modifiés.
 - Cocher des espaces restreint son périmètre : listes de réservations, planning et messages ne montrent plus que ces espaces.
 - Le même rattachement se règle espace par espace dans l'onglet **Gestionnaires** de la fiche d'un espace (chapitre 4).
-- Le rôle général d'un agent (Gestionnaire, Agent, Financier, Élu, Lecteur, Administrateur) fixe ses droits par catégorie ; son secteur fixe son équipe et ses espaces. Les deux se modifient dans Administration › Utilisateurs.
+- Le rôle général d'un agent (Gestionnaire, Agent, Financier, Élu, Lecteur, Administrateur) fixe ses droits par catégorie ; son secteur fixe son équipe et ses espaces. Les deux se modifient dans Administration › Comptes.

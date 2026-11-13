@@ -224,7 +224,7 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
 .topbar-title .nb { font-size: 0.72rem; font-weight: 500; color: var(--muted); background: var(--inset); border-radius: 8px; padding: 2px 8px; }
 .topbar-title .sep { color: var(--faint); }
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
-.topbar-link { display: inline-flex; align-items: center; gap: 6px; color: var(--body); font-weight: 500; font-size: 0.82rem; padding: 7px 10px; border-radius: 8px; text-decoration: underline; text-decoration-color: transparent; }
+.topbar-link { display: inline-flex; align-items: center; gap: 6px; color: var(--body); font-weight: 500; font-size: 0.82rem; line-height: 1; padding: 7px 10px; border-radius: 8px; text-decoration: underline; text-decoration-color: transparent; }
 .topbar-link:hover { background: var(--inset); color: var(--strong); }
 .topbar-icone { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; color: var(--body); border: 0; background: none; }
 .topbar-icone:hover { background: var(--inset); color: var(--strong); }
@@ -289,11 +289,11 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
 .lu-grille { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 24px; }
 .lu-grille--1 { grid-template-columns: 1fr; }
 .lu-grille--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.lu { display: grid; grid-template-columns: var(--lu-intitule, 96px) 1fr; gap: 8px; align-items: baseline; font-size: 0.84rem; }
+.lu { display: grid; grid-template-columns: var(--lu-intitule, 96px) 1fr; gap: 8px; align-items: baseline; font-size: 0.84rem; line-height: 1.15; }
 .lu--pleine { grid-column: 1 / -1; }
 .lu-label { color: var(--muted); font-size: 0.78rem; }
 .lu-valeur { color: var(--strong); font-weight: 500; min-width: 0; overflow-wrap: anywhere; }
-.lu-valeur.pre { white-space: pre-wrap; font-weight: 400; color: var(--body); }
+.lu-valeur.pre { white-space: pre-wrap; font-weight: 400; color: var(--body); line-height: 1.4; }
 @media (max-width: 767px) { .lu-grille, .lu-grille--3 { grid-template-columns: 1fr; } }
 @media (max-width: 1199px) { .fiche-colonnes .lu-grille { grid-template-columns: 1fr; } }
 
@@ -523,17 +523,25 @@ textarea.form-control { min-height: 90px; }
 .doc-ligne:first-child { border-top: 0; }
 .doc-ligne .lucide.doc-ico { color: var(--primary); }
 .pieces-attendues { padding: 10px 12px; border: 1px dashed var(--line); border-radius: var(--radius); }
+/* Dossiers et factures d'une fiche : numéro, montant et statut, puis le libellé dessous. */
+.liste-lignes li { padding: 6px 0; border-bottom: 1px solid var(--line); line-height: 1.15; font-size: 0.84rem; }
+.liste-lignes li:last-child { border-bottom: 0; padding-bottom: 0; }
+/* Pastilles centrées dans une case de largeur fixe : les montants à leur gauche s'alignent à droite. */
+.liste-lignes .pastille { flex: 0 0 84px; text-align: center; }
+.liste-lignes small { display: block; margin-top: 3px; color: var(--muted); font-size: 0.76rem; }
+#documents > .section-corps { line-height: 1.15; }
+.pieces-attendues li > span:not(.chip) { line-height: 1; }
 .pieces-attendues.a-regler { border-color: rgba(220, 38, 38, .35); }
 .liste-alertes .alerte-ligne { display: flex; align-items: center; gap: 10px; color: var(--body); text-decoration: none; width: 100%; }
 .liste-alertes .alerte-ligne:hover { color: var(--body); }
 .doc-ligne .nom { color: var(--strong); font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .doc-ligne .meta { color: var(--muted); font-size: 0.74rem; }
 .doc-ligne .droite { margin-left: auto; display: flex; gap: 4px; align-items: center; }
-.historique { font-size: 0.8rem; }
-.historique li { display: grid; grid-template-columns: 120px 1fr; gap: 10px; padding: 6px 0; border-top: 1px solid var(--line); }
+.historique { font-size: 0.8rem; line-height: 1.15; }
+.historique li { display: grid; grid-template-columns: max-content 1fr; gap: 8px; padding: 5px 0; border-top: 1px solid var(--line); }
 .historique li:first-child { border-top: 0; }
-.historique .quand { color: var(--muted); font-size: 0.74rem; }
-.historique .qui { color: var(--faint); font-size: 0.72rem; }
+.historique .quand { color: var(--muted); font-size: 0.74rem; white-space: nowrap; letter-spacing: -0.02em; }
+.historique .qui { color: var(--faint); font-size: 0.72rem; margin-top: 2px; }
 .montants { font-size: 0.84rem; }
 .montants tr td { padding: 5px 0; border: 0; }
 .montants tr.total td { border-top: 1px solid var(--line); font-weight: 600; color: var(--strong); padding-top: 8px; }

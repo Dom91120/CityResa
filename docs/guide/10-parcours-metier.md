@@ -224,7 +224,7 @@ Le financier consulte le reste de l'application en lecture seule.
    jours fériés.
 3. **Référentiels** : natures d'espace et d'événement, équipements, profils tarifaires,
    catégories de matériel et de pièces.
-4. **Utilisateurs et rôles** : création des comptes agents, rôle de chacun, second facteur.
+4. **Comptes et rôles** : création des comptes du back-office (Administration › Comptes), rôle et secteur de chacun, second facteur.
 5. **Modèles de courriel** : relecture des textes envoyés aux usagers.
 
 **Au quotidien**

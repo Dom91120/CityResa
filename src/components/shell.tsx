@@ -187,7 +187,8 @@ export function Shell({
   const visible = (e: (typeof GENERAL.entries)[number]) =>
     (!e.feature || features[e.feature]) &&
     (!e.perm || user.canView(e.perm)) &&
-    (!e.admin || user.isAdmin);
+    (!e.admin || user.isAdmin) &&
+    !(e.horsAdmin && user.isAdmin);
   const titrePage = titre ?? entreeActif?.label ?? "CityRésa";
   const nonLues = counts.notifications ?? 0;
   return (

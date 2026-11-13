@@ -14,7 +14,6 @@ import {
 import { Champ, Grille } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
 import {
-  Avatar,
   Chip,
   StatutFacture,
   StatutResa,
@@ -28,7 +27,14 @@ import {
   phraseManques,
   qualiteRepresentant,
 } from "@/lib/dossier-usager";
-import { dateCourte, dateHeure, dateMoyenne, depuis, montant } from "@/lib/libelles";
+import {
+  dateCourte,
+  dateHeure,
+  dateMoyenne,
+  depuis,
+  montant,
+  montantAuCentime,
+} from "@/lib/libelles";
 import { etatInactivite, libelleEtat, reglesDe } from "@/lib/rgpd";
 import { chargerOrganisation } from "@/modules/usagers/server";
 import { nomComplet } from "@/modules/utilisateurs/server";
@@ -184,7 +190,7 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
         </div>
       ) : null}
 
-      <div className="fiche-colonnes fiche-colonnes--50-50">
+      <div className="fiche-colonnes fiche-colonnes--6-5">
         <div className="data-card overflow-visible">
           <Section titre="Organisation" icone="building-2">
             <Lus>
@@ -288,123 +294,123 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
             }
           >
             {org.users.length ? (
-              <div className="table-responsive">
-                <table className="table align-middle mb-0 table-serree">
-                  <thead>
-                    <tr>
-                      <th>Nom</th>
-                      <th>Contact</th>
-                      <th>Connexion</th>
-                      <th>Statut</th>
-                      {peutEditer ? <th /> : null}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {org.users.map((u) => (
-                      <tr key={u.id}>
-                        <td>
-                          <span className="d-flex align-items-center gap-2">
-                            <Avatar nom={nomComplet(u)} taille="sm" />
-                            {/* La fonction passe sous le nom : une colonne de moins. */}
-                            <span className="cell2">
-                              <strong className="text-nowrap">{nomComplet(u)}</strong>
-                              {u.fonction ? <small>{u.fonction}</small> : null}
-                            </span>
-                          </span>
-                        </td>
-                        <td className="small">
-                          <span className="cell2">
-                            <a href={`mailto:${u.email}`}>{u.email}</a>
-                            {u.phone ? <small>{u.phone}</small> : null}
-                          </span>
-                        </td>
-                        <td className="small text-muted">
-                          {u.lastLoginAt ? depuis(u.lastLoginAt) : "Jamais"}
-                        </td>
-                        <td>
-                          {u.anonymiseAt ? (
-                            <Chip teinte="slate">{libelleEtat("anonymise", u, regles)}</Chip>
-                          ) : u.isActive ? (
-                            <span className="cell2">
-                              <Chip teinte="emerald">Actif</Chip>
-                              {etatInactivite(u, regles) !== "actif" ? (
-                                <small className="text-warning-emphasis">
-                                  {libelleEtat(etatInactivite(u, regles), u, regles)}
-                                </small>
-                              ) : null}
-                            </span>
-                          ) : (
-                            <Chip teinte="slate">Désactivé</Chip>
-                          )}
-                        </td>
-                        {peutEditer ? (
-                          <td>
-                            <div className="row-actions">
-                              <a
-                                href={`${ici}/membres/${u.id}/donnees.json`}
-                                className="btn btn-ghost btn-icone btn-sm"
-                                title="Exporter ses données (demande d'accès RGPD)"
-                                aria-label="Exporter ses données"
-                                download
+              // Un membre sur trois lignes plutôt qu'un tableau : la colonne est étroite.
+              <ul className="liste-lignes list-unstyled mb-0">
+                {org.users.map((u) => (
+                  <li key={u.id}>
+                    <span className="d-flex align-items-center gap-2">
+                      {/* L'administrateur ouvre la fiche du compte (journal, sessions, 2FA). */}
+                      {user.isAdmin ? (
+                        <a
+                          href={`/utilisateurs/${u.id}`}
+                          className="text-truncate"
+                          title="Ouvrir la fiche du compte"
+                        >
+                          <strong>{nomComplet(u)}</strong>
+                        </a>
+                      ) : (
+                        <strong className="text-truncate">{nomComplet(u)}</strong>
+                      )}
+                      {u.anonymiseAt ? (
+                        <Chip teinte="slate">{libelleEtat("anonymise", u, regles)}</Chip>
+                      ) : u.isActive ? (
+                        <Chip teinte="emerald">Actif</Chip>
+                      ) : (
+                        <Chip teinte="slate">Désactivé</Chip>
+                      )}
+                      {user.isAdmin && u.twoFactorEnabled ? (
+                        <Chip teinte="emerald" titre="Double authentification activée">
+                          <Icone nom="shield-check" taille={12} /> 2FA
+                        </Chip>
+                      ) : null}
+                      <span className="me-auto" />
+                      {peutEditer ? (
+                        <div className="row-actions flex-shrink-0">
+                          {!u.anonymiseAt ? (
+                            <BoutonOuvrir
+                              cible={`modal-membre-${u.id}`}
+                              libelle="Modifier le membre"
+                              icone="pencil"
+                              classe="btn-ghost btn-sm"
+                              sansTexte
+                            />
+                          ) : null}
+                          <a
+                            href={`${ici}/membres/${u.id}/donnees.json`}
+                            className="btn btn-ghost btn-icone btn-sm"
+                            title="Exporter ses données (demande d'accès RGPD)"
+                            aria-label="Exporter ses données"
+                            download
+                          >
+                            <Icone nom="download" taille={14} />
+                          </a>
+                          <form method="POST" action={`${ici}/membres/${u.id}/reinitialiser`}>
+                            <input type="hidden" name="csrf_token" value={csrf} />
+                            <button
+                              type="submit"
+                              className="btn btn-ghost btn-icone btn-sm"
+                              title="Envoyer un lien de réinitialisation du mot de passe"
+                              aria-label="Envoyer un lien de réinitialisation"
+                              disabled={!u.isActive || Boolean(u.anonymiseAt)}
+                              data-confirm={`Envoyer un lien de réinitialisation du mot de passe à ${u.email} ?`}
+                            >
+                              <Icone nom="key-round" taille={14} />
+                            </button>
+                          </form>
+                          <form method="POST" action={`${ici}/membres/${u.id}/actif`}>
+                            <input type="hidden" name="csrf_token" value={csrf} />
+                            <button
+                              type="submit"
+                              className={`btn btn-ghost btn-icone btn-sm${u.isActive ? " btn-ghost-danger" : ""}`}
+                              disabled={Boolean(u.anonymiseAt)}
+                              title={u.isActive ? "Désactiver le compte" : "Réactiver le compte"}
+                              aria-label={
+                                u.isActive ? "Désactiver le compte" : "Réactiver le compte"
+                              }
+                              data-confirm={
+                                u.isActive
+                                  ? `Désactiver le compte de ${nomComplet(u)} ?`
+                                  : undefined
+                              }
+                            >
+                              <Icone nom={u.isActive ? "ban" : "refresh-cw"} taille={14} />
+                            </button>
+                          </form>
+                          {peutAnonymiser && !u.anonymiseAt ? (
+                            <form method="POST" action={`${ici}/membres/${u.id}/anonymiser`}>
+                              <input type="hidden" name="csrf_token" value={csrf} />
+                              <button
+                                type="submit"
+                                className="btn btn-ghost btn-icone btn-sm btn-ghost-danger"
+                                title="Anonymiser le compte (droit à l'effacement)"
+                                aria-label="Anonymiser le compte"
+                                data-confirm={`Anonymiser le compte de ${nomComplet(u)} ? Ses coordonnées sont effacées définitivement et la connexion devient impossible ; ses dossiers restent archivés.`}
                               >
-                                <Icone nom="download" taille={14} />
-                              </a>
-                              <form method="POST" action={`${ici}/membres/${u.id}/reinitialiser`}>
-                                <input type="hidden" name="csrf_token" value={csrf} />
-                                <button
-                                  type="submit"
-                                  className="btn btn-ghost btn-icone btn-sm"
-                                  title="Envoyer un lien de réinitialisation du mot de passe"
-                                  aria-label="Envoyer un lien de réinitialisation"
-                                  disabled={!u.isActive || Boolean(u.anonymiseAt)}
-                                  data-confirm={`Envoyer un lien de réinitialisation du mot de passe à ${u.email} ?`}
-                                >
-                                  <Icone nom="key-round" taille={14} />
-                                </button>
-                              </form>
-                              <form method="POST" action={`${ici}/membres/${u.id}/actif`}>
-                                <input type="hidden" name="csrf_token" value={csrf} />
-                                <button
-                                  type="submit"
-                                  className={`btn btn-ghost btn-icone btn-sm${u.isActive ? " btn-ghost-danger" : ""}`}
-                                  disabled={Boolean(u.anonymiseAt)}
-                                  title={
-                                    u.isActive ? "Désactiver le compte" : "Réactiver le compte"
-                                  }
-                                  aria-label={
-                                    u.isActive ? "Désactiver le compte" : "Réactiver le compte"
-                                  }
-                                  data-confirm={
-                                    u.isActive
-                                      ? `Désactiver le compte de ${nomComplet(u)} ?`
-                                      : undefined
-                                  }
-                                >
-                                  <Icone nom={u.isActive ? "ban" : "refresh-cw"} taille={14} />
-                                </button>
-                              </form>
-                              {peutAnonymiser && !u.anonymiseAt ? (
-                                <form method="POST" action={`${ici}/membres/${u.id}/anonymiser`}>
-                                  <input type="hidden" name="csrf_token" value={csrf} />
-                                  <button
-                                    type="submit"
-                                    className="btn btn-ghost btn-icone btn-sm btn-ghost-danger"
-                                    title="Anonymiser le compte (droit à l'effacement)"
-                                    aria-label="Anonymiser le compte"
-                                    data-confirm={`Anonymiser le compte de ${nomComplet(u)} ? Ses coordonnées sont effacées définitivement et la connexion devient impossible ; ses dossiers restent archivés.`}
-                                  >
-                                    <Icone nom="user-x" taille={14} />
-                                  </button>
-                                </form>
-                              ) : null}
-                            </div>
-                          </td>
-                        ) : null}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                                <Icone nom="user-x" taille={14} />
+                              </button>
+                            </form>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </span>
+                    <small>
+                      <a href={`mailto:${u.email}`}>{u.email}</a>
+                      {u.phone ? ` · ${u.phone}` : ""}
+                      <br />
+                      {u.fonction ? `${u.fonction} · ` : ""}
+                      {u.lastLoginAt ? `connexion ${depuis(u.lastLoginAt)}` : "jamais connecté"}
+                      {!u.anonymiseAt &&
+                      u.isActive &&
+                      libelleEtat(etatInactivite(u, regles), u, regles) ? (
+                        <span className="text-warning-emphasis">
+                          {" "}
+                          · {libelleEtat(etatInactivite(u, regles), u, regles)}
+                        </span>
+                      ) : null}
+                    </small>
+                  </li>
+                ))}
+              </ul>
             ) : (
               <p className="text-muted small mb-0">
                 Aucun compte rattaché. Ajoutez un membre pour que l'organisation puisse déposer des
@@ -420,43 +426,32 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
             ouverte={reservations.length > 0}
           >
             {reservations.length ? (
-              <div className="table-responsive">
-                <table className="table align-middle mb-0 table-serree">
-                  <thead>
-                    <tr>
-                      <th>Dossier</th>
-                      <th>Espace et date</th>
-                      <th className="text-end">Montant</th>
-                      <th>Statut</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {reservations.map((r) => (
-                      <tr key={r.id}>
-                        <td>
-                          <a href={`/reservations/${r.id}`} className="cell2">
-                            <strong>{r.numero}</strong>
-                            <small style={{ whiteSpace: "normal" }}>{r.title}</small>
-                          </a>
-                        </td>
-                        <td>
-                          <span className="cell2">
-                            <span className="small text-nowrap" title={r.espace.name}>
-                              {r.espace.shortName || r.espace.name}
-                            </span>
-                            <small title={dateMoyenne(r.startAt)}>{dateCourte(r.startAt)}</small>
-                          </span>
-                        </td>
-                        <td className="text-end tabular small">
-                          {r.gratuit ? "Gratuit" : montant(r.montantTtc)}
-                        </td>
-                        <td>
+              // Un dossier sur deux lignes plutôt qu'un tableau : la colonne est étroite.
+              <div>
+                <ul className="liste-lignes list-unstyled mb-0">
+                  {reservations.map((r) => (
+                    <li key={r.id}>
+                      <span className="d-flex align-items-center gap-2">
+                        <a href={`/reservations/${r.id}`} className="me-auto">
+                          <strong>{r.numero}</strong>
+                        </a>
+                        <span className="tabular text-nowrap">
+                          {r.gratuit ? "Gratuit" : montantAuCentime(r.montantTtc)}
+                        </span>
+                        <span className="pastille">
                           <StatutResa status={r.status} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </span>
+                      </span>
+                      {/* Date et espace d'abord : c'est l'objet, en fin de ligne, qui se tronque. */}
+                      <small
+                        className="text-truncate"
+                        title={`${dateMoyenne(r.startAt)} · ${r.espace.name} · ${r.title}`}
+                      >
+                        {dateCourte(r.startAt)} · {r.espace.shortName || r.espace.name} · {r.title}
+                      </small>
+                    </li>
+                  ))}
+                </ul>
                 {org._count.reservations > reservations.length ? (
                   <p className="small text-muted mt-2 mb-0">
                     Les {reservations.length} plus récentes sur {org._count.reservations}.
@@ -471,36 +466,32 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
           {features.paiements && user.canView("paiements") ? (
             <Section titre="Factures" icone="receipt" nb={org._count.factures} ouverte={false}>
               {factures.length ? (
-                <div className="table-responsive">
-                  <table className="table align-middle mb-0">
-                    <thead>
-                      <tr>
-                        <th>Numéro</th>
-                        <th>Libellé</th>
-                        <th className="text-end">Montant TTC</th>
-                        <th>Échéance</th>
-                        <th>Statut</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {factures.map((f) => (
-                        <tr key={f.id}>
-                          <td>
-                            <a href={`/paiements/${f.id}`}>
-                              <strong>{f.numero}</strong>
-                            </a>
-                          </td>
-                          <td className="small">{f.libelle}</td>
-                          <td className="text-end tabular">{montant(f.montantTtc)}</td>
-                          <td className="small text-muted">{dateCourte(f.dueAt)}</td>
-                          <td>
-                            <StatutFacture status={f.status} />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                // Une facture sur deux lignes plutôt qu'un tableau : la colonne est étroite.
+                <ul className="liste-lignes list-unstyled mb-0">
+                  {factures.map((f) => (
+                    <li key={f.id}>
+                      <span className="d-flex align-items-center gap-2">
+                        <a href={`/paiements/${f.id}`} className="me-auto">
+                          <strong>{f.numero}</strong>
+                        </a>
+                        <span className="tabular text-nowrap">
+                          {montantAuCentime(f.montantTtc)}
+                        </span>
+                        <span className="pastille">
+                          <StatutFacture status={f.status} />
+                        </span>
+                      </span>
+                      {/* « Nature · Salle » puis, à la ligne, la date, l'horaire et l'échéance. */}
+                      <small>
+                        {f.libelle.split(" · ").slice(0, 2).join(" · ")}
+                        <br />
+                        {[...f.libelle.split(" · ").slice(2), `éch. ${dateCourte(f.dueAt)}`].join(
+                          " · ",
+                        )}
+                      </small>
+                    </li>
+                  ))}
+                </ul>
               ) : (
                 <p className="text-muted small mb-0">Aucune facture.</p>
               )}
@@ -631,6 +622,60 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
           </Grille>
         </ModalAction>
       ) : null}
+      {peutEditer
+        ? org.users
+            .filter((u) => !u.anonymiseAt)
+            .map((u) => (
+              <ModalAction
+                key={u.id}
+                id={`modal-membre-${u.id}`}
+                titre={`Modifier ${nomComplet(u)}`}
+                action={`${ici}/membres/${u.id}/modifier`}
+                csrf={csrf}
+                icone="pencil"
+                aide="Le courriel est l'identifiant de connexion : s'il change, la personne se connecte désormais avec la nouvelle adresse."
+              >
+                <Grille colonnes={2}>
+                  <Champ
+                    label="Prénom"
+                    name="first_name"
+                    id={`e-first-${u.id}`}
+                    valeur={u.firstName}
+                    requis
+                  />
+                  <Champ
+                    label="Nom"
+                    name="last_name"
+                    id={`e-last-${u.id}`}
+                    valeur={u.lastName}
+                    requis
+                  />
+                  <Champ
+                    label="Courriel"
+                    name="email"
+                    id={`e-email-${u.id}`}
+                    type="email"
+                    valeur={u.email}
+                    requis
+                    pleine
+                  />
+                  <Champ
+                    label="Téléphone"
+                    name="phone"
+                    id={`e-phone-${u.id}`}
+                    type="tel"
+                    valeur={u.phone}
+                  />
+                  <Champ
+                    label="Fonction"
+                    name="fonction"
+                    id={`e-fonction-${u.id}`}
+                    valeur={u.fonction}
+                  />
+                </Grille>
+              </ModalAction>
+            ))
+        : null}
     </>
   );
 }

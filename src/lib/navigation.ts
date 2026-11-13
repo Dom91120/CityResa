@@ -15,6 +15,8 @@ export type NavEntry = {
   count: string | null;
   feature?: FeatureName;
   admin?: boolean;
+  /** Masquée aux administrateurs, qui ont l'équivalent dans Administration. */
+  horsAdmin?: boolean;
   /** Libellé « NOUV. » / « BÊTA » à droite. */
   tag?: string;
   /** Couleur de l'icône : une teinte de la palette des pastilles (rose, amber, sky…). */
@@ -52,7 +54,7 @@ export const GENERAL: NavDomaine = {
     t("lime", e("/materiel", "Matériel", "boxes", "materiel", null, "materiel")),
     t("sky", e("/messages", "Messages", "message-circle", "messages", "messages")),
     t("rose", e("/usagers", "Usagers", "users", "usagers", "usagers_a_valider")),
-    t("violet", e("/equipe", "Mon équipe", "contact-round", "equipe")),
+    { ...t("violet", e("/equipe", "Mon équipe", "contact-round", "equipe")), horsAdmin: true },
     t(
       "amber",
       e(
@@ -89,7 +91,7 @@ export const ADMINISTRATION: NavDomaine = {
   label: "Administration",
   entries: [
     { ...e("/parametres", "Paramètres", "settings"), admin: true, teinte: "slate" },
-    { ...e("/utilisateurs", "Utilisateurs", "user-cog"), admin: true, teinte: "sky" },
+    { ...e("/utilisateurs", "Comptes", "user-cog"), admin: true, teinte: "sky" },
     { ...e("/roles", "Rôles & permissions", "shield"), admin: true, teinte: "red" },
     { ...e("/referentiels", "Référentiels", "list"), admin: true, teinte: "amber" },
     {

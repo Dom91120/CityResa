@@ -2,7 +2,7 @@
  * Facturation : factures d'acompte, de solde, de caution ; paiements ; PDF.
  */
 import { FACTURE_TYPES, PAIEMENT_MODES } from "@/lib/constantes";
-import { dateCourte, montant, plage } from "@/lib/libelles";
+import { dateCourte, datesEnChiffres, montant, plage } from "@/lib/libelles";
 import { auditRecord } from "@/server/audit";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
@@ -63,7 +63,8 @@ export async function creerFacture(
       reservationId: r.id,
       organisationId: r.organisationId,
       type,
-      libelle: `${FACTURE_TYPES[type]} · ${r.espace.name} · ${plage(r.startAt, r.endAt)}`,
+      // La date en chiffres (« Dim. 06/12/2026 ») : le libellé s'affiche dans des colonnes étroites.
+      libelle: `${FACTURE_TYPES[type]} · ${r.espace.name} · ${datesEnChiffres(plage(r.startAt, r.endAt))}`,
       montantHt: ht,
       tva: type === "caution" ? 0 : Math.round((ttc - ht) * 100) / 100,
       montantTtc: ttc,
@@ -206,7 +207,7 @@ export async function pdfFacture(id: number): Promise<Buffer | null> {
 <div class="entete"><div>${cfg.COLLECTIVITE_LOGO ? `<img class="logo" src="${cfg.COLLECTIVITE_LOGO}" alt="">` : ""}<div class="coll">${p(cfg.COLLECTIVITE_NOM)}</div><div class="muted">${p(cfg.COLLECTIVITE_ADRESSE)}</div></div>
 <div class="doc"><strong>${FACTURE_TYPES[f.type] ?? "Facture"}</strong><br>N° ${p(f.numero)}<br>Émise le ${dateCourte(f.createdAt)}${f.dueAt ? `<br>Échéance ${dateCourte(f.dueAt)}` : ""}</div></div>
 <div class="grille"><div class="bloc"><span class="muted">Débiteur</span><br><strong>${client ? p(client.name) : contact ? `${p(contact.firstName)} ${p(contact.lastName)}` : "—"}</strong>${client?.address ? `<br>${p(client.address)}<br>${p(client.postalCode)} ${p(client.city)}` : ""}${contact?.email ? `<br>${p(contact.email)}` : ""}</div>
-<div class="bloc"><span class="muted">Objet</span><br>${r ? `Réservation <strong>${p(r.numero)}</strong><br>${p(r.espace.name)}, ${p(r.espace.site.name)}<br>${plage(r.startAt, r.endAt)}` : p(f.libelle)}</div></div>
+<div class="bloc"><span class="muted">Objet</span><br>${r ? `Réservation <strong>${p(r.numero)}</strong><br>${p(r.espace.name)}, ${p(r.espace.site.name)}<br>${datesEnChiffres(plage(r.startAt, r.endAt))}` : p(f.libelle)}</div></div>
 <table><thead><tr><th>Désignation</th><th class="num">Montant HT</th><th class="num">TVA</th><th class="num">Montant TTC</th></tr></thead><tbody>
 <tr><td>${p(f.libelle)}</td><td class="num">${montant(f.montantHt)}</td><td class="num">${montant(f.tva)}</td><td class="num">${montant(f.montantTtc)}</td></tr>
 <tr class="total"><td colspan="3" class="num">Net à payer</td><td class="num">${montant(f.montantTtc)}</td></tr>
