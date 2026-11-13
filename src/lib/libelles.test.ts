@@ -5,7 +5,6 @@ import {
   dateJourMois,
   dateLongue,
   dateMoyenne,
-  datesEnChiffres,
   delai,
   depuis,
   diffJours,
@@ -33,8 +32,8 @@ describe("dates (heure de Paris)", () => {
   it("dateCourte / dateLongue / dateMoyenne / dateJourMois", () => {
     expect(dateCourte(hiver)).toBe("08/11/2026");
     expect(dateLongue(hiver)).toBe("dimanche 8 novembre 2026");
-    expect(dateMoyenne(hiver)).toBe("Dim. 08 nov. 2026");
-    expect(dateJourMois(hiver)).toBe("8 nov.");
+    expect(dateMoyenne(hiver)).toBe("Dim. 08/11/2026");
+    expect(dateJourMois(hiver)).toBe("8/11");
     expect(dateLongue(ete)).toBe("mercredi 15 juillet 2026");
   });
 
@@ -54,13 +53,13 @@ describe("dates (heure de Paris)", () => {
     const fin = new Date("2026-11-08T18:00:00Z");
     expect(dateHeure(hiver)).toBe("08/11/2026 à 8h30");
     expect(plageHoraire(hiver, fin)).toBe("8h30 – 19h00");
-    expect(plage(hiver, fin)).toBe("Dim. 08 nov. 2026 · 8h30 – 19h00");
+    expect(plage(hiver, fin)).toBe("Dim. 08/11/2026 · 8h30 – 19h00");
   });
 
   it("plage sur plusieurs jours", () => {
     const debut = new Date("2026-11-07T08:00:00Z");
     const fin = new Date("2026-11-08T17:00:00Z");
-    expect(plage(debut, fin)).toBe("du Sam. 07 nov. 2026 à 9h00 au Dim. 08 nov. 2026 à 18h00");
+    expect(plage(debut, fin)).toBe("du Sam. 07/11/2026 à 9h00 au Dim. 08/11/2026 à 18h00");
   });
 
   it("moisAnnee", () => {
@@ -212,18 +211,5 @@ describe("montantAuCentime", () => {
     expect(montantAuCentime(1141)).toBe("1 141,00 €");
     expect(montantAuCentime(-12.345)).toBe("-12,35 €");
     expect(montantAuCentime(null)).toBe("");
-  });
-});
-
-describe("datesEnChiffres", () => {
-  it("remplace le mois abrégé par son numéro", () => {
-    expect(datesEnChiffres("Acompte · Salle · Dim. 06 déc. 2026 · 14h00 – 19h00")).toBe(
-      "Acompte · Salle · Dim. 06/12/2026 · 14h00 – 19h00",
-    );
-    expect(datesEnChiffres("Sam. 9 mai 2026")).toBe("Sam. 09/05/2026");
-  });
-  it("laisse le reste du texte intact", () => {
-    expect(datesEnChiffres("Salle 12 places 2026")).toBe("Salle 12 places 2026");
-    expect(datesEnChiffres("Caution")).toBe("Caution");
   });
 });

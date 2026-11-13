@@ -263,7 +263,7 @@ Le formulaire compte trois parties.
 **Ce que l'on voit**
 
 - L'onglet **Réservations** liste **Les 10 prochains créneaux** (créneau, dossier, demandeur, statut) avec un lien **Toutes les réservations**. Dessous, la **Liste d'attente** : les usagers qui se sont inscrits depuis le portail parce que le créneau voulu était occupé, avec la date d'inscription et la date à laquelle ils ont été prévenus d'une libération.
-- L'onglet **Activité** affiche l'occupation des 30 derniers jours : taux d'occupation (heures réservées rapportées aux heures d'ouverture), heures réservées, nombre de créneaux fermes et nombre total de réservations.
+- L'onglet **Activité** affiche l'occupation des 30 derniers jours : taux d'occupation (heures réservées rapportées aux heures d'ouverture), heures réservées, nombre de créneaux fermes et nombre de réservations (dossiers) qui ont eu au moins un créneau ferme sur ces 30 jours.
 
 **Règles à connaître**
 

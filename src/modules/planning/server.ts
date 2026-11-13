@@ -99,7 +99,7 @@ export function fenetre(vue: Vue, date: string): Fenetre {
     jours,
     de: lundi,
     a: addParisDays(lundi, 7),
-    label: `Semaine du ${dateJourMois(lundi)} au ${dateJourMois(dimanche)} ${parisParts(dimanche).dateKey.slice(0, 4)}`,
+    label: `Semaine du ${dateJourMois(lundi)} au ${dateJourMois(dimanche)}/${parisParts(dimanche).dateKey.slice(0, 4)}`,
     precedent: cle(addParisDays(lundi, -7)),
     suivant: cle(addParisDays(lundi, 7)),
     mois: date.slice(0, 7),

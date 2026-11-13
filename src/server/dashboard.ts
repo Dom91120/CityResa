@@ -92,7 +92,7 @@ export async function occupationParEspace(p: Periode) {
       endAt: { gt: p.de },
       reservation: { status: { in: STATUTS_FERMES } },
     },
-    select: { espaceId: true, startAt: true, endAt: true },
+    select: { espaceId: true, reservationId: true, startAt: true, endAt: true },
   });
   const semaines = Math.max(1, (p.a.getTime() - p.de.getTime()) / (7 * 86_400_000));
   return espaces.map((e) => {
@@ -116,6 +116,9 @@ export async function occupationParEspace(p: Periode) {
       heures: Math.round(heures * 10) / 10,
       taux: Math.min(100, Math.round((heures / ouvertes) * 1000) / 10),
       nb: creneaux.filter((c) => c.espaceId === e.id).length,
+      // Les dossiers qui ont au moins un créneau ferme dans la période.
+      dossiers: new Set(creneaux.filter((c) => c.espaceId === e.id).map((c) => c.reservationId))
+        .size,
     };
   });
 }

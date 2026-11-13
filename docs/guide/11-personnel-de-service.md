@@ -159,7 +159,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 
 **Qui** — Agents et gestionnaires en écriture sur « Personnel de service ».
 
-**Ce que l'on voit** — Sur la fiche, la section **Absences** liste les absences récentes et à venir : période (« Sam. 28 nov. 2026 · journée entière », ou la plage horaire), **motif** (pastille) et note, avec la croix pour supprimer. Dans le planning de service, une absence apparaît hachurée en orange dans la case du jour, et les plages travaillées du jour en sont réduites.
+**Ce que l'on voit** — Sur la fiche, la section **Absences** liste les absences récentes et à venir : période (« Sam. 28/11/2026 · journée entière », ou la plage horaire), **motif** (pastille) et note, avec la croix pour supprimer. Dans le planning de service, une absence apparaît hachurée en orange dans la case du jour, et les plages travaillées du jour en sont réduites.
 
 **Comment faire**
 

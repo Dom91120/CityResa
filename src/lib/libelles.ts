@@ -27,21 +27,6 @@ const MOIS = [
   "novembre",
   "décembre",
 ];
-const MOIS_COURTS = [
-  "janv.",
-  "févr.",
-  "mars",
-  "avr.",
-  "mai",
-  "juin",
-  "juil.",
-  "août",
-  "sept.",
-  "oct.",
-  "nov.",
-  "déc.",
-];
-
 function parts(d: Date) {
   const w = toParisWall(d);
   const dow = (new Date(Date.UTC(w.y, w.mo - 1, w.da)).getUTCDay() + 6) % 7;
@@ -62,30 +47,18 @@ export function dateLongue(d: Date | null | undefined): string {
   return `${JOURS[p.dow]} ${p.da} ${MOIS[p.mo - 1]} ${p.y}`;
 }
 
-/** « Mar. 08 nov. 2026 » : la forme compacte des listes et cartes. */
+/** « Mar. 08/11/2026 » : la forme compacte des listes et cartes, la date en chiffres. */
 export function dateMoyenne(d: Date | null | undefined): string {
   if (!d) return "";
   const p = parts(d);
-  return `${JOURS_COURTS[p.dow]} ${String(p.da).padStart(2, "0")} ${MOIS_COURTS[p.mo - 1]} ${p.y}`;
+  return `${JOURS_COURTS[p.dow]} ${dateCourte(d)}`;
 }
 
-/**
- * Dans un texte, « 06 déc. 2026 » devient « 06/12/2026 » : la forme la plus courte, celle du
- * libellé des factures, qui s'affiche dans des colonnes étroites.
- */
-export function datesEnChiffres(texte: string): string {
-  return texte.replace(/\b(\d{1,2}) (\S+) (\d{4})\b/g, (tout, jour: string, mois: string, an) => {
-    const i = MOIS_COURTS.indexOf(mois);
-    if (i < 0) return tout;
-    return `${jour.padStart(2, "0")}/${String(i + 1).padStart(2, "0")}/${an}`;
-  });
-}
-
-/** « 8 nov. » */
+/** « 8/11 » */
 export function dateJourMois(d: Date | null | undefined): string {
   if (!d) return "";
   const p = parts(d);
-  return `${p.da} ${MOIS_COURTS[p.mo - 1]}`;
+  return `${p.da}/${String(p.mo).padStart(2, "0")}`;
 }
 
 /** « 8h30 », « 19h00 ». */
@@ -106,7 +79,7 @@ export function plageHoraire(debut: Date, fin: Date): string {
   return `${heure(debut)} – ${heure(fin)}`;
 }
 
-/** « Mar. 08 nov. 2026 · 8h30 – 19h00 », ou sur deux jours « du Sam. 12 nov. 2026 à 9h00 au Dim. 13 nov. 2026 à 18h00 ». */
+/** « Mar. 08/11/2026 · 8h30 – 19h00 », ou sur deux jours « du Sam. 12/11/2026 à 9h00 au Dim. 13/11/2026 à 18h00 ». */
 export function plage(debut: Date, fin: Date): string {
   const a = parts(debut);
   const b = parts(fin);

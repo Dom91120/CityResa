@@ -587,7 +587,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 **Ce que l'on voit**
 
 - Le bouton **Sauvegarder maintenant** et l'emplacement du dossier des sauvegardes.
-- Quatre cartes : **Taille de la base**, **Dernière sauvegarde**, **Rotation** (nombre de sauvegardes conservées, avec le lien **régler**), **Sauvegarde automatique** (Activée ou Désactivée).
+- Quatre cartes : **Taille de la base**, **Dernière sauvegarde**, **Rotation** (nombre de sauvegardes conservées, avec le lien **régler**), **Sauvegarde auto** (« Chaque nuit à 1h », avec un lien vers la tâche planifiée, ou « Désactivée » quand aucun dossier de sauvegarde n'est défini sur le serveur).
 - La liste des fichiers : **Fichier**, **Date**, **Taille**, avec pour chacun une icône **Télécharger** et une icône **Supprimer**. Sur la figure, la liste est vide.
 - En bas, une note technique destinée au service informatique pour la restauration.
 

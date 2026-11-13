@@ -1,5 +1,6 @@
 import { Icone } from "@/components/icones";
 import { Vide } from "@/components/liste";
+import { CarteStat } from "@/components/stats";
 import { dateHeure, depuis } from "@/lib/libelles";
 import { contexteAdmin } from "@/modules/admin/server";
 import { backupDir, dbSizeMb, listBackups } from "@/server/db-backup";
@@ -37,38 +38,57 @@ export default async function SauvegardesPage() {
         </div>
       </div>
 
-      <div className="stat-grid mb-3">
-        <div className="stat-card">
-          <div className="stat-label">Taille de la base</div>
-          <div className="stat-number">
-            {tailleMb ? `${String(tailleMb).replace(".", ",")} Mo` : "—"}
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Dernière sauvegarde</div>
-          <div className="stat-number" style={{ fontSize: "1.1rem" }}>
-            {derniere ? depuis(derniere.date) : "Aucune"}
-          </div>
-          {derniere ? <div className="small text-muted">{dateHeure(derniere.date)}</div> : null}
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Rotation</div>
-          <div className="stat-number">{cfg.BACKUP_DB_KEEP}</div>
-          <div className="small text-muted">
-            sauvegardes conservées · <a href="/parametres#sauvegardes">régler</a>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Sauvegarde automatique</div>
-          <div className="stat-number" style={{ fontSize: "1.1rem" }}>
-            {cfg.BACKUP_DB_DIR ? "Chaque nuit à 1h" : "Désactivée"}
-          </div>
-          <div className="small text-muted">
-            {cfg.BACKUP_DB_DIR
-              ? "tâche backup_database"
-              : "BACKUP_DB_DIR absent de l'environnement"}
-          </div>
-        </div>
+      {/* Les mêmes cartes de synthèse que sur le tableau de bord ; les valeurs en texte sont
+          affichées plus petit que les chiffres. */}
+      <div className="stat-grid">
+        <CarteStat
+          icone="database"
+          teinte="sky"
+          label="Taille de la base"
+          valeur={tailleMb ? `${String(tailleMb).replace(".", ",")} Mo` : "—"}
+        />
+        <CarteStat
+          icone="history"
+          teinte={derniere ? "emerald" : "amber"}
+          label="Dernière sauvegarde"
+          valeur={
+            <span style={{ fontSize: "1.3rem" }}>
+              {derniere ? depuis(derniere.date) : "Aucune"}
+            </span>
+          }
+          detail={derniere ? dateHeure(derniere.date) : undefined}
+        />
+        <CarteStat
+          icone="refresh-cw"
+          teinte="violet"
+          label="Rotation"
+          valeur={cfg.BACKUP_DB_KEEP}
+          detail={
+            <>
+              sauvegardes conservées · <a href="/parametres#sauvegardes">régler</a>
+            </>
+          }
+        />
+        <CarteStat
+          icone="calendar-clock"
+          teinte={cfg.BACKUP_DB_DIR ? "emerald" : "slate"}
+          label="Sauvegarde auto"
+          valeur={
+            <span style={{ fontSize: "1.3rem" }}>
+              {cfg.BACKUP_DB_DIR ? "Chaque nuit à 1h" : "Désactivée"}
+            </span>
+          }
+          detail={
+            cfg.BACKUP_DB_DIR ? (
+              <a href="/taches">Voir la tâche planifiée</a>
+            ) : (
+              // Le dossier ne se règle pas à l'écran : c'est un réglage du serveur.
+              <span title="Réglage BACKUP_DB_DIR du serveur (fichier .env)">
+                Aucun dossier défini sur le serveur.
+              </span>
+            )
+          }
+        />
       </div>
 
       <div className="data-card">

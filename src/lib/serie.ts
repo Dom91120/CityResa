@@ -105,7 +105,7 @@ export function recurrenceDeplacee(rec: Recurrence | null, jours: number): Recur
   return out;
 }
 
-/** « Mar. 03 nov. 2026 · 18h00 – 20h00 → Mer. 04 nov. 2026 · 19h00 – 21h00 ; … » (au plus `max` lignes). */
+/** « Mar. 03/11/2026 · 18h00 – 20h00 → Mer. 04/11/2026 · 19h00 – 21h00 ; … » (au plus `max` lignes). */
 export function decrireDeplacements(deps: readonly Deplacement<Intervalle>[], max = 8): string {
   const lignes = deps
     .slice(0, max)

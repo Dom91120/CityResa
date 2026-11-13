@@ -305,7 +305,7 @@ Les agents municipaux y trouveront aussi de quoi accompagner un usager au télé
 
 **Ce que l'on voit**
 - Le menu comporte en plus **Mes subventions**.
-- « Éveil à la danse des tout-petits » couvre une période (« du Sam. 19 sept. 2026 … au Sam. 23 janv. 2027 · 10 créneaux ») : c'est une réservation récurrente.
+- « Éveil à la danse des tout-petits » couvre une période (« du Sam. 19/09/2026 … au Sam. 23/01/2027 · 10 créneaux ») : c'est une réservation récurrente.
 - « Spectacle de fin d'année des enfants » est **En traitement** : « La collectivité vous a demandé des précisions : répondez dans le fil de discussion. »
 
 **Comment faire**

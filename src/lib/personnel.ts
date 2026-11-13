@@ -234,8 +234,8 @@ export function nomFichierPlanningPersonnel(lundi: string): string {
 }
 
 /**
- * Le libellé d'une absence : « Sam. 28 nov. 2026 · journée entière », « du Jeu. 12 nov. 2026 au
- * Dim. 15 nov. 2026 · journées entières », sinon la plage horaire.
+ * Le libellé d'une absence : « Sam. 28/11/2026 · journée entière », « du Jeu. 12/11/2026 au
+ * Dim. 15/11/2026 · journées entières », sinon la plage horaire.
  */
 export function libelleAbsence(a: Intervalle): string {
   const debut = parisParts(a.startAt);

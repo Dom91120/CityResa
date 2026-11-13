@@ -124,7 +124,8 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
         }
         sousTitre={
           <>
-            <Icone nom="door-open" taille={13} /> {nomCourt(r.espace)} · {r.espace.site.name} ·{" "}
+            <Icone nom="door-open" taille={13} /> {nomCourt(r.espace)} · {r.espace.site.name}
+            <br />
             <Icone nom="calendar-days" taille={13} /> {plage(r.startAt, r.endAt)}
             {nb > 1 ? ` (${nb} créneaux)` : ""} · {r.title}
           </>

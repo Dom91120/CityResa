@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { BoutonOuvrir, Entete, MenuPost, MenuSep, ModalAction } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { VideBloc } from "@/components/liste";
+import { CarteStat } from "@/components/stats";
 import {
   type CampagneStatus,
   conflitsParVoeu,
@@ -141,22 +142,12 @@ export default async function CampagnePage({ params }: { params: Promise<{ id: s
         }
       />
 
-      <div className="grille grille-4 mb-3">
-        {[
-          { label: "En attente", n: nb("en_attente"), teinte: "amber", icone: "hourglass" },
-          { label: "Attribués", n: nb("attribue"), teinte: "emerald", icone: "check" },
-          { label: "Refusés", n: nb("refuse"), teinte: "red", icone: "x" },
-          { label: "À prévenir", n: aPrevenir, teinte: "sky", icone: "send" },
-        ].map((k) => (
-          <div key={k.label} className="data-card p-3">
-            <div className="text-muted small">
-              <Icone nom={k.icone} taille={14} /> {k.label}
-            </div>
-            <div className="fs-3 fw-semibold" style={{ color: "var(--strong)" }}>
-              {k.n}
-            </div>
-          </div>
-        ))}
+      {/* Les mêmes cartes de synthèse que sur le tableau de bord. */}
+      <div className="stat-grid">
+        <CarteStat icone="hourglass" teinte="amber" label="En attente" valeur={nb("en_attente")} />
+        <CarteStat icone="check" teinte="emerald" label="Attribués" valeur={nb("attribue")} />
+        <CarteStat icone="x" teinte="red" label="Refusés" valeur={nb("refuse")} />
+        <CarteStat icone="send" teinte="sky" label="À prévenir" valeur={aPrevenir} />
       </div>
 
       {c.consignes ? (

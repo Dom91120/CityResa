@@ -14,7 +14,7 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 
 **Ce que l'on voit**
 
-- Sous le titre : la période affichée, le nombre d'espaces et de créneaux réservés, et le rappel « cliquez sur une case pour réserver ».
+- Sous le titre : la période affichée, le nombre d'espaces et de créneaux réservés, et le rappel, à la ligne, « Cliquez sur une case pour réserver ».
 - La barre d'outils : **Mes vues**, **Semaine type**, **Présences**, **Imprimer**, **Bloquer un créneau** et **Nouvelle réservation**.
 - Les onglets **Semaine**, **Mois**, **Jour** et **Liste**, les flèches pour passer à la période précédente ou suivante, la période en cours et le lien **Aujourd'hui**.
 - Les filtres : un sélecteur de date, **Tous les sites**, **Tous les espaces** (choix de plusieurs espaces par cases à cocher) et **Couleur**.
@@ -296,7 +296,7 @@ Quand un seul espace est affiché, un bouton **Feuille de salle** apparaît à c
 **Ce que l'on voit**
 
 - Le bouton **Nouvelle campagne**.
-- Le tableau : **Campagne**, **Saison**, **État**, **Date limite**, **Espaces**, **En attente**, **Attribués**, **Refusés**, et une flèche pour ouvrir la campagne.
+- Le tableau : **Campagne**, **Saison**, **État**, **Date limite**, **Espaces**, **En attente**, **Attribués**, **Refusés**, et l'œil qui ouvre la campagne, comme son nom.
 
 **Comment faire — créer une campagne**
 
