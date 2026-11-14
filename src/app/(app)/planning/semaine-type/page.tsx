@@ -4,6 +4,7 @@ import { Chip } from "@/components/macros";
 import { JOURS_ISO } from "@/lib/constantes";
 import { plageMinutes } from "@/lib/editions";
 import { pluriel } from "@/lib/libelles";
+import { avecRetour } from "@/lib/url";
 import { FiltreEspaces, FiltreSites } from "@/modules/planning/filtres";
 import {
   espacesDuPerimetre,
@@ -42,6 +43,7 @@ export default async function SemaineTypePage({
       )
     : [];
   const sites = [...new Map(tous.map((e) => [e.site.id, e.site])).values()];
+  const retour = `${page.pathname}${page.search.toString() ? `?${page.search.toString()}` : ""}`;
   const q = new URLSearchParams();
   for (const id of filtres.sites) q.append("site", String(id));
   for (const id of filtres.espaces) q.append("espace", String(id));
@@ -174,7 +176,7 @@ export default async function SemaineTypePage({
                 {espaces.map((e) => (
                   <tr key={e.id}>
                     <td className="col-espace">
-                      <EspaceCell e={e} />
+                      <EspaceCell e={e} retour={retour} />
                     </td>
                     {JOURS_ISO.map((j) => {
                       const du = series.filter((s) => s.espaceId === e.id && s.jour === j.iso);
@@ -183,7 +185,7 @@ export default async function SemaineTypePage({
                           {du.map((s) => (
                             <a
                               key={`${s.reservationId}-${s.jour}`}
-                              href={`/reservations/${s.reservationId}`}
+                              href={avecRetour(`/reservations/${s.reservationId}`, retour)}
                               className="evt"
                               title={`${s.numero} · ${s.titre}`}
                             >

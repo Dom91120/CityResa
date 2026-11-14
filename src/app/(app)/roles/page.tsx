@@ -205,7 +205,7 @@ export default async function RolesPage() {
             id="r-name"
             requis
             placeholder="accueil"
-            attrs={{ pattern: "[a-z0-9_-]{2,40}", maxLength: 40 }}
+            attrs={{ pattern: "[a-z0-9_\\-]{2,40}", maxLength: 40 }}
             aide="Minuscules, chiffres, tirets."
           />
           <Champ label="Libellé" name="label" id="r-label" requis placeholder="Agent d'accueil" />

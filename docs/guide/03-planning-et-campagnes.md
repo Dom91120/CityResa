@@ -69,7 +69,7 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 **Ce que l'on voit**
 
 - Un calendrier du lundi au dimanche, qui déborde sur les jours des mois voisins.
-- Dans chaque case : le numéro du jour et, à sa droite, des pastilles abrégées « 1 rés. », « 2 rés. » (réservations) ou « 1 bloc. » (blocage), le libellé entier s’affichant au survol ; en dessous, les étiquettes des créneaux avec leurs horaires.
+- Dans chaque case : le numéro du jour (un clic ouvre la vue jour) et les étiquettes des créneaux avec leurs horaires, trois au plus ; au-delà, **+ 2 autres** ouvre la liste de toutes les réservations du jour. Un jour où un espace est bloqué porte la pastille rouge **1 blocage** à droite du numéro : survolez-la pour lire le motif, cliquez pour ouvrir les indisponibilités de l'espace ; s'il y a plusieurs blocages, elle ouvre leur liste. La fiche ouverte depuis le planning (dossier ou espace) y ramène par sa flèche de retour, sur la même vue et la même période, y compris après une action sur la fiche (accepter, modifier…) ; il en va de même depuis la semaine type, le planning de service (dossiers et fiches des personnes) et la fiche d'une personne.
 - La couleur à gauche de chaque étiquette suit le mode de couleur choisi (ici, par espace).
 
 **Comment faire**

@@ -361,7 +361,7 @@ export function FormulaireEspace({
             name="slug"
             valeur={espace?.slug}
             aide="Proposée d'après le nom ; adresse de l'espace sur le portail."
-            attrs={{ "data-slug-de": "#f-name", pattern: "[a-z0-9-]+" }}
+            attrs={{ "data-slug-de": "#f-name", pattern: "[a-z0-9\\-]+" }}
           />
           <Select
             label="Nature"

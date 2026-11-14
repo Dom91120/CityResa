@@ -22,7 +22,7 @@ export function FormulaireSite({
             name="slug"
             valeur={site?.slug}
             aide="Proposée automatiquement d'après le nom ; sert aux adresses du portail."
-            attrs={{ "data-slug-de": "#f-name", pattern: "[a-z0-9-]+" }}
+            attrs={{ "data-slug-de": "#f-name", pattern: "[a-z0-9\\-]+" }}
           />
           <Zone
             label="Description"

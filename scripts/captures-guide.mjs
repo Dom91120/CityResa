@@ -46,6 +46,7 @@ const COMPTES = {
 
 /**
  * Une capture : `compte` (null = visiteur), `url`, `hauteur` max de la page entière (px CSS),
+ * `lien` (texte d'un lien de la page à suivre), `lienVers` (fragment de l'adresse d'un lien à suivre),
  * `clic` (sélecteur cliqué avant la capture), `script` (code exécuté dans la page avant), `selecteur` (un élément seul), `fenetre`.
  */
 const CAPTURES = [
@@ -192,7 +193,9 @@ const CAPTURES = [
   {
     nom: "creneau-requisition",
     compte: "gestionnaire",
-    url: "/reservations/25/creneaux/76/requisition",
+    // L'identifiant du créneau dépend du jeu chargé : on suit le lien de réquisition de la fiche.
+    url: "/reservations/25",
+    lienVers: "/requisition",
     hauteur: 1800,
   },
 
@@ -386,16 +389,21 @@ try {
       courant = c.compte;
     }
     let rep = await page.goto(`${BASE}${c.url}`, { waitUntil: "networkidle0", timeout: 120_000 });
-    if (c.lien && (rep?.status() ?? 0) < 400) {
+    if ((c.lien || c.lienVers) && (rep?.status() ?? 0) < 400) {
       const href = await page.evaluate(
-        (texte) =>
+        (texte, vers) =>
           [...document.querySelectorAll("main a")]
-            .find((a) => a.textContent.includes(texte))
+            .find((a) =>
+              vers ? (a.getAttribute("href") ?? "").includes(vers) : a.textContent.includes(texte),
+            )
             ?.getAttribute("href"),
-        c.lien,
+        c.lien ?? "",
+        c.lienVers ?? "",
       );
       if (!href) {
-        console.warn(`! ${c.nom} : lien « ${c.lien} » introuvable, capture conservée`);
+        console.warn(
+          `! ${c.nom} : lien « ${c.lien ?? c.lienVers} » introuvable, capture conservée`,
+        );
         continue;
       }
       rep = await page.goto(`${BASE}${href}`, { waitUntil: "networkidle0", timeout: 120_000 });

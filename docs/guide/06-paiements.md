@@ -10,13 +10,13 @@ Ce chapitre décrit le suivi des factures émises pour les réservations (acompt
 
 ![Liste des factures](captures/paiements.webp)
 
-*Figure — la page Paiements : quatre compteurs, les onglets par statut et la liste des 47 factures.*
+*Figure — la page Paiements : quatre compteurs, les onglets par statut et la liste des 46 factures.*
 
 **Ce que l'on voit**
 
 - En haut à droite, **Export CSV** et **Facture libre**.
 - Quatre cartes cliquables :
-  - **À encaisser** : le montant restant dû et le nombre de factures concernées (4 729,15 €, 11 factures) ;
+  - **À encaisser** : le montant restant dû et le nombre de factures concernées (4 757,65 €, 11 factures) ;
   - **En retard** : le montant des factures dont l'échéance est dépassée ;
   - **Encaissé** sur le mois en cours et le nombre de règlements ;
   - **Factures émises**, toutes périodes.

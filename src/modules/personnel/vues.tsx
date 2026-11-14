@@ -26,6 +26,7 @@ import {
   type EtatCouverture,
   nomPersonne,
 } from "@/lib/personnel";
+import { avecRetour } from "@/lib/url";
 import { bornesJour, duJour, estWeekend, type Fenetre } from "@/modules/planning/server";
 import type { AffectationRow } from "@/server/affectation";
 import type { PersonneComplete, PersonneRow, SiteRef, VacationRow } from "@/server/personnel";
@@ -90,16 +91,18 @@ function ACouvrir({
   e,
   jour,
   noms,
+  retour,
 }: {
   e: CreneauCouvert;
   jour: string;
   noms: Map<number, string>;
+  retour?: string;
 }) {
   const qui = e.couverture.personnelIds.map((id) => noms.get(id) ?? `#${id}`).join(", ");
   const etat = ETATS_COUVERTURE[e.couverture.etat];
   return (
     <a
-      href={`/reservations/${e.creneau.reservationId}`}
+      href={avecRetour(`/reservations/${e.creneau.reservationId}`, retour)}
       className={`evt${e.couverture.etat === "non_couvert" ? " evt--attente" : ""}`}
       style={{ borderLeftColor: TEINTE_VAR[e.couverture.etat] }}
       title={`${e.creneau.numero} · ${e.creneau.titre} · ${e.creneau.espaceNom} · ${etat.label}${qui ? ` : ${qui}` : ""}`}
@@ -118,12 +121,12 @@ function ACouvrir({
 }
 
 /** Un créneau affecté (ou proposé) à une personne, dans sa case du planning. */
-function Affectation({ c, jour }: { c: AffectationRow; jour: string }) {
+function Affectation({ c, jour, retour }: { c: AffectationRow; jour: string; retour?: string }) {
   const propose = !c.personnelId;
   const titre = `${c.reservation.numero} · ${c.reservation.title} · ${nomCourt(c.espace)}${propose ? " · proposition à valider" : " · affecté"}`;
   return (
     <a
-      href={`/reservations/${c.reservation.id}`}
+      href={avecRetour(`/reservations/${c.reservation.id}`, retour)}
       className={`evt${propose ? " evt--propose" : ""}`}
       style={{ borderLeftColor: propose ? "var(--amber-text)" : "var(--emerald-text)" }}
       title={titre}
@@ -189,6 +192,7 @@ export function GrilleService({
   aujourdhui,
   contexte,
   affectations,
+  retour,
 }: {
   fen: Fenetre;
   personnes: PersonneRow[];
@@ -200,6 +204,8 @@ export function GrilleService({
   contexte: { personnes: PersonneAffectable[]; absences: AbsenceRef[] };
   /** Créneaux affectés ou proposés sur la fenêtre. */
   affectations: AffectationRow[];
+  /** La page affichée : la fiche du dossier y ramène par sa flèche de retour. */
+  retour?: string;
 }) {
   const noms = new Map(personnes.map((p) => [p.id, nomPersonne(p)]));
   for (const v of vacations)
@@ -241,7 +247,7 @@ export function GrilleService({
                   etats.map((e) => ({ ...e, startAt: e.creneau.startAt, endAt: e.creneau.endAt })),
                   j,
                 ).map((e) => (
-                  <ACouvrir key={e.creneau.id} e={e} jour={j} noms={noms} />
+                  <ACouvrir key={e.creneau.id} e={e} jour={j} noms={noms} retour={retour} />
                 ))}
               </td>
             ))}
@@ -255,7 +261,7 @@ export function GrilleService({
                     style={{ background: p.color ?? "var(--faint)" }}
                   />
                   <span className="cell2">
-                    <a href={`/personnel/personnes/${p.id}`} className="nom">
+                    <a href={avecRetour(`/personnel/personnes/${p.id}`, retour)} className="nom">
                       {nomPersonne(p)}
                     </a>
                     <small>{p.fonction ?? ""}</small>
@@ -280,7 +286,7 @@ export function GrilleService({
                       ),
                       j,
                     ).map((c) => (
-                      <Affectation key={`c${c.id}`} c={c} jour={j} />
+                      <Affectation key={`c${c.id}`} c={c} jour={j} retour={retour} />
                     ))}
                   </td>
                 );
