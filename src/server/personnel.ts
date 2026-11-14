@@ -295,7 +295,7 @@ export async function etatService(
   user: CurrentUser,
   de: Date,
   a: Date,
-  f: { siteIds?: number[]; personnelId?: number | null } = {},
+  f: { siteIds?: number[]; personnelIds?: number[] } = {},
 ): Promise<EtatService> {
   const [vacations, creneaux, absences] = await Promise.all([
     vacationsEntre(de, a, { siteIds: f.siteIds }),
@@ -305,7 +305,9 @@ export async function etatService(
   // Une personne absente ne couvre rien : ses vacations sont rognées de ses absences.
   const etats = etatsCouverture(creneaux, horsAbsences(vacations.map(versVacationDatee), absences));
   return {
-    vacations: f.personnelId ? vacations.filter((v) => v.personnelId === f.personnelId) : vacations,
+    vacations: f.personnelIds?.length
+      ? vacations.filter((v) => f.personnelIds?.includes(v.personnelId))
+      : vacations,
     etats,
   };
 }

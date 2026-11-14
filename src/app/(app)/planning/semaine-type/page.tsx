@@ -1,9 +1,10 @@
 import { Icone } from "@/components/icones";
-import { VideBloc } from "@/components/liste";
+import { urlAvec, VideBloc } from "@/components/liste";
 import { Chip } from "@/components/macros";
 import { JOURS_ISO } from "@/lib/constantes";
 import { plageMinutes } from "@/lib/editions";
-import { nomCourt, pluriel } from "@/lib/libelles";
+import { pluriel } from "@/lib/libelles";
+import { FiltreEspaces, FiltreSites } from "@/modules/planning/filtres";
 import {
   espacesDuPerimetre,
   espacesPlanning,
@@ -42,7 +43,7 @@ export default async function SemaineTypePage({
     : [];
   const sites = [...new Map(tous.map((e) => [e.site.id, e.site])).values()];
   const q = new URLSearchParams();
-  if (filtres.site) q.set("site", String(filtres.site));
+  for (const id of filtres.sites) q.append("site", String(id));
   for (const id of filtres.espaces) q.append("espace", String(id));
   q.set("type", "type");
   const nbDossiers = new Set(series.map((s) => s.reservationId)).size;
@@ -120,7 +121,7 @@ export default async function SemaineTypePage({
       >
         <select
           name="saison"
-          className="form-select form-select-sm filtre-select"
+          className="form-select form-select-sm filtre-select filtre-select--bouton"
           defaultValue={saison ? String(saison.id) : ""}
           aria-label="Saison"
         >
@@ -131,34 +132,17 @@ export default async function SemaineTypePage({
             </option>
           ))}
         </select>
-        <select
-          name="site"
-          className="form-select form-select-sm filtre-select"
-          defaultValue={filtres.site ? String(filtres.site) : ""}
-          aria-label="Site"
-        >
-          <option value="">Tous les sites</option>
-          {sites.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-        <select
-          name="espace"
-          className="form-select form-select-sm filtre-select"
-          defaultValue={filtres.espaces.length === 1 ? String(filtres.espaces[0]) : ""}
-          aria-label="Espace"
-        >
-          <option value="">Tous les espaces</option>
-          {tous
-            .filter((e) => !filtres.site || e.siteId === filtres.site)
-            .map((e) => (
-              <option key={e.id} value={e.id}>
-                {nomCourt(e)} · {e.site.name}
-              </option>
-            ))}
-        </select>
+        <FiltreSites
+          sites={sites}
+          choisis={filtres.sites}
+          hrefTous={urlAvec(page.pathname, page.search, { site: null })}
+        />
+        <FiltreEspaces
+          espaces={tous}
+          sites={filtres.sites}
+          choisis={filtres.espaces}
+          hrefTous={urlAvec(page.pathname, page.search, { espace: null })}
+        />
         <noscript>
           <button type="submit" className="btn btn-sm btn-outline-secondary">
             Afficher

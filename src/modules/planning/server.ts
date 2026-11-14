@@ -6,12 +6,11 @@ import type { Prisma } from "@/generated/prisma/client";
 import { STATUTS_OCCUPANTS } from "@/lib/constantes";
 import { chevauche } from "@/lib/creneaux";
 import { parseInt_ } from "@/lib/forms-util";
-import { dateJourMois, dateLongue, moisAnnee } from "@/lib/libelles";
+import { dateJourEntier, dateJourMois, dateLongue, moisAnnee } from "@/lib/libelles";
 import { addParisDays, parisMidnight, parisParts, todayParisISO } from "@/lib/paris-time";
 import { prisma } from "@/server/db";
 import type { CurrentUser } from "@/server/guards";
 import type { Params } from "@/server/paging";
-import { param } from "@/server/paging";
 
 export type Vue = "semaine" | "mois" | "jour" | "liste";
 
@@ -106,15 +105,30 @@ export function fenetre(vue: Vue, date: string): Fenetre {
   };
 }
 
-export type FiltresPlanning = { site: number | null; espaces: number[] };
+/**
+ * La période dans le sélecteur d'une barre de planning, en version courte : en vue Semaine,
+ * l'onglet dit déjà « Semaine », on écrit donc « Du 9/11 au 15/11/2026 » ; en vue Jour, la date
+ * est en chiffres, « Samedi 14/11/2026 ».
+ */
+export function periodeAffichee(fen: Fenetre): string {
+  if (fen.vue === "semaine") return fen.label.replace(/^Semaine du /, "Du ");
+  if (fen.vue === "jour") return dateJourEntier(fen.de);
+  return fen.label;
+}
+
+/** Les filtres du planning : aucun site ou aucun espace coché = tous. */
+export type FiltresPlanning = { sites: number[]; espaces: number[] };
+
+/** Les identifiants d'un paramètre répété (?site=1&site=3), sans doublon ni valeur invalide. */
+export function identifiants(brut: string | string[] | undefined): number[] {
+  const liste = Array.isArray(brut) ? brut : brut ? [brut] : [];
+  return [
+    ...new Set(liste.map((v) => parseInt_(v, null, 1)).filter((n): n is number => n !== null)),
+  ];
+}
 
 export function lireFiltresPlanning(params: Params): FiltresPlanning {
-  const brut = params.espace;
-  const liste = Array.isArray(brut) ? brut : brut ? [brut] : [];
-  return {
-    site: parseInt_(param(params, "site"), null, 1),
-    espaces: liste.map((v) => parseInt_(v, null, 1)).filter((n): n is number => n !== null),
-  };
+  return { sites: identifiants(params.site), espaces: identifiants(params.espace) };
 }
 
 export const INCLUDE_ESPACE_PLANNING = {
@@ -154,7 +168,7 @@ export async function espacesPlanning(
 ): Promise<EspacePlanning[]> {
   const and: Prisma.EspaceWhereInput[] = [{ isActive: true }];
   if (user.espacesGeres.length) and.push({ id: { in: user.espacesGeres } });
-  if (f.site) and.push({ siteId: f.site });
+  if (f.sites.length) and.push({ siteId: { in: f.sites } });
   if (f.espaces.length) and.push({ id: { in: f.espaces } });
   return prisma.espace.findMany({
     where: { AND: and },

@@ -103,3 +103,10 @@ document.addEventListener('change', function (e) {
         appliquer(groupe, valeur);
     });
 })();
+
+// [data-date-aller] : un champ de date placé hors de son formulaire (attribut form) l'envoie dès
+// qu'une date est choisie, comme le ferait un champ du formulaire à envoi automatique.
+document.addEventListener('change', function (e) {
+    var t = e.target;
+    if (t && t.matches && t.matches('input[data-date-aller]') && t.form && t.value) t.form.requestSubmit();
+});

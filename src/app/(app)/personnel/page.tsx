@@ -3,12 +3,23 @@ import { Icone } from "@/components/icones";
 import { SegTabs, urlAvec, VideBloc } from "@/components/liste";
 import { Chip } from "@/components/macros";
 import { candidats, MOTIFS_INDISPONIBLE } from "@/lib/affectation";
-import { parseInt_ } from "@/lib/forms-util";
 import { dateMoyenne, heure, isoParis, nomCourt, plageHoraire } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
 import { creneauxNonCouverts, nomPersonne, resumeCouverture } from "@/lib/personnel";
 import { ChipCouverture, GrilleService, ModalAjouterVacation } from "@/modules/personnel/vues";
-import { fenetre, lireDate } from "@/modules/planning/server";
+import {
+  Bascule,
+  FiltrePersonnes,
+  FiltreSites,
+  SelecteurPeriode,
+} from "@/modules/planning/filtres";
+import {
+  fenetre,
+  identifiants,
+  lireDate,
+  lireFiltresPlanning,
+  periodeAffichee,
+} from "@/modules/planning/server";
 import {
   affectationsEntre,
   contexteAffectation,
@@ -47,19 +58,28 @@ export default async function PersonnelPage({
   const vue = param(params, "vue") === "jour" ? "jour" : "semaine";
   const date = lireDate(param(params, "date"));
   const fen = fenetre(vue, date);
-  const siteId = parseInt_(param(params, "site"), null, 1);
-  const personnelId = parseInt_(param(params, "personne"), null, 1);
   const brut = param(params, "onglet");
   const onglet: Onglet = ONGLETS.includes(brut as Onglet) ? (brut as Onglet) : "planning";
   const [sites, toutes] = await Promise.all([sitesDuPerimetre(page.user), personnes()]);
-  const siteIds = siteId ? [siteId] : sites.map((s) => s.id);
+  // Les sites cochés dans le filtre, limités au périmètre ; aucun = tous.
+  const sitesChoisis = lireFiltresPlanning(params).sites.filter((id) =>
+    sites.some((s) => s.id === id),
+  );
+  const siteIds = sitesChoisis.length ? sitesChoisis : sites.map((s) => s.id);
+  // Les personnes cochées dans le filtre (aucune = toutes).
+  const personnesChoisies = identifiants(params.personne).filter((id) =>
+    toutes.some((p) => p.id === id),
+  );
+  const nomsSites = sites.filter((s) => sitesChoisis.includes(s.id)).map((s) => s.name);
   const [{ vacations, etats }, contexte, affectations, propositions] = await Promise.all([
-    etatService(page.user, fen.de, fen.a, { siteIds, personnelId }),
+    etatService(page.user, fen.de, fen.a, { siteIds, personnelIds: personnesChoisies }),
     contexteAffectation(fen.de, fen.a),
     affectationsEntre(fen.de, fen.a, siteIds),
     propositionsEnAttente(page.user),
   ]);
-  const visibles = personnelId ? toutes.filter((p) => p.id === personnelId) : toutes;
+  const visibles = personnesChoisies.length
+    ? toutes.filter((p) => personnesChoisies.includes(p.id))
+    : toutes;
   const resume = resumeCouverture(etats);
   const aCouvrir = creneauxNonCouverts(etats);
   const noms = new Map(toutes.map((p) => [p.id, nomPersonne(p)]));
@@ -70,7 +90,7 @@ export default async function PersonnelPage({
   const retour = `${page.pathname}${page.search.toString() ? `?${page.search.toString()}` : ""}`;
   const qs = new URLSearchParams();
   qs.set("date", fen.date);
-  if (siteId) qs.set("site", String(siteId));
+  for (const id of sitesChoisis) qs.append("site", String(id));
   const pdf = `/personnel/semaine.pdf?${qs.toString()}`;
   const nbAuto = sites.filter((s) => contexte.sites.get(s.id)?.affectationAuto).length;
 
@@ -146,12 +166,14 @@ export default async function PersonnelPage({
                 <input type="hidden" name="next" value={retour} />
                 <input type="hidden" name="date" value={fen.date} />
                 <input type="hidden" name="vue" value={vue} />
-                {siteId ? <input type="hidden" name="site" value={siteId} /> : null}
+                {sitesChoisis.map((id) => (
+                  <input key={id} type="hidden" name="site" value={id} />
+                ))}
                 <button
                   type="submit"
                   className="btn btn-outline-secondary btn-sm"
                   title="Affecte (sites en automatique) ou propose (autres sites) une personne disponible sur chaque créneau réservé de la période sans personne de service"
-                  data-confirm={`Affecter ou proposer le personnel disponible sur les créneaux réservés : ${fen.label}${siteId ? `, ${sites.find((s) => s.id === siteId)?.name ?? ""}` : ", tous les sites"} ?`}
+                  data-confirm={`Affecter ou proposer le personnel disponible sur les créneaux réservés : ${fen.label}${nomsSites.length ? `, ${nomsSites.join(", ")}` : ", tous les sites"} ?`}
                 >
                   <Icone nom="wand-sparkles" taille={14} /> Affecter
                 </button>
@@ -167,7 +189,7 @@ export default async function PersonnelPage({
         </div>
       </div>
 
-      <div className="planning-barre">
+      <div className="planning-barre planning-barre--une-ligne">
         <SegTabs
           tabs={[
             { href: lien({ onglet: null }), label: "Planning", active: onglet === "planning" },
@@ -187,78 +209,44 @@ export default async function PersonnelPage({
             },
           ]}
         />
-        <div className="d-flex align-items-center gap-1 mb-3">
-          <a
-            href={lien({ date: fen.precedent })}
-            className="btn btn-outline-secondary btn-icone btn-sm"
-            title="Période précédente"
-            aria-label="Période précédente"
-          >
-            <Icone nom="chevron-left" taille={14} />
-          </a>
-          <span className="periode">{fen.label}</span>
-          <a
-            href={lien({ date: fen.suivant })}
-            className="btn btn-outline-secondary btn-icone btn-sm"
-            title="Période suivante"
-            aria-label="Période suivante"
-          >
-            <Icone nom="chevron-right" taille={14} />
-          </a>
-          <a href={lien({ date: null })} className="btn btn-ghost btn-sm">
-            <Icone nom="calendar-aujourdhui" taille={14} /> Aujourd'hui
-          </a>
-        </div>
+        <SelecteurPeriode
+          texte={periodeAffichee(fen)}
+          hrefPrecedent={lien({ date: fen.precedent })}
+          hrefSuivant={lien({ date: fen.suivant })}
+          hrefAujourdhui={lien({ date: null })}
+          date={fen.date}
+          formulaire="filtres-service"
+          avant={
+            <Bascule
+              libelle="Vue"
+              choix={[
+                { href: lien({ vue: null }), texte: "Semaine", actif: vue !== "jour" },
+                { href: lien({ vue: "jour" }), texte: "Jour", actif: vue === "jour" },
+              ]}
+            />
+          }
+        />
+        <span className="planning-barre-vide" aria-hidden="true" />
         <form
+          id="filtres-service"
           method="GET"
-          className="d-flex align-items-center gap-2 flex-wrap mb-3"
+          className="d-flex align-items-center gap-2"
           data-auto-submit
           data-auto-submit-natif
         >
           {onglet !== "planning" ? <input type="hidden" name="onglet" value={onglet} /> : null}
-          <select
-            name="vue"
-            className="form-select form-select-sm filtre-select"
-            defaultValue={vue === "jour" ? "jour" : ""}
-            aria-label="Vue"
-          >
-            <option value="">Semaine</option>
-            <option value="jour">Jour</option>
-          </select>
-          <input
-            type="date"
-            name="date"
-            className="form-control form-control-sm"
-            defaultValue={fen.date}
-            aria-label="Aller à la date"
-            style={{ width: 160 }}
+          {vue === "jour" ? <input type="hidden" name="vue" value="jour" /> : null}
+          <FiltreSites
+            sites={sites}
+            choisis={sitesChoisis}
+            hrefTous={lien({ site: null })}
+            classes="ms-auto"
           />
-          <select
-            name="site"
-            className="form-select form-select-sm filtre-select"
-            defaultValue={siteId ? String(siteId) : ""}
-            aria-label="Site"
-          >
-            <option value="">Tous les sites</option>
-            {sites.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-          <select
-            name="personne"
-            className="form-select form-select-sm filtre-select"
-            defaultValue={personnelId ? String(personnelId) : ""}
-            aria-label="Personne"
-          >
-            <option value="">Toutes les personnes</option>
-            {toutes.map((p) => (
-              <option key={p.id} value={p.id}>
-                {nomPersonne(p)}
-              </option>
-            ))}
-          </select>
+          <FiltrePersonnes
+            personnes={toutes.map((p) => ({ id: p.id, nom: nomPersonne(p), couleur: p.color }))}
+            choisies={personnesChoisies}
+            hrefToutes={lien({ personne: null })}
+          />
           <noscript>
             <button type="submit" className="btn btn-sm btn-outline-secondary">
               Afficher
@@ -517,8 +505,8 @@ export default async function PersonnelPage({
           personnes={toutes}
           sites={sites}
           date={vue === "jour" ? fen.date : aujourdhui}
-          siteId={siteId}
-          personnelId={personnelId}
+          siteId={sitesChoisis.length === 1 ? (sitesChoisis[0] ?? null) : null}
+          personnelId={personnesChoisies.length === 1 ? (personnesChoisies[0] ?? null) : null}
           retour={retour}
         />
       ) : null}

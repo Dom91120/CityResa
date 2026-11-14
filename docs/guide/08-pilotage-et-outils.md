@@ -17,7 +17,7 @@ Ce chapitre présente les écrans qui vous servent tous les jours, quel que soit
   - la rubrique **GÉNÉRAL** : Tableau de bord, Réservations, Planning, Campagnes, Sites, Espaces, Matériel, Messages, Usagers, Mon équipe, Personnel de service, Paiements, Subventions, Valorisation, Statistiques. Une entrée n'apparaît que si votre rôle vous donne accès au domaine et si le module correspondant est activé ;
   - des **pastilles chiffrées** à droite de certaines entrées : demandes à traiter (Réservations), conversations à répondre (Messages), fiches d'usager à valider (Usagers), factures à payer (Paiements), demandes de subvention à traiter (Subventions). Les pastilles vertes (Réservations, Messages) signalent ce qui demande une action rapide ;
   - la rubrique **ADMINISTRATION**, visible uniquement par les administrateurs, repliable d'un clic sur son titre (voir le chapitre 9) ;
-  - en bas, **votre nom et votre rôle**. Un clic ouvre un menu : **Mon profil** (identité, notifications, agenda, mot de passe et double authentification), **Guide utilisateur** (ce guide, en PDF, dans un nouvel onglet), **Thème clair / sombre**, **Déconnexion**.
+  - en bas, **votre nom et votre rôle**. Un clic ouvre un menu : **Mon profil** (identité, notifications, agenda, mot de passe et double authentification), **Guide utilisateur** (ce guide, affiché dans l'application chapitre par chapitre, avec un bouton **Guide en PDF** pour le télécharger en entier), **Thème clair / sombre**, **Déconnexion**.
 - **La barre du haut** :
   - à gauche, le titre de la page en cours ;
   - le champ **Rechercher partout**, avec le rappel du raccourci **Ctrl K** (plus large sur les grands écrans) ;

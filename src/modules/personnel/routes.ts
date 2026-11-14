@@ -5,7 +5,7 @@
  */
 import { Prisma } from "@/generated/prisma/client";
 import { lundiDe } from "@/lib/editions";
-import { champ, idOuNull, parseInt_ } from "@/lib/forms-util";
+import { champ, idOuNull, ids } from "@/lib/forms-util";
 import { isoParis } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
 import { nomPersonne } from "@/lib/personnel";
@@ -44,7 +44,7 @@ import {
 
 const CATEGORIE = "personnel";
 
-/** Affecte ou propose le personnel sur les créneaux de la période et du site affichés. */
+/** Affecte ou propose le personnel sur les créneaux de la période et des sites affichés. */
 export async function affecter(form: FormData): Promise<Response> {
   const user = await requireEdit(CATEGORIE);
   const retour = suite(form, "/personnel");
@@ -54,10 +54,9 @@ export async function affecter(form: FormData): Promise<Response> {
       lireDate(champ(form, "date")),
     );
     const sites = await sitesDuPerimetre(user);
-    const siteId = parseInt_(form.get("site"), null, 1);
-    const siteIds = siteId
-      ? sites.filter((s) => s.id === siteId).map((s) => s.id)
-      : sites.map((s) => s.id);
+    // Les sites cochés dans le filtre de la page (aucun = tous), limités au périmètre.
+    const voulus = ids(form, "site");
+    const siteIds = sites.filter((s) => !voulus.length || voulus.includes(s.id)).map((s) => s.id);
     if (!siteIds.length) throw new UserFacingError("Aucun site dans votre périmètre.");
     const bilan = await affecterCreneaux({ de: fen.de, a: fen.a, siteIds }, user.email);
     await auditRecord(

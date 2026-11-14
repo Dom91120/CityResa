@@ -15,16 +15,17 @@ import { pasTrouve } from "@/server/http";
 import { reponsePdf } from "@/server/pdf";
 
 /**
- * GET /planning/semaine.pdf?date=&site=&espace=…&format=A4|A3&type=semaine|type
+ * GET /planning/semaine.pdf?date=&site=…&espace=…&format=A4|A3&type=semaine|type
  * Le planning hebdomadaire des espaces choisis (une page par espace), noir et blanc,
  * paysage ; `type=type` édite la semaine type de la saison active.
  */
 export async function GET(req: Request) {
   const user = await requireView("planning");
   const url = new URL(req.url);
-  const params = Object.fromEntries(url.searchParams.entries());
-  const liste = url.searchParams.getAll("espace");
-  const filtres = lireFiltresPlanning({ ...params, espace: liste.length ? liste : undefined });
+  const filtres = lireFiltresPlanning({
+    site: url.searchParams.getAll("site"),
+    espace: url.searchParams.getAll("espace"),
+  });
   const espaces = await espacesPlanning(user, filtres);
   if (!espaces.length) return pasTrouve();
   const format = url.searchParams.get("format") === "A3" ? "A3" : "A4";

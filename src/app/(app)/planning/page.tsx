@@ -4,7 +4,13 @@ import { SegTabs, urlAvec, VideBloc } from "@/components/liste";
 import { ScriptDiffere } from "@/components/scripts";
 import { nomCourt } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
-import { COULEURS, legende, lireCouleur, lireVuesEnregistrees, qsVue } from "@/lib/planning-vues";
+import { legende, lireCouleur, lireVuesEnregistrees, qsVue } from "@/lib/planning-vues";
+import {
+  FiltreCouleur,
+  FiltreEspaces,
+  FiltreSites,
+  SelecteurPeriode,
+} from "@/modules/planning/filtres";
 import { VueListe } from "@/modules/planning/liste";
 import {
   espacesDuPerimetre,
@@ -14,6 +20,7 @@ import {
   lireFiltresPlanning,
   lireVue,
   occupationsPlanning,
+  periodeAffichee,
   type Vue,
 } from "@/modules/planning/server";
 import { VueJour, VueMois, VueSemaine } from "@/modules/planning/vues";
@@ -59,7 +66,7 @@ export default async function PlanningPage({
   const sites = [...new Map(tous.map((e) => [e.site.id, e.site])).values()];
   const unSeul = espaces.length === 1 ? espaces[0] : null;
   const qsFiltres = new URLSearchParams();
-  if (filtres.site) qsFiltres.set("site", String(filtres.site));
+  for (const id of filtres.sites) qsFiltres.append("site", String(id));
   for (const id of filtres.espaces) qsFiltres.append("espace", String(id));
   const filtresQs = qsFiltres.toString();
   const nbEvts = creneaux.length;
@@ -241,7 +248,7 @@ export default async function PlanningPage({
         </div>
       </div>
 
-      <div className="planning-barre">
+      <div className="planning-barre planning-barre--une-ligne">
         <SegTabs
           tabs={VUES.map(([v, l]) => ({
             href: lien({ vue: v === "semaine" ? null : v }),
@@ -249,115 +256,36 @@ export default async function PlanningPage({
             active: fen.vue === v,
           }))}
         />
-        <div className="d-flex align-items-center gap-1 mb-3">
-          <a
-            href={lien({ date: fen.precedent })}
-            className="btn btn-outline-secondary btn-icone btn-sm"
-            title="Période précédente"
-            aria-label="Période précédente"
-          >
-            <Icone nom="chevron-left" taille={14} />
-          </a>
-          <span className="periode">{fen.label}</span>
-          <a
-            href={lien({ date: fen.suivant })}
-            className="btn btn-outline-secondary btn-icone btn-sm"
-            title="Période suivante"
-            aria-label="Période suivante"
-          >
-            <Icone nom="chevron-right" taille={14} />
-          </a>
-          <a href={lien({ date: null })} className="btn btn-ghost btn-sm">
-            <Icone nom="calendar-aujourdhui" taille={14} /> Aujourd'hui
-          </a>
-        </div>
+        <SelecteurPeriode
+          texte={periodeAffichee(fen)}
+          hrefPrecedent={lien({ date: fen.precedent })}
+          hrefSuivant={lien({ date: fen.suivant })}
+          hrefAujourdhui={lien({ date: null })}
+          date={fen.date}
+          formulaire="filtres-planning"
+        />
+        <span className="planning-barre-vide" aria-hidden="true" />
         <form
+          id="filtres-planning"
           method="GET"
-          className="d-flex align-items-center gap-2 flex-wrap mb-3"
+          className="d-flex align-items-center gap-2"
           data-auto-submit
           data-auto-submit-natif
         >
           {fen.vue !== "semaine" ? <input type="hidden" name="vue" value={fen.vue} /> : null}
-          <input
-            type="date"
-            name="date"
-            className="form-control form-control-sm"
-            defaultValue={fen.date}
-            aria-label="Aller à la date"
-            style={{ width: 160 }}
+          <FiltreSites
+            sites={sites}
+            choisis={filtres.sites}
+            hrefTous={lien({ site: null })}
+            classes="ms-auto"
           />
-          <select
-            name="site"
-            className="form-select form-select-sm filtre-select"
-            defaultValue={filtres.site ? String(filtres.site) : ""}
-            aria-label="Site"
-          >
-            <option value="">Tous les sites</option>
-            {sites.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-          <div className="dropdown">
-            <button
-              type="button"
-              className="btn btn-outline-secondary btn-sm"
-              data-bs-toggle="dropdown"
-              data-bs-auto-close="outside"
-              aria-expanded="false"
-            >
-              <Icone nom="door-open" taille={14} />
-              {filtres.espaces.length
-                ? `${filtres.espaces.length} espace${filtres.espaces.length > 1 ? "s" : ""}`
-                : "Tous les espaces"}
-              <Icone nom="chevron-down" taille={12} />
-            </button>
-            <div
-              className="dropdown-menu p-2"
-              style={{ minWidth: 280, maxHeight: 360, overflowY: "auto" }}
-            >
-              {tous
-                .filter((e) => !filtres.site || e.siteId === filtres.site)
-                .map((e) => (
-                  <label
-                    key={e.id}
-                    className="dropdown-item d-flex align-items-center gap-2"
-                    style={{ cursor: "pointer" }}
-                  >
-                    <input
-                      type="checkbox"
-                      className="form-check-input m-0"
-                      name="espace"
-                      value={e.id}
-                      defaultChecked={filtres.espaces.includes(e.id)}
-                    />
-                    <span className="pastille-espace" style={{ background: e.color }} />
-                    <span className="cell2">
-                      <span>{nomCourt(e)}</span>
-                      <small>{e.site.name}</small>
-                    </span>
-                  </label>
-                ))}
-              {filtres.espaces.length ? (
-                <a href={lien({ espace: null })} className="dropdown-item text-muted small">
-                  <Icone nom="x" taille={12} /> Tous les espaces
-                </a>
-              ) : null}
-            </div>
-          </div>
-          <select
-            name="couleur"
-            className="form-select form-select-sm filtre-select"
-            defaultValue={couleur === "espace" ? "" : couleur}
-            aria-label="Couleur des créneaux"
-          >
-            {Object.entries(COULEURS).map(([k, l]) => (
-              <option key={k} value={k === "espace" ? "" : k}>
-                Couleur : {l.toLowerCase()}
-              </option>
-            ))}
-          </select>
+          <FiltreEspaces
+            espaces={tous}
+            sites={filtres.sites}
+            choisis={filtres.espaces}
+            hrefTous={lien({ espace: null })}
+          />
+          <FiltreCouleur choisie={couleur} />
           <noscript>
             <button type="submit" className="btn btn-sm btn-outline-secondary">
               Afficher
