@@ -16,14 +16,14 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 
 - Sous le titre : la période affichée, le nombre d'espaces et de créneaux réservés, et le rappel, à la ligne, « Cliquez sur une case pour réserver ».
 - La barre d'outils : **Mes vues**, **Semaine type**, **Présences**, **Imprimer**, **Bloquer un créneau** et **Nouvelle réservation**.
-- Les onglets **Semaine**, **Mois**, **Jour** et **Liste**, les flèches pour passer à la période précédente ou suivante, la période en cours et le lien **Aujourd'hui**.
-- Les filtres : un sélecteur de date, **Tous les sites**, **Tous les espaces** (choix de plusieurs espaces par cases à cocher) et **Couleur**.
+- Les onglets **Semaine**, **Mois**, **Jour** et **Liste**, la période en cours, encadrée de deux flèches pour passer à la période précédente ou suivante, avec dans le même cadre l'icône d'agenda qui ouvre un calendrier pour aller à une date, puis l'icône du calendrier fléché pour revenir à aujourd'hui.
+- Les filtres, à droite : **Tous les sites** et **Tous les espaces** (deux boutons qui ouvrent des cases à cocher : vous pouvez retenir plusieurs sites et plusieurs espaces ; rien de coché = tous) et **Couleur** (le bouton à la palette). Sur un écran assez large, vues, période et filtres tiennent sur une seule ligne.
 - La grille : chaque espace avec sa photo et son site, puis les sept jours. Chaque réservation est une étiquette avec son titre et ses horaires, bordée à gauche de la couleur de l'espace. Le samedi et le dimanche sont grisés.
 
 **Comment faire**
 
 1. Cliquez sur **Planning** dans le menu de gauche : la semaine en cours s'affiche.
-2. Changez de semaine avec les flèches, ou choisissez une date dans le sélecteur.
+2. Changez de semaine avec les flèches, ou cliquez sur l'icône d'agenda de la période pour choisir une date.
 3. Limitez l'affichage avec les filtres de sites et d'espaces.
 4. Cliquez sur une étiquette pour ouvrir le dossier de réservation.
 5. Cliquez sur une case vide pour saisir une réservation : la page « Nouvelle réservation » s'ouvre avec l'espace et la date déjà remplis.
@@ -104,7 +104,7 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 
 **Ce que l'on voit**
 
-- Le filtre **Couleur** propose trois modes : **par espace** (par défaut), **par statut du dossier** ou **par type d'usager**. Une légende s'affiche sous les filtres quand le mode n'est pas « par espace ».
+- Le filtre **Couleur**, le bouton à la palette en bout de barre, propose trois modes : **par espace** (par défaut), **par statut du dossier** ou **par type d'usager**. Une légende s'affiche sous les filtres quand le mode n'est pas « par espace ».
 - Le menu **Mes vues** liste vos vues enregistrées, chacune avec une croix pour la supprimer, et un champ **Nom de la vue actuelle** avec le bouton **Enregistrer**.
 
 **Comment faire**
@@ -213,7 +213,7 @@ Quand un seul espace est affiché, un bouton **Feuille de salle** apparaît à c
 
 - En tête : le nombre de séries, de dossiers et d'espaces.
 - Le bouton **Planning daté** (retour au planning) et le bouton **PDF**, en deux parties : à gauche, il génère le PDF au format affiché (« PDF A4 ») ; à droite, la flèche ouvre le choix **Format A4** ou **Format A3**, qui change le format sans rien générer. Le dernier format choisi est retenu sur votre poste.
-- Les filtres : la saison (la saison active est indiquée), **Tous les sites**, **Tous les espaces**.
+- Les filtres : la saison (la saison active est indiquée), **Tous les sites** et **Tous les espaces** (plusieurs choix possibles, par cases à cocher, comme sur le planning).
 - La grille : un espace par ligne, un jour par colonne. Chaque étiquette indique les horaires, le titre de l'activité, l'usager et le nombre de séances.
 
 **Comment faire**

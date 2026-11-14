@@ -8,6 +8,8 @@ node_modules
 backups
 docs
 !docs/guide/CityResa-guide-utilisateur.pdf
+!docs/guide/*.md
+!docs/guide/captures
 Documents
 tests
 *.tsbuildinfo

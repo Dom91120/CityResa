@@ -225,10 +225,12 @@ export function GrilleService({
           <tr>
             <td className="col-espace">
               <div className="espace-cell">
+                {/* L'icône tient la place de la pastille de couleur des lignes de personnes. */}
+                <span className="pastille-icone">
+                  <Icone nom="calendar-check" taille={13} />
+                </span>
                 <span className="cell2">
-                  <span className="nom">
-                    <Icone nom="calendar-check" taille={13} /> À couvrir
-                  </span>
+                  <span className="nom">À couvrir</span>
                   <small>Créneaux réservés</small>
                 </span>
               </div>

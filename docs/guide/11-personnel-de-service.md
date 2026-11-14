@@ -16,7 +16,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 
 - Le titre avec la semaine affichée, puis le résumé : nombre de vacations, nombre de créneaux réservés et leur état (couverts, partiels, à couvrir).
 - Les boutons **Personnes**, **Imprimer** (semaine en PDF A4 ou A3, une page par site, créneaux à couvrir hachurés) et **Ajouter une vacation**.
-- Les onglets **Planning** et **À couvrir** (avec le nombre de créneaux pas entièrement couverts), la navigation par période et les filtres : **Semaine / Jour**, la date, le **site** et la **personne**.
+- Les onglets **Planning** et **À couvrir** (avec le nombre de créneaux pas entièrement couverts), la période, centrée et encadrée de deux flèches, avec l'icône d'agenda pour aller à une date et l'icône du calendrier fléché pour revenir à aujourd'hui, précédée de la bascule **Semaine | Jour**, et à droite les filtres **Tous les sites** et **Toutes les personnes** (deux boutons à cases à cocher : un ou plusieurs choix, rien de coché = tous).
 - La première ligne, **À couvrir**, liste par jour les créneaux réservés (dossiers acceptés, signés ou confirmés) de vos sites, avec l'espace, les heures et une mention colorée :
   - **Couvert** (vert) : une ou plusieurs vacations du site, mises bout à bout, couvrent tout le créneau, ou une personne y est épinglée ;
   - **Partiel** (orange) : une vacation le touche sans le couvrir entièrement ;

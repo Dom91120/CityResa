@@ -42,7 +42,7 @@ export default async function PresencesPage({
       page.user,
       dossier
         ? { dossier }
-        : { de: fen.de, a: fen.a, site: filtres.site, espaces: filtres.espaces },
+        : { de: fen.de, a: fen.a, sites: filtres.sites, espaces: filtres.espaces },
     ),
     espacesDuPerimetre(page.user).then((es) => [
       ...new Map(es.map((e) => [e.site.id, e.site])).values(),
@@ -136,7 +136,7 @@ export default async function PresencesPage({
               name="site"
               id="f-site"
               className="form-select form-select-sm filtre-select"
-              defaultValue={filtres.site ?? ""}
+              defaultValue={filtres.sites.length === 1 ? filtres.sites[0] : ""}
             >
               <option value="">Tous</option>
               {sites.map((s) => (

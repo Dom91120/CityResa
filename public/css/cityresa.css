@@ -415,6 +415,10 @@ textarea.form-control { min-height: 90px; }
 .seg-tab.active { border-color: var(--strong); color: var(--strong); font-weight: 600; }
 .seg-tab-count { font-size: 0.68rem; background: var(--primary); color: #fff; border-radius: var(--radius-pill); min-width: 18px; height: 18px; padding: 0 5px; display: inline-flex; align-items: center; justify-content: center; }
 .seg-tab.active .seg-tab-count, .seg-tab-count.muted { background: var(--slate-dim); color: var(--slate-text); }
+/* Variante alignée sur un bouton de filtre voisin (.btn-outline-secondary.btn-sm) : même contour,
+   même hauteur, même graisse ; la liste reste native, à choix unique. */
+.filtre-select.filtre-select--bouton { border-color: var(--line); color: var(--body); font-size: 0.78rem; font-weight: 500; letter-spacing: -0.05em; padding: 5px 28px 5px 12px; min-width: 0; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-size: 12px; }
+.filtre-select.filtre-select--bouton:hover { background-color: var(--inset); border-color: var(--sub); color: var(--strong); }
 .filtre-select { border-radius: var(--radius-pill); background-color: var(--surface); font-size: 0.8rem; padding: 6px 30px 6px 12px; width: auto; min-width: 140px; max-width: 260px; display: inline-block; }
 .list-toolbar form.d-flex { flex: 1 1 auto; }
 
@@ -627,6 +631,8 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .liste-simple li:first-child { border-top: 0; }
 .liste-simple .quand { margin-left: auto; color: var(--muted); font-size: 0.74rem; white-space: nowrap; }
 .pastille-espace { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+/* Une icône à la place de la pastille : même encombrement, pour que le texte reste aligné. */
+.pastille-icone { width: 10px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--strong); }
 .progression { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; }
 .progression .barre { flex: 1; height: 6px; border-radius: 3px; background: var(--inset); overflow: hidden; }
 .progression .barre span { display: block; height: 100%; background: var(--gradient); border-radius: 3px; }
@@ -637,8 +643,44 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .occupation-ligne .taux { text-align: right; font-weight: 600; color: var(--strong); }
 
 /* ============================ PLANNING ============================ */
-.planning-barre { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
-.planning-barre .periode { font-weight: 600; color: var(--strong); border: 1px solid var(--line); border-radius: 10px; padding: 6px 14px; background: var(--surface); min-width: 220px; text-align: center; }
+.planning-barre { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; container-type: inline-size; position: relative; z-index: 5; }
+/* (container-type isole la barre dans son propre plan : le z-index garde ses menus déroulants
+   au-dessus des en-têtes collants de la grille.) */
+/* Filtres de la barre : un libellé long (nom d'un site) est tronqué, un filtre non neutre réduit à
+   son icône est signalé en vert. */
+.planning-barre > * { margin-bottom: 0; }
+/* La période est centrée : les onglets à gauche et un vide symétrique à droite (.planning-barre-vide)
+   se partagent la place à parts égales ; les filtres occupent la ligne suivante, calés à droite à
+   partir du filtre marqué « ms-auto ». */
+.planning-barre > .seg-tabs { flex: 1 1 0; min-width: max-content; }
+.planning-barre > .planning-barre-vide { flex: 1 1 0; order: 1; }
+.planning-barre > form { flex: 1 1 100%; order: 2; }
+/* Barre assez large (planning) : les filtres remontent sur la première ligne, à la place du vide. */
+@container (min-width: 1000px) {
+  .planning-barre--une-ligne > .planning-barre-vide { display: none; }
+  .planning-barre--une-ligne > form { flex: 1 1 0; min-width: max-content; order: 0; }
+}
+.planning-barre form .btn { min-height: 30.3px; }
+.planning-barre .filtre-libelle { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.planning-barre .btn.filtre-actif { color: var(--primary-text); background: var(--primary-soft); border-color: transparent; }
+/* Bascule à positions accolées (Semaine | Jour) : la position active en vert doux. */
+.bascule > .btn { white-space: nowrap; }
+.planning-barre .bascule > .btn { min-height: 32.8px; }
+.bascule > .btn.active { background: var(--primary-soft); color: var(--primary-text); border-color: var(--line); font-weight: 600; }
+/* La période entre les deux flèches : même corps que les onglets voisins, largeur du texte. */
+.planning-barre .periode { display: inline-flex; align-items: stretch; font-size: 0.8rem; font-weight: 600; color: var(--strong); border: 1px solid var(--line); border-radius: 10px; background: var(--surface); white-space: nowrap; overflow: hidden; }
+.planning-barre .periode-texte { padding: 6px 4px; }
+/* Les flèches « précédent » et « suivant », dans le cadre de la période. */
+.planning-barre .periode-fleche { display: inline-flex; align-items: center; justify-content: center; width: 28px; color: var(--strong); }
+/* L'icône d'agenda de la période : un champ de date invisible la recouvre, et son indicateur natif
+   occupe toute la surface, si bien qu'un clic n'importe où ouvre le calendrier du navigateur. */
+.planning-barre .periode-date { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 26px; margin: 0; color: var(--strong); cursor: pointer; }
+.planning-barre .periode-date:hover, .planning-barre .periode-date:focus-within { background: var(--inset); }
+.planning-barre .periode-date input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; }
+.planning-barre .periode-date input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; cursor: pointer; }
+/* Chevrons au trait épais, à la graisse du texte de la période. */
+.planning-barre .periode-fleche .lucide { stroke-width: 3; }
+.planning-barre .periode-fleche:hover, .planning-barre .periode-fleche:focus-visible { background: var(--inset); color: var(--strong); }
 .planning { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: auto; }
 .planning table { border-collapse: separate; border-spacing: 0; min-width: 900px; width: 100%; table-layout: fixed; }
 .planning th { position: sticky; top: 0; z-index: 2; background: var(--surface); font-size: 0.8rem; font-weight: 600; color: var(--body); padding: 10px 8px; text-align: center; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); }
@@ -898,3 +940,43 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .barre-outils .variables-boutons { display: contents; }
 .variables-boutons button { border: 1px solid transparent; background: var(--sky-dim); color: var(--sky-text); border-radius: var(--radius-pill); padding: 2px 9px; font-size: .76rem; font-weight: 500; line-height: 1.5; cursor: pointer; }
 .variables-boutons button:hover { border-color: var(--primary); }
+
+/* ── Guide utilisateur (pages /guide) : sommaire à gauche, chapitre à droite ── */
+.guide-page { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 20px; align-items: start; }
+.guide-sommaire { position: sticky; top: 84px; max-height: calc(100vh - 104px); overflow-y: auto; font-size: 0.8rem; padding-right: 4px; }
+.guide-lien { display: flex; align-items: baseline; gap: 8px; padding: 6px 10px; border-radius: 8px; color: var(--body); line-height: 1.25; }
+.guide-lien:hover { background: var(--inset); color: var(--strong); }
+.guide-lien.actif { background: var(--primary-soft); color: var(--primary-text); font-weight: 600; }
+.guide-lien .lucide { align-self: center; }
+.guide-numero { flex: 0 0 18px; font-size: 0.72rem; font-weight: 600; color: var(--muted); text-align: right; }
+.guide-lien.actif .guide-numero { color: inherit; }
+.guide-sections { margin: 2px 0 6px 36px; padding-left: 10px; border-left: 1px solid var(--line); }
+.guide-sections a { display: block; padding: 3px 0; color: var(--muted); line-height: 1.25; }
+.guide-sections a:hover { color: var(--primary); }
+.guide-article { padding: 22px 28px 26px; }
+.guide-contenu { max-width: 860px; font-size: 0.88rem; line-height: 1.55; color: var(--body); }
+.guide-contenu > :first-child { margin-top: 0; }
+.guide-contenu h2, .guide-titre-chapitres { font-size: 1.1rem; font-weight: 600; color: var(--primary-text); margin: 28px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.guide-contenu h3 { font-size: 0.95rem; font-weight: 600; color: var(--strong); margin: 20px 0 6px; }
+.guide-contenu h2, .guide-contenu h3 { scroll-margin-top: 90px; }
+.guide-contenu p { margin: 0 0 10px; }
+.guide-contenu ul, .guide-contenu ol { margin: 0 0 12px; padding-left: 22px; }
+.guide-contenu li { margin-bottom: 4px; }
+.guide-contenu a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; }
+.guide-contenu code { font-size: 0.82em; background: var(--inset); border-radius: 5px; padding: 1px 5px; color: var(--strong); }
+.guide-contenu figure { margin: 14px 0 18px; }
+.guide-contenu figure img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow-xs); }
+.guide-contenu figcaption { margin-top: 6px; font-size: 0.78rem; color: var(--muted); text-align: center; }
+.guide-contenu blockquote { margin: 12px 0; padding: 8px 14px; border-left: 3px solid var(--primary); background: var(--primary-soft); border-radius: 0 8px 8px 0; }
+.guide-contenu blockquote p:last-child { margin-bottom: 0; }
+.guide-contenu .table-responsive { margin: 8px 0 14px; border: 1px solid var(--line); border-radius: 10px; }
+.guide-contenu .table th { white-space: normal; }
+.guide-chapitres { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 6px 16px; max-width: 860px; }
+.guide-chapitres a { display: flex; align-items: baseline; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; color: var(--strong); font-size: 0.86rem; font-weight: 500; }
+.guide-chapitres a:hover { border-color: var(--primary); color: var(--primary); }
+.guide-voisins { display: flex; flex-wrap: wrap; gap: 8px; max-width: 860px; margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--line); }
+@media (max-width: 991px) {
+    .guide-page { grid-template-columns: minmax(0, 1fr); }
+    .guide-sommaire { position: static; max-height: none; }
+    .guide-article { padding: 16px; }
+}

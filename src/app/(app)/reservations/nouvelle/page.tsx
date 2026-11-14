@@ -166,13 +166,14 @@ export default async function NouvelleReservationPage({
                     </option>
                   ))}
                 </select>
-                <div className="form-text">
-                  Les options, le matériel et les tarifs se mettent à jour selon l'espace choisi.
-                </div>
               </div>
               <button type="submit" className="btn btn-outline-secondary">
                 Appliquer
               </button>
+              {/* Sous la ligne entière : le bouton reste ainsi à la hauteur de la liste. */}
+              <div className="form-text w-100 mt-0">
+                Les options, le matériel et les tarifs se mettent à jour selon l'espace choisi.
+              </div>
             </form>
           </div>
 

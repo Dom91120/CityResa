@@ -9,15 +9,24 @@ import { pasTrouve } from "@/server/http";
 import { reponsePdf } from "@/server/pdf";
 import { pdfPlanningService } from "@/server/personnel";
 
-/** GET /personnel/semaine.pdf?date=&site=&format=A4|A3 : le planning de service, une page par site. */
+/** GET /personnel/semaine.pdf?date=&site=…&format=A4|A3 : le planning de service, une page par site. */
 export async function GET(req: Request) {
   const user = await requireView("personnel");
   if (!enabledIn(user.settings, "personnel")) return pasTrouve();
   const url = new URL(req.url);
   const lundi = lundiDe(lireDate(url.searchParams.get("date") ?? undefined));
-  const siteId = parseInt_(url.searchParams.get("site"), null, 1);
+  const siteIds = url.searchParams
+    .getAll("site")
+    .map((v) => parseInt_(v, null, 1))
+    .filter((n): n is number => n !== null);
   const format = url.searchParams.get("format") === "A3" ? "A3" : "A4";
   const cfg = await getSettings();
-  const pdf = await pdfPlanningService(user, lundi, siteId ? [siteId] : undefined, cfg, format);
+  const pdf = await pdfPlanningService(
+    user,
+    lundi,
+    siteIds.length ? siteIds : undefined,
+    cfg,
+    format,
+  );
   return reponsePdf(pdf, nomFichierPlanningPersonnel(lundi));
 }

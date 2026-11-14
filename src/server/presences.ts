@@ -38,7 +38,7 @@ export const INCLUDE_CONSTAT = {
 /** Les créneaux prévus et passés d'une période (ou d'un dossier), dans le périmètre de l'agent. */
 export async function creneauxAConstater(
   user: CurrentUser,
-  f: { de?: Date; a?: Date; site?: number | null; espaces?: number[]; dossier?: number | null },
+  f: { de?: Date; a?: Date; sites?: number[]; espaces?: number[]; dossier?: number | null },
   now = new Date(),
 ) {
   const fin = f.a && f.a < now ? f.a : now;
@@ -52,7 +52,7 @@ export async function creneauxAConstater(
       },
       ...(user.espacesGeres.length ? { espaceId: { in: user.espacesGeres } } : {}),
       ...(f.espaces?.length ? { espaceId: { in: f.espaces } } : {}),
-      ...(f.site ? { espace: { siteId: f.site } } : {}),
+      ...(f.sites?.length ? { espace: { siteId: { in: f.sites } } } : {}),
     },
     include: INCLUDE_CONSTAT,
     orderBy: [{ startAt: "asc" }, { espaceId: "asc" }],
