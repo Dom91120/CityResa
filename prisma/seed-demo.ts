@@ -2001,7 +2001,10 @@ function reservations(): ResaSpec[] {
       source: "backoffice",
       public: true,
       options: [["auditorium:regie", 1]],
-      recurrence: { freq: "monthly", interval: 1, count: 3 },
+      // Toutes les quatre semaines, toujours un mercredi : une récurrence mensuelle tombait, selon
+      // le jour du chargement, sur le samedi du spectacle de fin d'année, et le dossier était ignoré
+      // (les numéros RES suivants se décalaient alors d'un cran).
+      recurrence: { freq: "weekly", interval: 4, count: 3 },
     },
     {
       espace: "mb-polyvalente",
@@ -2392,6 +2395,35 @@ function reservations(): ResaSpec[] {
       source: "portail",
       options: [["*:menage", 1]],
     },
+    // ── Journée chargée ── Deux demandes de plus le samedi du stage de yoga et de l'éveil à la
+    // danse : quatre réservations ce jour-là, pour que la vue Mois du planning montre « + 1 autre ».
+    // En fin de liste : les numéros des dossiers précédents ne bougent pas.
+    {
+      espace: "chalet",
+      org: "dupont",
+      titre: "Goûter d'anniversaire",
+      nature: "Fête familiale",
+      jour: js(6, 20),
+      de: "14:00",
+      a: "18:00",
+      statut: "a_traiter",
+      participants: 20,
+      depuis: 2,
+      source: "portail",
+    },
+    {
+      espace: "henri-matisse",
+      org: "gama",
+      titre: "Exposition des ateliers",
+      nature: "Exposition",
+      jour: js(6, 20),
+      de: "10:00",
+      a: "18:00",
+      statut: "a_traiter",
+      participants: 60,
+      depuis: 3,
+      source: "portail",
+    },
   ];
 }
 
@@ -2624,6 +2656,8 @@ async function creerSitesEtEspaces(): Promise<{
     ["sablons", 21, "08:00", 27, "23:00", "Travaux : reprise du sol sportif"],
     ["mb-polyvalente", 47, "08:00", 47, "23:00", "Usage municipal : cérémonie des vœux"],
     ["folie-desmares", 5, "09:00", 5, "18:00", "Maintenance de la régie lumière"],
+    // Le premier jour des travaux des Sablons : deux blocages le même jour (menu de la vue Mois).
+    ["gambetta", 21, "08:00", 21, "12:00", "Contrôle annuel des agrès"],
   ];
   for (const [cle, j1, h1, j2, h2, motif] of indispos) {
     const e = espaces.get(cle);

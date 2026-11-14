@@ -742,7 +742,17 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 /* Compteurs du jour (« 2 rés. », « 1 bloc. ») sur la ligne du numéro, calés à droite. */
 .mois-jour .num { align-items: center; min-height: 22px; }
 .mois-pastilles { display: inline-flex; gap: 4px; margin-left: auto; }
-.mois-pastilles .chip { padding: 2px 8px; font-weight: 500; }
+.mois-pastilles .chip { padding: 1px 7px; font-size: 0.65rem; font-weight: 500; gap: 4px; }
+.mois-pastilles .chip .lucide { width: 10px; height: 10px; }
+/* La pastille des blocages : un lien direct s'il n'y en a qu'un, un menu au-delà. */
+.mois-pastilles button.chip { border: 0; cursor: pointer; }
+.mois-pastilles .chip:hover, .mois-pastilles button.chip[aria-expanded="true"] { filter: brightness(0.95); color: var(--red-text); }
+/* « + 2 autres » sous les étiquettes : ouvre la liste de toutes les réservations du jour. */
+.mois-autres { border: 0; background: none; padding: 1px 4px; font-size: 0.7rem; color: var(--muted); cursor: pointer; border-radius: 6px; }
+.mois-autres:hover, .mois-autres[aria-expanded="true"] { background: var(--inset); color: var(--primary); }
+.mois-menu { min-width: 240px; max-width: 320px; font-weight: 400; }
+.mois-menu .dropdown-item { align-items: center; white-space: normal; }
+.mois-menu .cell2 > span { white-space: normal; }
 .mois-entete { background: var(--inset); font-size: 0.72rem; font-weight: 600; color: var(--muted); text-align: center; padding: 6px; }
 
 /* Disponibilités (portail) */

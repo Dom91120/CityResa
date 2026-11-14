@@ -328,7 +328,7 @@ export default async function PlanningPage({
           />
         </div>
       ) : fen.vue === "liste" ? (
-        <VueListe espaces={espaces} creneaux={creneaux} blocages={blocages} />
+        <VueListe espaces={espaces} creneaux={creneaux} blocages={blocages} retour={retour} />
       ) : fen.vue === "mois" ? (
         <VueMois {...props} urlJour={(j) => lien({ vue: "jour", date: j })} />
       ) : fen.vue === "jour" ? (

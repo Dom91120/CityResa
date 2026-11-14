@@ -6,6 +6,7 @@ import { candidats, MOTIFS_INDISPONIBLE } from "@/lib/affectation";
 import { dateMoyenne, heure, isoParis, nomCourt, plageHoraire } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
 import { creneauxNonCouverts, nomPersonne, resumeCouverture } from "@/lib/personnel";
+import { avecRetour } from "@/lib/url";
 import { ChipCouverture, GrilleService, ModalAjouterVacation } from "@/modules/personnel/vues";
 import {
   Bascule,
@@ -305,7 +306,7 @@ export default async function PersonnelPage({
                           <CelluleCreneau debut={c.startAt} fin={c.endAt} />
                         </td>
                         <td>
-                          <a href={`/reservations/${c.reservation.id}`}>
+                          <a href={avecRetour(`/reservations/${c.reservation.id}`, retour)}>
                             <strong>{c.reservation.title}</strong>
                           </a>
                           <div className="small text-muted">{c.reservation.numero}</div>
@@ -453,7 +454,7 @@ export default async function PersonnelPage({
                         <CelluleCreneau debut={e.creneau.startAt} fin={e.creneau.endAt} />
                       </td>
                       <td>
-                        <a href={`/reservations/${e.creneau.reservationId}`}>
+                        <a href={avecRetour(`/reservations/${e.creneau.reservationId}`, retour)}>
                           <strong>{e.creneau.titre}</strong>
                         </a>
                         <div className="small text-muted">{e.creneau.numero}</div>
@@ -496,6 +497,7 @@ export default async function PersonnelPage({
           aujourdhui={aujourdhui}
           contexte={contexte}
           affectations={affectations}
+          retour={retour}
         />
       )}
 

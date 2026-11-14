@@ -30,10 +30,13 @@ import { contexteModule } from "@/server/module";
 import { invalidateNavCounts } from "@/server/nav";
 import { serviceDossier } from "@/server/personnel";
 import { chargerReservation, deviser } from "@/server/reservations";
+import { retourFiche } from "@/server/retour";
 
 export const metadata = { title: "Réservation - CityRésa" };
 
 export default async function ReservationPage({ params }: { params: Promise<{ id: string }> }) {
+  // La page d'où l'on vient (planning…), retenue le temps qu'on travaille sur la fiche.
+  const retour = await retourFiche("/reservations");
   const page = await contexteModule("reservations");
   const id = idDeRoute((await params).id);
   const r = await chargerReservation(id);
@@ -115,7 +118,7 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
   return (
     <>
       <Entete
-        retour="/reservations"
+        retour={retour}
         titre={<>Réservation N°{r.numero}</>}
         badges={
           <span className="ms-2">

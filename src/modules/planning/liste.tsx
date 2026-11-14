@@ -4,16 +4,20 @@ import { VideBloc } from "@/components/liste";
 import { Chip, PastilleEspace, StatutResa } from "@/components/macros";
 import { dateMoyenne, nomCourt, plageHoraire } from "@/lib/libelles";
 import { type LigneListe, lignesListe } from "@/lib/planning-vues";
+import { avecRetour } from "@/lib/url";
 import type { Blocage, EspacePlanning, EvtResa } from "@/modules/planning/server";
 
 export function VueListe({
   espaces,
   creneaux,
   blocages,
+  retour,
 }: {
   espaces: EspacePlanning[];
   creneaux: EvtResa[];
   blocages: Blocage[];
+  /** La page du planning affichée : la fiche du dossier y ramène par sa flèche de retour. */
+  retour?: string;
 }) {
   const parEspace = new Map(espaces.map((e) => [e.id, e]));
   const lignes = lignesListe(creneaux, blocages).filter((l) => parEspace.has(l.espaceId));
@@ -46,7 +50,7 @@ export function VueListe({
           </thead>
           <tbody>
             {lignes.map((l) => (
-              <Ligne key={l.cle} l={l} espace={parEspace.get(l.espaceId)} />
+              <Ligne key={l.cle} l={l} espace={parEspace.get(l.espaceId)} retour={retour} />
             ))}
           </tbody>
         </table>
@@ -55,7 +59,15 @@ export function VueListe({
   );
 }
 
-function Ligne({ l, espace }: { l: LigneListe; espace: EspacePlanning | undefined }) {
+function Ligne({
+  l,
+  espace,
+  retour,
+}: {
+  l: LigneListe;
+  espace: EspacePlanning | undefined;
+  retour?: string;
+}) {
   return (
     <tr className={l.genre === "blocage" ? "text-muted" : undefined}>
       <td className="text-nowrap">{dateMoyenne(l.startAt)}</td>
@@ -70,7 +82,7 @@ function Ligne({ l, espace }: { l: LigneListe; espace: EspacePlanning | undefine
       </td>
       <td>
         {l.genre === "reservation" ? (
-          <a href={`/reservations/${l.reservationId}`} className="cell2">
+          <a href={avecRetour(`/reservations/${l.reservationId}`, retour)} className="cell2">
             <strong>{l.titre}</strong>
             <small>{l.numero}</small>
           </a>

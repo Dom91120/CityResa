@@ -3,6 +3,7 @@
  * grille intitulé / valeur, menu ⋯, modale d'action, panneau latéral.
  */
 import { Icone } from "@/components/icones";
+import { libelleRetour } from "@/lib/url";
 
 export function Entete({
   titre,
@@ -24,7 +25,12 @@ export function Entete({
     <div className="page-header fiche-entete">
       <div className="d-flex align-items-center gap-12" style={{ gap: 12, minWidth: 0 }}>
         {retour ? (
-          <a href={retour} className="fiche-retour" title="Retour" aria-label="Retour">
+          <a
+            href={retour}
+            className="fiche-retour"
+            title={libelleRetour(retour)}
+            aria-label={libelleRetour(retour)}
+          >
             <Icone nom="arrow-left" taille={16} />
           </a>
         ) : null}

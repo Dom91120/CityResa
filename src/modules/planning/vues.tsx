@@ -9,6 +9,7 @@ import { JOURS_ISO } from "@/lib/constantes";
 import { heure, nomCourt, plageHoraire } from "@/lib/libelles";
 import { parisMidnight, parisParts, toParisWall } from "@/lib/paris-time";
 import { type Couleur, couleurEvt } from "@/lib/planning-vues";
+import { avecRetour } from "@/lib/url";
 import {
   type Blocage,
   bornesJour,
@@ -45,10 +46,13 @@ export function Evt({
   compact = false,
   couleur = "espace",
   deplacable = false,
+  retour,
 }: {
   e: EvtResa;
   espace?: EspacePlanning;
   jour: string;
+  /** La page du planning affichée : la fiche du dossier y ramène par sa flèche de retour. */
+  retour?: string;
   compact?: boolean;
   couleur?: Couleur;
   /** Glissable vers une autre case du même espace (planning.js). */
@@ -58,7 +62,7 @@ export function Evt({
   const debut = toParisWall(e.startAt);
   return (
     <a
-      href={`/reservations/${e.reservationId}`}
+      href={avecRetour(`/reservations/${e.reservationId}`, retour)}
       className={`evt${ATTENTE.includes(e.status) ? " evt--attente" : ""}${deplacable ? " evt--deplacable" : ""}`}
       style={liseré ? { borderLeftColor: liseré } : undefined}
       title={`${e.numero} · ${e.titre}${e.qui ? ` · ${e.qui}` : ""}${espace ? ` · ${nomCourt(espace)}` : ""}${deplacable ? " · glisser pour déplacer" : ""}`}
@@ -129,14 +133,14 @@ export function Bloc({
 }
 
 /** La cellule d'un espace dans une grille : photo, nom et site ; nom complet et capacité en infobulle. */
-export function EspaceCell({ e }: { e: EspacePlanning }) {
+export function EspaceCell({ e, retour }: { e: EspacePlanning; retour?: string }) {
   const cap = e.capacitySeated ?? e.capacityStanding;
   const infobulle = `${e.name} · ${e.site.name}${cap ? ` · ${cap} pers.` : ""}`;
   return (
     <div className="espace-cell" title={infobulle}>
       <Vignette photo={e.documents[0] ?? null} alt={e.name} icone={e.nature?.icon ?? "door-open"} />
       <span className="cell2">
-        <a href={`/espaces/${e.id}`} className="nom" title={infobulle}>
+        <a href={avecRetour(`/espaces/${e.id}`, retour)} className="nom" title={infobulle}>
           {nomCourt(e)}
         </a>
         <small title={infobulle}>{e.site.name}</small>
@@ -197,7 +201,7 @@ export function VueSemaine({
           {espaces.map((e) => (
             <tr key={e.id}>
               <td className="col-espace">
-                <EspaceCell e={e} />
+                <EspaceCell e={e} retour={retour} />
               </td>
               {fen.jours.map((j) => {
                 const evts = duJour(
@@ -229,6 +233,7 @@ export function VueSemaine({
                     ))}
                     {evts.map((ev) => (
                       <Evt
+                        retour={retour}
                         key={ev.id}
                         e={ev}
                         espace={e}
@@ -251,6 +256,17 @@ export function VueSemaine({
 
 /** Les dossiers dont un créneau se déplace par glisser-déposer (règle du serveur : dossier occupant). */
 const STATUTS_DEPLACABLES = ["a_traiter", "en_traitement", "acceptee", "signee", "confirmee"];
+
+/** Le détail d'un blocage en une ligne : « Travaux · 9h00 - 12h00 · Salle Gabriel Péri ». */
+function libelleBlocage(b: Blocage, jour: string, parEspace: Map<number, EspacePlanning>): string {
+  const espace = parEspace.get(b.espaceId);
+  return [b.motif || "Indisponible", heuresDuJour(b, jour), espace ? nomCourt(espace) : null]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+/** Menu positionné par rapport à la fenêtre : la grille du mois (overflow masqué) ne le rogne pas. */
+const POPPER_FIXE = '{"strategy":"fixed"}';
 
 export function VueMois({
   fen,
@@ -297,25 +313,53 @@ export function VueMois({
                   <Icone nom="plus" taille={12} />
                 </a>
               ) : null}
-              {!unSeul && (evts.length || blocs.length) ? (
+              {!unSeul && blocs.length === 1 && blocs[0] ? (
+                // Un seul blocage : la pastille y mène directement, le détail au survol.
                 <span className="mois-pastilles">
-                  {evts.length ? (
-                    <a
-                      href={urlJour(j)}
-                      className="chip chip-primary"
-                      title={`${evts.length} réservation${evts.length > 1 ? "s" : ""} · voir la journée`}
-                    >
-                      {evts.length} rés.
-                    </a>
-                  ) : null}
-                  {blocs.length ? (
-                    <span
-                      className="chip chip-slate"
-                      title={`${blocs.length} blocage${blocs.length > 1 ? "s" : ""}`}
-                    >
-                      {blocs.length} bloc.
-                    </span>
-                  ) : null}
+                  <a
+                    href={avecRetour(`/espaces/${blocs[0].espaceId}#indisponibilites`, retour)}
+                    className="chip chip-red"
+                    title={`Blocage : ${libelleBlocage(blocs[0], j, parEspace)}`}
+                  >
+                    <Icone nom="ban" taille={12} /> 1 blocage
+                  </a>
+                </span>
+              ) : null}
+              {!unSeul && blocs.length > 1 ? (
+                <span className="mois-pastilles dropdown">
+                  <button
+                    type="button"
+                    className="chip chip-red"
+                    data-bs-toggle="dropdown"
+                    data-bs-popper-config={POPPER_FIXE}
+                    aria-expanded="false"
+                    title={`${blocs.length} blocages : cliquer pour voir ce qui bloque`}
+                  >
+                    <Icone nom="ban" taille={12} /> {blocs.length} blocages
+                  </button>
+                  <ul className="dropdown-menu dropdown-menu-end mois-menu">
+                    {blocs.map((b) => {
+                      const espace = parEspace.get(b.espaceId);
+                      return (
+                        <li key={b.id}>
+                          <a
+                            className="dropdown-item"
+                            href={avecRetour(`/espaces/${b.espaceId}#indisponibilites`, retour)}
+                            title="Ouvrir les indisponibilités de cet espace"
+                          >
+                            <Icone nom="ban" taille={14} />
+                            <span className="cell2">
+                              <span>{b.motif || "Indisponible"}</span>
+                              <small>
+                                {heuresDuJour(b, j)}
+                                {espace ? ` · ${nomCourt(espace)}` : ""}
+                              </small>
+                            </span>
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
                 </span>
               ) : null}
             </div>
@@ -332,7 +376,15 @@ export function VueMois({
                   />
                 ))}
                 {evts.slice(0, 4).map((ev) => (
-                  <Evt key={ev.id} e={ev} espace={unSeul} jour={j} compact couleur={couleur} />
+                  <Evt
+                    retour={retour}
+                    key={ev.id}
+                    e={ev}
+                    espace={unSeul}
+                    jour={j}
+                    compact
+                    couleur={couleur}
+                  />
                 ))}
                 {evts.length > 4 ? (
                   <a href={urlJour(j)} className="small text-muted">
@@ -344,6 +396,7 @@ export function VueMois({
               <div className="mt-1">
                 {evts.slice(0, 3).map((ev) => (
                   <Evt
+                    retour={retour}
                     key={ev.id}
                     e={ev}
                     espace={parEspace.get(ev.espaceId)}
@@ -352,6 +405,46 @@ export function VueMois({
                     couleur={couleur}
                   />
                 ))}
+                {evts.length > 3 ? (
+                  // Au-delà de trois réservations : « + 2 autres » ouvre la liste complète du jour.
+                  <span className="dropdown">
+                    <button
+                      type="button"
+                      className="mois-autres"
+                      data-bs-toggle="dropdown"
+                      data-bs-popper-config={POPPER_FIXE}
+                      aria-expanded="false"
+                      title={`${evts.length} réservations ce jour : cliquer pour toutes les voir`}
+                    >
+                      + {evts.length - 3} autre{evts.length - 3 > 1 ? "s" : ""}
+                    </button>
+                    <ul className="dropdown-menu mois-menu">
+                      {evts.map((ev) => {
+                        const espace = parEspace.get(ev.espaceId);
+                        return (
+                          <li key={ev.id}>
+                            <a
+                              className="dropdown-item"
+                              href={avecRetour(`/reservations/${ev.reservationId}`, retour)}
+                            >
+                              <span
+                                className="pastille-espace"
+                                style={{ background: espace?.color ?? "var(--faint)" }}
+                              />
+                              <span className="cell2">
+                                <span>{ev.titre}</span>
+                                <small>
+                                  {heuresDuJour(ev, j)}
+                                  {espace ? ` · ${nomCourt(espace)}` : ""}
+                                </small>
+                              </span>
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </span>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -395,7 +488,7 @@ export function VueJour({
             </th>
             {espaces.map((e) => (
               <th key={e.id}>
-                <EspaceCell e={e} />
+                <EspaceCell e={e} retour={retour} />
               </th>
             ))}
           </tr>
@@ -435,6 +528,7 @@ export function VueJour({
                     ))}
                     {evts.map((ev) => (
                       <Evt
+                        retour={retour}
                         key={ev.id}
                         e={ev}
                         espace={e}

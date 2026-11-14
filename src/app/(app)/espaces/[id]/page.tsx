@@ -36,10 +36,13 @@ import { forParent } from "@/server/documents";
 import { idDeRoute } from "@/server/guards";
 import { entreesEspace } from "@/server/liste-attente";
 import { contexteModule } from "@/server/module";
+import { retourFiche } from "@/server/retour";
 
 export const metadata = { title: "Espace - CityRésa" };
 
 export default async function EspacePage({ params }: { params: Promise<{ id: string }> }) {
+  // La page d'où l'on vient (planning…), retenue le temps qu'on travaille sur la fiche.
+  const retour = await retourFiche("/espaces");
   const page = await contexteModule("espaces");
   const id = idDeRoute((await params).id);
   const e = await chargerEspace(id);
@@ -91,7 +94,7 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
             ) : null}
           </>
         }
-        retour="/espaces"
+        retour={retour}
         badges={
           <span className="ms-2 d-inline-flex gap-1 align-items-center">
             <StatutEspace status={e.status} isActive={e.isActive} />

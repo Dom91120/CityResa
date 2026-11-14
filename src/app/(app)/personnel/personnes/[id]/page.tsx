@@ -17,6 +17,7 @@ import { lireHoraires } from "@/lib/creneaux";
 import { dateCourte, dateHeure, plage } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
 import { libelleAbsence, nomPersonne } from "@/lib/personnel";
+import { avecRetour } from "@/lib/url";
 import { ChampsAbsence, ChampsContrat } from "@/modules/personnel/vues";
 import { prisma } from "@/server/db";
 import { idDeRoute } from "@/server/guards";
@@ -28,6 +29,7 @@ import {
   referentiel,
   sitesDuPerimetre,
 } from "@/server/personnel";
+import { retourFiche } from "@/server/retour";
 import { ChampsPersonne } from "../page";
 
 export const metadata = { title: "Personne de service - CityRésa" };
@@ -99,7 +101,7 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
         ]
           .filter(Boolean)
           .join(" · ")}
-        retour="/personnel/personnes"
+        retour={await retourFiche("/personnel/personnes")}
         badges={
           p.isActive ? null : (
             <Chip teinte="slate" classes="ms-2">
@@ -416,7 +418,14 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
                     <tr key={c.id}>
                       <td className="text-nowrap">{plage(c.startAt, c.endAt)}</td>
                       <td>
-                        <a href={`/reservations/${c.reservation.id}`}>{c.reservation.title}</a>
+                        <a
+                          href={avecRetour(
+                            `/reservations/${c.reservation.id}`,
+                            `/personnel/personnes/${id}`,
+                          )}
+                        >
+                          {c.reservation.title}
+                        </a>
                         <div className="small text-muted">
                           {c.reservation.numero} · {c.espace.name} ({c.espace.site.name})
                         </div>
