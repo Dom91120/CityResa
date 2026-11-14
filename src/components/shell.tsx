@@ -278,6 +278,16 @@ export function Shell({
               <a href="/profil" className="sidebar-user-item" role="menuitem">
                 <Icone nom="circle-user" taille={14} /> Mon profil
               </a>
+              <a
+                href="/guide.pdf"
+                className="sidebar-user-item"
+                role="menuitem"
+                target="_blank"
+                rel="noopener"
+                title="Ouvre le guide (PDF) dans un nouvel onglet"
+              >
+                <Icone nom="book-open" taille={14} /> Guide utilisateur
+              </a>
               <span
                 className="sidebar-user-item"
                 role="menuitem"

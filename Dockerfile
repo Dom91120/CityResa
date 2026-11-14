@@ -55,6 +55,8 @@ RUN addgroup --system --gid 10001 nodejs \
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Guide utilisateur servi aux agents par /guide.pdf (le reste de docs/ reste hors de l'image).
+COPY --from=builder /app/docs/guide/CityResa-guide-utilisateur.pdf ./docs/guide/
 
 # Prisma : schéma + migrations + config + CLI pour `migrate deploy` au démarrage
 COPY --from=builder /app/prisma ./prisma
