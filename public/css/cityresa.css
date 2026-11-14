@@ -1006,6 +1006,9 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .guide-contenu figcaption { margin-top: 6px; font-size: 0.78rem; color: var(--muted); text-align: center; }
 .guide-contenu blockquote { margin: 12px 0; padding: 8px 14px; border-left: 3px solid var(--primary); background: var(--primary-soft); border-radius: 0 8px 8px 0; }
 .guide-contenu blockquote p:last-child { margin-bottom: 0; }
+/* Un tableau défilant ne défile qu’en largeur. Sans cela, des hauteurs de ligne fractionnaires
+   font dépasser le tableau d’une fraction de pixel et le navigateur ajoute un ascenseur vertical. */
+.table-responsive { overflow-y: hidden; }
 .guide-contenu .table-responsive { margin: 8px 0 14px; border: 1px solid var(--line); border-radius: 10px; }
 .guide-contenu .table th { white-space: normal; }
 .guide-chapitres { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 6px 16px; max-width: 860px; }
