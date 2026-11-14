@@ -85,7 +85,7 @@ export default async function PersonnesPage({ searchParams }: { searchParams: Pr
       />
       <div className="data-card">
         <div className="table-responsive">
-          <table className="table table-hover align-middle mb-0 table-compacte table-interligne-serre table-personnes">
+          <table className="table table-hover align-middle mb-0 table-compacte table-personnes">
             <thead>
               <tr>
                 <Th col="nom" label="Personne" pathname={page.pathname} search={page.search} />

@@ -206,7 +206,7 @@ export function GrilleService({
     if (!noms.has(v.personnelId)) noms.set(v.personnelId, nomPersonne(v.personnel));
   const affectables = new Map(contexte.personnes.map((p) => [p.id, p]));
   return (
-    <div className="planning">
+    <div className="planning planning-service">
       <table>
         <thead>
           <tr>
