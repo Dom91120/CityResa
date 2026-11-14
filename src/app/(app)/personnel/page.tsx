@@ -4,7 +4,7 @@ import { SegTabs, urlAvec, VideBloc } from "@/components/liste";
 import { Chip } from "@/components/macros";
 import { candidats, MOTIFS_INDISPONIBLE } from "@/lib/affectation";
 import { parseInt_ } from "@/lib/forms-util";
-import { nomCourt, plage } from "@/lib/libelles";
+import { dateMoyenne, heure, isoParis, nomCourt, plageHoraire } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
 import { creneauxNonCouverts, nomPersonne, resumeCouverture } from "@/lib/personnel";
 import { ChipCouverture, GrilleService, ModalAjouterVacation } from "@/modules/personnel/vues";
@@ -18,10 +18,24 @@ import { contexteModule } from "@/server/module";
 import { param } from "@/server/paging";
 import { etatService, personnes, sitesDuPerimetre } from "@/server/personnel";
 
-export const metadata = { title: "Personnel de service - CityRésa" };
+export const metadata = { title: "Planning de service - CityRésa" };
 
 const ONGLETS = ["planning", "a_couvrir", "propositions"] as const;
 type Onglet = (typeof ONGLETS)[number];
+
+/** Le créneau sur deux lignes : la date, puis les horaires (ou la fin, s'il déborde sur le lendemain). */
+function CelluleCreneau({ debut, fin }: { debut: Date; fin: Date }) {
+  return (
+    <span className="cell2">
+      <span>{dateMoyenne(debut)}</span>
+      <small>
+        {isoParis(debut).date === isoParis(fin).date
+          ? plageHoraire(debut, fin)
+          : `${heure(debut)} → ${dateMoyenne(fin)} ${heure(fin)}`}
+      </small>
+    </span>
+  );
+}
 
 export default async function PersonnelPage({
   searchParams,
@@ -75,7 +89,7 @@ export default async function PersonnelPage({
       <div className="page-header">
         <div>
           <h1 className="page-title">
-            Personnel de service <span className="page-count">{fen.label}</span>
+            Planning de service <span className="page-count">{fen.label}</span>
           </h1>
           <p className="page-subtitle">
             {vacations.length} vacation{vacations.length > 1 ? "s" : ""} · {resume.total} créneau
@@ -192,7 +206,7 @@ export default async function PersonnelPage({
             <Icone nom="chevron-right" taille={14} />
           </a>
           <a href={lien({ date: null })} className="btn btn-ghost btn-sm">
-            Aujourd'hui
+            <Icone nom="calendar-aujourdhui" taille={14} /> Aujourd'hui
           </a>
         </div>
         <form
@@ -271,7 +285,7 @@ export default async function PersonnelPage({
       ) : onglet === "propositions" ? (
         <div className="data-card">
           <div className="table-responsive">
-            <table className="table table-hover align-middle mb-0">
+            <table className="table table-hover align-middle mb-0 table-interligne-serre">
               <thead>
                 <tr>
                   <th>Créneau</th>
@@ -299,7 +313,9 @@ export default async function PersonnelPage({
                     const autres = retenus.filter((r) => r.personne.id !== c.personnelProposeId);
                     return (
                       <tr key={c.id}>
-                        <td className="text-nowrap">{plage(c.startAt, c.endAt)}</td>
+                        <td className="text-nowrap">
+                          <CelluleCreneau debut={c.startAt} fin={c.endAt} />
+                        </td>
                         <td>
                           <a href={`/reservations/${c.reservation.id}`}>
                             <strong>{c.reservation.title}</strong>
@@ -320,48 +336,37 @@ export default async function PersonnelPage({
                           )}
                         </td>
                         <td>
-                          {peutEditer && page.user.gereEspace(c.espaceId) ? (
-                            <form
-                              method="POST"
-                              action={`/personnel/propositions/${c.id}/valider`}
-                              className="d-flex align-items-center gap-1"
+                          {!autres.length ? (
+                            <span className="text-muted">Aucun autre candidat</span>
+                          ) : peutEditer && page.user.gereEspace(c.espaceId) ? (
+                            // La liste appartient au formulaire de la coche (colonne suivante) : la
+                            // coche valide la personne choisie ici, à défaut la personne proposée.
+                            <select
+                              name="personnel_id"
+                              form={`valider-${c.id}`}
+                              className="form-select form-select-sm"
+                              style={{ width: 150 }}
+                              aria-label="Autre personne à affecter à la place de celle proposée"
+                              title="Pour affecter une autre personne, choisissez-la ici puis cliquez sur la coche"
+                              defaultValue=""
                             >
-                              <input type="hidden" name="csrf_token" value={page.csrf} />
-                              <input type="hidden" name="next" value={retour} />
-                              <select
-                                name="personnel_id"
-                                className="form-select form-select-sm"
-                                style={{ maxWidth: 220 }}
-                                aria-label="Autre personne"
-                                defaultValue=""
-                              >
-                                <option value="">— choisir une autre —</option>
-                                {autres.map((r) => (
-                                  <option key={r.personne.id} value={r.personne.id}>
-                                    {nomPersonne(r.personne)}
-                                    {r.principal ? " · site principal" : ""}
-                                    {r.heuresSemaine ? ` · ${r.heuresSemaine} h cette semaine` : ""}
-                                  </option>
-                                ))}
-                              </select>
-                              <button
-                                type="submit"
-                                className="btn btn-outline-secondary btn-sm"
-                                title="Affecter la personne choisie à la place de celle proposée"
-                              >
-                                Affecter
-                              </button>
-                            </form>
+                              <option value="">— autre candidat —</option>
+                              {autres.map((r) => (
+                                <option key={r.personne.id} value={r.personne.id}>
+                                  {nomPersonne(r.personne)}
+                                  {r.principal ? " · site principal" : ""}
+                                  {r.heuresSemaine ? ` · ${r.heuresSemaine} h cette semaine` : ""}
+                                </option>
+                              ))}
+                            </select>
                           ) : (
                             <span className="small text-muted">
-                              {autres.length
-                                ? autres.map((r) => nomPersonne(r.personne)).join(", ")
-                                : "aucun"}
+                              {autres.map((r) => nomPersonne(r.personne)).join(", ")}
                             </span>
                           )}
                           {ecartes.length ? (
                             <div
-                              className="small text-faint"
+                              className="indisponibles"
                               title={ecartes
                                 .map(
                                   (e) =>
@@ -370,6 +375,7 @@ export default async function PersonnelPage({
                                 .join("\n")}
                             >
                               {ecartes.length} indisponible{ecartes.length > 1 ? "s" : ""}
+                              <Icone nom="info" taille={13} />
                             </div>
                           ) : null}
                         </td>
@@ -377,14 +383,26 @@ export default async function PersonnelPage({
                           {peutEditer && page.user.gereEspace(c.espaceId) ? (
                             <>
                               <form
+                                id={`valider-${c.id}`}
                                 method="POST"
                                 action={`/personnel/propositions/${c.id}/valider`}
                                 className="d-inline"
                               >
                                 <input type="hidden" name="csrf_token" value={page.csrf} />
                                 <input type="hidden" name="next" value={retour} />
-                                <button type="submit" className="btn btn-primary btn-sm">
-                                  <Icone nom="check" taille={14} /> Valider
+                                <button
+                                  type="submit"
+                                  className="btn btn-ghost btn-icone btn-sm"
+                                  title={
+                                    autres.length
+                                      ? "Valider la personne proposée, ou celle choisie dans la liste"
+                                      : c.personnelPropose
+                                        ? `Valider : ${nomPersonne(c.personnelPropose)} de service sur ce créneau`
+                                        : "Valider la proposition"
+                                  }
+                                  aria-label="Valider la proposition"
+                                >
+                                  <Icone nom="check" taille={14} />
                                 </button>
                               </form>{" "}
                               <form
@@ -396,10 +414,11 @@ export default async function PersonnelPage({
                                 <input type="hidden" name="next" value={retour} />
                                 <button
                                   type="submit"
-                                  className="btn btn-ghost btn-sm"
-                                  title="Refuser cette proposition : la personne ne sera plus proposée sur ce créneau"
+                                  className="btn btn-ghost btn-icone btn-sm"
+                                  title="Écarter cette proposition : la personne ne sera plus proposée sur ce créneau"
+                                  aria-label="Écarter la proposition"
                                 >
-                                  Écarter
+                                  <Icone nom="user-ban" taille={14} />
                                 </button>
                               </form>
                             </>
@@ -427,7 +446,7 @@ export default async function PersonnelPage({
       ) : onglet === "a_couvrir" ? (
         <div className="data-card">
           <div className="table-responsive">
-            <table className="table table-hover align-middle mb-0">
+            <table className="table table-hover align-middle mb-0 table-interligne-serre">
               <thead>
                 <tr>
                   <th>Créneau</th>
@@ -442,7 +461,9 @@ export default async function PersonnelPage({
                 {aCouvrir.length ? (
                   aCouvrir.map((e) => (
                     <tr key={e.creneau.id}>
-                      <td className="text-nowrap">{plage(e.creneau.startAt, e.creneau.endAt)}</td>
+                      <td className="text-nowrap">
+                        <CelluleCreneau debut={e.creneau.startAt} fin={e.creneau.endAt} />
+                      </td>
                       <td>
                         <a href={`/reservations/${e.creneau.reservationId}`}>
                           <strong>{e.creneau.titre}</strong>

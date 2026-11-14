@@ -69,7 +69,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 
 *Figure — les quatre personnes du jeu de démonstration : fonction, contact, vacations à venir, lien d'agenda et état.*
 
-**Ce que l'on voit** — Une recherche (nom, fonction, courriel, téléphone), le filtre **En service / Plus en service / Tous**, et pour chaque personne : sa couleur et son nom, sa **Fonction**, son **Contact**, ses **Vacations à venir** (lien vers son planning), une pastille **ICS** si un lien d'agenda existe, et son **État**.
+**Ce que l'on voit** — Une recherche (nom, fonction, courriel, téléphone), le filtre **En service / Plus en service / Tous**, et pour chaque personne : sa couleur, son nom et sa fonction en dessous, son **Contact**, ses **Vacations** à venir (« 8 à venir », lien vers son planning), une pastille **ICS** si un lien d'agenda existe, et son **État**.
 
 **Comment faire — ajouter une personne**
 
@@ -182,19 +182,19 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 
 ![Propositions d'affectation](captures/personnel-propositions.webp)
 
-*Figure — l'onglet Propositions : pour chaque créneau, la personne proposée, les autres candidats et les boutons Valider et Écarter.*
+*Figure — l'onglet Propositions : pour chaque créneau, la personne proposée, les autres candidats, la coche pour valider et l'icône de la personne barrée pour écarter.*
 
 **Ce que l'on voit**
 
 - Dans le planning de service, les créneaux **affectés** apparaissent dans la case de la personne (signet vert, titre de la réservation, espace), les **propositions** en pointillé orange avec la mention « Proposé · à valider ». Le sous-titre de la page rappelle combien de sites sont en affectation automatique.
-- L'onglet **Propositions** (compteur dans le menu **Personnel de service** et dans les alertes du tableau de bord) : une ligne par créneau avec la **Personne proposée**, la liste des **Autres candidats** (site principal, heures déjà affectées cette semaine) et le nombre d'indisponibles (survolez pour lire le motif de chacun : hors horaires, absente, hors site…).
+- L'onglet **Propositions** (compteur dans le menu **Personnel de service** et dans les alertes du tableau de bord) : une ligne par créneau avec la **Personne proposée**, la liste des **Autres candidats** (site principal, heures déjà affectées cette semaine) et le nombre d'indisponibles (survolez le « i » pour lire le motif de chacun : hors horaires, absente, hors site…).
 - Sur la fiche d'une réservation, la colonne **Service** affiche « Proposé : … » avec une coche pour valider et une croix pour écarter.
 
 **Comment faire**
 
 - **Choisir le mode d'un site** : fiche du site › **Modifier** › **Affectation automatique du personnel de service**. Coché, la première personne disponible est affectée d'office et les gestionnaires du site sont notifiés ; décoché (par défaut), elle est proposée.
-- **Valider une proposition** : cliquez sur **Valider**, ou choisissez une autre personne dans la liste puis **Affecter**.
-- **Écarter une proposition** : cliquez sur **Écarter** ; la personne écartée ne sera plus proposée sur ce créneau, un autre candidat le sera au prochain passage.
+- **Valider une proposition** : cliquez sur la coche en bout de ligne (**Valider**). Pour affecter quelqu'un d'autre, choisissez-le d'abord dans la liste **— autre candidat —**, puis cliquez sur la coche.
+- **Écarter une proposition** : cliquez sur l'icône de la personne barrée (**Écarter**) ; la personne écartée ne sera plus proposée sur ce créneau, un autre candidat le sera au prochain passage.
 - **Lancer le calcul à la demande** : dans le planning, bouton **Affecter** (période et site affichés), après confirmation. Le message résume : affectés, proposés, propositions conservées, créneaux sans personne disponible.
 
 **Règles à connaître**

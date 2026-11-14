@@ -268,7 +268,7 @@ export default async function PlanningPage({
             <Icone nom="chevron-right" taille={14} />
           </a>
           <a href={lien({ date: null })} className="btn btn-ghost btn-sm">
-            Aujourd'hui
+            <Icone nom="calendar-aujourdhui" taille={14} /> Aujourd'hui
           </a>
         </div>
         <form

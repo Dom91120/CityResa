@@ -85,18 +85,12 @@ export default async function PersonnesPage({ searchParams }: { searchParams: Pr
       />
       <div className="data-card">
         <div className="table-responsive">
-          <table className="table table-hover align-middle mb-0">
+          <table className="table table-hover align-middle mb-0 table-compacte table-interligne-serre table-personnes">
             <thead>
               <tr>
                 <Th col="nom" label="Personne" pathname={page.pathname} search={page.search} />
-                <Th col="fonction" label="Fonction" pathname={page.pathname} search={page.search} />
                 <th>Contact</th>
-                <Th
-                  col="a_venir"
-                  label="Vacations à venir"
-                  pathname={page.pathname}
-                  search={page.search}
-                />
+                <Th col="a_venir" label="Vacations" pathname={page.pathname} search={page.search} />
                 <th>Contrat</th>
                 <th>Sites</th>
                 <th>Calendrier</th>
@@ -107,29 +101,31 @@ export default async function PersonnesPage({ searchParams }: { searchParams: Pr
               {items.length ? (
                 items.map((p) => (
                   <tr key={p.id} className={p.isActive ? undefined : "text-muted"}>
-                    <td>
+                    <td className="text-nowrap">
                       <span className="d-flex align-items-center gap-2">
                         <span
                           className="pastille-espace"
                           style={{ background: p.color ?? "var(--faint)" }}
                         />
-                        <a href={`/personnel/personnes/${p.id}`}>
-                          <strong>{p.nom}</strong>
-                        </a>
+                        <span className="cell2">
+                          <a href={`/personnel/personnes/${p.id}`}>
+                            <strong>{p.nom}</strong>
+                          </a>
+                          {p.fonction ? <small>{p.fonction}</small> : null}
+                        </span>
                       </span>
                     </td>
-                    <td>{p.fonction ?? <span className="text-faint">—</span>}</td>
                     <td className="small">
                       {p.email ? <div>{p.email}</div> : null}
                       {p.phone ? <div>{p.phone}</div> : null}
                       {!p.email && !p.phone ? <span className="text-faint">—</span> : null}
                     </td>
-                    <td>
+                    <td className="text-nowrap">
                       <a href={`/personnel?personne=${p.id}`} title="Voir son planning">
-                        {p.aVenir}
+                        {p.aVenir} à venir
                       </a>
                     </td>
-                    <td className="small">
+                    <td className="small text-nowrap">
                       {p.contratType ? (
                         <>
                           {p.contratType.label}
@@ -182,7 +178,7 @@ export default async function PersonnesPage({ searchParams }: { searchParams: Pr
                 ))
               ) : (
                 <Vide
-                  colonnes={8}
+                  colonnes={7}
                   message={
                     q || etat
                       ? "Aucune personne ne correspond."
