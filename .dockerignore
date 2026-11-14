@@ -7,6 +7,7 @@ node_modules
 !.env.example
 backups
 docs
+!docs/guide/CityResa-guide-utilisateur.pdf
 Documents
 tests
 *.tsbuildinfo
