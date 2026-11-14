@@ -1,5 +1,5 @@
-// Planning : clic sur une cellule → création d'une réservation pré-remplie ; impression ;
-// glisser-déposer d'un créneau sur une autre case du même espace (le serveur vérifie
+// Planning : clic sur une case (jour de la semaine, heure de la frise) → création d'une réservation
+// pré-remplie ; impression ; glisser-déposer d'un créneau sur une autre case du même espace (le serveur vérifie
 // règles et disponibilité, puis la page se recharge avec son message).
 // Aucun attribut inline (CSP à nonce).
 (function () {
@@ -32,7 +32,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('td.jour-cellule[data-creer]').forEach(function (td) {
+        document.querySelectorAll('.jour-cellule[data-creer]').forEach(function (td) {
             td.addEventListener('click', function (e) {
                 if (e.target.closest('a')) return;
                 location.href = td.dataset.creer;
@@ -47,11 +47,13 @@
             a.addEventListener('dragstart', function (e) {
                 enCours = a;
                 a.classList.add('evt--glisse');
+                // Les vignettes de la frise laissent passer le pointeur : la case d'une heure reste atteignable sous elles.
+                setTimeout(function () { document.body.classList.add('glisse-en-cours'); }, 0);
                 if (e.dataTransfer) { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', a.dataset.creneauId); }
             });
-            a.addEventListener('dragend', function () { a.classList.remove('evt--glisse'); enCours = null; });
+            a.addEventListener('dragend', function () { a.classList.remove('evt--glisse'); document.body.classList.remove('glisse-en-cours'); enCours = null; });
         });
-        document.querySelectorAll('td[data-jour][data-espace-id]').forEach(function (td) {
+        document.querySelectorAll('.jour-cellule[data-jour][data-espace-id]').forEach(function (td) {
             td.addEventListener('dragover', function (e) {
                 if (!enCours || td.dataset.espaceId !== enCours.dataset.espaceId) return;
                 e.preventDefault();

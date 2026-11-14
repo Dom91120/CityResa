@@ -3,8 +3,24 @@
  * l'axe du temps, sur quel niveau quand deux se chevauchent, et quelles heures montrer.
  * Logique PURE : frise.test.ts.
  */
-import type { PlageMinutes } from "@/lib/affectation";
-import { parisParts } from "@/lib/paris-time";
+import { type PlageMinutes, plagesDuJour } from "@/lib/affectation";
+import { type HorairesPeriode, horairesA, lireHoraires } from "@/lib/creneaux";
+import { parisMidnight, parisParts } from "@/lib/paris-time";
+
+/**
+ * Les heures d'ouverture d'un espace un jour « YYYY-MM-DD » (celles de sa saison s'il y en a) :
+ * null quand l'espace n'en déclare pas — il est alors toujours ouvert —, vide un jour de fermeture.
+ */
+export function ouvertureDuJour(
+  base: unknown,
+  periodes: readonly HorairesPeriode[],
+  jour: string,
+): PlageMinutes[] | null {
+  const midi = new Date(parisMidnight(jour).getTime() + 12 * 3_600_000);
+  const horaires = lireHoraires(horairesA(base, periodes, midi));
+  if (!horaires) return null;
+  return plagesDuJour(horaires, parisParts(midi).weekday);
+}
 
 /** Les heures montrées par défaut : de 7 h à minuit. */
 export const FRISE_PAR_DEFAUT: PlageMinutes = { debutMin: 7 * 60, finMin: 24 * 60 };

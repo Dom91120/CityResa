@@ -3,9 +3,10 @@
  * la ligne « À couvrir », le formulaire de vacation (modale d'ajout, page de modification),
  * la pastille d'état de couverture.
  */
-import { type CSSProperties, Fragment, type ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import { ModalAction } from "@/components/fiche";
 import { Champ, Coches, Grille, Select } from "@/components/formulaire";
+import { type ElementFrise, EnteteFrise, PisteFrise, styleFrise } from "@/components/frise";
 import { Icone } from "@/components/icones";
 import { Chip } from "@/components/macros";
 import {
@@ -19,14 +20,7 @@ import {
 import { JOURS_ISO } from "@/lib/constantes";
 import { lireHoraires } from "@/lib/creneaux";
 import { ymdUtc } from "@/lib/date-utc";
-import {
-  bornesFrise,
-  empiler,
-  graduations,
-  libelleHeure,
-  minutesDuJour,
-  positionFrise,
-} from "@/lib/frise";
+import { bornesFrise, minutesDuJour } from "@/lib/frise";
 import { heure, isoParis, nomCourt, plageHoraire } from "@/lib/libelles";
 import { parisMidnight, parisParts, toParisWall } from "@/lib/paris-time";
 import {
@@ -828,12 +822,6 @@ export function ChampsAbsence({
 
 // ── Vue Jour : frise horaire ──
 
-/** Hauteur d'un niveau de la frise et marge qui l'entoure, en pixels. */
-const FRISE_NIVEAU = 50;
-const FRISE_MARGE = 6;
-
-type ElementFrise = PlageMinutes & { cle: string; rendu: ReactNode };
-
 /** Une vignette d'absence (hachurée). */
 function Absence({ a }: { a: PlageMinutes & { motif: string | null } }) {
   return (
@@ -845,57 +833,6 @@ function Absence({ a }: { a: PlageMinutes & { motif: string | null } }) {
         {a.debutMin === 0 && a.finMin === 1440 ? "Toute la journée" : libellePlages([a])}
       </span>
     </span>
-  );
-}
-
-/** La ligne d'une frise : plages de travail en fond, éléments posés à leurs heures. */
-function Piste({
-  elements,
-  plages = [],
-  mention,
-  bornes,
-}: {
-  elements: ElementFrise[];
-  plages?: PlageMinutes[];
-  /** « Repos », « Hors contrat » : ce que dit la ligne quand le cycle ne prévoit rien. */
-  mention?: string;
-  bornes: PlageMinutes;
-}) {
-  const { places, niveaux } = empiler(elements);
-  return (
-    <>
-      {/* Plages et mention se placent dans la case entière : elles en suivent toute la hauteur. */}
-      {plages.map((p) => {
-        const pos = positionFrise(p, bornes);
-        return (
-          <span
-            key={p.debutMin}
-            className="frise-plage"
-            style={{ left: `${pos.gauche}%`, width: `${pos.largeur}%` }}
-            title={`Plage de travail du cycle, absences déduites : ${libellePlages([p])}`}
-          />
-        );
-      })}
-      {mention ? <span className="frise-mention">{mention}</span> : null}
-      <div className="frise-piste" style={{ height: niveaux * FRISE_NIVEAU + FRISE_MARGE }}>
-        {places.map(({ element, niveau }) => {
-          const pos = positionFrise(element, bornes);
-          return (
-            <div
-              key={element.cle}
-              className="frise-item"
-              style={{
-                left: `${pos.gauche}%`,
-                width: `${pos.largeur}%`,
-                top: FRISE_MARGE + niveau * FRISE_NIVEAU,
-              }}
-            >
-              {element.rendu}
-            </div>
-          );
-        })}
-      </div>
-    </>
   );
 }
 
@@ -970,30 +907,17 @@ function FriseService({
     };
   });
   const bornes = bornesFrise([...aCouvrir, ...lignes.flatMap((l) => [...l.elements, ...l.plages])]);
-  const heures = graduations(bornes);
   const weekend = estWeekend(jour) ? "weekend" : undefined;
 
   return (
     <>
       <div className="planning planning-service planning-frise">
-        <table style={{ "--frise-heures": heures.length - 1 } as CSSProperties}>
+        <table style={styleFrise(bornes)}>
           <thead>
             <tr>
               <th className="col-espace">Personne</th>
               <th>
-                <span className="visually-hidden">{enteteJour(jour)}, heure par heure</span>
-                <div className="frise-heures" aria-hidden="true">
-                  {heures.slice(1, -1).map((m) => (
-                    <span
-                      key={m}
-                      style={{
-                        left: `${positionFrise({ debutMin: m, finMin: m }, bornes).gauche}%`,
-                      }}
-                    >
-                      {libelleHeure(m)}
-                    </span>
-                  ))}
-                </div>
+                <EnteteFrise bornes={bornes} libelle={enteteJour(jour)} />
               </th>
             </tr>
           </thead>
@@ -1011,7 +935,7 @@ function FriseService({
                 </div>
               </td>
               <td className={weekend}>
-                <Piste elements={aCouvrir} bornes={bornes} />
+                <PisteFrise elements={aCouvrir} bornes={bornes} />
               </td>
             </tr>
             {lignes.map((l) => (
@@ -1034,9 +958,10 @@ function FriseService({
                   </div>
                 </td>
                 <td className={weekend}>
-                  <Piste
+                  <PisteFrise
                     elements={[...l.absences, ...l.elements]}
                     plages={l.plages}
+                    titrePlage="Plage de travail du cycle, absences déduites"
                     mention={l.elements.length || l.absences.length ? undefined : l.mention}
                     bornes={bornes}
                   />

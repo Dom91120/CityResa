@@ -135,6 +135,8 @@ export const INCLUDE_ESPACE_PLANNING = {
   site: true,
   nature: true,
   documents: { where: { kind: "photo" }, orderBy: { position: "asc" as const }, take: 1 },
+  // Les horaires d'ouverture particuliers d'une saison (fond de la frise de la vue Jour).
+  horairesSaisons: { include: { saison: { select: { startDate: true, endDate: true } } } },
 } satisfies Prisma.EspaceInclude;
 
 export type EspacePlanning = Prisma.EspaceGetPayload<{ include: typeof INCLUDE_ESPACE_PLANNING }>;

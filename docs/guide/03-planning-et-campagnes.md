@@ -42,19 +42,20 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 
 ![Planning jour](captures/planning-jour.webp)
 
-*Figure — la vue « Jour » du samedi 9 janvier 2027 : trois créneaux, dont une demande encore à traiter en pointillés.*
+*Figure — la vue « Jour » du samedi 5 décembre 2026 : trois créneaux, dont deux demandes encore à traiter en pointillés.*
 
 **Ce que l'on voit**
 
-- Une colonne par espace (photo, nom, site) et une ligne par heure, de 7 h à 23 h.
-- Chaque réservation est placée sur la ligne de son heure de début, avec son titre, ses heures et son espace. Ici, à la Salle Gabriel Péri un éveil à la danse de 9 h 30 à 11 h 30, à la Salle Henri Matisse un salon de 10 h à 19 h.
-- Une demande pas encore décidée porte la mention « à traiter » et une bordure en pointillés. C'est le cas du mariage à la salle polyvalente, de 14 h à 23 h 30.
+- Une **frise horaire** : une ligne par espace (photo, nom, site) et les heures en haut, de 7 h à minuit (davantage si un créneau commence plus tôt). Avec beaucoup d'espaces, la page défile vers le bas ; avec un seul, toute la largeur sert à lire sa journée.
+- Chaque réservation est placée et dimensionnée selon ses heures, avec son titre, ses heures et l'usager. Ici, à la Salle Gabriel Péri un éveil à la danse de 9 h 30 à 11 h 30. Deux créneaux simultanés dans un même espace s'empilent.
+- Une demande pas encore décidée porte la mention « à traiter » et une bordure en pointillés. C'est le cas de l'exposition à la Salle Henri Matisse, de 10 h à 18 h, et du goûter d'anniversaire au Chalet des quatre vents, de 14 h à 18 h.
+- Les heures où l'espace est **fermé** (hors de ses horaires d'ouverture, ceux de la saison s'il y en a) sont grisées ; un **blocage** apparaît hachuré. Une légende le rappelle sous le tableau.
 
 **Comment faire**
 
 1. Cliquez sur l'onglet **Jour**, ou sur un numéro de jour dans la vue mois.
 2. Passez d'un jour à l'autre avec les flèches.
-3. Cliquez sur une case horaire vide pour réserver cet espace à cette heure-là.
+3. Survolez la ligne d'un espace : la case de l'heure pointée affiche « + 15h ». Cliquez pour réserver cet espace à cette heure-là.
 
 ## 3.3 La vue mois
 
@@ -130,7 +131,7 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 **Comment faire**
 
 1. En vue **Semaine**, faites glisser l'étiquette vers un autre jour sur la ligne du même espace : les heures sont conservées.
-2. En vue **Jour**, faites-la glisser vers une autre heure dans la colonne du même espace : la durée est conservée.
+2. En vue **Jour**, faites-la glisser vers une autre heure sur la ligne du même espace : elle commence à l'heure pleine de la case visée et sa durée est conservée.
 3. Une fenêtre de confirmation rappelle la nouvelle date et les nouvelles heures. Cliquez sur **OK**.
 4. La page se recharge avec un message de réussite ou la raison du refus.
 
