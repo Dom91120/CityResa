@@ -436,6 +436,13 @@ textarea.form-control { min-height: 90px; }
 .table-compacte > :not(caption) > * > * { padding: 8px 10px; }
 .table-compacte .cell2 { line-height: 1.15; }
 .table-compacte td { letter-spacing: -0.02em; }
+/* Cellules sur plusieurs lignes (personnel de service) : interligne serré. */
+.table-interligne-serre td, .table-interligne-serre .cell2 { line-height: 1.15; }
+/* Personnes de service : Sites, Calendrier et État sont des pastilles, centrées sous leur en-tête. */
+.table-personnes > :not(caption) > * > :nth-child(n+5) { text-align: center; }
+/* Propositions d'affectation : « 3 indisponibles ⓘ », le détail (personne et motif) en infobulle. */
+.indisponibles { display: flex; width: fit-content; align-items: center; gap: 4px; margin-top: 2px; font-size: 0.74rem; color: var(--faint); cursor: help; }
+.indisponibles .lucide { color: var(--primary); }
 /* Rôles & permissions : dix colonnes de niveaux à faire tenir sans défilement. Le rôle se replie
    (description sur deux lignes au plus, entière en infobulle), les listes sont étroites. */
 .table-roles .col-role { width: 200px; min-width: 190px; white-space: normal; }

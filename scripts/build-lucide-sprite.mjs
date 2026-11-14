@@ -236,6 +236,19 @@ const ICONES = [
  * repris de Lucide à échelle réduite garde un trait lisible grâce à son propre stroke-width.
  */
 const MAISON = {
+  // Écarter une personne proposée : la personne du « user-x » de Lucide, la croix remplacée par
+  // un sens interdit (cercle et barre) tracé à 90 % de l'épaisseur du reste. La personne est
+  // décalée d'un cran vers la gauche pour laisser au cercle la place de grandir (rayon 4,5 : à 5,
+  // il chevauche l'épaule).
+  "user-ban":
+    '<path d="M15 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8" cy="7" r="4" />' +
+    '<g stroke-width="1.8"><circle cx="18.6" cy="11" r="4.5" /><path d="m15.42 7.82 6.36 6.36" /></g>',
+  // Revenir à aujourd'hui : le calendrier de Lucide ouvert en bas à droite, où une flèche
+  // pointe vers la gauche (le « calendar-arrow-left » de Lucide la place en bas à gauche).
+  "calendar-aujourdhui":
+    '<path d="M8 2v3" /><path d="M16 2v3" /><path d="M3 9h18" />' +
+    '<path d="M21 12.34V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h7.35" />' +
+    '<path d="M21 18h-6" /><path d="m18 21-3-3 3-3" />',
   // Personnel de service : une personne, la clé du gardien (en haut à gauche, agrandie d'un
   // quart) et le balai de l'entretien (le « broom » de Lucide réduit et redressé, debout à droite).
   "personnel-service":
