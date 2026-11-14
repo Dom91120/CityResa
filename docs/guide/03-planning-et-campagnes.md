@@ -131,8 +131,8 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 **Comment faire**
 
 1. En vue **Semaine**, faites glisser l'étiquette vers un autre jour sur la ligne du même espace : les heures sont conservées.
-2. En vue **Jour**, faites-la glisser vers une autre heure sur la ligne du même espace : elle commence à l'heure pleine de la case visée et sa durée est conservée.
-3. Une fenêtre de confirmation rappelle la nouvelle date et les nouvelles heures. Cliquez sur **OK**.
+2. En vue **Jour**, faites-la glisser vers la gauche ou la droite sur la ligne du même espace : elle se décale d'autant d'heures que vous la déplacez de cases, quel que soit l'endroit où vous l'avez saisie ; ses minutes et sa durée sont conservées. La case où elle commencera est mise en évidence.
+3. Une fenêtre de confirmation rappelle la nouvelle date et les nouvelles heures. Cliquez sur **Confirmer**.
 4. La page se recharge avec un message de réussite ou la raison du refus.
 
 **Règles à connaître**
