@@ -712,6 +712,12 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .planning td > .evt:last-child { margin-bottom: 0; }
 /* Vue Jour : une ligne par heure, le contenu reste calé en haut, sur le trait de l'heure. */
 .planning-jour td { vertical-align: top; }
+/* Planning de service : les plages de travail s’alignent en haut d’une case à l’autre de la ligne. */
+.planning-service td:not(.col-espace) { position: relative; }
+.planning-service td > .plages-jour { position: absolute; top: 6px; left: 6px; right: 6px; margin: 0; }
+/* Les vignettes restent centrées dans la hauteur ; la case leur réserve la place des plages, en haut
+   comme en bas, pour qu’elles ne passent jamais dessous. */
+.planning-service td:has(> .plages-jour):has(> .evt) { padding-block: 21px; }
 .planning td.weekend { background: var(--zebra); }
 .planning td.jour-cellule { cursor: pointer; }
 .planning td.jour-cellule:hover { background: var(--primary-dim); }
@@ -722,6 +728,8 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .evt:hover { box-shadow: var(--shadow-md); color: var(--body); }
 .evt .evt-titre { font-weight: 600; color: var(--strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 .evt .evt-heure { color: var(--muted); }
+/* Heures et précision à la suite, sur trois lignes au plus (vacations du planning de service). */
+.evt .evt-ligne { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; padding-block: 0.14em; margin-block: -0.14em; }
 .evt .evt-qui { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 .evt--bloque { background: repeating-linear-gradient(45deg, var(--inset), var(--inset) 6px, var(--line) 6px, var(--line) 8px); border-left-color: var(--faint); color: var(--muted); }
 .evt--attente { border-left-style: dashed; opacity: .85; }
@@ -729,6 +737,19 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .evt--glisse { opacity: .4; }
 .evt--en-cours { opacity: .5; pointer-events: none; }
 .planning td.depot-possible { outline: 2px dashed var(--primary); outline-offset: -3px; background: var(--primary-dim); }
+/* Légende du planning de service : un échantillon de vignette (liseré, pointillés, hachures). */
+/* Décalée pour que ses repères tombent sous l’icône et les pastilles de la première colonne. */
+/* Deux colonnes : le titre de chaque ligne, puis ses échantillons, alignés d’une ligne à l’autre. */
+.legende-service { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: baseline; margin-top: 10px; padding-left: 9.5px; container-type: inline-size; }
+.legende-titre { white-space: nowrap; }
+/* Échantillons rangés deux par ligne, alignés en colonnes ; sur une seule ligne quand la place le permet. */
+.legende-colonnes { display: grid; grid-template-columns: repeat(2, auto); justify-content: start; gap: 4px 0; }
+@container (min-width: 1070px) { .legende-colonnes { grid-template-columns: repeat(4, auto); } }
+.legende-service .list-inline-item:not(:last-child) { margin-right: 14px; }
+.legende-evt { display: inline-block; width: 18px; height: 12px; border-radius: 4px; background: var(--inset); box-shadow: 0 0 0 1px var(--line); border-left: 3px solid var(--muted); vertical-align: -1px; margin-right: 3px; }
+/* Le repère de chaque ligne de légende reprend celui de la première colonne (icône, pastille). */
+.legende-repere { display: inline-flex; width: 13px; justify-content: center; align-items: center; margin-right: 6px; vertical-align: -1px; color: var(--strong); }
+.legende-evt.evt--attente { border-left-style: dashed; }
 .legende-liseré { display: inline-block; width: 14px; height: 10px; border-radius: 3px; vertical-align: middle; margin-right: 2px; }
 .evt--jour { display: flex; gap: 8px; align-items: center; }
 .planning-jour .heure { font-size: 0.72rem; color: var(--muted); width: 56px; text-align: right; padding-right: 8px; }
@@ -913,7 +934,8 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .horaires-travail .jour { font-weight: 500; font-size: 0.8rem; }
 .horaires-travail .entete { font-size: 0.72rem; color: var(--muted); }
 .evt--propose { border-left-style: dashed; background: var(--amber-dim, #fef3c7); }
-.evt--absence { background: repeating-linear-gradient(45deg, var(--inset), var(--inset) 6px, var(--amber-dim, #fef3c7) 6px, var(--amber-dim, #fef3c7) 8px); border-left-color: var(--amber-text); color: var(--muted); }
+/* Hachures franches : un trait orangé sur fond jaune pâle, lisible aussi sur le petit échantillon de la légende. */
+.evt--absence { background: repeating-linear-gradient(45deg, var(--amber-dim, #fef3c7), var(--amber-dim, #fef3c7) 5px, color-mix(in srgb, var(--amber-text) 24%, var(--amber-dim, #fef3c7)) 5px, color-mix(in srgb, var(--amber-text) 24%, var(--amber-dim, #fef3c7)) 6.5px); border-left-color: var(--amber-text); color: var(--muted); }
 .plages-jour { display: block; font-size: 0.66rem; color: var(--muted); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ── Dossier de demande de subvention : fiches ── */
