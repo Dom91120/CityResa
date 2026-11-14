@@ -70,8 +70,10 @@ function Vac({ v, jour, peutEditer }: { v: VacationRow; jour: string; peutEditer
   const contenu = (
     <>
       <span className="evt-titre">{v.site.name}</span>
-      <span className="evt-heure">{heuresDuJour(v, jour)}</span>
-      {v.note ? <span className="evt-qui">{v.note}</span> : null}
+      <span className="evt-heure evt-ligne">
+        {heuresDuJour(v, jour)}
+        {v.note ? ` · ${v.note}` : ""}
+      </span>
     </>
   );
   const titre = `${nomPersonne(v.personnel)} · ${v.site.name} · ${heuresDuJour(v, jour)}${v.note ? ` · ${v.note}` : ""}${v.serieId ? " · chaque semaine" : ""}`;
@@ -212,89 +214,159 @@ export function GrilleService({
     if (!noms.has(v.personnelId)) noms.set(v.personnelId, nomPersonne(v.personnel));
   const affectables = new Map(contexte.personnes.map((p) => [p.id, p]));
   return (
-    <div className="planning planning-service">
-      <table>
-        <thead>
-          <tr>
-            <th className="col-espace">Personne</th>
-            {fen.jours.map((j) => (
-              <th key={j} className={j === aujourdhui ? "aujourdhui" : undefined}>
-                {enteteJour(j)}
-                {j === aujourdhui ? (
-                  <span className="d-block small fw-normal">aujourd'hui</span>
-                ) : null}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td className="col-espace">
-              <div className="espace-cell">
-                {/* L'icône tient la place de la pastille de couleur des lignes de personnes. */}
-                <span className="pastille-icone">
-                  <Icone nom="calendar-check" taille={13} />
-                </span>
-                <span className="cell2">
-                  <span className="nom">À couvrir</span>
-                  <small>Créneaux réservés</small>
-                </span>
-              </div>
-            </td>
-            {fen.jours.map((j) => (
-              <td key={j} className={estWeekend(j) ? "weekend" : undefined}>
-                {duJour(
-                  etats.map((e) => ({ ...e, startAt: e.creneau.startAt, endAt: e.creneau.endAt })),
-                  j,
-                ).map((e) => (
-                  <ACouvrir key={e.creneau.id} e={e} jour={j} noms={noms} retour={retour} />
-                ))}
-              </td>
-            ))}
-          </tr>
-          {personnes.map((p) => (
-            <tr key={p.id}>
+    <>
+      <div className="planning planning-service">
+        <table>
+          <thead>
+            <tr>
+              <th className="col-espace">Personne</th>
+              {fen.jours.map((j) => (
+                <th key={j} className={j === aujourdhui ? "aujourdhui" : undefined}>
+                  {enteteJour(j)}
+                  {j === aujourdhui ? (
+                    <span className="d-block small fw-normal">aujourd'hui</span>
+                  ) : null}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
               <td className="col-espace">
                 <div className="espace-cell">
-                  <span
-                    className="pastille-espace"
-                    style={{ background: p.color ?? "var(--faint)" }}
-                  />
+                  {/* L'icône tient la place de la pastille de couleur des lignes de personnes. */}
+                  <span className="pastille-icone">
+                    <Icone nom="calendar-check" taille={13} />
+                  </span>
                   <span className="cell2">
-                    <a href={avecRetour(`/personnel/personnes/${p.id}`, retour)} className="nom">
-                      {nomPersonne(p)}
-                    </a>
-                    <small>{p.fonction ?? ""}</small>
+                    <span className="nom">À couvrir</span>
+                    <small>Créneaux réservés</small>
                   </span>
                 </div>
               </td>
-              {fen.jours.map((j) => {
-                const aff = affectables.get(p.id);
-                return (
-                  <td key={j} className={estWeekend(j) ? "weekend" : undefined}>
-                    {aff ? <JourTravail p={aff} jour={j} absences={contexte.absences} /> : null}
-                    {duJour(
-                      vacations.filter((v) => v.personnelId === p.id),
-                      j,
-                    ).map((v) => (
-                      <Vac key={v.id} v={v} jour={j} peutEditer={peutEditer} />
-                    ))}
-                    {duJour(
-                      affectations.filter(
-                        (c) =>
-                          (c.personnelId ?? (c.proposeAt ? c.personnelProposeId : null)) === p.id,
-                      ),
-                      j,
-                    ).map((c) => (
-                      <Affectation key={`c${c.id}`} c={c} jour={j} retour={retour} />
-                    ))}
-                  </td>
-                );
-              })}
+              {fen.jours.map((j) => (
+                <td key={j} className={estWeekend(j) ? "weekend" : undefined}>
+                  {duJour(
+                    etats.map((e) => ({
+                      ...e,
+                      startAt: e.creneau.startAt,
+                      endAt: e.creneau.endAt,
+                    })),
+                    j,
+                  ).map((e) => (
+                    <ACouvrir key={e.creneau.id} e={e} jour={j} noms={noms} retour={retour} />
+                  ))}
+                </td>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+            {personnes.map((p) => (
+              <tr key={p.id}>
+                <td className="col-espace">
+                  <div className="espace-cell">
+                    <span
+                      className="pastille-espace"
+                      style={{ background: p.color ?? "var(--faint)" }}
+                    />
+                    <span className="cell2">
+                      <a href={avecRetour(`/personnel/personnes/${p.id}`, retour)} className="nom">
+                        {nomPersonne(p)}
+                      </a>
+                      <small>{p.fonction ?? ""}</small>
+                    </span>
+                  </div>
+                </td>
+                {fen.jours.map((j) => {
+                  const aff = affectables.get(p.id);
+                  return (
+                    <td key={j} className={estWeekend(j) ? "weekend" : undefined}>
+                      {aff ? <JourTravail p={aff} jour={j} absences={contexte.absences} /> : null}
+                      {duJour(
+                        vacations.filter((v) => v.personnelId === p.id),
+                        j,
+                      ).map((v) => (
+                        <Vac key={v.id} v={v} jour={j} peutEditer={peutEditer} />
+                      ))}
+                      {duJour(
+                        affectations.filter(
+                          (c) =>
+                            (c.personnelId ?? (c.proposeAt ? c.personnelProposeId : null)) === p.id,
+                        ),
+                        j,
+                      ).map((c) => (
+                        <Affectation key={`c${c.id}`} c={c} jour={j} retour={retour} />
+                      ))}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <LegendeService />
+    </>
+  );
+}
+
+/** Un échantillon de vignette pour la légende : liseré, pointillés ou hachures. */
+function Echantillon({ couleur, variante }: { couleur: string; variante?: string }) {
+  return (
+    <span
+      className={`legende-evt${variante ? ` ${variante}` : ""}`}
+      style={{ borderLeftColor: couleur }}
+      aria-hidden="true"
+    />
+  );
+}
+
+/** La légende du planning de service : ce que disent les liserés, les pointillés et les fonds. */
+function LegendeService() {
+  return (
+    <div className="legende-service small text-muted">
+      <span className="legende-titre fw-semibold">
+        <span className="legende-repere">
+          <Icone nom="calendar-check" taille={13} />
+        </span>
+        À couvrir
+      </span>
+      <ul className="list-inline mb-0" aria-label="Légende de la ligne À couvrir">
+        <li className="list-inline-item">
+          <Echantillon couleur={TEINTE_VAR.couvert} /> Couvert
+        </li>
+        <li className="list-inline-item">
+          <Echantillon couleur={TEINTE_VAR.partiel} /> Partiel
+        </li>
+        <li className="list-inline-item">
+          <Echantillon couleur={TEINTE_VAR.non_couvert} variante="evt--attente" /> À couvrir
+          (pointillés)
+        </li>
+      </ul>
+      <span className="legende-titre fw-semibold">
+        <span className="legende-repere">
+          <span className="pastille-espace" style={{ background: "#8b5cf6" }} />
+        </span>
+        Personnes
+      </span>
+      <ul
+        className="list-inline mb-0 legende-colonnes"
+        aria-label="Légende des lignes de personnes"
+      >
+        <li className="list-inline-item">
+          <Echantillon couleur="#8b5cf6" /> Vacation (liseré à la couleur de la personne)
+        </li>
+        <li className="list-inline-item">
+          <Echantillon couleur="var(--emerald-text)" /> <Icone nom="bookmark" taille={10} /> Créneau
+          affecté
+        </li>
+        <li className="list-inline-item">
+          <Echantillon couleur="var(--amber-text)" variante="evt--propose" />{" "}
+          <Icone nom="hourglass" taille={10} /> Proposition à valider (pointillés, fond jaune)
+        </li>
+        <li className="list-inline-item">
+          <Echantillon couleur="var(--amber-text)" variante="evt--absence" />{" "}
+          <Icone nom="calendar-x" taille={10} /> Absence (hachures)
+        </li>
+      </ul>
     </div>
   );
 }

@@ -22,6 +22,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
   - **Partiel** (orange) : une vacation le touche sans le couvrir entièrement ;
   - **À couvrir** (rouge) : personne n'est de service sur ce site à ce moment-là.
   La mention est suivie du nom des personnes concernées ; cliquer ouvre la fiche de la réservation.
+- Sous le tableau, une **légende** rappelle le sens des vignettes : pour la ligne « À couvrir », liseré vert (couvert), orange (partiel) ou rouge en pointillés (à couvrir) ; pour les personnes, liseré à la couleur de la personne (vacation), signet vert (créneau affecté), pointillés orange sur fond jaune (proposition à valider) et hachures (absence).
 - Ensuite, une ligne par personne avec sa couleur, sa fonction, et dans chaque jour ses vacations : le site, les heures et la note. Une vacation à cheval sur minuit s'affiche sur les deux jours.
 
 **Comment faire — ajouter une vacation**
