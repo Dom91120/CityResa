@@ -1053,11 +1053,10 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .planning-frise .frise-case:hover { background: var(--primary-soft); }
 .planning-frise .frise-case:hover::after { content: "+ " attr(data-libelle); }
 .planning-frise .frise-case.depot-possible { outline: 2px dashed var(--primary); outline-offset: -3px; background: var(--primary-dim); }
-/* La piste laisse passer le pointeur vers les cases ; ses vignettes le reprennent, sauf pendant un
-   glisser-déposer, où la case visée doit rester atteignable sous la vignette déplacée. */
+/* La piste laisse passer le pointeur vers les cases ; ses vignettes le reprennent. Le dépôt d’un
+   créneau glissé s’écoute sur la ligne entière (planning.js), vignettes comprises. */
 .planning-frise .frise-piste, .planning-frise .frise-mention { pointer-events: none; }
 .planning-frise .frise-item { pointer-events: auto; }
-.glisse-en-cours .planning-frise .frise-item { pointer-events: none; }
 /* Légende de la vue Jour du planning. */
 .legende-frise { padding-left: 9.5px; }
 .legende-frise .list-inline-item:not(:last-child) { margin-right: 14px; }
