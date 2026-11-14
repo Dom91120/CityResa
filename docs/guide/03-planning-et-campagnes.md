@@ -212,7 +212,7 @@ Quand un seul espace est affiché, un bouton **Feuille de salle** apparaît à c
 **Ce que l'on voit**
 
 - En tête : le nombre de séries, de dossiers et d'espaces.
-- Les boutons **Planning daté** (retour au planning), **PDF A4** et **PDF A3**.
+- Le bouton **Planning daté** (retour au planning) et le bouton **PDF**, en deux parties : à gauche, il génère le PDF au format affiché (« PDF A4 ») ; à droite, la flèche ouvre le choix **Format A4** ou **Format A3**, qui change le format sans rien générer. Le dernier format choisi est retenu sur votre poste.
 - Les filtres : la saison (la saison active est indiquée), **Tous les sites**, **Tous les espaces**.
 - La grille : un espace par ligne, un jour par colonne. Chaque étiquette indique les horaires, le titre de l'activité, l'usager et le nombre de séances.
 
@@ -221,7 +221,7 @@ Quand un seul espace est affiché, un bouton **Feuille de salle** apparaît à c
 1. Dans le planning, cliquez sur **Semaine type**.
 2. Choisissez la saison et, si besoin, le site ou l'espace.
 3. Cliquez sur une étiquette pour ouvrir le dossier correspondant.
-4. Cliquez sur **PDF A4** ou **PDF A3** pour l'imprimer.
+4. Au besoin, cliquez sur la flèche à droite du bouton **PDF** pour choisir **Format A4** ou **Format A3**, puis cliquez sur **PDF** pour l'imprimer au format affiché.
 
 **Règles à connaître**
 

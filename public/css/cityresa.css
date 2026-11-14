@@ -477,6 +477,13 @@ textarea.form-control { min-height: 90px; }
 .dropdown-item { border-radius: 8px; padding: 7px 10px; color: var(--body); display: flex; align-items: center; gap: 8px; }
 .dropdown-item:hover, .dropdown-item:focus { background: var(--inset); color: var(--strong); }
 .dropdown-item.text-danger:hover { background: var(--danger-dim); }
+/* Bouton scindé : l'action à gauche, le chevron du menu à droite ; l'entrée retenue du menu est cochée. */
+.btn-scinde > .dropdown-toggle-split { padding-left: 7px; padding-right: 10px; }
+/* Le chevron ferme la pastille à droite (Bootstrap l'équarrit, le menu étant le dernier enfant du groupe). */
+.btn-group.btn-scinde > .btn.dropdown-toggle-split:not(:last-child) { border-top-right-radius: 999px; border-bottom-right-radius: 999px; }
+.btn-scinde .dropdown-item .coche { visibility: hidden; color: var(--primary); }
+.btn-scinde .dropdown-item.est-retenu .coche { visibility: visible; }
+.btn-scinde .dropdown-item.est-retenu { color: var(--strong); font-weight: 500; }
 .dropdown-divider { border-color: var(--line); }
 
 /* Cartes de réservation (liste en cartes) */
