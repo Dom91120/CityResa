@@ -62,7 +62,7 @@ describe("créneau hebdomadaire", () => {
   });
   it("se décrit en français", () => {
     expect(decrireCreneauHebdo({ weekday: 2, startMin: 18 * 60, endMin: 20 * 60 + 30 })).toBe(
-      "Mardi 18h00 – 20h30",
+      "Mardi 18h00 - 20h30",
     );
   });
 });

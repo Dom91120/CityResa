@@ -31,7 +31,7 @@ import {
   slugifier,
 } from "@/lib/forms-util";
 import { duree, montant } from "@/lib/libelles";
-import { minutesDe, parisDateTimeToInstant } from "@/lib/paris-time";
+import { ENTRE_HEURES, minutesDe, parisDateTimeToInstant } from "@/lib/paris-time";
 import { agentsHorsSecteur, libelleSecteur, rattachable } from "@/lib/secteurs";
 import { occupationParEspace } from "@/server/dashboard";
 import { prisma } from "@/server/db";
@@ -321,7 +321,9 @@ export function horairesTableau(json: unknown): { jour: string; plages: string }
     return {
       jour: j.long,
       plages: plages.length
-        ? plages.map(([o, f]) => `${o.replace(":", "h")} – ${f.replace(":", "h")}`).join(", ")
+        ? plages
+            .map(([o, f]) => `${o.replace(":", "h")}${ENTRE_HEURES}${f.replace(":", "h")}`)
+            .join(", ")
         : "Fermé",
     };
   });

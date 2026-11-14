@@ -260,10 +260,9 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
   .page-header > .page-actions { flex: 1 1 0; min-width: 360px; justify-content: flex-end; }
 }
 .page-title { font-size: 1.35rem; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.page-count { font-size: 0.75rem; font-weight: 500; color: var(--muted); background: var(--inset); border-radius: 8px; padding: 2px 8px; }
+/* Pastille du titre (compteur de la liste, période du planning) : un fond vert doux la détache de la page. */
+.page-count { font-size: 0.75rem; font-weight: 500; color: var(--primary-text); background: var(--primary-soft); border-radius: 8px; padding: 2px 8px; }
 .page-subtitle { color: var(--muted); margin: 4px 0 0; font-size: 0.75rem; line-height: 1; }
-/* Planning : la pastille porte la période affichée ; un fond vert doux la détache de la page. */
-.page-header--planning .page-count { background: var(--primary-soft); color: var(--primary-text); }
 .page-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .fil-ariane { font-size: 0.78rem; color: var(--muted); display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
 .fil-ariane a { color: var(--muted); }

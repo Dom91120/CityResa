@@ -103,6 +103,12 @@ export function addParisDays(d: Date, n: number): Date {
   );
 }
 
+/**
+ * Ce qui sépare les deux heures d'une plage (« 8h30 - 19h00 ») : un trait d'union entre deux
+ * espaces fines insécables, plus étroit qu'un tiret demi-cadratin entre deux espaces.
+ */
+export const ENTRE_HEURES = " - ";
+
 /** « HH:MM » depuis des minutes. */
 export function hm(min: number): string {
   return `${pad2(Math.floor(min / 60))}:${pad2(min % 60)}`;

@@ -8,7 +8,7 @@ import { ajouterJours } from "@/lib/calendrier";
 import { chevauche, type Intervalle, type Recurrence } from "@/lib/creneaux";
 import { parseYmdUtc } from "@/lib/date-utc";
 import { NOMS_JOURS } from "@/lib/libelles";
-import { hm, parisDateTimeToInstant } from "@/lib/paris-time";
+import { ENTRE_HEURES, hm, parisDateTimeToInstant } from "@/lib/paris-time";
 
 // ── Statuts ──
 
@@ -103,7 +103,7 @@ export function verifierCreneauHebdo(c: CreneauHebdo, pas = 30): string[] {
 export function decrireCreneauHebdo(c: CreneauHebdo): string {
   const h = (min: number) => hm(min).replace(":", "h");
   const jour = NOMS_JOURS[c.weekday - 1] ?? "?";
-  return `${jour.charAt(0).toUpperCase()}${jour.slice(1)} ${h(c.startMin)} – ${h(c.endMin)}`;
+  return `${jour.charAt(0).toUpperCase()}${jour.slice(1)} ${h(c.startMin)}${ENTRE_HEURES}${h(c.endMin)}`;
 }
 
 export function memeJourEtChevauche(a: CreneauHebdo, b: CreneauHebdo): boolean {

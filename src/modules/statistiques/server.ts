@@ -12,7 +12,13 @@ import {
   STATUTS_FERMES,
 } from "@/lib/constantes";
 import { dateCourte, dateHeure, NOMS_JOURS_COURTS } from "@/lib/libelles";
-import { addParisDays, parisMidnight, parisParts, toParisWall } from "@/lib/paris-time";
+import {
+  addParisDays,
+  ENTRE_HEURES,
+  parisMidnight,
+  parisParts,
+  toParisWall,
+} from "@/lib/paris-time";
 import { type Periode, periode, precedente } from "@/lib/periodes";
 import { type ResumePresences, resumePresences } from "@/lib/presences";
 import {
@@ -378,7 +384,7 @@ export function heatmap(rows: ResaStat[], p: Periode): Heatmap {
   const max = Math.max(0, ...valeurs.flat());
   return {
     jours: NOMS_JOURS_COURTS,
-    tranches: TRANCHES.map(([a, b]) => `${a}h – ${b === 24 ? "minuit" : `${b}h`}`),
+    tranches: TRANCHES.map(([a, b]) => `${a}h${ENTRE_HEURES}${b === 24 ? "minuit" : `${b}h`}`),
     valeurs,
     max,
   };

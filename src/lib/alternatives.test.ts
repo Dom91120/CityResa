@@ -137,9 +137,9 @@ describe("choisir et décrire", () => {
     expect(choisir([h1, h2, j1, e1])).toEqual([h1, j1, e1]);
     expect(choisir([h1, h2])).toEqual([h1, h2]);
     expect(choisir([h1, h2, j1, e1], 4)).toEqual([h1, j1, e1, h2]);
-    expect(decrire(h1, "Salle A")).toBe("Le même jour, 13h00 – 15h00");
-    expect(decrire(j1, "Salle A")).toBe("Le 02/12/2026, 10h00 – 12h00");
-    expect(decrire(e1, "Salle B")).toBe("Salle B, le 01/12/2026, 10h00 – 12h00");
+    expect(decrire(h1, "Salle A")).toBe("Le même jour, 13h00 - 15h00");
+    expect(decrire(j1, "Salle A")).toBe("Le 02/12/2026, 10h00 - 12h00");
+    expect(decrire(e1, "Salle B")).toBe("Salle B, le 01/12/2026, 10h00 - 12h00");
     expect(lignesCourriel([])).toBe("");
     expect(lignesCourriel([{ texte: "a" }, { texte: "b" }])).toBe(
       "Créneaux de remplacement libres à ce jour : a ; b.",

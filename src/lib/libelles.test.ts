@@ -55,8 +55,8 @@ describe("dates (heure de Paris)", () => {
   it("dateHeure, plageHoraire et plage sur un même jour", () => {
     const fin = new Date("2026-11-08T18:00:00Z");
     expect(dateHeure(hiver)).toBe("08/11/2026 à 8h30");
-    expect(plageHoraire(hiver, fin)).toBe("8h30 – 19h00");
-    expect(plage(hiver, fin)).toBe("Dim. 08/11/2026 · 8h30 – 19h00");
+    expect(plageHoraire(hiver, fin)).toBe("8h30 - 19h00");
+    expect(plage(hiver, fin)).toBe("Dim. 08/11/2026 · 8h30 - 19h00");
   });
 
   it("plage sur plusieurs jours", () => {

@@ -6,7 +6,7 @@
  * Logique PURE : testée dans affectation.test.ts.
  */
 import { chevauche, dansHoraires, type Horaires, type Intervalle } from "@/lib/creneaux";
-import { addParisDays, minutesDe, parisMidnight, parisParts } from "@/lib/paris-time";
+import { addParisDays, ENTRE_HEURES, minutesDe, parisMidnight, parisParts } from "@/lib/paris-time";
 
 export type PersonneAffectable = {
   id: number;
@@ -376,5 +376,7 @@ export function periodesTravaillees(
 /** « 8h00 – 12h00 · 13h30 – 17h00 ». */
 export function libellePlages(plages: readonly PlageMinutes[]): string {
   const h = (m: number) => `${Math.floor(m / 60)}h${String(m % 60).padStart(2, "0")}`;
-  return plages.map((p) => `${h(p.debutMin)} – ${h(p.finMin === 1440 ? 0 : p.finMin)}`).join(" · ");
+  return plages
+    .map((p) => `${h(p.debutMin)}${ENTRE_HEURES}${h(p.finMin === 1440 ? 0 : p.finMin)}`)
+    .join(" · ");
 }

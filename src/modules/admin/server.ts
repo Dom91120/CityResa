@@ -49,7 +49,7 @@ export function exemplesVariables(baseUrl: string, collectivite: string): Record
     prenom: "Camille",
     numero: "RES-2026-0042",
     espace: "Salle des fêtes",
-    dates: "Sam. 14 mars 2026 · 18h00 – 23h00",
+    dates: "Sam. 14 mars 2026 · 18h00 - 23h00",
     lien: `${baseUrl}/portail/mes-reservations/42`,
     demandeur: "Camille Martin",
     organisation: "Association des Amis du Quartier",

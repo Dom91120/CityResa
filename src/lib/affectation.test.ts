@@ -263,7 +263,7 @@ describe("périodes travaillées d'un jour", () => {
         { debutMin: 480, finMin: 720 },
         { debutMin: 810, finMin: 1020 },
       ]),
-    ).toBe("8h00 – 12h00 · 13h30 – 17h00");
+    ).toBe("8h00 - 12h00 · 13h30 - 17h00");
   });
 });
 
