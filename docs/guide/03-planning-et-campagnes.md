@@ -69,7 +69,7 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 **Ce que l'on voit**
 
 - Un calendrier du lundi au dimanche, qui déborde sur les jours des mois voisins.
-- Dans chaque case : une pastille « 1 réservation », « 2 réservations » ou « 1 blocage », puis les étiquettes des créneaux avec leurs horaires.
+- Dans chaque case : le numéro du jour et, à sa droite, des pastilles abrégées « 1 rés. », « 2 rés. » (réservations) ou « 1 bloc. » (blocage), le libellé entier s’affichant au survol ; en dessous, les étiquettes des créneaux avec leurs horaires.
 - La couleur à gauche de chaque étiquette suit le mode de couleur choisi (ici, par espace).
 
 **Comment faire**

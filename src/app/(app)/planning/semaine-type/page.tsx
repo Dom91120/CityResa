@@ -9,6 +9,7 @@ import {
   espacesPlanning,
   lireFiltresPlanning,
 } from "@/modules/planning/server";
+import { EspaceCell } from "@/modules/planning/vues";
 import { saisonActive, saisons } from "@/server/calendrier";
 import { seriesSemaineType } from "@/server/editions";
 import { contexteModule } from "@/server/module";
@@ -161,10 +162,7 @@ export default async function SemaineTypePage({
                 {espaces.map((e) => (
                   <tr key={e.id}>
                     <td className="col-espace">
-                      <span className="cell2">
-                        <a href={`/espaces/${e.id}`}>{nomCourt(e)}</a>
-                        <small>{e.site.name}</small>
-                      </span>
+                      <EspaceCell e={e} />
                     </td>
                     {JOURS_ISO.map((j) => {
                       const du = series.filter((s) => s.espaceId === e.id && s.jour === j.iso);

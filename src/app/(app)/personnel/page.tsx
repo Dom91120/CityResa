@@ -285,7 +285,7 @@ export default async function PersonnelPage({
       ) : onglet === "propositions" ? (
         <div className="data-card">
           <div className="table-responsive">
-            <table className="table table-hover align-middle mb-0 table-interligne-serre">
+            <table className="table table-hover align-middle mb-0">
               <thead>
                 <tr>
                   <th>Créneau</th>
@@ -446,7 +446,7 @@ export default async function PersonnelPage({
       ) : onglet === "a_couvrir" ? (
         <div className="data-card">
           <div className="table-responsive">
-            <table className="table table-hover align-middle mb-0 table-interligne-serre">
+            <table className="table table-hover align-middle mb-0">
               <thead>
                 <tr>
                   <th>Créneau</th>

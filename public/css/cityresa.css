@@ -426,17 +426,15 @@ textarea.form-control { min-height: 90px; }
 .table thead th a { color: var(--muted); display: inline-flex; align-items: center; gap: 4px; }
 .table thead th a:hover, .table thead th a.actif { color: var(--primary); }
 .table-hover > tbody > tr:hover > * { background: var(--zebra); color: inherit; }
+/* Interligne unique des tableaux : 1,15 dans toutes les cellules, à une ou plusieurs lignes. */
+.table tbody td, .table tbody th, .table .cell2 { line-height: 1.15; }
 .table tbody tr:last-child td { border-bottom: 0; }
 .table td.actions { text-align: right; white-space: nowrap; }
 /* Tableau resserré (tableau de bord) : lignes moins hautes. */
 .table-serree > :not(caption) > * > * { padding: 8px 12px; }
-.table-serree .cell2 { line-height: 1.15; }
-/* Tableau compact (liste des réservations) : marges réduites, interligne et espacement serrés. */
+/* Tableau compact (liste des réservations) : marges réduites et espacement serré. */
 .table-compacte > :not(caption) > * > * { padding: 8px 10px; }
-.table-compacte .cell2 { line-height: 1.15; }
 .table-compacte td { letter-spacing: -0.02em; }
-/* Cellules sur plusieurs lignes (personnel de service) : interligne serré. */
-.table-interligne-serre td, .table-interligne-serre .cell2 { line-height: 1.15; }
 /* Personnes de service : Sites, Calendrier et État sont des pastilles, centrées sous leur en-tête. */
 .table-personnes > :not(caption) > * > :nth-child(n+5) { text-align: center; }
 /* Propositions d'affectation : « 3 indisponibles ⓘ », le détail (personne et motif) en infobulle. */
@@ -637,18 +635,34 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .planning { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: auto; }
 .planning table { border-collapse: separate; border-spacing: 0; min-width: 900px; width: 100%; table-layout: fixed; }
 .planning th { position: sticky; top: 0; z-index: 2; background: var(--surface); font-size: 0.8rem; font-weight: 600; color: var(--body); padding: 10px 8px; text-align: center; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); }
+.planning th { line-height: 1.15; }
 .planning th.aujourdhui { color: var(--primary); }
 .planning th.col-espace, .planning td.col-espace { position: sticky; left: 0; z-index: 3; background: var(--surface); width: 180px; text-align: left; border-right: 1px solid var(--line); }
-.planning th.col-espace { z-index: 4; }
-.planning td { vertical-align: top; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); padding: 6px; min-height: 80px; height: 80px; background: var(--surface); }
+.planning th.col-espace { z-index: 4; text-align: center; }
+.planning td { vertical-align: middle; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); padding: 6px; min-height: 80px; height: 80px; background: var(--surface); }
+/* Cases des grilles semaine, jour, mois, semaine type et planning de service : interligne 1, plus serré que les
+   tableaux de liste (1,15), pour loger davantage de lignes dans une case. */
+.planning td, .planning .cell2, .mois-jour, .evt { line-height: 1; }
+/* À cet interligne, un texte tronqué (overflow masqué) perdrait ses accents et ses jambages : on lui
+   rend la hauteur du glyphe par un remplissage que compense une marge négative. */
+.planning .cell2 > *, .evt .evt-titre, .evt .evt-qui { padding-block: 0.14em; margin-block: -0.14em; }
+.planning .plages-jour { padding-block: 0.14em; margin-block: -0.14em calc(3px - 0.14em); }
+/* La première colonne (espace, personne) garde l’interligne des tableaux de liste. */
+.planning td.col-espace, .planning td.col-espace .cell2 { line-height: 1.15; }
+/* Colonne Espace (semaine, semaine type) : lettres resserrées, pour montrer davantage du nom avant la
+   troncature. Ni les heures de la vue Jour ni les personnes du planning de service. */
+.planning:not(.planning-jour, .planning-service) td.col-espace { letter-spacing: -0.05rem; }
+/* Contenu centré dans la hauteur de la case : la dernière vignette ne garde pas sa marge basse. */
+.planning td > .evt:last-child { margin-bottom: 0; }
+/* Vue Jour : une ligne par heure, le contenu reste calé en haut, sur le trait de l'heure. */
+.planning-jour td { vertical-align: top; }
 .planning td.weekend { background: var(--zebra); }
 .planning td.jour-cellule { cursor: pointer; }
 .planning td.jour-cellule:hover { background: var(--primary-dim); }
 .planning .espace-cell { display: flex; align-items: center; gap: 8px; padding: 6px 4px; }
 .planning .espace-cell .vignette { width: 36px; height: 28px; border-radius: 6px; }
-.planning .espace-cell .nom { font-size: 0.8rem; font-weight: 500; color: var(--strong); line-height: 1.2; }
-.planning .espace-cell .cap { font-size: 0.68rem; color: var(--primary); font-weight: 600; }
-.evt { display: block; border-radius: 8px; padding: 5px 7px; margin-bottom: 4px; font-size: 0.68rem; line-height: 1.25; color: var(--body); background: var(--inset); border-left: 3px solid var(--primary); box-shadow: var(--shadow-xs); overflow: hidden; }
+.planning .espace-cell .nom { font-size: 0.8rem; font-weight: 500; color: var(--strong); }
+.evt { display: block; border-radius: 8px; padding: 5px 7px; margin-bottom: 4px; font-size: 0.68rem; color: var(--body); background: var(--inset); border-left: 3px solid var(--primary); box-shadow: var(--shadow-xs); overflow: hidden; }
 .evt:hover { box-shadow: var(--shadow-md); color: var(--body); }
 .evt .evt-titre { font-weight: 600; color: var(--strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 .evt .evt-heure { color: var(--muted); }
@@ -669,6 +683,10 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .mois-jour.hors { background: var(--zebra); color: var(--faint); }
 .mois-jour .num { font-size: 0.75rem; font-weight: 600; color: var(--muted); display: flex; justify-content: space-between; }
 .mois-jour.aujourdhui .num { color: var(--primary); }
+/* Compteurs du jour (« 2 rés. », « 1 bloc. ») sur la ligne du numéro, calés à droite. */
+.mois-jour .num { align-items: center; min-height: 22px; }
+.mois-pastilles { display: inline-flex; gap: 4px; margin-left: auto; }
+.mois-pastilles .chip { padding: 2px 8px; font-weight: 500; }
 .mois-entete { background: var(--inset); font-size: 0.72rem; font-weight: 600; color: var(--muted); text-align: center; padding: 6px; }
 
 /* Disponibilités (portail) */

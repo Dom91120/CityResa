@@ -128,19 +128,18 @@ export function Bloc({
   );
 }
 
-function EspaceCell({ e }: { e: EspacePlanning }) {
+/** La cellule d'un espace dans une grille : photo, nom et site ; nom complet et capacité en infobulle. */
+export function EspaceCell({ e }: { e: EspacePlanning }) {
   const cap = e.capacitySeated ?? e.capacityStanding;
+  const infobulle = `${e.name} · ${e.site.name}${cap ? ` · ${cap} pers.` : ""}`;
   return (
-    <div className="espace-cell">
+    <div className="espace-cell" title={infobulle}>
       <Vignette photo={e.documents[0] ?? null} alt={e.name} icone={e.nature?.icon ?? "door-open"} />
       <span className="cell2">
-        <a href={`/espaces/${e.id}`} className="nom">
+        <a href={`/espaces/${e.id}`} className="nom" title={infobulle}>
           {nomCourt(e)}
         </a>
-        <small>
-          {e.site.name}
-          {cap ? <span className="cap"> · {cap} pers.</span> : null}
-        </small>
+        <small title={infobulle}>{e.site.name}</small>
       </span>
     </div>
   );
@@ -298,6 +297,27 @@ export function VueMois({
                   <Icone nom="plus" taille={12} />
                 </a>
               ) : null}
+              {!unSeul && (evts.length || blocs.length) ? (
+                <span className="mois-pastilles">
+                  {evts.length ? (
+                    <a
+                      href={urlJour(j)}
+                      className="chip chip-primary"
+                      title={`${evts.length} réservation${evts.length > 1 ? "s" : ""} · voir la journée`}
+                    >
+                      {evts.length} rés.
+                    </a>
+                  ) : null}
+                  {blocs.length ? (
+                    <span
+                      className="chip chip-slate"
+                      title={`${blocs.length} blocage${blocs.length > 1 ? "s" : ""}`}
+                    >
+                      {blocs.length} bloc.
+                    </span>
+                  ) : null}
+                </span>
+              ) : null}
             </div>
             {unSeul ? (
               <>
@@ -320,31 +340,19 @@ export function VueMois({
                   </a>
                 ) : null}
               </>
-            ) : evts.length || blocs.length ? (
-              <>
-                {evts.length ? (
-                  <a href={urlJour(j)} className="chip chip-primary mt-1" title="Voir la journée">
-                    {evts.length} réservation{evts.length > 1 ? "s" : ""}
-                  </a>
-                ) : null}
-                {blocs.length ? (
-                  <span className="chip chip-slate mt-1 ms-1">
-                    {blocs.length} blocage{blocs.length > 1 ? "s" : ""}
-                  </span>
-                ) : null}
-                <div className="mt-1">
-                  {evts.slice(0, 3).map((ev) => (
-                    <Evt
-                      key={ev.id}
-                      e={ev}
-                      espace={parEspace.get(ev.espaceId)}
-                      jour={j}
-                      compact
-                      couleur={couleur}
-                    />
-                  ))}
-                </div>
-              </>
+            ) : evts.length ? (
+              <div className="mt-1">
+                {evts.slice(0, 3).map((ev) => (
+                  <Evt
+                    key={ev.id}
+                    e={ev}
+                    espace={parEspace.get(ev.espaceId)}
+                    jour={j}
+                    compact
+                    couleur={couleur}
+                  />
+                ))}
+              </div>
             ) : null}
           </div>
         );
