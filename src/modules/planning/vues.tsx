@@ -1,11 +1,16 @@
 /**
  * Les trois vues du planning : semaine (espaces × jours), mois (grille d'un espace ou
- * compteurs), jour (heures × espaces). Les cellules cliquables ouvrent la saisie d'une
+ * compteurs), jour (frise horaire : espaces × heures). Les cellules cliquables ouvrent la saisie d'une
  * réservation préremplie (planning.js lit data-creer).
  */
+import type { ReactNode } from "react";
 import { Vignette } from "@/components/documents";
+import { type ElementFrise, EnteteFrise, PisteFrise, styleFrise } from "@/components/frise";
 import { Icone } from "@/components/icones";
+import { type PlageMinutes, soustraire } from "@/lib/affectation";
 import { JOURS_ISO } from "@/lib/constantes";
+import { ymdUtc } from "@/lib/date-utc";
+import { bornesFrise, minutesDuJour, ouvertureDuJour } from "@/lib/frise";
 import { heure, nomCourt, plageHoraire } from "@/lib/libelles";
 import { parisMidnight, parisParts, toParisWall } from "@/lib/paris-time";
 import { type Couleur, couleurEvt } from "@/lib/planning-vues";
@@ -18,8 +23,6 @@ import {
   type EvtResa,
   estWeekend,
   type Fenetre,
-  HEURE_DEBUT_JOUR,
-  HEURE_FIN_JOUR,
 } from "@/modules/planning/server";
 
 const ATTENTE = ["a_traiter", "en_traitement"];
@@ -46,6 +49,7 @@ export function Evt({
   compact = false,
   couleur = "espace",
   deplacable = false,
+  sansEspace = false,
   retour,
 }: {
   e: EvtResa;
@@ -57,6 +61,8 @@ export function Evt({
   couleur?: Couleur;
   /** Glissable vers une autre case du même espace (planning.js). */
   deplacable?: boolean;
+  /** Sans le nom de l'espace : la ligne de la frise le dit déjà. */
+  sansEspace?: boolean;
 }) {
   const liseré = couleurEvt(couleur, e, espace);
   const debut = toParisWall(e.startAt);
@@ -83,7 +89,7 @@ export function Evt({
       </span>
       {!compact ? (
         <span className="evt-qui">
-          {espace && !compact ? `${nomCourt(espace)}${e.qui ? " · " : ""}` : ""}
+          {espace && !compact && !sansEspace ? `${nomCourt(espace)}${e.qui ? " · " : ""}` : ""}
           {e.qui}
         </span>
       ) : null}
@@ -253,6 +259,9 @@ export function VueSemaine({
     </div>
   );
 }
+
+/** La journée entière, dont on retire les heures d'ouverture pour griser les heures de fermeture. */
+const JOURNEE: PlageMinutes = { debutMin: 0, finMin: 1440 };
 
 /** Les dossiers dont un créneau se déplace par glisser-déposer (règle du serveur : dossier occupant). */
 const STATUTS_DEPLACABLES = ["a_traiter", "en_traitement", "acceptee", "signee", "confirmee"];
@@ -454,6 +463,11 @@ export function VueMois({
   );
 }
 
+/**
+ * La vue Jour : une frise horaire, les espaces en lignes et les heures en colonnes. Chaque créneau
+ * est posé à ses heures, les heures de fermeture de l'espace grisées en fond ; une case d'une heure se
+ * clique pour réserver, et reçoit un créneau glissé sur la même ligne (planning.js).
+ */
 export function VueJour({
   fen,
   espaces,
@@ -465,85 +479,114 @@ export function VueJour({
   couleur = "espace",
 }: VueProps) {
   const jour = fen.jours[0];
-  const b = bornesJour(jour);
-  const heures = Array.from(
-    { length: HEURE_FIN_JOUR - HEURE_DEBUT_JOUR + 1 },
-    (_, i) => HEURE_DEBUT_JOUR + i,
-  );
-  /** L'heure de la ligne où un élément apparaît : son heure de début (bornée au jour et à 7h). */
-  const ligneDe = (i: { startAt: Date }): number => {
-    if (i.startAt < b.startAt) return HEURE_DEBUT_JOUR;
-    const h = Math.floor(toParisWall(i.startAt).min / 60);
-    return Math.min(HEURE_FIN_JOUR, Math.max(HEURE_DEBUT_JOUR, h));
+  /** Pose un élément daté sur la journée (rien s'il ne la touche pas). */
+  const poser = (
+    i: { startAt: Date; endAt: Date },
+    cle: string,
+    rendu: ReactNode,
+  ): ElementFrise[] => {
+    const m = minutesDuJour(i, jour);
+    return m ? [{ ...m, cle, rendu }] : [];
   };
-  const evtsJour = duJour(creneaux, jour);
-  const blocsJour = duJour(blocages, jour);
+  const lignes = espaces.map((e) => ({
+    espace: e,
+    evts: creneaux
+      .filter((c) => c.espaceId === e.id)
+      .flatMap((ev) =>
+        poser(
+          ev,
+          `c${ev.id}`,
+          <Evt
+            retour={retour}
+            e={ev}
+            espace={e}
+            jour={jour}
+            couleur={couleur}
+            sansEspace
+            deplacable={peutEditer && STATUTS_DEPLACABLES.includes(ev.status)}
+          />,
+        ),
+      ),
+    blocs: blocages
+      .filter((x) => x.espaceId === e.id)
+      .flatMap((x) =>
+        poser(
+          x,
+          `b${x.id}`,
+          <Bloc b={x} jour={jour} csrf={csrf} peutEditer={peutEditer} retour={retour} />,
+        ),
+      ),
+    ouverture: ouvertureDuJour(
+      e.openHours,
+      e.horairesSaisons.map((h) => ({
+        debut: ymdUtc(h.saison.startDate),
+        fin: ymdUtc(h.saison.endDate),
+        openHours: h.openHours,
+      })),
+      jour,
+    ),
+  }));
+  // Seuls les créneaux élargissent la frise : un blocage couvre souvent des journées entières.
+  const bornes = bornesFrise(lignes.flatMap((l) => l.evts));
   return (
-    <div className="planning planning-jour">
-      <table>
-        <thead>
-          <tr>
-            <th className="col-espace" style={{ width: 70 }}>
-              Heure
-            </th>
-            {espaces.map((e) => (
-              <th key={e.id}>
-                <EspaceCell e={e} retour={retour} />
+    <>
+      <div className="planning planning-frise">
+        <table style={styleFrise(bornes)}>
+          <thead>
+            <tr>
+              <th className="col-espace">Espace</th>
+              <th>
+                <EnteteFrise bornes={bornes} libelle={enteteJour(jour)} />
               </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {heures.map((h) => (
-            <tr key={h}>
-              <td className="col-espace" style={{ width: 70 }}>
-                <span className="heure">{h}h00</span>
-              </td>
-              {espaces.map((e) => {
-                const evts = evtsJour.filter((c) => c.espaceId === e.id && ligneDe(c) === h);
-                const blocs = blocsJour.filter((x) => x.espaceId === e.id && ligneDe(x) === h);
-                return (
-                  <td
-                    key={e.id}
-                    className={peutEditer ? "jour-cellule" : undefined}
-                    style={{ height: 56, minHeight: 56 }}
-                    data-creer={
-                      peutEditer
-                        ? urlCreer(e.id, jour, `${String(h).padStart(2, "0")}:00`)
+            </tr>
+          </thead>
+          <tbody>
+            {lignes.map((l) => (
+              <tr key={l.espace.id}>
+                <td className="col-espace">
+                  <EspaceCell e={l.espace} retour={retour} />
+                </td>
+                <td>
+                  <PisteFrise
+                    elements={[...l.blocs, ...l.evts]}
+                    plages={l.ouverture ? soustraire([JOURNEE], l.ouverture) : []}
+                    titrePlage="Fermé"
+                    classePlage="frise-plage--ferme"
+                    mention={
+                      l.ouverture && !l.ouverture.length && !l.evts.length && !l.blocs.length
+                        ? "Fermé"
                         : undefined
                     }
-                    data-jour={peutEditer ? jour : undefined}
-                    data-espace-id={peutEditer ? e.id : undefined}
-                    data-heure={peutEditer ? `${String(h).padStart(2, "0")}:00` : undefined}
-                  >
-                    {blocs.map((x) => (
-                      <Bloc
-                        key={`b${x.id}`}
-                        b={x}
-                        jour={jour}
-                        csrf={csrf}
-                        peutEditer={peutEditer}
-                        retour={retour}
-                      />
-                    ))}
-                    {evts.map((ev) => (
-                      <Evt
-                        retour={retour}
-                        key={ev.id}
-                        e={ev}
-                        espace={e}
-                        jour={jour}
-                        couleur={couleur}
-                        deplacable={peutEditer && STATUTS_DEPLACABLES.includes(ev.status)}
-                      />
-                    ))}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+                    bornes={bornes}
+                    cases={
+                      peutEditer
+                        ? {
+                            jour,
+                            espaceId: l.espace.id,
+                            creer: (h) => urlCreer(l.espace.id, jour, h),
+                          }
+                        : undefined
+                    }
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <ul className="list-inline small text-muted mt-2 mb-0 legende-frise" aria-label="Légende">
+        <li className="list-inline-item">
+          <span className="legende-evt legende-ferme" aria-hidden="true" /> Fermé (hors horaires
+          d'ouverture)
+        </li>
+        <li className="list-inline-item">
+          <span className="legende-evt evt--attente" aria-hidden="true" /> Demande à traiter
+          (pointillés)
+        </li>
+        <li className="list-inline-item">
+          <span className="legende-evt evt--bloque" aria-hidden="true" /> Blocage (hachures)
+        </li>
+      </ul>
+    </>
   );
 }

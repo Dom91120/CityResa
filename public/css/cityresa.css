@@ -706,12 +706,11 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 /* La première colonne (espace, personne) garde l’interligne des tableaux de liste. */
 .planning td.col-espace, .planning td.col-espace .cell2 { line-height: 1.15; }
 /* Colonne Espace (semaine, semaine type) : lettres resserrées, pour montrer davantage du nom avant la
-   troncature. Ni les heures de la vue Jour ni les personnes du planning de service. */
-.planning:not(.planning-jour, .planning-service) td.col-espace { letter-spacing: -0.05rem; }
+   troncature. Pas les personnes du planning de service. */
+.planning:not(.planning-service) td.col-espace { letter-spacing: -0.05rem; }
 /* Contenu centré dans la hauteur de la case : la dernière vignette ne garde pas sa marge basse. */
 .planning td > .evt:last-child { margin-bottom: 0; }
 /* Vue Jour : une ligne par heure, le contenu reste calé en haut, sur le trait de l'heure. */
-.planning-jour td { vertical-align: top; }
 /* Planning de service : les plages de travail s’alignent en haut d’une case à l’autre de la ligne. */
 .planning-service td:not(.col-espace) { position: relative; }
 .planning-service td > .plages-jour { position: absolute; top: 6px; left: 6px; right: 6px; margin: 0; }
@@ -752,7 +751,6 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .legende-evt.evt--attente { border-left-style: dashed; }
 .legende-liseré { display: inline-block; width: 14px; height: 10px; border-radius: 3px; vertical-align: middle; margin-right: 2px; }
 .evt--jour { display: flex; gap: 8px; align-items: center; }
-.planning-jour .heure { font-size: 0.72rem; color: var(--muted); width: 56px; text-align: right; padding-right: 8px; }
 
 /* Vue mois */
 .mois-grille { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
@@ -1024,7 +1022,7 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
    Les heures en abscisse (`--frise-heures` = nombre d’heures montrées), une piste par ligne. Chaque
    élément est posé en pourcentage de la piste ; deux éléments simultanés s’empilent sur deux niveaux. */
 .planning-frise th:not(.col-espace) { padding: 8px 0; }
-.planning-frise td:not(.col-espace) { padding: 0; height: auto; vertical-align: top; }
+.planning-frise td:not(.col-espace) { position: relative; padding: 0; height: auto; vertical-align: top; }
 .planning-frise .frise-heures { position: relative; height: 0.9rem; font-size: 0.72rem; font-weight: 500; color: var(--muted); }
 .planning-frise .frise-heures span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
 /* Un trait par heure sur toute la hauteur de la case : le motif se répète tous les 1/N de sa largeur. */
@@ -1039,6 +1037,25 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .planning-frise .evt .evt-heure:not(.evt-ligne) { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-block: 0.14em; margin-block: -0.14em; }
 .planning-frise .evt .evt-ligne { -webkit-line-clamp: 2; line-clamp: 2; }
 .legende-plage { background: var(--primary-dim); border-left-color: transparent; }
+/* Planning : les heures de fermeture de l’espace, grisées ; les heures ouvertes restent blanches. */
+.planning-frise .frise-plage--ferme { background: var(--inset); }
+.legende-ferme { background: var(--inset); border-left-color: transparent; }
 /* Cinq exemples (la plage de travail en plus) : trois par ligne, ou tous sur une ligne si la place le permet. */
 @container (min-width: 1070px) { .legende-colonnes:has(> :nth-child(5)) { grid-template-columns: repeat(3, auto); } }
 @container (min-width: 1260px) { .legende-colonnes:has(> :nth-child(5)) { grid-template-columns: repeat(5, auto); } }
+/* Les cases d’une heure (planning) : sous les vignettes, sur toute la hauteur de la ligne. Cliquer
+   réserve à cette heure ; un créneau glissé sur la même ligne s’y dépose. */
+.planning-frise .frise-cases { position: absolute; inset: 0; display: flex; }
+.planning-frise .frise-case { flex: 1 1 0; min-width: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.66rem; font-weight: 600; color: var(--primary-text); }
+.planning-frise .frise-case:hover { background: var(--primary-soft); }
+.planning-frise .frise-case:hover::after { content: "+ " attr(data-libelle); }
+.planning-frise .frise-case.depot-possible { outline: 2px dashed var(--primary); outline-offset: -3px; background: var(--primary-dim); }
+/* La piste laisse passer le pointeur vers les cases ; ses vignettes le reprennent, sauf pendant un
+   glisser-déposer, où la case visée doit rester atteignable sous la vignette déplacée. */
+.planning-frise .frise-piste, .planning-frise .frise-mention { pointer-events: none; }
+.planning-frise .frise-item { pointer-events: auto; }
+.glisse-en-cours .planning-frise .frise-item { pointer-events: none; }
+/* Légende de la vue Jour du planning. */
+.legende-frise { padding-left: 9.5px; }
+.legende-frise .list-inline-item:not(:last-child) { margin-right: 14px; }
+.legende-evt.evt--bloque { background: repeating-linear-gradient(45deg, var(--inset), var(--inset) 3px, var(--faint) 3px, var(--faint) 4px); border-left-color: var(--faint); }

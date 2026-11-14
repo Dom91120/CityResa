@@ -204,7 +204,7 @@ const CAPTURES = [
   {
     nom: "planning-jour",
     compte: "gestionnaire",
-    url: "/planning?vue=jour&date=2027-01-09",
+    url: "/planning?vue=jour&date=2026-12-05",
     hauteur: 1500,
   },
   { nom: "planning-mois", compte: "gestionnaire", url: "/planning?vue=mois", hauteur: 1500 },

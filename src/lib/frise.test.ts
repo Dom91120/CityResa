@@ -5,6 +5,7 @@ import {
   graduations,
   libelleHeure,
   minutesDuJour,
+  ouvertureDuJour,
   positionFrise,
 } from "@/lib/frise";
 import { parisDateTimeToInstant } from "@/lib/paris-time";
@@ -41,6 +42,40 @@ describe("minutesDuJour", () => {
         "2026-12-03",
       ),
     ).toBeNull();
+  });
+});
+
+describe("ouvertureDuJour", () => {
+  const base = {
+    "3": [["08:00", "22:00"]],
+    "6": [
+      ["09:00", "12:00"],
+      ["14:00", "00:00"],
+    ],
+  };
+
+  it("donne les plages du jour de la semaine, minuit valant fin de journée", () => {
+    // Le 2 décembre 2026 est un mercredi, le 5 un samedi.
+    expect(ouvertureDuJour(base, [], "2026-12-02")).toEqual([{ debutMin: 480, finMin: 1320 }]);
+    expect(ouvertureDuJour(base, [], "2026-12-05")).toEqual([
+      { debutMin: 540, finMin: 720 },
+      { debutMin: 840, finMin: 1440 },
+    ]);
+  });
+
+  it("distingue un jour de fermeture d'un espace sans horaires", () => {
+    expect(ouvertureDuJour(base, [], "2026-12-03")).toEqual([]);
+    expect(ouvertureDuJour(null, [], "2026-12-03")).toBeNull();
+  });
+
+  it("applique les horaires de la saison qui contient le jour", () => {
+    const hiver = {
+      debut: "2026-12-01",
+      fin: "2027-02-28",
+      openHours: { "3": [["10:00", "18:00"]] },
+    };
+    expect(ouvertureDuJour(base, [hiver], "2026-12-02")).toEqual([{ debutMin: 600, finMin: 1080 }]);
+    expect(ouvertureDuJour(base, [hiver], "2026-11-25")).toEqual([{ debutMin: 480, finMin: 1320 }]);
   });
 });
 
