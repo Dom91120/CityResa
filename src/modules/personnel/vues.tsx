@@ -3,7 +3,7 @@
  * la ligne « À couvrir », le formulaire de vacation (modale d'ajout, page de modification),
  * la pastille d'état de couverture.
  */
-import { Fragment } from "react";
+import { type CSSProperties, Fragment, type ReactNode } from "react";
 import { ModalAction } from "@/components/fiche";
 import { Champ, Coches, Grille, Select } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
@@ -13,11 +13,20 @@ import {
   absencesDuJour,
   libellePlages,
   type PersonneAffectable,
+  type PlageMinutes,
   periodesTravaillees,
 } from "@/lib/affectation";
 import { JOURS_ISO } from "@/lib/constantes";
 import { lireHoraires } from "@/lib/creneaux";
 import { ymdUtc } from "@/lib/date-utc";
+import {
+  bornesFrise,
+  empiler,
+  graduations,
+  libelleHeure,
+  minutesDuJour,
+  positionFrise,
+} from "@/lib/frise";
 import { heure, isoParis, nomCourt, plageHoraire } from "@/lib/libelles";
 import { parisMidnight, parisParts, toParisWall } from "@/lib/paris-time";
 import {
@@ -168,18 +177,7 @@ function JourTravail({
         </span>
       ) : null}
       {abs.map((a, i) => (
-        <span
-          key={`a${i}`}
-          className="evt evt--absence"
-          title={`Absence${a.motif ? ` : ${a.motif}` : ""}`}
-        >
-          <span className="evt-titre">
-            <Icone nom="calendar-x" taille={10} /> {a.motif ?? "Absence"}
-          </span>
-          <span className="evt-heure">
-            {a.debutMin === 0 && a.finMin === 1440 ? "Toute la journée" : libellePlages([a])}
-          </span>
-        </span>
+        <Absence key={`a${i}`} a={a} />
       ))}
     </>
   );
@@ -209,6 +207,20 @@ export function GrilleService({
   /** La page affichée : la fiche du dossier y ramène par sa flèche de retour. */
   retour?: string;
 }) {
+  // Un seul jour affiché : la largeur sert à dérouler ses heures.
+  if (fen.vue === "jour")
+    return (
+      <FriseService
+        jour={fen.jours[0]}
+        personnes={personnes}
+        vacations={vacations}
+        etats={etats}
+        peutEditer={peutEditer}
+        contexte={contexte}
+        affectations={affectations}
+        retour={retour}
+      />
+    );
   const noms = new Map(personnes.map((p) => [p.id, nomPersonne(p)]));
   for (const v of vacations)
     if (!noms.has(v.personnelId)) noms.set(v.personnelId, nomPersonne(v.personnel));
@@ -320,7 +332,7 @@ function Echantillon({ couleur, variante }: { couleur: string; variante?: string
 }
 
 /** La légende du planning de service : ce que disent les liserés, les pointillés et les fonds. */
-function LegendeService() {
+function LegendeService({ frise = false }: { frise?: boolean }) {
   return (
     <div className="legende-service small text-muted">
       <span className="legende-titre fw-semibold">
@@ -351,6 +363,12 @@ function LegendeService() {
         className="list-inline mb-0 legende-colonnes"
         aria-label="Légende des lignes de personnes"
       >
+        {frise ? (
+          <li className="list-inline-item">
+            <span className="legende-evt legende-plage" aria-hidden="true" /> Plage de travail du
+            cycle
+          </li>
+        ) : null}
         <li className="list-inline-item">
           <Echantillon couleur="#8b5cf6" /> Vacation (liseré à la couleur de la personne)
         </li>
@@ -805,5 +823,230 @@ export function ChampsAbsence({
       <Champ label="Heure de fin" name="heure_fin" type="time" valeur="12:00" />
       <Champ label="Note" name="note" valeur="" pleine placeholder="Facultatif" />
     </Grille>
+  );
+}
+
+// ── Vue Jour : frise horaire ──
+
+/** Hauteur d'un niveau de la frise et marge qui l'entoure, en pixels. */
+const FRISE_NIVEAU = 50;
+const FRISE_MARGE = 6;
+
+type ElementFrise = PlageMinutes & { cle: string; rendu: ReactNode };
+
+/** Une vignette d'absence (hachurée). */
+function Absence({ a }: { a: PlageMinutes & { motif: string | null } }) {
+  return (
+    <span className="evt evt--absence" title={`Absence${a.motif ? ` : ${a.motif}` : ""}`}>
+      <span className="evt-titre">
+        <Icone nom="calendar-x" taille={10} /> {a.motif ?? "Absence"}
+      </span>
+      <span className="evt-heure">
+        {a.debutMin === 0 && a.finMin === 1440 ? "Toute la journée" : libellePlages([a])}
+      </span>
+    </span>
+  );
+}
+
+/** La ligne d'une frise : plages de travail en fond, éléments posés à leurs heures. */
+function Piste({
+  elements,
+  plages = [],
+  mention,
+  bornes,
+}: {
+  elements: ElementFrise[];
+  plages?: PlageMinutes[];
+  /** « Repos », « Hors contrat » : ce que dit la ligne quand le cycle ne prévoit rien. */
+  mention?: string;
+  bornes: PlageMinutes;
+}) {
+  const { places, niveaux } = empiler(elements);
+  return (
+    <>
+      {/* Plages et mention se placent dans la case entière : elles en suivent toute la hauteur. */}
+      {plages.map((p) => {
+        const pos = positionFrise(p, bornes);
+        return (
+          <span
+            key={p.debutMin}
+            className="frise-plage"
+            style={{ left: `${pos.gauche}%`, width: `${pos.largeur}%` }}
+            title={`Plage de travail du cycle, absences déduites : ${libellePlages([p])}`}
+          />
+        );
+      })}
+      {mention ? <span className="frise-mention">{mention}</span> : null}
+      <div className="frise-piste" style={{ height: niveaux * FRISE_NIVEAU + FRISE_MARGE }}>
+        {places.map(({ element, niveau }) => {
+          const pos = positionFrise(element, bornes);
+          return (
+            <div
+              key={element.cle}
+              className="frise-item"
+              style={{
+                left: `${pos.gauche}%`,
+                width: `${pos.largeur}%`,
+                top: FRISE_MARGE + niveau * FRISE_NIVEAU,
+              }}
+            >
+              {element.rendu}
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+/**
+ * La vue Jour du planning de service : les heures en abscisse, une ligne par personne. La largeur
+ * sert à lire le temps — qui est de service, à quelle heure, et où sont les trous.
+ */
+function FriseService({
+  jour,
+  personnes,
+  vacations,
+  etats,
+  peutEditer,
+  contexte,
+  affectations,
+  retour,
+}: {
+  jour: string;
+  personnes: PersonneRow[];
+  vacations: VacationRow[];
+  etats: CreneauCouvert[];
+  peutEditer: boolean;
+  contexte: { personnes: PersonneAffectable[]; absences: AbsenceRef[] };
+  affectations: AffectationRow[];
+  retour?: string;
+}) {
+  const noms = new Map(personnes.map((p) => [p.id, nomPersonne(p)]));
+  for (const v of vacations)
+    if (!noms.has(v.personnelId)) noms.set(v.personnelId, nomPersonne(v.personnel));
+  const affectables = new Map(contexte.personnes.map((p) => [p.id, p]));
+  /** Pose un élément daté sur la journée (rien s'il ne la touche pas). */
+  const poser = (
+    i: { startAt: Date; endAt: Date },
+    cle: string,
+    rendu: ReactNode,
+  ): ElementFrise[] => {
+    const m = minutesDuJour(i, jour);
+    return m ? [{ ...m, cle, rendu }] : [];
+  };
+
+  const aCouvrir = etats.flatMap((e) =>
+    poser(
+      e.creneau,
+      `e${e.creneau.id}`,
+      <ACouvrir e={e} jour={jour} noms={noms} retour={retour} />,
+    ),
+  );
+  const lignes = personnes.map((p) => {
+    const aff = affectables.get(p.id);
+    const travail = aff ? periodesTravaillees(aff, jour, contexte.absences) : null;
+    const absences = aff ? absencesDuJour(contexte.absences, p.id, jour) : [];
+    const elements: ElementFrise[] = [
+      ...vacations
+        .filter((v) => v.personnelId === p.id)
+        .flatMap((v) => poser(v, `v${v.id}`, <Vac v={v} jour={jour} peutEditer={peutEditer} />)),
+      ...affectations
+        .filter((c) => (c.personnelId ?? (c.proposeAt ? c.personnelProposeId : null)) === p.id)
+        .flatMap((c) => poser(c, `c${c.id}`, <Affectation c={c} jour={jour} retour={retour} />)),
+    ];
+    return {
+      personne: p,
+      elements,
+      // Une absence couvre souvent la journée entière : elle se pose sur la frise sans l'élargir.
+      absences: absences.map((a, i) => ({ ...a, cle: `a${i}`, rendu: <Absence a={a} /> })),
+      plages: travail?.etat === "travail" ? travail.plages : [],
+      mention:
+        travail?.etat === "repos"
+          ? "Repos"
+          : travail?.etat === "hors_contrat"
+            ? "Hors contrat"
+            : undefined,
+    };
+  });
+  const bornes = bornesFrise([...aCouvrir, ...lignes.flatMap((l) => [...l.elements, ...l.plages])]);
+  const heures = graduations(bornes);
+  const weekend = estWeekend(jour) ? "weekend" : undefined;
+
+  return (
+    <>
+      <div className="planning planning-service planning-frise">
+        <table style={{ "--frise-heures": heures.length - 1 } as CSSProperties}>
+          <thead>
+            <tr>
+              <th className="col-espace">Personne</th>
+              <th>
+                <span className="visually-hidden">{enteteJour(jour)}, heure par heure</span>
+                <div className="frise-heures" aria-hidden="true">
+                  {heures.slice(1, -1).map((m) => (
+                    <span
+                      key={m}
+                      style={{
+                        left: `${positionFrise({ debutMin: m, finMin: m }, bornes).gauche}%`,
+                      }}
+                    >
+                      {libelleHeure(m)}
+                    </span>
+                  ))}
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="col-espace">
+                <div className="espace-cell">
+                  <span className="pastille-icone">
+                    <Icone nom="calendar-check" taille={13} />
+                  </span>
+                  <span className="cell2">
+                    <span className="nom">À couvrir</span>
+                    <small>Créneaux réservés</small>
+                  </span>
+                </div>
+              </td>
+              <td className={weekend}>
+                <Piste elements={aCouvrir} bornes={bornes} />
+              </td>
+            </tr>
+            {lignes.map((l) => (
+              <tr key={l.personne.id}>
+                <td className="col-espace">
+                  <div className="espace-cell">
+                    <span
+                      className="pastille-espace"
+                      style={{ background: l.personne.color ?? "var(--faint)" }}
+                    />
+                    <span className="cell2">
+                      <a
+                        href={avecRetour(`/personnel/personnes/${l.personne.id}`, retour)}
+                        className="nom"
+                      >
+                        {nomPersonne(l.personne)}
+                      </a>
+                      <small>{l.personne.fonction ?? ""}</small>
+                    </span>
+                  </div>
+                </td>
+                <td className={weekend}>
+                  <Piste
+                    elements={[...l.absences, ...l.elements]}
+                    plages={l.plages}
+                    mention={l.elements.length || l.absences.length ? undefined : l.mention}
+                    bornes={bornes}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <LegendeService frise />
+    </>
   );
 }
