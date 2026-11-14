@@ -151,6 +151,6 @@ describe("semaine type", () => {
   });
 
   it("écrit une plage en minutes", () => {
-    expect(plageMinutes(18 * 60, 20 * 60 + 30)).toBe("18h00 – 20h30");
+    expect(plageMinutes(18 * 60, 20 * 60 + 30)).toBe("18h00 - 20h30");
   });
 });

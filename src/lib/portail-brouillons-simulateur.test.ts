@@ -75,7 +75,7 @@ describe("brouillons", () => {
       }),
     ).toEqual({
       titre: "AG",
-      quand: "05/12/2026 · 10h00 – 12h00",
+      quand: "05/12/2026 · 10h00 - 12h00",
     });
     expect(decrireBrouillon({ participants: "12" })).toEqual({
       titre: "Demande sans objet",

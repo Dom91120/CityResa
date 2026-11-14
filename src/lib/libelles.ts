@@ -2,7 +2,7 @@
  * Vocabulaire et formats français : dates et heures (toujours en heure de Paris),
  * montants, délais, pluriels. Tout ce qui s'affiche à un humain passe par ici.
  */
-import { PARIS_TZ, toParisWall } from "@/lib/paris-time";
+import { ENTRE_HEURES, PARIS_TZ, toParisWall } from "@/lib/paris-time";
 
 export const STATUS_LABELS: Record<string, string> = {
   danger: "Critique",
@@ -83,7 +83,7 @@ export function dateHeure(d: Date | null | undefined): string {
 
 /** « 8h30 – 19h00 ». */
 export function plageHoraire(debut: Date, fin: Date): string {
-  return `${heure(debut)} – ${heure(fin)}`;
+  return `${heure(debut)}${ENTRE_HEURES}${heure(fin)}`;
 }
 
 /** « Mar. 08/11/2026 · 8h30 – 19h00 », ou sur deux jours « du Sam. 12/11/2026 à 9h00 au Dim. 13/11/2026 à 18h00 ». */

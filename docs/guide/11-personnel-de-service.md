@@ -136,7 +136,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 
 *Figure — la fiche de Nadia Benmoussa, gardienne contractuelle à 80 % : contrat, cycle du jeudi au dimanche, sites d'intervention, absence de congés et créneaux affectés.*
 
-**Ce que l'on voit** — Dans la section **Contrat et temps de travail** : le **Contrat** (type), la **Quotité** et la durée hebdomadaire, la **Période** du contrat, et le tableau des **Horaires** jour par jour (« Repos » ou les plages, par exemple « 8h00 – 12h00 · 13h30 – 17h00 »), suivi du total d'heures du cycle. Quand ce total s'écarte des heures attendues (35 h × quotité, ou la durée saisie pour un temps non complet), une pastille orange le signale : c'est une information, pas un blocage. La section **Sites d'intervention** liste les sites où la personne peut être affectée, le principal marqué d'une étoile.
+**Ce que l'on voit** — Dans la section **Contrat et temps de travail** : le **Contrat** (type), la **Quotité** et la durée hebdomadaire, la **Période** du contrat, et le tableau des **Horaires** jour par jour (« Repos » ou les plages, par exemple « 8h00 - 12h00 · 13h30 - 17h00 »), suivi du total d'heures du cycle. Quand ce total s'écarte des heures attendues (35 h × quotité, ou la durée saisie pour un temps non complet), une pastille orange le signale : c'est une information, pas un blocage. La section **Sites d'intervention** liste les sites où la personne peut être affectée, le principal marqué d'une étoile.
 
 **Comment faire**
 

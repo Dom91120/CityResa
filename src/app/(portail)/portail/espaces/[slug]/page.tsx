@@ -5,6 +5,7 @@ import { Chip } from "@/components/macros";
 import { JOURS_ISO, TARIF_UNITES } from "@/lib/constantes";
 import { lireHoraires } from "@/lib/creneaux";
 import { duree, montant } from "@/lib/libelles";
+import { ENTRE_HEURES } from "@/lib/paris-time";
 import { aPartirDe } from "@/lib/tarification";
 import {
   calendrierMois,
@@ -249,7 +250,7 @@ export default async function FicheEspacePage({
                         <span style={{ width: 80 }}>{j.long}</span>
                         <span className={plages.length ? "" : "text-muted"}>
                           {plages.length
-                            ? plages.map(([a, b]) => `${a} – ${b}`).join(", ")
+                            ? plages.map(([a, b]) => `${a}${ENTRE_HEURES}${b}`).join(", ")
                             : "Fermé"}
                         </span>
                       </li>

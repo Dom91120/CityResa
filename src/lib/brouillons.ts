@@ -2,6 +2,7 @@
  * Brouillons de demande du portail : la saisie du formulaire est mise de côté telle quelle
  * (clé → valeur ou liste) pour être reprise plus tard. Logique PURE : brouillons.test.ts.
  */
+import { ENTRE_HEURES } from "@/lib/paris-time";
 
 export type DonneesBrouillon = Record<string, string | string[]>;
 
@@ -75,7 +76,7 @@ export function decrireBrouillon(d: DonneesBrouillon): { titre: string; quand: s
     typeof d.heure_fin === "string" &&
     d.heure_debut &&
     d.heure_fin
-      ? `${d.heure_debut.replace(":", "h")} – ${d.heure_fin.replace(":", "h")}`
+      ? `${d.heure_debut.replace(":", "h")}${ENTRE_HEURES}${d.heure_fin.replace(":", "h")}`
       : "";
   return { titre, quand: [jour, heures].filter(Boolean).join(" · ") || "date à préciser" };
 }

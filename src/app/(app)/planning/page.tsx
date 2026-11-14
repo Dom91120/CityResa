@@ -77,7 +77,7 @@ export default async function PlanningPage({
 
   return (
     <>
-      <div className="page-header page-header--planning">
+      <div className="page-header">
         <div>
           <h1 className="page-title">
             Planning <span className="page-count">{fen.label}</span>

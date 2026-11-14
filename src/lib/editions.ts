@@ -7,7 +7,7 @@
 
 import { type Intervalle, lireRecurrence } from "@/lib/creneaux";
 import { addDaysUtc, isoWeekdayUtc, parseYmdUtc, ymdUtc } from "@/lib/date-utc";
-import { parisParts, parisWallToInstant, toParisWall } from "@/lib/paris-time";
+import { ENTRE_HEURES, parisParts, parisWallToInstant, toParisWall } from "@/lib/paris-time";
 
 export type EvtSemaine = {
   /** Rang du jour dans la semaine affichée (1 = première colonne). */
@@ -203,5 +203,5 @@ export function surSemaine(
 /** « 18h00 – 20h00 » */
 export function plageMinutes(debutMin: number, finMin: number): string {
   const h = (m: number) => `${Math.floor(m / 60)}h${String(m % 60).padStart(2, "0")}`;
-  return `${h(debutMin)} – ${h(Math.min(finMin, 1440) === 1440 ? 1440 : finMin).replace("24h00", "24h00")}`;
+  return `${h(debutMin)}${ENTRE_HEURES}${h(Math.min(finMin, 1440) === 1440 ? 1440 : finMin).replace("24h00", "24h00")}`;
 }
