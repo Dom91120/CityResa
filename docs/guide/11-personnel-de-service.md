@@ -24,6 +24,11 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
   La mention est suivie du nom des personnes concernées ; cliquer ouvre la fiche de la réservation.
 - Sous le tableau, une **légende** rappelle le sens des vignettes : pour la ligne « À couvrir », liseré vert (couvert), orange (partiel) ou rouge en pointillés (à couvrir) ; pour les personnes, liseré à la couleur de la personne (vacation), signet vert (créneau affecté), pointillés orange sur fond jaune (proposition à valider) et hachures (absence).
 - Ensuite, une ligne par personne avec sa couleur, sa fonction, et dans chaque jour ses vacations : le site, les heures et la note. Une vacation à cheval sur minuit s'affiche sur les deux jours.
+- En vue **Jour**, le tableau devient une **frise horaire** : les heures en haut (de 7 h à minuit, davantage si un élément commence plus tôt), une ligne par personne, et chaque vignette placée et dimensionnée selon ses heures. La plage de travail du cycle apparaît en fond vert pâle sur la ligne de la personne ; « Repos » ou « Hors contrat » le remplace quand le cycle ne prévoit rien. Deux éléments simultanés s'empilent. On lit ainsi d'un coup d'œil qui est de service au moment d'un créneau à couvrir.
+
+![Planning de service, vue Jour](captures/personnel-jour.webp)
+
+*Figure — la journée du mercredi 2 décembre 2026 en frise horaire : deux créneaux réservés, dont le conseil municipal encore à couvrir, et les plages de travail de chacun.*
 
 **Comment faire — ajouter une vacation**
 

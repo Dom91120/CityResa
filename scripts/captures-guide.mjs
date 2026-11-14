@@ -241,6 +241,12 @@ const CAPTURES = [
   // Personnel de service
   { nom: "personnel-planning", compte: "gestionnaire", url: "/personnel", hauteur: 1500 },
   {
+    nom: "personnel-jour",
+    compte: "gestionnaire",
+    url: "/personnel?vue=jour&date=2026-12-02",
+    hauteur: 1300,
+  },
+  {
     nom: "personnel-a-couvrir",
     compte: "gestionnaire",
     url: "/personnel?onglet=a_couvrir",

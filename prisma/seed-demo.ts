@@ -4022,6 +4022,11 @@ async function creerPersonnel(): Promise<void> {
   // Fatou : deux renforts ponctuels au gymnase en soirée.
   await vac("fatou", gymnase.id, lundi + 2, "18:00", "22:30", { note: "Renfort match" });
   await vac("fatou", gymnase.id, lundi + 9, "18:00", "22:30", { note: "Renfort match" });
+  // Un doublon à arbitrer : le même soir, Fatou est aussi prévue à la Maison Blanche. Les deux
+  // vacations se chevauchent (la vue Jour les empile sur deux niveaux).
+  await vac("fatou", maisonBlanche.id, lundi + 9, "20:30", "23:30", {
+    note: "Remplacement à confirmer",
+  });
 
   // Deux créneaux fermes à venir épinglés : un sur la Maison Blanche (état des lieux), un ailleurs.
   const fermes = await prisma.creneau.findMany({
