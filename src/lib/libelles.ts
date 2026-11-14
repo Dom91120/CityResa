@@ -54,6 +54,13 @@ export function dateMoyenne(d: Date | null | undefined): string {
   return `${JOURS_COURTS[p.dow]} ${dateCourte(d)}`;
 }
 
+/** « Mardi 08/11/2026 » : le jour en toutes lettres, la date en chiffres. */
+export function dateJourEntier(d: Date | null | undefined): string {
+  if (!d) return "";
+  const jour = dateLongue(d).split(" ", 1)[0] ?? "";
+  return `${jour.charAt(0).toUpperCase()}${jour.slice(1)} ${dateCourte(d)}`;
+}
+
 /** « 8/11 » */
 export function dateJourMois(d: Date | null | undefined): string {
   if (!d) return "";

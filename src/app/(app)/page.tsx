@@ -4,7 +4,7 @@ import { DonneesGraphique, ScriptDiffere } from "@/components/scripts";
 import { CarteStat } from "@/components/stats";
 import { ORGANISATION_TYPES } from "@/lib/constantes";
 import {
-  dateLongue,
+  dateJourEntier,
   dateMoyenne,
   depuis,
   heure,
@@ -66,7 +66,6 @@ export default async function DashboardPage({
     ]);
   const totalUsagers = Object.values(usagers).reduce((s, n) => s + n, 0);
   const occupationTop = [...occupation].sort((a, b) => b.taux - a.taux).slice(0, 8);
-  const jourLong = dateLongue(now);
   const sousTitre = [
     kpi.a_traiter ? `${kpi.a_traiter} demande${kpi.a_traiter > 1 ? "s" : ""} à traiter` : null,
     kpi.messages ? libelleARepondre(kpi.messages) : null,
@@ -146,7 +145,7 @@ export default async function DashboardPage({
             </select>
           </form>
           <p className="page-subtitle">
-            {jourLong.charAt(0).toUpperCase() + jourLong.slice(1)}
+            {dateJourEntier(now)}
             {sousTitre.length ? ` · ${sousTitre.join(", ")}` : " · rien d'urgent"}
           </p>
         </div>
