@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   dateCourte,
   dateHeure,
+  dateJourEntier,
   dateJourMois,
   dateLongue,
   dateMoyenne,
@@ -34,6 +35,8 @@ describe("dates (heure de Paris)", () => {
     expect(dateLongue(hiver)).toBe("dimanche 8 novembre 2026");
     expect(dateMoyenne(hiver)).toBe("Dim. 08/11/2026");
     expect(dateJourMois(hiver)).toBe("8/11");
+    expect(dateJourEntier(hiver)).toBe("Dimanche 08/11/2026");
+    expect(dateJourEntier(null)).toBe("");
     expect(dateLongue(ete)).toBe("mercredi 15 juillet 2026");
   });
 
