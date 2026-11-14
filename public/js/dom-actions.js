@@ -64,3 +64,42 @@ document.addEventListener('change', function (e) {
     var t = e.target.closest && e.target.closest('[data-soumettre-au-changement]');
     if (t && t.form) t.form.requestSubmit();
 });
+
+// [data-choix-memorise="cle"] : bouton scindé dont la partie gauche ([data-choix-principal])
+// lance le dernier choix fait dans le menu. Une entrée du menu ([data-choix-valeur], lien visé
+// dans data-choix-href) ne lance rien : elle change le choix, retenu dans le navigateur. Au
+// chargement comme au choix, le bouton principal reprend le lien et le libellé
+// ([data-choix-libelle]) de l'entrée retenue, qui est cochée dans le menu.
+(function () {
+    'use strict';
+    function appliquer(groupe, valeur) {
+        var principal = groupe.querySelector('[data-choix-principal]');
+        var retenu = null;
+        groupe.querySelectorAll('[data-choix-valeur]').forEach(function (i) {
+            var oui = i.getAttribute('data-choix-valeur') === valeur;
+            if (oui) retenu = i;
+        });
+        if (!principal || !retenu) return;
+        groupe.querySelectorAll('[data-choix-valeur]').forEach(function (i) {
+            i.classList.toggle('est-retenu', i === retenu);
+            if (i === retenu) i.setAttribute('aria-current', 'true');
+            else i.removeAttribute('aria-current');
+        });
+        principal.setAttribute('href', retenu.getAttribute('data-choix-href'));
+        var libelle = principal.querySelector('[data-choix-libelle]');
+        if (libelle) libelle.textContent = valeur;
+    }
+    document.querySelectorAll('[data-choix-memorise]').forEach(function (groupe) {
+        var valeur = null;
+        try { valeur = localStorage.getItem('choix-' + groupe.getAttribute('data-choix-memorise')); } catch (e) {}
+        if (valeur) appliquer(groupe, valeur);
+    });
+    document.addEventListener('click', function (e) {
+        var choix = e.target.closest && e.target.closest('[data-choix-valeur]');
+        var groupe = choix && choix.closest('[data-choix-memorise]');
+        if (!groupe) return;
+        var valeur = choix.getAttribute('data-choix-valeur');
+        try { localStorage.setItem('choix-' + groupe.getAttribute('data-choix-memorise'), valeur); } catch (err) {}
+        appliquer(groupe, valeur);
+    });
+})();

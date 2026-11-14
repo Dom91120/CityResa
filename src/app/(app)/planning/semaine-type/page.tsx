@@ -65,22 +65,50 @@ export default async function SemaineTypePage({
           <a href="/planning" className="btn btn-ghost btn-sm">
             <Icone nom="calendar-days" taille={14} /> Planning daté
           </a>
-          <a
-            href={`/planning/semaine.pdf?${q.toString()}&format=A4`}
-            className="btn btn-outline-secondary btn-sm"
-            target="_blank"
-            rel="noopener"
-          >
-            <Icone nom="printer" taille={14} /> PDF A4
-          </a>
-          <a
-            href={`/planning/semaine.pdf?${q.toString()}&format=A3`}
-            className="btn btn-outline-secondary btn-sm"
-            target="_blank"
-            rel="noopener"
-          >
-            <Icone nom="printer" taille={14} /> PDF A3
-          </a>
+          {/* Bouton scindé : à gauche le PDF au dernier format choisi ; à droite le choix du format,
+              qui ne génère rien (retenu dans le navigateur par dom-actions.js). */}
+          <div className="btn-group btn-scinde" data-choix-memorise="pdf-format">
+            <a
+              href={`/planning/semaine.pdf?${q.toString()}&format=A4`}
+              className="btn btn-outline-secondary btn-sm"
+              target="_blank"
+              rel="noopener"
+              title="Générer le PDF de la semaine type"
+              data-choix-principal
+            >
+              <Icone nom="printer" taille={14} /> PDF <span data-choix-libelle>A4</span>
+            </a>
+            <button
+              type="button"
+              className="btn btn-outline-secondary btn-sm dropdown-toggle-split"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+              aria-label="Choisir le format du PDF"
+              title="Choisir le format du PDF"
+            >
+              <Icone nom="chevron-down" taille={12} />
+            </button>
+            <ul className="dropdown-menu dropdown-menu-end">
+              {(
+                [
+                  ["A4", "Format A4"],
+                  ["A3", "Format A3"],
+                ] as const
+              ).map(([format, libelle]) => (
+                <li key={format}>
+                  <button
+                    type="button"
+                    className={`dropdown-item${format === "A4" ? " est-retenu" : ""}`}
+                    aria-current={format === "A4" ? "true" : undefined}
+                    data-choix-valeur={format}
+                    data-choix-href={`/planning/semaine.pdf?${q.toString()}&format=${format}`}
+                  >
+                    <Icone nom="check" taille={14} classes="coche" /> {libelle}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
 
