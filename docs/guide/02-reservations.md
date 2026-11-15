@@ -16,7 +16,7 @@ Ce chapitre décrit le traitement des dossiers de réservation par les agents : 
 
 - En haut à droite : **Exporter** (la liste filtrée en fichier tableur), **Planning** et **Nouvelle réservation**.
 - Une rangée d'onglets avec leur compteur : **Toutes**, **À traiter**, **Signature**, **Confirmées**, **Terminées**, **Refusées / annulées**, **Archivées**. L'onglet « Toutes » ne montre pas les dossiers archivés.
-- Une zone de recherche (numéro, titre, organisation, demandeur) et des filtres : site, espace, type d'usager, agent assigné, période (ce mois-ci, ce trimestre, cette année, 30 ou 90 derniers jours, 12 derniers mois) et l'ordre de tri.
+- Une zone de recherche (numéro, titre, organisation, demandeur) et des filtres. **Tous les sites**, **Tous les espaces**, **Tous les types d'usager** et **Tous les agents** sont des boutons qui ouvrent des cases à cocher, comme sur le planning : vous pouvez retenir plusieurs sites, plusieurs espaces (ceux des sites cochés), plusieurs types ou plusieurs agents ; rien de coché = tous, et le bouton rappelle le choix (« 2 sites »). Viennent ensuite, sous la même forme de bouton mais à choix unique, la période (ce mois-ci, ce trimestre, cette année, 30 ou 90 derniers jours, 12 derniers mois) et l'ordre de tri.
 - Deux petits boutons à droite pour passer de l'affichage en **cartes** à l'affichage en **tableau**.
 - Chaque carte présente la photo de l'espace, le titre de l'événement, la pastille de statut, le numéro (RES-AAAA-0001), l'espace et son site, le demandeur avec son type (Particulier, Association, Entreprise…), la nature de l'événement, le nombre de participants, la date et les horaires (et le nombre de créneaux quand il y en a plusieurs).
 - À droite de chaque carte, une frise d'avancement en quatre étapes (Demande, Signature, Confirmée, Terminée), la date de réception et un bouton : **Répondre** pour une demande à traiter, **Suivre** pour un dossier accepté, signé ou confirmé, **Voir** pour les autres.
@@ -314,7 +314,7 @@ Vous pouvez aussi poser l'option dès la saisie d'une réservation, avec le cham
 
 - Changer d'organisation recalcule les montants selon son profil tarifaire.
 - L'agent désigné reçoit une notification « Dossier assigné ».
-- Le filtre **Tous les agents** de la liste permet de retrouver les dossiers d'un agent, ou ceux qui ne sont assignés à personne.
+- Le filtre **Tous les agents** de la liste permet de retrouver les dossiers d'un ou de plusieurs agents, et ceux qui ne sont assignés à personne (case **Non assignées**).
 
 ## 2.11 Créer une réservation au nom d'un usager
 

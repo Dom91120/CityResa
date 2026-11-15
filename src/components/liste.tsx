@@ -31,22 +31,24 @@ export function Barre({
   search,
 }: {
   q?: string;
-  hidden?: Record<string, string | null | undefined>;
+  /** Les paramètres que la recherche conserve ; un tableau pour un filtre à plusieurs valeurs. */
+  hidden?: Record<string, string | string[] | null | undefined>;
   filtres?: React.ReactNode;
   droite?: React.ReactNode;
   placeholder?: string;
   pathname: string;
   search: URLSearchParams;
 }) {
-  const keep: Record<string, string> = {};
-  for (const [k, v] of Object.entries(hidden)) if (v) keep[k] = v;
+  const keep: [string, string][] = [];
+  for (const [k, v] of Object.entries(hidden))
+    for (const x of Array.isArray(v) ? v : [v]) if (x) keep.push([k, x]);
   const perPage = search.get("per_page");
-  if (perPage) keep.per_page = perPage;
+  if (perPage) keep.push(["per_page", perPage]);
   return (
     <div className="list-toolbar">
       <form method="GET" className="list-search" role="search">
-        {Object.entries(keep).map(([k, v]) => (
-          <input key={k} type="hidden" name={k} value={v} />
+        {keep.map(([k, v]) => (
+          <input key={`${k}=${v}`} type="hidden" name={k} value={v} />
         ))}
         <Icone nom="search" taille={16} />
         <input
@@ -61,11 +63,7 @@ export function Barre({
       {filtres ? (
         <form method="GET" className="d-flex gap-2 align-items-center" data-auto-submit>
           {q ? <input type="hidden" name="q" value={q} /> : null}
-          {Object.entries(keep)
-            .filter(([k]) => k === "per_page")
-            .map(([k, v]) => (
-              <input key={k} type="hidden" name={k} value={v} />
-            ))}
+          {perPage ? <input type="hidden" name="per_page" value={perPage} /> : null}
           {filtres}
         </form>
       ) : null}
@@ -278,7 +276,8 @@ export function Th({
   classes = "",
 }: {
   col: string;
-  label: string;
+  /** Le libellé ; un fragment avec `<br />` pour un en-tête sur deux lignes. */
+  label: React.ReactNode;
   pathname: string;
   search: URLSearchParams;
   classes?: string;

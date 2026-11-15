@@ -1,14 +1,17 @@
 import { Icone } from "@/components/icones";
-import { Barre, Filtre, PaginationBar, SegTabs, urlAvec, VideBloc } from "@/components/liste";
+import { Barre, PaginationBar, SegTabs, urlAvec, VideBloc } from "@/components/liste";
 import { ScriptDiffere } from "@/components/scripts";
 import { ORGANISATION_TYPES } from "@/lib/constantes";
 import { PERIODES } from "@/lib/periodes";
+import { FiltreCases, FiltreChoix, FiltreEspaces, FiltreSites } from "@/modules/planning/filtres";
+import { espacesDuPerimetre } from "@/modules/planning/server";
 import {
   chargerListe,
   lireFiltres,
   ONGLETS,
   optionsFiltres,
   TRIS,
+  TRIS_COURTS,
   triDefaut,
   trierListe,
 } from "@/modules/reservations/requetes";
@@ -26,16 +29,21 @@ export default async function ReservationsPage({
   const page = await contexteModule("reservations");
   const params = await searchParams;
   const f = lireFiltres(params);
-  const [{ rows, onglet, compteurs }, options] = await Promise.all([
+  const [{ rows, onglet, compteurs }, options, espaces] = await Promise.all([
     chargerListe(f, page.user),
-    optionsFiltres(page.user),
+    optionsFiltres(),
+    espacesDuPerimetre(page.user),
   ]);
+  /** La page sans l'un de ses filtres (et revenue à la première page). */
+  const sans = (cle: string) => urlAvec(page.pathname, page.search, { [cle]: null, page: null });
   const tries = trierListe(rows, f, onglet);
   const perPage = await resolvePerPage(params, page.user, "reservations.list");
   const [lignes, p] = paginate(tries, params, perPage);
   const [triCol, triSens] = triDefaut(onglet);
   const triCourant = f.tri ? `${f.tri}:${f.sens || "asc"}` : `${triCol}:${triSens}`;
-  const filtresActifs = Boolean(f.site || f.espace || f.type || f.agent || f.periode);
+  const filtresActifs = Boolean(
+    f.sites.length || f.espaces.length || f.types.length || f.agents.length || f.periode,
+  );
   const exportUrl = `/reservations/export.csv${page.search.toString() ? `?${page.search.toString()}` : ""}`;
 
   return (
@@ -86,10 +94,10 @@ export default async function ReservationsPage({
         placeholder="Numéro, titre, organisation, demandeur…"
         hidden={{
           statut: f.statut,
-          site: f.site ? String(f.site) : null,
-          espace: f.espace ? String(f.espace) : null,
-          type: f.type,
-          agent: f.agent,
+          site: f.sites.map(String),
+          espace: f.espaces.map(String),
+          type: f.types,
+          agent: f.agents,
           periode: f.periode,
           vue: f.vue === "table" ? "table" : null,
         }}
@@ -97,54 +105,47 @@ export default async function ReservationsPage({
           <>
             {f.statut ? <input type="hidden" name="statut" value={f.statut} /> : null}
             {f.vue === "table" ? <input type="hidden" name="vue" value="table" /> : null}
-            <Filtre
-              name="site"
-              value={f.site ? String(f.site) : ""}
-              options={options.sites}
-              blank="Tous les sites"
-              ariaLabel="Site"
+            <FiltreSites sites={options.sites} choisis={f.sites} hrefTous={sans("site")} />
+            <FiltreEspaces
+              espaces={espaces}
+              sites={f.sites}
+              choisis={f.espaces}
+              hrefTous={sans("espace")}
             />
-            <Filtre
-              name="espace"
-              value={f.espace ? String(f.espace) : ""}
-              options={options.espaces}
-              blank="Tous les espaces"
-              ariaLabel="Espace"
-            />
-            <Filtre
+            <FiltreCases
               name="type"
-              value={f.type}
+              icone="users"
               options={Object.entries(ORGANISATION_TYPES)}
-              blank="Tous les types d'usager"
-              ariaLabel="Type d'organisation"
+              choisis={f.types}
+              tous="Tous les types"
+              plusieurs={(n) => `${n} types`}
+              hrefTous={sans("type")}
             />
-            <Filtre
+            <FiltreCases
               name="agent"
-              value={f.agent}
+              icone="user-round"
               options={options.agents}
-              blank="Tous les agents"
-              ariaLabel="Agent assigné"
+              choisis={f.agents}
+              tous="Tous les agents"
+              plusieurs={(n) => `${n} agents`}
+              hrefTous={sans("agent")}
             />
-            <Filtre
+            <FiltreChoix
               name="periode"
-              value={f.periode}
-              options={PERIODES}
-              blank="Toutes les dates"
-              ariaLabel="Période"
+              icone="calendar-range"
+              titre="Période"
+              options={[["", "Toutes les dates"], ...PERIODES]}
+              choisi={f.periode}
             />
             {f.vue === "cartes" ? (
-              <select
+              <FiltreChoix
                 name="tri"
-                className="form-select form-select-sm filtre-select"
-                defaultValue={triCourant}
-                aria-label="Trier par"
-              >
-                {TRIS.map(([v, l]) => (
-                  <option key={v} value={v}>
-                    {l}
-                  </option>
-                ))}
-              </select>
+                icone="arrow-up-down"
+                titre="Trier par"
+                options={TRIS}
+                choisi={triCourant}
+                courts={TRIS_COURTS}
+              />
             ) : null}
           </>
         }

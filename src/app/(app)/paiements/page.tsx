@@ -64,7 +64,7 @@ export default async function PaiementsPage({ searchParams }: { searchParams: Pr
   const [rows, pg] = paginate(triees, params, perPage);
   const peutEditer = page.user.canEdit("paiements");
   const exportHref = urlAvec("/paiements/export.csv", page.search, { page: null, per_page: null });
-  const th = (col: string, label: string, classes = "") => (
+  const th = (col: string, label: React.ReactNode, classes = "") => (
     <Th col={col} label={label} pathname={page.pathname} search={page.search} classes={classes} />
   );
   return (
@@ -146,14 +146,22 @@ export default async function PaiementsPage({ searchParams }: { searchParams: Pr
 
       <div className="data-card">
         <div className="table-responsive">
-          <table className="table table-hover">
+          <table className="table table-hover table-compacte">
             <thead>
               <tr>
                 {th("numero", "Numéro")}
                 {th("type", "Type")}
                 {th("dossier", "Dossier")}
                 {th("debiteur", "Débiteur")}
-                {th("montant", "Montant TTC", "text-end")}
+                {th(
+                  "montant",
+                  <>
+                    Montant
+                    <br />
+                    TTC
+                  </>,
+                  "text-end",
+                )}
                 <th className="text-end">Payé</th>
                 {th("reste", "Reste", "text-end")}
                 {th("echeance", "Échéance")}
@@ -184,14 +192,16 @@ export default async function PaiementsPage({ searchParams }: { searchParams: Pr
                       </td>
                       <td>
                         {f.reservation ? (
-                          <span className="cell2">
+                          // Largeur bornée : un titre long est tronqué (entier en infobulle) plutôt
+                          // que de pousser les actions hors de l'écran.
+                          <span className="cell2" style={{ maxWidth: 180 }}>
                             <a href={`/reservations/${f.reservation.id}`}>{f.reservation.numero}</a>
-                            <small>{f.reservation.title}</small>
+                            <small title={f.reservation.title}>{f.reservation.title}</small>
                           </span>
                         ) : (
-                          <span className="cell2">
+                          <span className="cell2" style={{ maxWidth: 180 }}>
                             <span className="text-muted">Facture libre</span>
-                            <small>{f.libelle}</small>
+                            <small title={f.libelle ?? undefined}>{f.libelle}</small>
                           </span>
                         )}
                       </td>

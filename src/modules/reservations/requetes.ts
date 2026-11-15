@@ -12,9 +12,9 @@ import {
   type ReservationStatus,
 } from "@/lib/constantes";
 import { nomRepresentant } from "@/lib/dossier-usager";
-import { parseInt_ } from "@/lib/forms-util";
-import { dateHeure, nomCourt } from "@/lib/libelles";
+import { dateHeure } from "@/lib/libelles";
 import { PERIODES, periode } from "@/lib/periodes";
+import { identifiants } from "@/modules/planning/server";
 import { prisma } from "@/server/db";
 import type { CurrentUser } from "@/server/guards";
 import { normaliser, type Params, param } from "@/server/paging";
@@ -74,10 +74,12 @@ export function ongletDe(cle: string): { onglet: Onglet; statuts: ReservationSta
 
 export type Filtres = {
   statut: string;
-  site: number | null;
-  espace: number | null;
-  type: string;
-  agent: string;
+  /** Sites, espaces, types d'usager et agents retenus : aucun = tous ; plusieurs = l'un ou l'autre. */
+  sites: number[];
+  espaces: number[];
+  types: string[];
+  /** Identifiants d'agents ; « aucun » retient les dossiers non assignés. */
+  agents: string[];
   periode: string;
   /** « retard » : cautions encaissées non clôturées après le délai ; « a_valider » : retenues à valider. */
   caution: string;
@@ -87,8 +89,13 @@ export type Filtres = {
   sens: "asc" | "desc" | "";
 };
 
+/** Les valeurs d'un paramètre répété (?type=association&type=entreprise), sans vide ni doublon. */
+function valeurs(brut: string | string[] | undefined): string[] {
+  const liste = Array.isArray(brut) ? brut : brut ? [brut] : [];
+  return [...new Set(liste.map((v) => v.trim()).filter(Boolean))];
+}
+
 export function lireFiltres(params: Params): Filtres {
-  const type = param(params, "type") ?? "";
   const per = param(params, "periode") ?? "";
   let tri = (param(params, "tri") ?? "").trim();
   let sens = (param(params, "sens") ?? "").trim();
@@ -96,10 +103,10 @@ export function lireFiltres(params: Params): Filtres {
   if (tri.includes(":")) [tri, sens] = tri.split(":");
   return {
     statut: (param(params, "statut") ?? "").trim(),
-    site: parseInt_(param(params, "site"), null, 1),
-    espace: parseInt_(param(params, "espace"), null, 1),
-    type: type in ORGANISATION_TYPES ? type : "",
-    agent: (param(params, "agent") ?? "").trim(),
+    sites: identifiants(params.site),
+    espaces: identifiants(params.espace),
+    types: valeurs(params.type).filter((t) => t in ORGANISATION_TYPES),
+    agents: valeurs(params.agent),
     periode: PERIODES.some(([k]) => k === per) ? per : "",
     caution: ["retard", "a_valider"].includes(param(params, "caution") ?? "")
       ? (param(params, "caution") as string)
@@ -116,16 +123,22 @@ export function whereListe(f: Filtres, user: CurrentUser): Prisma.ReservationWhe
   const and: Prisma.ReservationWhereInput[] = [];
   const per = perimetre(user);
   if (Object.keys(per).length) and.push(per);
-  if (f.espace) and.push({ espaceId: f.espace });
-  if (f.site) and.push({ espace: { siteId: f.site } });
-  if (f.type) {
+  if (f.espaces.length) and.push({ espaceId: { in: f.espaces } });
+  if (f.sites.length) and.push({ espace: { siteId: { in: f.sites } } });
+  if (f.types.length) {
+    // Un particulier peut réserver sans organisation : « particulier » retient aussi ces dossiers.
+    const parType: Prisma.ReservationWhereInput = { organisation: { type: { in: f.types } } };
     and.push(
-      f.type === "particulier"
-        ? { OR: [{ organisation: { type: "particulier" } }, { organisationId: null }] }
-        : { organisation: { type: f.type } },
+      f.types.includes("particulier") ? { OR: [parType, { organisationId: null }] } : parType,
     );
   }
-  if (f.agent) and.push(f.agent === "aucun" ? { agentId: null } : { agentId: f.agent });
+  if (f.agents.length) {
+    const ids = f.agents.filter((a) => a !== "aucun");
+    const cas: Prisma.ReservationWhereInput[] = [];
+    if (ids.length) cas.push({ agentId: { in: ids } });
+    if (f.agents.includes("aucun")) cas.push({ agentId: null });
+    and.push(cas.length === 1 ? cas[0] : { OR: cas });
+  }
   if (f.periode) {
     const p = periode(f.periode);
     and.push({ startAt: { lt: p.a }, endAt: { gt: p.de } });
@@ -248,6 +261,19 @@ export const TRIS: [string, string][] = [
   ["montant:desc", "Montant"],
 ];
 
+/** Les mêmes tris en abrégé, pour le bouton de la barre (le menu garde le libellé entier). */
+export const TRIS_COURTS: Record<string, string> = {
+  "date:desc": "Récent",
+  "date:asc": "Proche",
+  "creee:desc": "Dépôt récent",
+  "creee:asc": "Dépôt ancien",
+  "numero:desc": "Numéro",
+  "titre:asc": "Titre",
+  "espace:asc": "Espace",
+  "organisation:asc": "Demandeur",
+  "montant:desc": "Montant",
+};
+
 /** Tri par défaut : les demandes à traiter du plus ancien dépôt au plus récent, sinon par date d'événement. */
 export function triDefaut(onglet: Onglet): [string, "asc" | "desc"] {
   return onglet.cle === "a_traiter" ? ["creee", "asc"] : ["date", "desc"];
@@ -265,23 +291,14 @@ export function trierListe(rows: ReservationListe[], f: Filtres, onglet: Onglet)
 
 // ── Options des filtres ──
 
-export async function optionsFiltres(user: CurrentUser): Promise<{
-  sites: [string, string][];
-  espaces: [string, string][];
+export async function optionsFiltres(): Promise<{
+  sites: { id: number; name: string }[];
   agents: [string, string][];
 }> {
-  const [sites, espaces, agents] = await Promise.all([
+  const [sites, agents] = await Promise.all([
     prisma.site.findMany({
       where: { isActive: true },
       orderBy: [{ position: "asc" }, { name: "asc" }],
-    }),
-    prisma.espace.findMany({
-      where: {
-        isActive: true,
-        ...(user.espacesGeres.length ? { id: { in: user.espacesGeres } } : {}),
-      },
-      include: { site: true },
-      orderBy: [{ site: { position: "asc" } }, { position: "asc" }, { name: "asc" }],
     }),
     prisma.user.findMany({
       where: { kind: "agent", isActive: true },
@@ -289,8 +306,7 @@ export async function optionsFiltres(user: CurrentUser): Promise<{
     }),
   ]);
   return {
-    sites: sites.map((s) => [String(s.id), s.name]),
-    espaces: espaces.map((e) => [String(e.id), `${nomCourt(e)} · ${e.site.name}`]),
+    sites: sites.map((s) => ({ id: s.id, name: s.name })),
     agents: [
       ...agents.map((a): [string, string] => [
         a.id,

@@ -411,7 +411,9 @@ textarea.form-control { min-height: 90px; }
 
 /* ============================ LISTES ============================ */
 .list-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
-.list-search { position: relative; flex: 0 1 300px; min-width: 200px; }
+/* La recherche prend 300 px quand la place existe, et se contente de 200 px pour laisser les
+   filtres tenir sur sa ligne. */
+.list-search { position: relative; flex: 1 1 200px; min-width: 200px; max-width: 300px; }
 .list-search .form-control { padding-left: 36px; border-radius: var(--radius-pill); background: var(--inset); border-color: transparent; }
 .list-search .form-control:focus { background: var(--surface); border-color: var(--primary); }
 .list-search > .lucide { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--faint); pointer-events: none; }
@@ -427,12 +429,15 @@ textarea.form-control { min-height: 90px; }
 .filtre-select.filtre-select--bouton { border-color: var(--line); color: var(--body); font-size: 0.78rem; font-weight: 500; letter-spacing: -0.05em; padding: 5px 28px 5px 12px; min-width: 0; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-size: 12px; }
 .filtre-select.filtre-select--bouton:hover { background-color: var(--inset); border-color: var(--sub); color: var(--strong); }
 .filtre-select { border-radius: var(--radius-pill); background-color: var(--surface); font-size: 0.8rem; padding: 6px 30px 6px 12px; width: auto; min-width: 140px; max-width: 260px; display: inline-block; }
-/* Recherche et filtres sur une même ligne quand tout y tient : les filtres se partagent la largeur
-   restante, sans descendre sous 150 px chacun (libellé lisible) ; sinon ils passent sur leur propre
-   ligne. Sur petit écran, ils se replient entre eux. */
-.list-toolbar form.d-flex { flex: 1 1 0; flex-wrap: nowrap; min-width: min-content; }
+/* Recherche et filtres sur une même ligne quand tout y tient. Le formulaire des filtres demande sa
+   largeur naturelle (boutons à leur contenu, listes à 150 px) : si elle tient à côté de la recherche,
+   réduite au besoin à 200 px, tout reste sur une ligne et l'espace libre se partage ; sinon les
+   filtres passent sur leur propre ligne, où ils se replient entre eux — jamais de débordement. */
+.list-toolbar form.d-flex { flex: 1 1 auto; flex-wrap: wrap; min-width: 0; }
 .list-toolbar form.d-flex > .filtre-select { flex: 1 1 150px; width: 150px; min-width: 150px; }
-@media (max-width: 767.98px) { .list-toolbar form.d-flex { flex: 1 1 100%; flex-wrap: wrap; min-width: 0; } }
+/* Filtres à cases à cocher (boutons) : même hauteur que les listes voisines, libellé tronqué. */
+.list-toolbar form.d-flex .dropdown > .btn { min-height: 32.8px; white-space: nowrap; }
+.list-toolbar .filtre-libelle { max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .table { color: var(--body); margin-bottom: 0; font-size: 0.84rem; }
 .table > :not(caption) > * > * { padding: 12px 14px; border-bottom-color: var(--line); background: transparent; color: inherit; vertical-align: middle; }
@@ -441,11 +446,14 @@ textarea.form-control { min-height: 90px; }
 /* En-têtes des tableaux : comme ceux des grilles du planning (0,8 rem, demi-gras, couleur du texte),
    pour ne pas paraître chétifs au-dessus de lignes en 0,84 rem. */
 .table thead th { font-size: 0.8rem; font-weight: 600; color: var(--body); background: transparent; border-bottom: 1px solid var(--line); white-space: nowrap; }
-.table thead th a { color: inherit; display: inline-flex; align-items: center; gap: 4px; }
+/* Un en-tête sur deux lignes aligne ses lignes à gauche entre elles, même dans une colonne calée à droite. */
+.table thead th a { color: inherit; display: inline-flex; align-items: center; gap: 4px; text-align: left; }
 .table thead th a:hover, .table thead th a.actif { color: var(--primary); }
 .table-hover > tbody > tr:hover > * { background: var(--zebra); color: inherit; }
 /* Interligne unique des tableaux : 1,15 dans toutes les cellules, à une ou plusieurs lignes. */
 .table tbody td, .table tbody th, .table .cell2 { line-height: 1.15; }
+/* Ligne d’en-tête : interligne 1, pour qu’un libellé sur deux lignes (« Montant TTC ») reste compact. */
+.table thead th { line-height: 1; }
 .table tbody tr:last-child td { border-bottom: 0; }
 .table td.actions { text-align: right; white-space: nowrap; }
 /* Tableau resserré (tableau de bord) : lignes moins hautes. */

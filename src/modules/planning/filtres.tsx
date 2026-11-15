@@ -350,3 +350,141 @@ export function Bascule({
     </div>
   );
 }
+
+/**
+ * Un filtre à cases à cocher quelconque (types d'usager, agents…), sur le modèle de celui des
+ * sites : un bouton qui ouvre la liste, `name` répété dans l'URL. Aucune case cochée = tous.
+ */
+export function FiltreCases({
+  name,
+  icone,
+  options,
+  choisis,
+  tous,
+  plusieurs,
+  hrefTous,
+}: {
+  name: string;
+  icone: string;
+  options: [string, string][];
+  choisis: string[];
+  /** Le libellé sans filtre : « Tous les agents ». */
+  tous: string;
+  /** Le libellé à plusieurs choix : « 3 agents ». */
+  plusieurs: (n: number) => string;
+  /** Le lien qui efface le filtre (la page sans ce paramètre). */
+  hrefTous: string;
+}) {
+  const retenus = options.filter(([v]) => choisis.includes(v));
+  const libelle =
+    retenus.length === 0
+      ? tous
+      : retenus.length === 1
+        ? retenus[0]?.[1]
+        : plusieurs(retenus.length);
+  return (
+    <div className="dropdown">
+      <button
+        type="button"
+        className="btn btn-outline-secondary btn-sm"
+        data-bs-toggle="dropdown"
+        data-bs-auto-close="outside"
+        aria-expanded="false"
+        title={retenus.length > 1 ? retenus.map(([, l]) => l).join("\n") : undefined}
+      >
+        <Icone nom={icone} taille={14} />
+        <span className="filtre-libelle">{libelle}</span>
+        <Icone nom="chevron-down" taille={12} />
+      </button>
+      <div
+        className="dropdown-menu p-2"
+        style={{ minWidth: 240, maxHeight: 360, overflowY: "auto" }}
+      >
+        {options.map(([v, l]) => (
+          <label
+            key={v}
+            className="dropdown-item d-flex align-items-center gap-2"
+            style={{ cursor: "pointer" }}
+          >
+            <input
+              type="checkbox"
+              className="form-check-input m-0"
+              name={name}
+              value={v}
+              defaultChecked={choisis.includes(v)}
+            />
+            <span>{l}</span>
+          </label>
+        ))}
+        {retenus.length ? (
+          <a href={hrefTous} className="dropdown-item text-muted small">
+            <Icone nom="x" taille={12} /> {tous}
+          </a>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Un filtre à choix unique (période, tri…) présenté comme les filtres à cases à cocher : un
+ * bouton qui rappelle le choix en cours et ouvre la liste des possibilités (`name`, une valeur).
+ */
+export function FiltreChoix({
+  name,
+  icone,
+  titre,
+  options,
+  choisi,
+  courts,
+}: {
+  name: string;
+  icone: string;
+  /** Ce que l'on choisit (« Période », « Trier par ») : en-tête du menu et nom accessible. */
+  titre: string;
+  options: [string, string][];
+  choisi: string;
+  /** Des libellés abrégés pour le bouton, par valeur (le menu et l'infobulle gardent le libellé entier). */
+  courts?: Record<string, string>;
+}) {
+  const libelle = options.find(([v]) => v === choisi)?.[1] ?? options[0]?.[1] ?? titre;
+  return (
+    <div className="dropdown">
+      <button
+        type="button"
+        className="btn btn-outline-secondary btn-sm"
+        data-bs-toggle="dropdown"
+        data-bs-auto-close="outside"
+        aria-expanded="false"
+        aria-label={`${titre} : ${libelle}`}
+        title={`${titre} : ${libelle}`}
+      >
+        <Icone nom={icone} taille={14} />
+        <span className="filtre-libelle">{courts?.[choisi] ?? libelle}</span>
+        <Icone nom="chevron-down" taille={12} />
+      </button>
+      <div
+        className={`dropdown-menu p-2${courts ? " dropdown-menu-end" : ""}`}
+        style={{ minWidth: 240 }}
+      >
+        <div className="dropdown-header px-2 pt-0">{titre}</div>
+        {options.map(([v, l]) => (
+          <label
+            key={v}
+            className="dropdown-item d-flex align-items-center gap-2"
+            style={{ cursor: "pointer" }}
+          >
+            <input
+              type="radio"
+              className="form-check-input m-0"
+              name={name}
+              value={v}
+              defaultChecked={v === choisi}
+            />
+            <span>{l}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
