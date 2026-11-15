@@ -90,7 +90,7 @@ export default async function PaiementsPage({ searchParams }: { searchParams: Pr
         </div>
       </div>
 
-      <CartesFactures s={s} libellePeriode={p.label} base="/paiements" />
+      <CartesFactures s={s} libellePeriode={p.label} />
 
       <SegTabs
         tabs={ONGLETS_FACTURES.map(([cle, label]) => ({

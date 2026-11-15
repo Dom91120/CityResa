@@ -59,7 +59,7 @@ export function Barre({
         />
       </form>
       {filtres ? (
-        <form method="GET" className="d-flex gap-2 align-items-center flex-wrap" data-auto-submit>
+        <form method="GET" className="d-flex gap-2 align-items-center" data-auto-submit>
           {q ? <input type="hidden" name="q" value={q} /> : null}
           {Object.entries(keep)
             .filter(([k]) => k === "per_page")

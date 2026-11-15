@@ -129,7 +129,7 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
         }
       />
 
-      <CartesExercice s={synth} base="/subventions" />
+      <CartesExercice s={synth} />
 
       <SegTabs
         tabs={ONGLETS_SUBVENTIONS.map(([cle, label]) => ({

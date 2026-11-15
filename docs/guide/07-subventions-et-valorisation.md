@@ -16,7 +16,7 @@ Ce chapitre couvre le module destiné aux associations : le circuit des demandes
 
 - En haut à droite, **Campagnes**, **Export 2027** (export de l'exercice affiché) et **Commencer un dossier**.
 - La carte de la **campagne en cours** : intitulé, pastille d'état (Dépôt ouvert, Ouvre bientôt, Dépôt clos), dates de dépôt, consignes affichées aux associations, nombre de dossiers déposés et en rédaction, bouton **Gérer les campagnes**.
-- Quatre cartes cliquables : **Demandé** pour l'exercice, **Accordé** (montant et nombre de subventions votées), **Versé** (montant et nombre de versements) et **En cours d'instruction**.
+- Quatre cartes d'indicateurs (elles ne se cliquent pas : les onglets et le filtre d'exercice filtrent la liste) : **Demandé** pour l'exercice, **Accordé** (montant et nombre de subventions votées), **Versé** (montant et nombre de versements) et **En cours d'instruction**.
 - Les onglets **Brouillons**, **Déposées**, **En instruction**, **Avis**, **Votées**, **Refusées**, **Versées** et **Toutes**.
 - La recherche (numéro, association, objet) et les filtres **Tous les exercices**, **Toutes les campagnes**, **Tous les types**, **Toutes les associations**, puis **Filtrer**.
 - Pour chaque dossier : le **Numéro** (SUB-ANNÉE-NNNN, ou un numéro provisoire en rédaction) avec l'exercice, la date de dépôt et la mention « sportive », l'**Association**, l'**Objet** avec le type et le nombre de bénéficiaires, les montants **Demandé** et **Accordé**, et le **Statut**.

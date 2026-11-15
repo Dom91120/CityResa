@@ -15,7 +15,7 @@ Ce chapitre décrit le suivi des factures émises pour les réservations (acompt
 **Ce que l'on voit**
 
 - En haut à droite, **Export CSV** et **Facture libre**.
-- Quatre cartes cliquables :
+- Quatre cartes d'indicateurs (elles ne se cliquent pas : ce sont les onglets, juste en dessous, qui filtrent la liste) :
   - **À encaisser** : le montant restant dû et le nombre de factures concernées (4 757,65 €, 11 factures) ;
   - **En retard** : le montant des factures dont l'échéance est dépassée ;
   - **Encaissé** sur le mois en cours et le nombre de règlements ;

@@ -44,10 +44,10 @@ export function CompteurAvis({ avis }: { avis: { avis: string }[] }) {
   );
 }
 
-export function CartesExercice({ s, base }: { s: SyntheseExercice; base: string }) {
+/** Les quatre cartes d'un exercice : des indicateurs à lire, sans lien — les onglets et le filtre d'exercice filtrent la liste. */
+export function CartesExercice({ s }: { s: SyntheseExercice }) {
   const cartes = [
     {
-      href: `${base}?exercice=${s.exercice}`,
       icone: "hand-coins",
       teinte: "sky",
       label: `Demandé · ${s.exercice}`,
@@ -55,7 +55,6 @@ export function CartesExercice({ s, base }: { s: SyntheseExercice; base: string 
       detail: pluriel(s.nb, "dossier"),
     },
     {
-      href: `${base}?exercice=${s.exercice}&statut=votee`,
       icone: "gavel",
       teinte: "emerald",
       label: "Accordé",
@@ -63,7 +62,6 @@ export function CartesExercice({ s, base }: { s: SyntheseExercice; base: string 
       detail: `${pluriel(s.nbAccordees, "subvention")} votée${s.nbAccordees > 1 ? "s" : ""}`,
     },
     {
-      href: `${base}?exercice=${s.exercice}&statut=versee`,
       icone: "banknote",
       teinte: "violet",
       label: "Versé",
@@ -71,7 +69,6 @@ export function CartesExercice({ s, base }: { s: SyntheseExercice; base: string 
       detail: pluriel(s.nbVersees, "versement"),
     },
     {
-      href: `${base}?exercice=${s.exercice}&statut=instruction`,
       icone: "hourglass",
       teinte: s.enCours ? "amber" : "slate",
       label: "En cours d'instruction",
@@ -84,7 +81,6 @@ export function CartesExercice({ s, base }: { s: SyntheseExercice; base: string 
       {cartes.map((c) => (
         <CarteStat
           key={c.label}
-          href={c.href}
           icone={c.icone}
           teinte={c.teinte}
           label={c.label}

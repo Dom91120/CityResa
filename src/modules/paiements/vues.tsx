@@ -57,19 +57,19 @@ export function Debiteur({ f }: { f: FactureLigne }) {
   );
 }
 
-/** Les quatre cartes du haut de la liste des factures. */
+/**
+ * Les quatre cartes du haut de la liste des factures : des indicateurs à lire, sans lien — ce sont
+ * les onglets, juste en dessous, qui filtrent la liste.
+ */
 export function CartesFactures({
   s,
   libellePeriode,
-  base,
 }: {
   s: SyntheseFactures;
   libellePeriode: string;
-  base: string;
 }) {
   const cartes = [
     {
-      href: `${base}?statut=a_payer`,
       icone: "wallet",
       teinte: "amber",
       label: "À encaisser",
@@ -77,7 +77,6 @@ export function CartesFactures({
       detail: pluriel(s.nbAEncaisser, "facture"),
     },
     {
-      href: `${base}?statut=retard`,
       icone: "triangle-alert",
       teinte: s.nbRetard ? "red" : "slate",
       label: "En retard",
@@ -85,7 +84,6 @@ export function CartesFactures({
       detail: s.nbRetard ? pluriel(s.nbRetard, "facture") : "aucune échéance dépassée",
     },
     {
-      href: `${base}?statut=payee`,
       icone: "banknote",
       teinte: "emerald",
       label: `Encaissé · ${libellePeriode}`,
@@ -93,7 +91,6 @@ export function CartesFactures({
       detail: pluriel(s.nbPaiements, "règlement"),
     },
     {
-      href: base,
       icone: "receipt",
       teinte: "sky",
       label: "Factures émises",
@@ -106,7 +103,6 @@ export function CartesFactures({
       {cartes.map((c) => (
         <CarteStat
           key={c.label}
-          href={c.href}
           icone={c.icone}
           teinte={c.teinte}
           label={c.label}
