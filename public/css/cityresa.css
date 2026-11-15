@@ -419,6 +419,13 @@ textarea.form-control { min-height: 90px; }
 .list-search > .lucide { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--faint); pointer-events: none; }
 .list-toolbar-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
 .seg-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+/* En-tête d’une liste : les onglets, puis la barre de recherche et de filtres sur la même ligne quand
+   elle y tient en entier ; sinon la barre passe dessous, comme une ligne à part. Chaque bloc peut se
+   replier sur lui-même quand même sa propre ligne est trop étroite. */
+.liste-entete { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 12px; margin-bottom: 16px; }
+.liste-entete > .seg-tabs { flex: 0 1 auto; min-width: 0; margin-bottom: 0; }
+.liste-entete > .list-toolbar { flex: 1 1 auto; min-width: 0; margin-bottom: 0; }
+.liste-entete > .list-toolbar > .list-search { width: 200px; }
 .seg-tab { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); border: 1px solid var(--line); color: var(--body); font-size: 0.8rem; font-weight: 500; background: var(--surface); }
 .seg-tab:hover { border-color: var(--sub); color: var(--strong); }
 .seg-tab.active { border-color: var(--strong); color: var(--strong); font-weight: 600; }

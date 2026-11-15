@@ -147,14 +147,17 @@ export async function ListeComptes({
           ) : null}
         </div>
       </div>
-      {inactifs.length || vue === "inactifs" ? <SegTabs tabs={tabs} /> : null}
-      <Barre
-        q={q}
-        pathname={page.pathname}
-        search={page.search}
-        hidden={{ vue: vue === "inactifs" ? vue : null }}
-        placeholder="Nom, courriel, rôle, secteur…"
-      />
+      {/* Onglets et barre de recherche sur une même ligne quand la place le permet. */}
+      <div className="liste-entete">
+        {inactifs.length || vue === "inactifs" ? <SegTabs tabs={tabs} /> : null}
+        <Barre
+          q={q}
+          pathname={page.pathname}
+          search={page.search}
+          hidden={{ vue: vue === "inactifs" ? vue : null }}
+          placeholder="Nom, courriel, rôle, secteur…"
+        />
+      </div>
       <div className="data-card">
         <div className="table-responsive">
           <table className="table table-hover align-middle mb-0 table-compacte">

@@ -124,14 +124,17 @@ export default async function UsagersPage({
           ) : null}
         </div>
       </div>
-      <SegTabs tabs={tabs} />
-      <Barre
-        q={q}
-        pathname={page.pathname}
-        search={page.search}
-        hidden={{ type: onglet }}
-        placeholder="Nom, ville, courriel, SIRET, membre…"
-      />
+      {/* Onglets et barre de recherche sur une même ligne quand la place le permet. */}
+      <div className="liste-entete">
+        <SegTabs tabs={tabs} />
+        <Barre
+          q={q}
+          pathname={page.pathname}
+          search={page.search}
+          hidden={{ type: onglet }}
+          placeholder="Nom, ville, courriel, SIRET, membre…"
+        />
+      </div>
       <div className="data-card">
         <div className="table-responsive">
           <table className="table table-hover align-middle mb-0 table-compacte">

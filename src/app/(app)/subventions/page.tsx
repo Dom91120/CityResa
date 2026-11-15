@@ -131,65 +131,68 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
 
       <CartesExercice s={synth} />
 
-      <SegTabs
-        tabs={ONGLETS_SUBVENTIONS.map(([cle, label]) => ({
-          href: urlAvec(page.pathname, page.search, { statut: cle || null, page: null }),
-          label,
-          count: onglets[cle],
-          active: fl.statut === cle,
-          teinte: ["deposee", "instruction", "avis"].includes(cle) ? undefined : "muted",
-        }))}
-      />
+      {/* Onglets et barre de recherche sur une même ligne quand la place le permet. */}
+      <div className="liste-entete">
+        <SegTabs
+          tabs={ONGLETS_SUBVENTIONS.map(([cle, label]) => ({
+            href: urlAvec(page.pathname, page.search, { statut: cle || null, page: null }),
+            label,
+            count: onglets[cle],
+            active: fl.statut === cle,
+            teinte: ["deposee", "instruction", "avis"].includes(cle) ? undefined : "muted",
+          }))}
+        />
 
-      <Barre
-        q={fl.q}
-        pathname={page.pathname}
-        search={page.search}
-        placeholder="Numéro, association, objet…"
-        hidden={{
-          statut: fl.statut,
-          exercice: fl.exercice ? String(fl.exercice) : null,
-          campagne: fl.campagne ? String(fl.campagne) : null,
-          type: fl.type,
-          organisation: fl.organisation ? String(fl.organisation) : null,
-        }}
-        filtres={
-          <>
-            {fl.statut ? <input type="hidden" name="statut" value={fl.statut} /> : null}
-            <Filtre
-              name="exercice"
-              value={fl.exercice ? String(fl.exercice) : ""}
-              options={exercices.map((e) => [String(e), `Exercice ${e}`])}
-              blank="Tous les exercices"
-              ariaLabel="Exercice"
-            />
-            <Filtre
-              name="campagne"
-              value={fl.campagne ? String(fl.campagne) : ""}
-              options={campagnes.map((c) => [String(c.id), c.label])}
-              blank="Toutes les campagnes"
-              ariaLabel="Campagne"
-            />
-            <Filtre
-              name="type"
-              value={fl.type}
-              options={Object.entries(SUBVENTION_TYPES)}
-              blank="Tous les types"
-              ariaLabel="Type de subvention"
-            />
-            <Filtre
-              name="organisation"
-              value={fl.organisation ? String(fl.organisation) : ""}
-              options={organisationsDe(toutes)}
-              blank="Toutes les associations"
-              ariaLabel="Association"
-            />
-            <button type="submit" className="btn btn-outline-secondary btn-sm">
-              <Icone nom="filter" taille={14} /> Filtrer
-            </button>
-          </>
-        }
-      />
+        <Barre
+          q={fl.q}
+          pathname={page.pathname}
+          search={page.search}
+          placeholder="Numéro, association, objet…"
+          hidden={{
+            statut: fl.statut,
+            exercice: fl.exercice ? String(fl.exercice) : null,
+            campagne: fl.campagne ? String(fl.campagne) : null,
+            type: fl.type,
+            organisation: fl.organisation ? String(fl.organisation) : null,
+          }}
+          filtres={
+            <>
+              {fl.statut ? <input type="hidden" name="statut" value={fl.statut} /> : null}
+              <Filtre
+                name="exercice"
+                value={fl.exercice ? String(fl.exercice) : ""}
+                options={exercices.map((e) => [String(e), `Exercice ${e}`])}
+                blank="Tous les exercices"
+                ariaLabel="Exercice"
+              />
+              <Filtre
+                name="campagne"
+                value={fl.campagne ? String(fl.campagne) : ""}
+                options={campagnes.map((c) => [String(c.id), c.label])}
+                blank="Toutes les campagnes"
+                ariaLabel="Campagne"
+              />
+              <Filtre
+                name="type"
+                value={fl.type}
+                options={Object.entries(SUBVENTION_TYPES)}
+                blank="Tous les types"
+                ariaLabel="Type de subvention"
+              />
+              <Filtre
+                name="organisation"
+                value={fl.organisation ? String(fl.organisation) : ""}
+                options={organisationsDe(toutes)}
+                blank="Toutes les associations"
+                ariaLabel="Association"
+              />
+              <button type="submit" className="btn btn-outline-secondary btn-sm">
+                <Icone nom="filter" taille={14} /> Filtrer
+              </button>
+            </>
+          }
+        />
+      </div>
 
       <div className="data-card">
         <div className="table-responsive">

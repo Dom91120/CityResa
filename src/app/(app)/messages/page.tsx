@@ -66,30 +66,33 @@ export default async function MessagesPage({
         </div>
       </div>
 
-      <SegTabs
-        tabs={[
-          {
-            href: urlAvec(page.pathname, page.search, { onglet: "arepondre", page: null }),
-            label: "À répondre",
-            count: aRepondre.length,
-            active: onglet === "arepondre",
-          },
-          {
-            href: urlAvec(page.pathname, page.search, { onglet: null, page: null }),
-            label: "Tous",
-            count: toutes.length,
-            active: onglet === "tous",
-            teinte: "muted",
-          },
-        ]}
-      />
-      <Barre
-        q={q}
-        pathname={page.pathname}
-        search={page.search}
-        placeholder="Numéro, titre, organisation, espace, texte…"
-        hidden={{ onglet: onglet === "arepondre" ? "arepondre" : null }}
-      />
+      {/* Onglets et barre de recherche sur une même ligne quand la place le permet. */}
+      <div className="liste-entete">
+        <SegTabs
+          tabs={[
+            {
+              href: urlAvec(page.pathname, page.search, { onglet: "arepondre", page: null }),
+              label: "À répondre",
+              count: aRepondre.length,
+              active: onglet === "arepondre",
+            },
+            {
+              href: urlAvec(page.pathname, page.search, { onglet: null, page: null }),
+              label: "Tous",
+              count: toutes.length,
+              active: onglet === "tous",
+              teinte: "muted",
+            },
+          ]}
+        />
+        <Barre
+          q={q}
+          pathname={page.pathname}
+          search={page.search}
+          placeholder="Numéro, titre, organisation, espace, texte…"
+          hidden={{ onglet: onglet === "arepondre" ? "arepondre" : null }}
+        />
+      </div>
 
       <div className="data-card">
         {rows.length ? (

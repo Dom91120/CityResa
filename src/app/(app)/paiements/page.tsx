@@ -92,57 +92,60 @@ export default async function PaiementsPage({ searchParams }: { searchParams: Pr
 
       <CartesFactures s={s} libellePeriode={p.label} />
 
-      <SegTabs
-        tabs={ONGLETS_FACTURES.map(([cle, label]) => ({
-          href: urlAvec(page.pathname, page.search, { statut: cle || null, page: null }),
-          label,
-          count: onglets[cle],
-          active: fl.statut === cle,
-          teinte: cle === "a_payer" || cle === "retard" ? undefined : "muted",
-        }))}
-      />
+      {/* Onglets et barre de recherche sur une même ligne quand la place le permet. */}
+      <div className="liste-entete">
+        <SegTabs
+          tabs={ONGLETS_FACTURES.map(([cle, label]) => ({
+            href: urlAvec(page.pathname, page.search, { statut: cle || null, page: null }),
+            label,
+            count: onglets[cle],
+            active: fl.statut === cle,
+            teinte: cle === "a_payer" || cle === "retard" ? undefined : "muted",
+          }))}
+        />
 
-      <Barre
-        q={fl.q}
-        pathname={page.pathname}
-        search={page.search}
-        placeholder="Numéro, dossier, débiteur…"
-        hidden={{
-          statut: fl.statut,
-          type: fl.type,
-          periode: fl.periode,
-          organisation: fl.organisation ? String(fl.organisation) : null,
-        }}
-        filtres={
-          <>
-            {fl.statut ? <input type="hidden" name="statut" value={fl.statut} /> : null}
-            <Filtre
-              name="type"
-              value={fl.type}
-              options={Object.entries(FACTURE_TYPES)}
-              blank="Tous les types"
-              ariaLabel="Type de facture"
-            />
-            <Filtre
-              name="periode"
-              value={fl.periode}
-              options={PERIODES}
-              blank="Toutes périodes"
-              ariaLabel="Période d'émission"
-            />
-            <Filtre
-              name="organisation"
-              value={fl.organisation ? String(fl.organisation) : ""}
-              options={organisationsDe(toutes)}
-              blank="Toutes les organisations"
-              ariaLabel="Organisation"
-            />
-            <button type="submit" className="btn btn-outline-secondary btn-sm">
-              <Icone nom="filter" taille={14} /> Filtrer
-            </button>
-          </>
-        }
-      />
+        <Barre
+          q={fl.q}
+          pathname={page.pathname}
+          search={page.search}
+          placeholder="Numéro, dossier, débiteur…"
+          hidden={{
+            statut: fl.statut,
+            type: fl.type,
+            periode: fl.periode,
+            organisation: fl.organisation ? String(fl.organisation) : null,
+          }}
+          filtres={
+            <>
+              {fl.statut ? <input type="hidden" name="statut" value={fl.statut} /> : null}
+              <Filtre
+                name="type"
+                value={fl.type}
+                options={Object.entries(FACTURE_TYPES)}
+                blank="Tous les types"
+                ariaLabel="Type de facture"
+              />
+              <Filtre
+                name="periode"
+                value={fl.periode}
+                options={PERIODES}
+                blank="Toutes périodes"
+                ariaLabel="Période d'émission"
+              />
+              <Filtre
+                name="organisation"
+                value={fl.organisation ? String(fl.organisation) : ""}
+                options={organisationsDe(toutes)}
+                blank="Toutes les organisations"
+                ariaLabel="Organisation"
+              />
+              <button type="submit" className="btn btn-outline-secondary btn-sm">
+                <Icone nom="filter" taille={14} /> Filtrer
+              </button>
+            </>
+          }
+        />
+      </div>
 
       <div className="data-card">
         <div className="table-responsive">

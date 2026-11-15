@@ -122,64 +122,67 @@ export default async function EspacesPage({ searchParams }: { searchParams: Prom
           ) : null}
         </div>
       </div>
-      <SegTabs
-        tabs={[
-          { href: tab(""), label: "Tous", count: compteurs.tous, active: onglet === "" },
-          {
-            href: tab("actifs"),
-            label: "Actifs",
-            count: compteurs.actifs,
-            active: onglet === "actifs",
-          },
-          {
-            href: tab("travaux"),
-            label: "En travaux",
-            count: compteurs.travaux,
-            active: onglet === "travaux",
-            teinte: compteurs.travaux ? undefined : "muted",
-          },
-          {
-            href: tab("inactifs"),
-            label: "Inactifs",
-            count: compteurs.inactifs,
-            active: onglet === "inactifs",
-            teinte: "muted",
-          },
-        ]}
-      />
-      <Barre
-        q={q}
-        pathname={page.pathname}
-        search={page.search}
-        hidden={{ etat: onglet, site: siteF, nature: natureF, secteur: secteurF }}
-        placeholder="Nom, site, nature…"
-        filtres={
-          <>
-            {onglet ? <input type="hidden" name="etat" value={onglet} /> : null}
-            <Filtre
-              name="site"
-              value={siteF}
-              ariaLabel="Site"
-              blank="Tous les sites"
-              options={sites.map((s) => [String(s.id), s.name])}
-            />
-            <Filtre
-              name="nature"
-              value={natureF}
-              ariaLabel="Nature"
-              blank="Toutes les natures"
-              options={refs.natures.map((n) => [String(n.id), n.label])}
-            />
-            <Filtre
-              name="secteur"
-              value={secteurF}
-              ariaLabel="Secteur"
-              blank="Salles et sports"
-              options={Object.entries(ESPACE_SECTEURS).map(([k, v]) => [k, v.label])}
-            />
-          </>
-        }
-      />
+      {/* Onglets et barre de recherche sur une même ligne quand la place le permet. */}
+      <div className="liste-entete">
+        <SegTabs
+          tabs={[
+            { href: tab(""), label: "Tous", count: compteurs.tous, active: onglet === "" },
+            {
+              href: tab("actifs"),
+              label: "Actifs",
+              count: compteurs.actifs,
+              active: onglet === "actifs",
+            },
+            {
+              href: tab("travaux"),
+              label: "En travaux",
+              count: compteurs.travaux,
+              active: onglet === "travaux",
+              teinte: compteurs.travaux ? undefined : "muted",
+            },
+            {
+              href: tab("inactifs"),
+              label: "Inactifs",
+              count: compteurs.inactifs,
+              active: onglet === "inactifs",
+              teinte: "muted",
+            },
+          ]}
+        />
+        <Barre
+          q={q}
+          pathname={page.pathname}
+          search={page.search}
+          hidden={{ etat: onglet, site: siteF, nature: natureF, secteur: secteurF }}
+          placeholder="Nom, site, nature…"
+          filtres={
+            <>
+              {onglet ? <input type="hidden" name="etat" value={onglet} /> : null}
+              <Filtre
+                name="site"
+                value={siteF}
+                ariaLabel="Site"
+                blank="Tous les sites"
+                options={sites.map((s) => [String(s.id), s.name])}
+              />
+              <Filtre
+                name="nature"
+                value={natureF}
+                ariaLabel="Nature"
+                blank="Toutes les natures"
+                options={refs.natures.map((n) => [String(n.id), n.label])}
+              />
+              <Filtre
+                name="secteur"
+                value={secteurF}
+                ariaLabel="Secteur"
+                blank="Salles et sports"
+                options={Object.entries(ESPACE_SECTEURS).map(([k, v]) => [k, v.label])}
+              />
+            </>
+          }
+        />
+      </div>
       <div className="data-card">
         <div className="table-responsive">
           <table className="table table-hover align-middle mb-0 table-compacte">

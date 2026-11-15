@@ -77,99 +77,102 @@ export default async function ReservationsPage({
         </div>
       </div>
 
-      <SegTabs
-        tabs={ONGLETS.map((o) => ({
-          href: urlAvec(page.pathname, page.search, { statut: o.cle || null, page: null }),
-          label: o.label,
-          count: compteurs[o.cle] ?? 0,
-          active: onglet.cle === o.cle,
-          teinte: o.compteur ? undefined : "muted",
-        }))}
-      />
+      {/* Onglets et barre de recherche sur une même ligne quand la place le permet. */}
+      <div className="liste-entete">
+        <SegTabs
+          tabs={ONGLETS.map((o) => ({
+            href: urlAvec(page.pathname, page.search, { statut: o.cle || null, page: null }),
+            label: o.label,
+            count: compteurs[o.cle] ?? 0,
+            active: onglet.cle === o.cle,
+            teinte: o.compteur ? undefined : "muted",
+          }))}
+        />
 
-      <Barre
-        q={f.q}
-        pathname={page.pathname}
-        search={page.search}
-        placeholder="Numéro, titre, organisation, demandeur…"
-        hidden={{
-          statut: f.statut,
-          site: f.sites.map(String),
-          espace: f.espaces.map(String),
-          type: f.types,
-          agent: f.agents,
-          periode: f.periode,
-          vue: f.vue === "table" ? "table" : null,
-        }}
-        filtres={
-          <>
-            {f.statut ? <input type="hidden" name="statut" value={f.statut} /> : null}
-            {f.vue === "table" ? <input type="hidden" name="vue" value="table" /> : null}
-            <FiltreSites sites={options.sites} choisis={f.sites} hrefTous={sans("site")} />
-            <FiltreEspaces
-              espaces={espaces}
-              sites={f.sites}
-              choisis={f.espaces}
-              hrefTous={sans("espace")}
-            />
-            <FiltreCases
-              name="type"
-              icone="users"
-              options={Object.entries(ORGANISATION_TYPES)}
-              choisis={f.types}
-              tous="Tous les types"
-              plusieurs={(n) => `${n} types`}
-              hrefTous={sans("type")}
-            />
-            <FiltreCases
-              name="agent"
-              icone="user-round"
-              options={options.agents}
-              choisis={f.agents}
-              tous="Tous les agents"
-              plusieurs={(n) => `${n} agents`}
-              hrefTous={sans("agent")}
-            />
-            <FiltreChoix
-              name="periode"
-              icone="calendar-range"
-              titre="Période"
-              options={[["", "Toutes les dates"], ...PERIODES]}
-              choisi={f.periode}
-            />
-            {f.vue === "cartes" ? (
-              <FiltreChoix
-                name="tri"
-                icone="arrow-up-down"
-                titre="Trier par"
-                options={TRIS}
-                choisi={triCourant}
-                courts={TRIS_COURTS}
+        <Barre
+          q={f.q}
+          pathname={page.pathname}
+          search={page.search}
+          placeholder="Numéro, titre, organisation, demandeur…"
+          hidden={{
+            statut: f.statut,
+            site: f.sites.map(String),
+            espace: f.espaces.map(String),
+            type: f.types,
+            agent: f.agents,
+            periode: f.periode,
+            vue: f.vue === "table" ? "table" : null,
+          }}
+          filtres={
+            <>
+              {f.statut ? <input type="hidden" name="statut" value={f.statut} /> : null}
+              {f.vue === "table" ? <input type="hidden" name="vue" value="table" /> : null}
+              <FiltreSites sites={options.sites} choisis={f.sites} hrefTous={sans("site")} />
+              <FiltreEspaces
+                espaces={espaces}
+                sites={f.sites}
+                choisis={f.espaces}
+                hrefTous={sans("espace")}
               />
-            ) : null}
-          </>
-        }
-        droite={
-          <div className="btn-group" role="group" aria-label="Affichage">
-            <a
-              href={urlAvec(page.pathname, page.search, { vue: null, page: null })}
-              className={`btn btn-sm btn-outline-secondary btn-icone${f.vue === "cartes" ? " active" : ""}`}
-              title="Cartes"
-              aria-label="Affichage en cartes"
-            >
-              <Icone nom="layout-dashboard" taille={14} />
-            </a>
-            <a
-              href={urlAvec(page.pathname, page.search, { vue: "table", page: null })}
-              className={`btn btn-sm btn-outline-secondary btn-icone${f.vue === "table" ? " active" : ""}`}
-              title="Tableau"
-              aria-label="Affichage en tableau"
-            >
-              <Icone nom="table" taille={14} />
-            </a>
-          </div>
-        }
-      />
+              <FiltreCases
+                name="type"
+                icone="users"
+                options={Object.entries(ORGANISATION_TYPES)}
+                choisis={f.types}
+                tous="Tous les types"
+                plusieurs={(n) => `${n} types`}
+                hrefTous={sans("type")}
+              />
+              <FiltreCases
+                name="agent"
+                icone="user-round"
+                options={options.agents}
+                choisis={f.agents}
+                tous="Tous les agents"
+                plusieurs={(n) => `${n} agents`}
+                hrefTous={sans("agent")}
+              />
+              <FiltreChoix
+                name="periode"
+                icone="calendar-range"
+                titre="Période"
+                options={[["", "Toutes les dates"], ...PERIODES]}
+                choisi={f.periode}
+              />
+              {f.vue === "cartes" ? (
+                <FiltreChoix
+                  name="tri"
+                  icone="arrow-up-down"
+                  titre="Trier par"
+                  options={TRIS}
+                  choisi={triCourant}
+                  courts={TRIS_COURTS}
+                />
+              ) : null}
+            </>
+          }
+          droite={
+            <div className="btn-group" role="group" aria-label="Affichage">
+              <a
+                href={urlAvec(page.pathname, page.search, { vue: null, page: null })}
+                className={`btn btn-sm btn-outline-secondary btn-icone${f.vue === "cartes" ? " active" : ""}`}
+                title="Cartes"
+                aria-label="Affichage en cartes"
+              >
+                <Icone nom="layout-dashboard" taille={14} />
+              </a>
+              <a
+                href={urlAvec(page.pathname, page.search, { vue: "table", page: null })}
+                className={`btn btn-sm btn-outline-secondary btn-icone${f.vue === "table" ? " active" : ""}`}
+                title="Tableau"
+                aria-label="Affichage en tableau"
+              >
+                <Icone nom="table" taille={14} />
+              </a>
+            </div>
+          }
+        />
+      </div>
 
       {filtresActifs ? (
         <p className="small text-muted mb-3">
