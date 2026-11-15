@@ -238,22 +238,22 @@ Quand un seul espace est affiché, un bouton **Feuille de salle** apparaît à c
 
 ![Présences](captures/planning-presences.webp)
 
-*Figure — l'écran « Présences » de la semaine : un créneau reste à constater, avec les boutons Présent, Absent et « ? ».*
+*Figure — l'écran « Présences » de la semaine : un créneau reste à constater, avec les boutons Présent et Absent.*
 
 **Ce que l'on voit**
 
 - En tête : le bilan de la semaine (créneaux passés, présents, absents sans prévenir, heures constatées sur heures prévues).
 - La navigation de semaine en semaine et le bouton **Planning**.
 - Les onglets **À constater** et **Tous les créneaux passés**, et le filtre **Site**.
-- Le tableau : **Créneau**, **Espace**, **Dossier**, **Constat**. Dans la colonne Constat : les boutons **Présent**, **Absent** et **?** (non constaté), les heures d'arrivée et de départ, une **Remarque** et le bouton **Enregistrer**.
+- Le tableau : **Créneau**, **Espace**, **Dossier**, **Constat**. Dans la colonne Constat : les boutons **Présent** et **Absent** (aucun des deux enfoncé = non constaté), les heures d'arrivée et de départ réellement constatées (préremplies avec celles du créneau, grisées si l'usager est absent), une **Remarque** et le bouton à la coche (**Enregistrer le constat**), le tout sur une seule ligne.
 
 **Comment faire**
 
 1. Dans le planning, cliquez sur **Présences** (ou, depuis la fiche d'un dossier, sur **Présences** au-dessus de la liste des créneaux).
 2. Pour chaque créneau, cliquez sur **Présent** ou **Absent**.
 3. Si l'usager est arrivé ou parti à d'autres heures que prévu, corrigez les heures.
-4. Ajoutez une remarque si besoin, puis cliquez sur **Enregistrer**.
-5. Pour corriger ou effacer un constat, ouvrez l'onglet **Tous les créneaux passés** ; le bouton **?** efface le constat.
+4. Ajoutez une remarque si besoin, puis cliquez sur le bouton à la coche, en bout de ligne, pour enregistrer.
+5. Pour corriger ou effacer un constat, ouvrez l'onglet **Tous les créneaux passés** ; cliquez de nouveau sur le bouton enfoncé (**Présent** ou **Absent**) pour qu'aucun ne le soit, puis sur le bouton à la coche : le créneau redevient « à constater ».
 
 **Règles à connaître**
 

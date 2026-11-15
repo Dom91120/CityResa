@@ -110,6 +110,20 @@
             });
         });
 
+        // [data-deselectionnable] : contrôle segmenté dont on peut ne rien choisir. Un second clic sur
+        // le bouton actif coche le choix vide du groupe (un bouton radio value="", sans libellé visible).
+        document.addEventListener('click', function (e) {
+            var label = e.target.closest('[data-deselectionnable] label.btn');
+            if (!label || !label.htmlFor) return;
+            var actif = document.getElementById(label.htmlFor);
+            if (!actif || !actif.checked) return;
+            var vide = label.closest('[data-deselectionnable]').querySelector('input[type="radio"][value=""]');
+            if (!vide || vide === actif) return;
+            e.preventDefault();
+            vide.checked = true;
+            vide.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+
         // [data-auto-submit] : un formulaire GET de filtres s'envoie dès qu'un champ change.
         document.querySelectorAll('form[data-auto-submit]').forEach(function (form) {
             form.addEventListener('change', function (e) {

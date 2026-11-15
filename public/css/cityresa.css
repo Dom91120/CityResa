@@ -368,6 +368,8 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
 .btn-rond:hover { background: var(--inset); color: var(--strong); }
 .btn-rond.btn-rond--rose { background: var(--primary-soft); color: var(--primary); border-color: transparent; }
 .btn-check:checked + .btn { background: var(--primary); color: #fff; border-color: var(--primary); }
+/* Un choix « danger » coché garde sa couleur (Absent, sur le constat de présence). */
+.btn-check:checked + .btn-outline-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
 
 /* ============================ FORMULAIRES ============================ */
 .form-label { font-size: 0.8rem; font-weight: 500; color: var(--body); margin-bottom: 4px; }
@@ -1085,3 +1087,35 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .legende-evt.evt--bloque { background: repeating-linear-gradient(45deg, var(--inset), var(--inset) 3px, var(--faint) 3px, var(--faint) 4px); border-left-color: var(--faint); }
 /* La coche « Valider » d’une proposition : verte, en regard du sens interdit rouge de « Écarter ». */
 .btn.btn-valider, .btn.btn-valider:hover, .btn.btn-valider:focus-visible { color: var(--emerald-text); }
+/* Présences : le constat d'un créneau sur une seule ligne (présence, heures, remarque, bouton) ; la
+   remarque prend la place restante, et la mention « constaté par… » passe dessous. */
+.constat { row-gap: 4px; }
+.constat .constat-note { flex: 1 1 100px; min-width: 100px; width: auto; }
+.constat .constat-etat { flex: 1 1 100%; }
+/* Même hauteur que les champs voisins (31 px). */
+.constat .btn-group > .btn { padding: 4.6px 9px; }
+/* Le contour d’« Absent » aussi marqué que celui de « Présent » (ailleurs, un bouton « danger » au
+   repos garde un contour pâle). */
+.constat .btn-group > .btn-outline-danger { border-color: var(--danger); }
+/* Le trait qui sépare les deux boutons reste gris tant que le bouton qu'il borde n'est pas enfoncé :
+   sans choix, il ne prend parti ni pour le vert ni pour le rouge. Le bouton enfoncé passe devant. */
+.constat .btn-check:not(:checked) + .btn-outline-success:not(:hover) { border-right-color: var(--faint); }
+.constat .btn-check:not(:checked) + .btn-outline-danger:not(:hover) { border-left-color: var(--faint); }
+.constat .btn-check:checked + .btn { z-index: 1; }
+/* Contrôle segmenté désélectionnable : le dernier bouton visible ferme le groupe (le choix vide qui
+   le suit n'a pas de libellé). */
+.btn-group[data-deselectionnable] > label.btn:last-of-type { border-top-right-radius: var(--radius-pill); border-bottom-right-radius: var(--radius-pill); }
+/* Champs d'heure : le navigateur donne à chaque partie (heures, « : », minutes) une marge intérieure
+   d'un pixel CSS, qui tombe sur une fraction de pixel d'écran à 125 % d'échelle ; heures et minutes
+   s'arrondissent alors différemment et ne sont plus sur la même ligne. Sans marge verticale, elles
+   s'alignent. */
+input[type="time"]::-webkit-datetime-edit-hour-field,
+input[type="time"]::-webkit-datetime-edit-minute-field,
+input[type="time"]::-webkit-datetime-edit-text { padding-top: 0; padding-bottom: 0; }
+/* Présences : absent, le créneau compte pour zéro — les heures constatées ne servent pas. */
+.constat:has(input[name="presence"][value="absente"]:checked) input[type="time"] { opacity: 0.4; pointer-events: none; }
+.constat:has(input[name="presence"][value="absente"]:checked) .constat-heures { color: var(--faint); }
+/* Présences : champs d'heure réduits à leurs chiffres (l'icône d'horloge du navigateur est masquée,
+   la saisie se fait au clavier ou aux flèches). */
+.constat .constat-heures input[type="time"] { width: 4.3em; padding-inline: 7px; text-align: center; }
+.constat .constat-heures input[type="time"]::-webkit-calendar-picker-indicator { display: none; }

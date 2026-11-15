@@ -107,7 +107,7 @@ export default async function PresencesPage({
         </div>
       </div>
 
-      <div className="d-flex align-items-center gap-3 flex-wrap mb-3">
+      <div className="liste-entete">
         <SegTabs
           tabs={[
             {
@@ -155,10 +155,11 @@ export default async function PresencesPage({
             <table className="table align-middle mb-0 table-serree">
               <thead>
                 <tr>
-                  <th>Créneau</th>
-                  <th>Espace</th>
+                  <th style={{ width: 150 }}>Créneau</th>
+                  <th style={{ width: "16%" }}>Espace</th>
                   <th>Dossier</th>
-                  <th>Constat</th>
+                  {/* Le constat tient sur une ligne : présence, heures, remarque, enregistrer. */}
+                  <th style={{ width: "50%" }}>Constat</th>
                 </tr>
               </thead>
               <tbody>
@@ -179,9 +180,11 @@ export default async function PresencesPage({
                           </small>
                         </span>
                       </td>
-                      <td className="small" title={c.espace.name}>
-                        {c.espace.shortName || c.espace.name}
-                        <div className="text-muted">{c.espace.site.name}</div>
+                      <td title={`${c.espace.name} · ${c.espace.site.name}`}>
+                        <span className="cell2">
+                          <strong>{c.espace.shortName || c.espace.name}</strong>
+                          <small>{c.espace.site.name}</small>
+                        </span>
                       </td>
                       <td>
                         <a href={`/reservations/${r.id}`} className="cell2">
@@ -200,7 +203,7 @@ export default async function PresencesPage({
                         <form
                           method="POST"
                           action="/planning/presences"
-                          className="d-flex align-items-center gap-2 flex-wrap"
+                          className="d-flex align-items-center gap-2 flex-wrap constat"
                           data-double-envoi
                         >
                           <input type="hidden" name="csrf_token" value={page.csrf} />
@@ -210,6 +213,7 @@ export default async function PresencesPage({
                             className="btn-group btn-group-sm"
                             role="group"
                             aria-label="Présence"
+                            data-deselectionnable
                           >
                             <input
                               type="radio"
@@ -219,7 +223,11 @@ export default async function PresencesPage({
                               value="presente"
                               defaultChecked={c.presence === "presente"}
                             />
-                            <label className="btn btn-outline-success" htmlFor={`p-${c.id}-oui`}>
+                            <label
+                              className="btn btn-outline-success"
+                              htmlFor={`p-${c.id}-oui`}
+                              title="Cliquer de nouveau pour revenir à « non constaté »"
+                            >
                               Présent
                             </label>
                             <input
@@ -230,7 +238,11 @@ export default async function PresencesPage({
                               value="absente"
                               defaultChecked={c.presence === "absente"}
                             />
-                            <label className="btn btn-outline-danger" htmlFor={`p-${c.id}-non`}>
+                            <label
+                              className="btn btn-outline-danger"
+                              htmlFor={`p-${c.id}-non`}
+                              title="Cliquer de nouveau pour revenir à « non constaté »"
+                            >
                               Absent
                             </label>
                             <input
@@ -241,16 +253,26 @@ export default async function PresencesPage({
                               value=""
                               defaultChecked={!c.presence}
                             />
-                            <label className="btn btn-outline-secondary" htmlFor={`p-${c.id}-vide`}>
-                              ?
-                            </label>
+                            {/* « Non constaté » : aucun des deux boutons n'est enfoncé (un second clic
+                                sur le bouton actif y ramène, formulaire.js). Sans JavaScript, ce choix
+                                reste proposé pour qu'un constat demeure effaçable. */}
+                            <noscript>
+                              <label
+                                className="btn btn-outline-secondary"
+                                htmlFor={`p-${c.id}-vide`}
+                              >
+                                ?
+                              </label>
+                            </noscript>
                           </div>
-                          <span className="d-inline-flex align-items-center gap-1 small text-nowrap">
+                          <span
+                            className="d-inline-flex align-items-center gap-1 small text-nowrap constat-heures"
+                            title="Heures réellement constatées (sans objet si l'usager est absent)"
+                          >
                             <input
                               type="time"
                               name="arrivee"
                               className="form-control form-control-sm"
-                              style={{ width: "6.5em" }}
                               defaultValue={reelDebut}
                               aria-label="Heure d'arrivée constatée"
                             />
@@ -259,7 +281,6 @@ export default async function PresencesPage({
                               type="time"
                               name="depart"
                               className="form-control form-control-sm"
-                              style={{ width: "6.5em" }}
                               defaultValue={reelFin}
                               aria-label="Heure de départ constatée"
                             />
@@ -267,18 +288,22 @@ export default async function PresencesPage({
                           <input
                             type="text"
                             name="note"
-                            className="form-control form-control-sm"
-                            style={{ width: "12em" }}
+                            className="form-control form-control-sm constat-note"
                             placeholder="Remarque"
                             maxLength={200}
                             defaultValue={c.presenceNote ?? ""}
                             aria-label="Remarque"
                           />
-                          <button type="submit" className="btn btn-primary btn-sm">
-                            <Icone nom="check" taille={13} /> Enregistrer
+                          <button
+                            type="submit"
+                            className="btn btn-ghost btn-icone btn-sm btn-valider"
+                            title="Enregistrer le constat"
+                            aria-label="Enregistrer le constat"
+                          >
+                            <Icone nom="check" taille={14} />
                           </button>
                           {c.presence ? (
-                            <span className="small text-muted">
+                            <span className="small text-muted constat-etat">
                               <Chip teinte={c.presence === "presente" ? "emerald" : "red"}>
                                 {decrirePresence(c)}
                               </Chip>{" "}
