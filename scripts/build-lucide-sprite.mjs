@@ -237,12 +237,13 @@ const ICONES = [
  */
 const MAISON = {
   // Écarter une personne proposée : la personne du « user-x » de Lucide, la croix remplacée par
-  // un sens interdit (cercle et barre) tracé à 90 % de l'épaisseur du reste. La personne est
+  // un sens interdit rouge (--red-text du thème, clair ou sombre) : cercle tracé à 90 % de
+  // l'épaisseur du reste, barre à 80 %. La personne est
   // décalée d'un cran vers la gauche pour laisser au cercle la place de grandir (rayon 4,5 : à 5,
   // il chevauche l'épaule).
   "user-ban":
     '<path d="M15 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8" cy="7" r="4" />' +
-    '<g stroke-width="1.8"><circle cx="18.6" cy="11" r="4.5" /><path d="m15.42 7.82 6.36 6.36" /></g>',
+    '<g stroke-width="1.8" stroke="var(--red-text, #b91c1c)"><circle cx="18.6" cy="11" r="4.5" /><path stroke-width="1.6" d="m15.42 7.82 6.36 6.36" /></g>',
   // Revenir à aujourd'hui : le calendrier de Lucide ouvert en bas à droite, où une flèche
   // pointe vers la gauche (le « calendar-arrow-left » de Lucide la place en bas à gauche).
   "calendar-aujourdhui":

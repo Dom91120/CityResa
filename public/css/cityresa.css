@@ -1076,3 +1076,5 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .legende-frise { padding-left: 9.5px; }
 .legende-frise .list-inline-item:not(:last-child) { margin-right: 14px; }
 .legende-evt.evt--bloque { background: repeating-linear-gradient(45deg, var(--inset), var(--inset) 3px, var(--faint) 3px, var(--faint) 4px); border-left-color: var(--faint); }
+/* La coche « Valider » d’une proposition : verte, en regard du sens interdit rouge de « Écarter ». */
+.btn.btn-valider, .btn.btn-valider:hover, .btn.btn-valider:focus-visible { color: var(--emerald-text); }

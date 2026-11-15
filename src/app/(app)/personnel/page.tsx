@@ -381,7 +381,7 @@ export default async function PersonnelPage({
                                 <input type="hidden" name="next" value={retour} />
                                 <button
                                   type="submit"
-                                  className="btn btn-ghost btn-icone btn-sm"
+                                  className="btn btn-ghost btn-icone btn-sm btn-valider"
                                   title={
                                     autres.length
                                       ? "Valider la personne proposée, ou celle choisie dans la liste"
