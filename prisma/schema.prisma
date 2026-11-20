@@ -706,6 +706,10 @@ model Reservation {
   decisionBy    String?   @map("decision_by") @db.VarChar(160)
   refusalReason String?   @map("refusal_reason")
   cancelReason  String?   @map("cancel_reason")
+  /// Annulation : sa date et son auteur (agent, usager ou « automatique »). `decisionAt` reste la
+  /// décision d'acceptation ou de refus.
+  cancelledAt   DateTime? @map("cancelled_at") @db.Timestamptz
+  cancelledBy   String?   @map("cancelled_by") @db.VarChar(160)
   internalNotes String?   @map("internal_notes")
 
   // ── Montants ──

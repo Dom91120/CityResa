@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { FormDocument, ListeDocuments } from "@/components/documents";
-import { Lu, Lus, Section } from "@/components/fiche";
+import { FilRetour, Lu, Lus, Section } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { Chip, StatutSubvention } from "@/components/macros";
 import { SUBVENTION_NATURES, SUBVENTION_STATUS } from "@/lib/constantes";
@@ -50,15 +50,8 @@ export default async function SubventionPortailPage({
     <>
       <div className="page-header fiche-entete">
         <div className="d-flex align-items-center" style={{ gap: 12, minWidth: 0 }}>
-          <a
-            href="/portail/mes-subventions"
-            className="fiche-retour"
-            title="Retour"
-            aria-label="Retour"
-          >
-            <Icone nom="arrow-left" taille={16} />
-          </a>
           <div>
+            <FilRetour retour="/portail/mes-subventions" />
             <h1 className="page-title">
               Dossier {s.numero}
               <StatutSubvention status={s.status} />

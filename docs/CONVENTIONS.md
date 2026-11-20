@@ -49,7 +49,7 @@ Composants de `@/components/liste`: `Barre`, `Filtre`, `SegTabs`, `Vide`, `VideB
 
 ## Une fiche
 
-`@/components/fiche`: `Entete` (titre, sousTitre, retour, badges, actions, menu=[<MenuLien/>, <MenuPost/>, <MenuSep/>]),
+`@/components/fiche`: `Entete` (titre, sousTitre, retour, reference, badges, actions ; le retour est un fil d'Ariane `FilRetour`, nommé par `nomRetour` de `@/lib/navigation` ; menu=[<MenuLien/>, <MenuPost/>, <MenuSep/>]),
 `Section` (accordéon `<details>` : titre, icone, ouverte, nb, droite), `Lus` + `Lu` (grille intitulé / valeur),
 `ModalAction` (formulaire POST dans une modale, id + bouton `BoutonOuvrir`), `Panneau` (offcanvas latéral avec formulaire).
 `@/components/macros`: `Chip` (teintes rose/amber/sky/emerald/violet/slate/red/lime), `StatutResa`,

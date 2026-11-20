@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { nomRetour } from "@/lib/navigation";
 import {
   avecRetour,
   cheminFiche,
@@ -55,6 +56,14 @@ describe("adresse de retour", () => {
     expect(libelleRetour("/personnel")).toBe("Retour au planning de service");
     expect(libelleRetour("/espaces")).toBe("Retour");
     expect(libelleRetour("/plannings")).toBe("Retour");
+  });
+
+  it("nomme la rubrique du fil d'Ariane", () => {
+    expect(nomRetour("/reservations?statut=confirmee")).toBe("Réservations");
+    expect(nomRetour("/planning/semaine-type?saison=2")).toBe("Semaine type");
+    expect(nomRetour("/personnel/personnes/4")).toBe("Fiche de la personne");
+    expect(nomRetour("/portail/mes-reservations")).toBe("Mes réservations");
+    expect(nomRetour("/usagers/12#documents")).toBe("Retour");
   });
 });
 

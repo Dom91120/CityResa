@@ -119,40 +119,39 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
     <>
       <Entete
         retour={retour}
-        titre={<>Réservation N°{r.numero}</>}
-        badges={
-          <span className="ms-2">
-            <StatutResa status={r.status} lg />
-          </span>
-        }
+        reference={r.numero}
+        titre={r.title || <>Réservation N°{r.numero}</>}
+        badges={<StatutResa status={r.status} lg />}
         sousTitre={
-          <>
-            <Icone nom="door-open" taille={13} /> {nomCourt(r.espace)} · {r.espace.site.name}
-            <br />
-            <Icone nom="calendar-days" taille={13} /> {plage(r.startAt, r.endAt)}
-            {nb > 1 ? ` (${nb} créneaux)` : ""} · {r.title}
-          </>
+          <span className="fiche-meta">
+            <span>
+              <Icone nom="door-open" taille={14} /> {nomCourt(r.espace)}
+              {r.espace.site.name !== nomCourt(r.espace) ? ` · ${r.espace.site.name}` : ""}
+            </span>
+            <span>
+              <Icone nom="calendar-days" taille={14} /> {plage(r.startAt, r.endAt)}
+              {nb > 1 ? ` (${nb} créneaux)` : ""}
+            </span>
+          </span>
         }
         actions={
           peutEditer ? (
-            <a
-              href="#discussion"
-              className="btn btn-outline-secondary"
-              data-cible-ancre="#fil-saisie-texte"
-            >
-              <Icone nom="message-circle" taille={14} /> Envoyer un message
-            </a>
+            <>
+              {/* Le fil de discussion est sous les yeux sur grand écran : raccourci réservé au mobile. */}
+              <a
+                href="#discussion"
+                className="btn btn-outline-secondary d-lg-none"
+                data-cible-ancre="#fil-saisie-texte"
+              >
+                <Icone nom="message-circle" taille={14} /> Envoyer un message
+              </a>
+              <a href={`/reservations/${r.id}/modifier`} className="btn btn-outline-secondary">
+                <Icone nom="pencil" taille={14} /> Modifier
+              </a>
+            </>
           ) : null
         }
         menu={[
-          peutEditer ? (
-            <MenuLien
-              key="modifier"
-              url={`/reservations/${r.id}/modifier`}
-              libelle="Modifier le dossier"
-              icone="pencil"
-            />
-          ) : null,
           <MenuLien
             key="pdf"
             url={`/reservations/${r.id}/convention.pdf`}

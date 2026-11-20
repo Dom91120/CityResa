@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { FormDocument, ListeDocuments } from "@/components/documents";
-import { BoutonOuvrir, Lu, Lus, ModalAction, Section } from "@/components/fiche";
+import { BoutonOuvrir, FilRetour, Lu, Lus, ModalAction, Section } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { Chip, Frise, StatutFacture, StatutResa } from "@/components/macros";
 import { fraisPrevus, lireBareme } from "@/lib/annulation";
@@ -79,15 +79,8 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
     <>
       <div className="page-header fiche-entete">
         <div className="d-flex align-items-center" style={{ gap: 12, minWidth: 0 }}>
-          <a
-            href="/portail/mes-reservations"
-            className="fiche-retour"
-            title="Retour"
-            aria-label="Retour"
-          >
-            <Icone nom="arrow-left" taille={16} />
-          </a>
           <div style={{ minWidth: 0 }}>
+            <FilRetour retour="/portail/mes-reservations" />
             <h1 className="page-title">
               {r.title}
               <StatutResa status={r.status} lg />
@@ -167,7 +160,7 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
       ) : null}
 
       <div className="data-card">
-        <Section titre="Événement" icone="party-popper">
+        <Section titre="Événement" icone="calendar-days">
           <Lus>
             <Lu label="Objet" valeur={r.title} />
             <Lu label="Type" valeur={r.nature?.label} />

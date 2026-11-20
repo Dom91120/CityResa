@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { FilRetour } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { StatutSubvention } from "@/components/macros";
 import { estFiche } from "@/lib/dossier-subvention";
@@ -28,10 +29,8 @@ export default async function FicheDossierPortailPage({
     <>
       <div className="page-header fiche-entete">
         <div className="d-flex align-items-center" style={{ gap: 12, minWidth: 0 }}>
-          <a href={retour} className="fiche-retour" title="Retour" aria-label="Retour">
-            <Icone nom="arrow-left" taille={16} />
-          </a>
           <div>
+            <FilRetour retour={retour} />
             <h1 className="page-title">
               Dossier de subvention {s.exercice}
               <StatutSubvention status={s.status} />

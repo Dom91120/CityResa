@@ -149,6 +149,18 @@ export function filAriane(pathname: string): { href: string; label: string }[] {
   return out;
 }
 
+/**
+ * Le nom de l'endroit où ramène le lien de retour d'une fiche (« Réservations », « Planning »…),
+ * affiché dans son fil d'Ariane. « Retour » quand l'adresse n'est pas une rubrique du menu.
+ */
+export function nomRetour(retour: string): string {
+  const p = (retour.split(/[?#]/)[0] ?? "").replace(/\/+$/, "") || "/";
+  if (p === "/planning/semaine-type") return "Semaine type";
+  if (/^\/personnel\/personnes\/\d+$/.test(p)) return "Fiche de la personne";
+  const rubriques = [...GENERAL.entries, ...ADMINISTRATION.entries, ...PORTAIL];
+  return rubriques.find((en) => en.href === p)?.label ?? "Retour";
+}
+
 /** Le menu du portail usager (espace « Mon compte »). */
 export const PORTAIL: NavEntry[] = [
   e("/portail", "Catalogue des espaces", "door-open"),

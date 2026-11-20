@@ -15,7 +15,7 @@ export const metadata = { title: "Référentiels - CityRésa" };
 
 const ICONES_KIND: Record<string, string> = {
   espace_nature: "door-open",
-  evenement_nature: "party-popper",
+  evenement_nature: "calendar-days",
   equipement: "wifi",
   profil: "users",
   materiel_categorie: "boxes",

@@ -1,4 +1,5 @@
 /** Le gabarit de formulaire : en-tête, pied, sections, champs. */
+import { FilRetour } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 
 export function EnteteForm({
@@ -19,14 +20,10 @@ export function EnteteForm({
 }) {
   return (
     <div className="page-header">
-      <div className="d-flex align-items-center" style={{ gap: 12 }}>
-        <a href={retour} className="fiche-retour js-retour" title="Retour" aria-label="Retour">
-          <Icone nom="arrow-left" taille={16} />
-        </a>
-        <div>
-          <h1 className="page-title">{titre}</h1>
-          {sousTitre ? <p className="page-subtitle">{sousTitre}</p> : null}
-        </div>
+      <div>
+        <FilRetour retour={retour} classes="js-retour" />
+        <h1 className="page-title">{titre}</h1>
+        {sousTitre ? <p className="page-subtitle">{sousTitre}</p> : null}
       </div>
       <div className="page-actions">
         {actions}

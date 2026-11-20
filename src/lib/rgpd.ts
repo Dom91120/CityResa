@@ -177,6 +177,8 @@ export const CHAMPS_PURGES = {
   internalNotes: null,
   refusalReason: null,
   cancelReason: null,
+  // L'auteur d'une annulation peut être l'usager lui-même.
+  cancelledBy: null,
   signerName: null,
   signerIp: null,
 } as const;

@@ -444,7 +444,7 @@ export default async function ReserverPage({
 
               <fieldset className="form-section" data-etape id="etape-2">
                 <legend className="form-section-titre">
-                  <Icone nom="party-popper" taille={14} /> 2. Votre événement
+                  <Icone nom="calendar-days" taille={14} /> 2. Votre événement
                 </legend>
                 <div className="grille grille-2">
                   <div style={{ gridColumn: "1 / -1" }}>

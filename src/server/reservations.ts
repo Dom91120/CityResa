@@ -686,12 +686,22 @@ export async function changerStatut(
   let effectif = nouveau;
   if (nouveau === "acceptee" && !enabledIn(cfg, "signature")) effectif = "confirmee";
   const data: Prisma.ReservationUpdateInput = { status: effectif };
-  if (["acceptee", "confirmee", "refusee"].includes(effectif) && !r.decisionAt) {
+  // La décision : l'acceptation (ou la confirmation directe), ou le refus, qui la remplace.
+  if (effectif === "refusee" || (["acceptee", "confirmee"].includes(effectif) && !r.decisionAt)) {
     data.decisionAt = now;
     data.decisionBy = acteur.name;
   }
+  // Une demande refusée puis rouverte attend une nouvelle décision.
+  if (r.status === "refusee" && effectif === "a_traiter") {
+    data.decisionAt = null;
+    data.decisionBy = null;
+  }
   if (effectif === "refusee") data.refusalReason = opts.motif ?? null;
-  if (effectif === "annulee") data.cancelReason = opts.motif ?? null;
+  if (effectif === "annulee") {
+    data.cancelReason = opts.motif ?? null;
+    data.cancelledAt = now;
+    data.cancelledBy = acteur.name;
+  }
   if (effectif === "archivee") data.archivedAt = now;
   if (effectif === "annulee" || effectif === "refusee")
     data.creneaux = { updateMany: { where: {}, data: { status: "annule" } } };

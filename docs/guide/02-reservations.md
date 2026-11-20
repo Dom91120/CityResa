@@ -70,10 +70,10 @@ Ce chapitre décrit le traitement des dossiers de réservation par les agents : 
 
 **Ce que l'on voit**
 
-- **En-tête** : numéro du dossier, statut, espace, date et titre de l'événement ; bouton **Envoyer un message** et menu « ... » (**Modifier le dossier**, **Convention (PDF)**, **Planning de l'espace**, **Fiche de l'usager**, et pour un administrateur **Supprimer le dossier**).
-- **Colonne de gauche** : la carte de décision (son contenu change selon le statut, voir 2.4) puis le fil de discussion (voir 2.7).
+- **En-tête** : lien de retour et numéro du dossier, titre de l'événement, statut, espace et date ; bouton **Modifier** et menu « ... » (**Convention (PDF)**, **Planning de l'espace**, **Fiche de l'usager**, et pour un administrateur **Supprimer le dossier**).
+- **Colonne de gauche** : la carte de décision (son titre, la frise d'avancement du dossier, puis un texte et des boutons qui changent selon le statut, voir 2.4) puis le fil de discussion (voir 2.7).
 - **Colonne de droite**, en sections que l'on replie ou déplie d'un clic sur leur titre :
-  - **Événement** : date de création et origine (Portail ou Back-office), statut, espace, site, nature, participants, événement public ou non, récurrence, option, heures d'arrivée et de départ (temps de montage et de démontage compris), description, liste des créneaux, agent assigné, notes internes. Le lien **Modifier** ouvre le formulaire du dossier.
+  - **Événement** : date de création et origine (Portail ou Back-office), espace, site, nature, participants, événement public ou non, récurrence, option, heures d'arrivée et de départ (temps de montage et de démontage compris), description, liste des créneaux, agent assigné, notes internes.
   - **Demandeur** : organisation et son type, profil tarifaire, contact, courriel, téléphone, adresse. Un compte pas encore validé par la Ville porte la mention « Compte non validé ».
   - **Matériel** : le matériel prêté, sa quantité et son mouvement (voir 2.16). La section n'apparaît que si du matériel est demandé.
   - **Montants** : le détail ligne par ligne (créneau, options, matériel), le total HT, la TVA éventuelle, le total TTC, l'acompte et la caution, et le bouton **Recalculer** (voir 2.9).
@@ -92,7 +92,7 @@ Ce chapitre décrit le traitement des dossiers de réservation par les agents : 
 
 **Qui** — Tous les agents.
 
-**Ce que l'on voit** — La pastille de statut figure dans la liste, en tête de fiche et dans la carte de décision, avec une phrase d'explication.
+**Ce que l'on voit** — La pastille de statut figure dans la liste et en tête de fiche ; survolez-la pour lire sa phrase d'explication. La carte de décision, elle, indique ce qu'il reste à faire.
 
 | Statut | Signification | Peut devenir |
 | --- | --- | --- |
@@ -221,7 +221,7 @@ La carte de décision propose, selon le statut :
 
 **Comment faire**
 
-1. Écrivez votre texte dans la zone **Écrire à l'usager…** (ou cliquez sur **Envoyer un message** en haut de la fiche pour y accéder directement).
+1. Écrivez votre texte dans la zone **Écrire à l'usager…** (sur un téléphone, le bouton **Envoyer un message** en haut de la fiche y mène directement).
 2. Pour une note réservée aux agents, cochez **Note interne (invisible pour l'usager)**.
 3. Cliquez sur **Envoyer**.
 
@@ -301,7 +301,7 @@ Vous pouvez aussi poser l'option dès la saisie d'une réservation, avec le cham
 
 **Comment faire — modifier**
 
-1. Sur la fiche, cliquez sur **Modifier** (section Événement) ou sur **Modifier le dossier** dans le menu « ... ».
+1. Sur la fiche, cliquez sur **Modifier**, en haut à droite.
 2. Corrigez les champs voulus.
 3. Cliquez sur **Enregistrer**.
 

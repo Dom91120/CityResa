@@ -9,14 +9,7 @@ import { Fragment } from "react";
 import { FormDocument, ListeDocuments } from "@/components/documents";
 import { BoutonOuvrir, Lu, Lus, ModalAction, Section } from "@/components/fiche";
 import { Icone } from "@/components/icones";
-import {
-  Avatar,
-  Chip,
-  OuiNon,
-  StatutFacture,
-  StatutResa,
-  TypeOrganisation,
-} from "@/components/macros";
+import { Avatar, Chip, Frise, OuiNon, StatutFacture, TypeOrganisation } from "@/components/macros";
 import type { Option, Prisma, Referential, ReservationHistory } from "@/generated/prisma/client";
 import type { FraisPrevus } from "@/lib/annulation";
 import { CAUTION_STATUS, lireStatutCaution } from "@/lib/caution";
@@ -24,7 +17,6 @@ import {
   FACTURE_STATUS,
   FACTURE_TYPES,
   RESERVATION_SOURCES,
-  RESERVATION_STATUS,
   type ReservationStatus,
   STATUTS_FERMES,
 } from "@/lib/constantes";
@@ -235,6 +227,9 @@ export function CarteDecision({
   features: FeatureFlags;
 }) {
   const st = r.status as ReservationStatus;
+  // Un refus est une décision ; une annulation a sa propre date et son propre auteur.
+  const clotureLe = st === "refusee" ? r.decisionAt : r.cancelledAt;
+  const cloturePar = st === "refusee" ? r.decisionBy : r.cancelledBy;
   const demandeur = contactDe(r);
   const acompteAttendu = features.paiements && r.montantTtc > 0 && r.acompte > 0;
   const factureAcompte = r.factures.find((f) => f.type === "acompte" && f.status !== "annulee");
@@ -378,7 +373,9 @@ export function CarteDecision({
               )}
               . Le règlement de l'acompte confirme le dossier automatiquement.
             </span>
-          ) : null}
+          ) : (
+            " Il reste à confirmer le dossier."
+          )}
         </>
       );
       boutons = (
@@ -466,10 +463,10 @@ export function CarteDecision({
         <>
           {st === "refusee" ? "Motif du refus" : "Motif de l'annulation"} :{" "}
           <em>{(st === "refusee" ? r.refusalReason : r.cancelReason) || "non précisé"}</em>
-          {r.decisionAt ? (
+          {clotureLe ? (
             <span className="d-block text-muted small mt-1">
-              Décision du {dateHeure(r.decisionAt)}
-              {r.decisionBy ? ` par ${r.decisionBy}` : ""}
+              {st === "refusee" ? "Refusée" : "Annulée"} le {dateHeure(clotureLe)}
+              {cloturePar ? ` par ${cloturePar}` : ""}
             </span>
           ) : null}
         </>
@@ -506,13 +503,12 @@ export function CarteDecision({
 
   return (
     <div className="data-card decision">
-      <div className="d-flex align-items-center gap-2 mb-2">
-        <StatutResa status={r.status} lg />
-        <span className="text-muted small" style={{ lineHeight: 1 }}>
-          {RESERVATION_STATUS[st]?.aide}
-        </span>
-      </div>
+      {/* Le statut est dans l'en-tête de la fiche : la carte situe le dossier dans son parcours
+          (la même frise que l'usager sur le portail), puis dit ce qu'il reste à faire. */}
       <h5>{titre}</h5>
+      <div className="decision-frise">
+        <Frise status={r.status} grande />
+      </div>
       <p className="mb-3" style={{ fontSize: ".88rem" }}>
         {texte}
       </p>
@@ -1074,24 +1070,12 @@ export function SectionEvenement({
   const arrivee = new Date(r.startAt.getTime() - r.setupMin * 60_000);
   const depart = new Date(r.endAt.getTime() + r.teardownMin * 60_000);
   return (
-    <Section
-      titre="Événement"
-      icone="party-popper"
-      nb={prevus.length}
-      droite={
-        peutEditer ? (
-          <a href={`/reservations/${r.id}/modifier`} className="btn btn-ghost btn-sm">
-            Modifier
-          </a>
-        ) : undefined
-      }
-    >
-      <Lus intitule="110px">
+    <Section titre="Événement" icone="calendar-days">
+      <Lus intitule="88px">
         <Lu
           label="Créée le"
           valeur={`${dateHeure(r.createdAt)} · ${RESERVATION_SOURCES[r.source] ?? r.source}`}
         />
-        <Lu label="Statut" valeur={<StatutResa status={r.status} />} />
         <Lu
           label="Espace"
           valeur={
@@ -1167,7 +1151,9 @@ export function SectionEvenement({
       </Lus>
 
       <div className="d-flex align-items-center justify-content-between mt-3 mb-1">
-        <span className="form-label mb-0">Créneaux ({prevus.length})</span>
+        <span className="form-label mb-0">
+          Créneaux <span className="nb ms-1">{prevus.length}</span>
+        </span>
         <span className="d-flex gap-1">
           {peutDecider && resumePresences(r.creneaux).passes > 0 ? (
             <a
@@ -1198,14 +1184,26 @@ export function SectionEvenement({
                 className={c.status !== "prevu" ? "text-muted" : undefined}
               >
                 <td style={c.status !== "prevu" ? { textDecoration: "line-through" } : undefined}>
-                  <span className="cell2">
-                    <span>{dateMoyenne(c.startAt)}</span>
-                    <small>
-                      {isoParis(c.startAt).date === isoParis(c.endAt).date
-                        ? plageHoraire(c.startAt, c.endAt)
-                        : `${heure(c.startAt)} → ${dateMoyenne(c.endAt)} ${heure(c.endAt)}`}
-                    </small>
-                  </span>
+                  {isoParis(c.startAt).date === isoParis(c.endAt).date ? (
+                    <span className="cell2">
+                      <span>{dateMoyenne(c.startAt)}</span>
+                      <small>{plageHoraire(c.startAt, c.endAt)}</small>
+                    </span>
+                  ) : (
+                    // Sur plusieurs jours : début et fin sur deux lignes de même poids.
+                    <span className="cell2">
+                      <span>
+                        {dateMoyenne(c.startAt)} <small>{heure(c.startAt)}</small>
+                      </span>
+                      <span>
+                        <span className="text-muted" aria-hidden="true">
+                          →
+                        </span>
+                        <span className="visually-hidden">au</span> {dateMoyenne(c.endAt)}{" "}
+                        <small>{heure(c.endAt)}</small>
+                      </span>
+                    </span>
+                  )}
                 </td>
                 <td className="text-nowrap">
                   {duree((c.endAt.getTime() - c.startAt.getTime()) / 60_000)}
@@ -1328,7 +1326,8 @@ export function SectionEvenement({
           : null}
       </div>
 
-      <Lus intitule="110px">
+      {/* « Agent assigné » et « Notes internes » sont les intitulés les plus longs de la fiche. */}
+      <Lus intitule="94px">
         <div className="lu lu--pleine">
           <span className="lu-label">Agent assigné</span>
           <span className="lu-valeur">
@@ -1379,7 +1378,7 @@ export function SectionDemandeur({ r }: { r: ReservationComplete }) {
   const contact = saisiParAgent ? null : r.user;
   return (
     <Section titre="Demandeur" icone="users">
-      <Lus intitule="110px">
+      <Lus intitule="88px">
         <Lu
           label="Organisation"
           valeur={
@@ -1728,7 +1727,7 @@ export function SectionCaution({
       id="caution"
       ouverte={ouverte && acquis}
     >
-      <Lus intitule="110px">
+      <Lus intitule="88px">
         <Lu
           label="Caution"
           valeur={
@@ -1955,7 +1954,7 @@ export function SectionConvention({
           La convention est générée à l'acceptation de la demande.
         </p>
       ) : (
-        <Lus intitule="110px">
+        <Lus intitule="88px">
           <Lu
             label="Convention"
             valeur={

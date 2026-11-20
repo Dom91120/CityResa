@@ -3,12 +3,44 @@
  * grille intitulé / valeur, menu ⋯, modale d'action, panneau latéral.
  */
 import { Icone } from "@/components/icones";
+import { nomRetour } from "@/lib/navigation";
 import { libelleRetour } from "@/lib/url";
+
+/**
+ * Le fil d'Ariane d'une fiche ou d'un formulaire : le lien de retour, nommé d'après l'endroit où
+ * il ramène, puis la référence de la fiche (son numéro) quand le titre ne la porte pas.
+ */
+export function FilRetour({
+  retour,
+  reference,
+  classes,
+}: {
+  retour: string;
+  reference?: React.ReactNode;
+  /** Classes ajoutées au lien (ex. `js-retour`). */
+  classes?: string;
+}) {
+  return (
+    <nav className="fiche-fil" aria-label="Fil d'Ariane">
+      <a href={retour} className={classes} title={libelleRetour(retour)}>
+        <Icone nom="arrow-left" taille={14} />
+        {nomRetour(retour)}
+      </a>
+      {reference ? (
+        <>
+          <span aria-hidden="true">/</span>
+          <span className="fiche-fil-courant">{reference}</span>
+        </>
+      ) : null}
+    </nav>
+  );
+}
 
 export function Entete({
   titre,
   sousTitre,
   retour,
+  reference,
   badges,
   actions,
   menu,
@@ -16,6 +48,8 @@ export function Entete({
   titre: React.ReactNode;
   sousTitre?: React.ReactNode;
   retour?: string;
+  /** La référence de la fiche (son numéro), à la suite du lien de retour. */
+  reference?: React.ReactNode;
   badges?: React.ReactNode;
   actions?: React.ReactNode;
   menu?: React.ReactNode[];
@@ -23,24 +57,13 @@ export function Entete({
   const entrees = (menu ?? []).filter(Boolean);
   return (
     <div className="page-header fiche-entete">
-      <div className="d-flex align-items-center gap-12" style={{ gap: 12, minWidth: 0 }}>
-        {retour ? (
-          <a
-            href={retour}
-            className="fiche-retour"
-            title={libelleRetour(retour)}
-            aria-label={libelleRetour(retour)}
-          >
-            <Icone nom="arrow-left" taille={16} />
-          </a>
-        ) : null}
-        <div style={{ minWidth: 0 }}>
-          <h1 className="page-title">
-            {titre}
-            {badges}
-          </h1>
-          {sousTitre ? <p className="page-subtitle">{sousTitre}</p> : null}
-        </div>
+      <div style={{ minWidth: 0 }}>
+        {retour ? <FilRetour retour={retour} reference={reference} /> : null}
+        <h1 className="page-title">
+          {titre}
+          {badges}
+        </h1>
+        {sousTitre ? <p className="page-subtitle">{sousTitre}</p> : null}
       </div>
       <div className="page-actions">
         {actions}

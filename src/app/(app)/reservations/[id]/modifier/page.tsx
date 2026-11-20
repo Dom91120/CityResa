@@ -60,7 +60,7 @@ export default async function ModifierReservationPage({
         data-double-envoi
       >
         <input type="hidden" name="csrf_token" value={page.csrf} />
-        <SectionForm titre="Événement" icone="party-popper">
+        <SectionForm titre="Événement" icone="calendar-days">
           <Grille colonnes={2}>
             <Champ label="Objet de la réservation" name="title" valeur={r.title} requis pleine />
             <Select

@@ -259,7 +259,7 @@ export default async function NouvelleReservationPage({
                 </Grille>
               </SectionForm>
 
-              <SectionForm titre="Événement" icone="party-popper">
+              <SectionForm titre="Événement" icone="calendar-days">
                 <Grille colonnes={2}>
                   <Champ
                     label="Objet de la réservation"

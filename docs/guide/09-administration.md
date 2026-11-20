@@ -301,7 +301,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 
 ## 9.13 La fiche d'un compte
 
-**À quoi ça sert** — Consulter un compte, le modifier, réinitialiser son accès ou le désactiver. On l'ouvre en cliquant sur un nom dans **Comptes**, ou sur le nom d'un membre dans la fiche d'une organisation ; la flèche de retour ramène à l'écran d'où l'on vient.
+**À quoi ça sert** — Consulter un compte, le modifier, réinitialiser son accès ou le désactiver. On l'ouvre en cliquant sur un nom dans **Comptes**, ou sur le nom d'un membre dans la fiche d'une organisation ; le lien de retour, au-dessus du titre, ramène à l'écran d'où l'on vient.
 
 **Qui** — Administrateurs.
 

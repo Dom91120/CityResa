@@ -2932,6 +2932,8 @@ async function creerReservations(ctx: Contexte): Promise<Map<ReservationStatus, 
       performedAt: createdAt,
     });
     let decisionAt: Date | null = null;
+    let cancelledAt: Date | null = null;
+    let cancelledBy: string | null = null;
     let signatureSentAt: Date | null = null;
     let signedAt: Date | null = null;
     let confirmeeAt: Date | null = null;
@@ -3010,11 +3012,13 @@ async function creerReservations(ctx: Contexte): Promise<Map<ReservationStatus, 
     if (s.statut === "annulee") {
       const parUsager =
         (s.motif ?? "").includes("usager") || (s.motif ?? "").includes("association");
+      cancelledAt = etape(entre(24, 200));
+      cancelledBy = parUsager ? org.user.nom : agent.nom;
       histo.push({
         action: RESERVATION_STATUS.annulee.label,
         comment: s.motif ?? null,
-        performedBy: parUsager ? org.user.nom : agent.nom,
-        performedAt: etape(entre(24, 200)),
+        performedBy: cancelledBy,
+        performedAt: cancelledAt,
       });
     }
     const derniere = histo[histo.length - 1].performedAt;
@@ -3043,6 +3047,8 @@ async function creerReservations(ctx: Contexte): Promise<Map<ReservationStatus, 
         decisionBy: decisionAt ? agent.nom : null,
         refusalReason: s.statut === "refusee" ? (s.motif ?? null) : null,
         cancelReason: s.statut === "annulee" ? (s.motif ?? null) : null,
+        cancelledAt,
+        cancelledBy,
         internalNotes: s.messages?.find((m) => m.qui === "note")?.texte ?? null,
         montantHt: devis.ht,
         montantTtc: devis.ttc,
