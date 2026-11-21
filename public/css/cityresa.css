@@ -724,6 +724,15 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .planning th { position: sticky; top: 0; z-index: 2; background: var(--surface); font-size: 0.8rem; font-weight: 600; color: var(--body); padding: 10px 8px; text-align: center; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); }
 .planning th { line-height: 1.15; }
 .planning th.aujourdhui { color: var(--primary); }
+/* Planning du matériel : une ligne basse par matériel, une colonne étroite par jour, les
+   catégories en bandeau ; chaque case porte le nombre d'unités retenues ce jour-là. */
+.planning--materiel table { table-layout: auto; min-width: 0; }
+.planning--materiel th { padding: 8px 4px; min-width: 52px; }
+.planning--materiel td { height: 44px; min-height: 0; padding: 4px; text-align: center; }
+.planning--materiel th.col-espace, .planning--materiel td.col-espace { min-width: 240px; width: 240px; }
+.planning--materiel tbody th.col-espace { top: auto; z-index: 1; text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+.planning--materiel tr.groupe th { position: sticky; left: 0; top: auto; z-index: 1; text-align: left; background: var(--inset); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); padding: 5px 10px; }
+.planning--materiel td a { text-decoration: none; }
 .planning th.col-espace, .planning td.col-espace { position: sticky; left: 0; z-index: 3; background: var(--surface); width: 180px; text-align: left; border-right: 1px solid var(--line); }
 .planning th.col-espace { z-index: 4; text-align: center; }
 .planning td { vertical-align: middle; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); padding: 6px; min-height: 80px; height: 80px; background: var(--surface); }

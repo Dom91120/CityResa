@@ -89,6 +89,7 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
           { de: r.startAt, a: r.endAt },
           r.id,
           r.materiels.map((m) => m.materielId),
+          { id: r.espaceId, siteId: r.espace.siteId },
         )
       : [],
     deviser(

@@ -309,27 +309,31 @@ Le formulaire compte trois parties.
 
 ![Liste du matériel](captures/materiel.webp)
 
-*Figure — les 6 articles du catalogue avec leur catégorie, leur stock, la quantité mobilisée au plus fort, le disponible et la tarification.*
+*Figure — les 7 articles du catalogue avec leur catégorie, leur stock, la quantité mobilisée au plus fort, le disponible et la tarification. Les tapis de gymnastique sont rattachés au site « Gymnase les Sablons » ; les autres articles forment le stock commun.*
 
 **Ce que l'on voit**
 
 - La recherche (nom, catégorie), le filtre **Toutes les catégories** et le filtre d'état (**Actifs et inactifs** par défaut, ou Actifs, Inactifs, Avec unités hors service, Contrôle en retard).
-- Pour chaque article : nom et description, **Catégorie**, **Stock** (avec la mention « 2 hors service » en rouge pour les tables), **Mobilisé (pic)**, **Disponible** (pastille rouge à 0, jaune si faible) et **Tarification** (« 3 € par unité », « 30 € par unité et par jour », « Gratuit »…).
-- L'œil ouvre la fiche, le crayon la modification ; le bouton **Nouveau matériel** crée un article.
+- Pour chaque article : nom et description, **Catégorie** (avec, en dessous, le site ou l'espace auquel l'article est rattaché, s'il l'est), **Stock** (avec la mention « 2 hors service » en rouge pour les tables), **Mobilisé (pic)**, **Disponible** (pastille rouge à 0, jaune si faible) et **Tarification** (« 3 € par unité », « 30 € par unité et par jour », « Gratuit »…).
+- L'œil ouvre la fiche, le crayon la modification ; le bouton **Nouveau matériel** crée un article et le bouton **Planning** ouvre le planning du matériel (voir 4.16).
 
 **Comment faire — créer un article**
 
 1. Cliquez sur **Nouveau matériel**.
 2. Renseignez le **Nom**, la **Catégorie** et une **Description** (dimensions, état, conditions de prêt).
-3. Indiquez le **Stock total**.
-4. Si l'article doit être vérifié régulièrement, saisissez la périodicité dans **Contrôle périodique (mois)**.
-5. Choisissez la **Tarification** : Gratuit, Forfait, Par unité ou Par unité et par jour, puis le **Montant (€)** (ignoré si « Gratuit »).
-6. Laissez **Matériel actif** coché et enregistrez.
+3. Dans **Rattachement**, laissez **Stock commun de la ville** pour un matériel prêté avec n'importe quelle salle. Choisissez un **Site** si le matériel ne sert que dans ce site (les tapis d'un gymnase), ou **un espace précis** s'il ne quitte pas une salle.
+4. Indiquez le **Stock total**.
+5. Si l'article doit être vérifié régulièrement, saisissez la périodicité dans **Contrôle périodique (mois)**.
+6. Choisissez la **Tarification** : Gratuit, Forfait, Par unité ou Par unité et par jour, puis le **Montant (€)** (ignoré si « Gratuit »).
+7. Laissez **Matériel actif** coché et enregistrez.
 
 **Règles à connaître**
 
 - À chaque demande, le stock réellement disponible est calculé sur la période du dossier : stock total, moins les unités hors service, moins les quantités déjà retenues par les dossiers en cours sur les mêmes dates. Une demande qui dépasse le disponible est refusée.
 - Un matériel inactif n'est plus proposé dans les demandes.
+- Un matériel rattaché à un site n'est proposé, au guichet comme sur le portail, que pour les espaces de ce site ; rattaché à un espace, que pour cet espace. Le stock commun est proposé partout. Si un espace est choisi, son site est repris automatiquement.
+- Changer le rattachement d'un matériel ne touche pas aux dossiers qui le retiennent déjà : ils le conservent.
+- À ne pas confondre avec les **équipements** d'un espace (voir 4.6), qui décrivent ce que la salle contient et ne se réservent pas à la quantité.
 - Un article déjà utilisé par des dossiers n'est pas supprimé : il est seulement désactivé.
 
 - La colonne **Mobilisé (pic)** indique le plus grand nombre d'unités retenues en même temps par les dossiers à venir : seuls les dossiers dont les dates se recouvrent s'additionnent. **Disponible** est ce qui reste au pire moment ; une date donnée peut en offrir davantage, le contrôle exact se faisant à chaque demande.
@@ -348,7 +352,7 @@ Le formulaire compte trois parties.
 
 - En haut : le nom, la catégorie et le tarif, puis les boutons **Contrôle effectué**, **Panne / perte** et **Modifier**. Le bouton **Remettre en service** apparaît lorsque des unités sont hors service.
 - Cinq compteurs : **Stock total**, **Hors service**, **Mobilisé au plus fort (à venir)**, **Disponible** et **Dossiers (total)**.
-- Le bloc **Synthèse** : catégorie, tarification, **Contrôle périodique** (périodicité, date du dernier contrôle et du prochain), description, dates de création et de modification. Le bloc **Photos** se déplie pour ajouter des images.
+- Le bloc **Synthèse** : catégorie, **Rattachement** (stock commun, site ou espace), tarification, **Contrôle périodique** (périodicité, date du dernier contrôle et du prochain), description, dates de création et de modification. Le bloc **Photos** se déplie pour ajouter des images.
 - Le bloc **Réservations à venir qui le mobilisent** : dates, dossier, espace, quantité et statut.
 - Le **Journal des mouvements** : date, nature du mouvement (Contrôle périodique, Remise en service, Panne ou perte signalée…), quantité, dossier éventuel et auteur.
 
@@ -365,3 +369,37 @@ Le formulaire compte trois parties.
 - Au retour, les unités non rendues sont signalées « Rendu avec manquants », retirées du stock utilisable et tracées dans le journal. Leur facturation éventuelle se fait à la main (retenue sur la caution ou facture libre).
 - Un contrôle en retard est signalé dans la liste du matériel et dans les alertes du tableau de bord.
 - Chaque geste (sortie, retour, panne, remise en service, contrôle) est inscrit au journal avec son auteur, ainsi que dans l'historique du dossier concerné.
+
+## 4.16 Le planning du matériel
+
+**À quoi ça sert** — Voir, jour par jour, combien d'unités de chaque matériel sont retenues par les dossiers, et repérer d'un coup d'œil les jours où le stock est entièrement pris ou dépassé.
+
+**Qui** — Les mêmes agents que pour la liste du matériel.
+
+![Planning du matériel](captures/materiel-planning.webp)
+
+*Figure — le planning du matériel sur 15 jours : les articles regroupés par catégorie, une colonne par jour, et dans chaque case le nombre d'unités retenues ce jour-là. Sous les tapis de gymnastique, la mention « Site : Gymnase les Sablons » rappelle leur rattachement.*
+
+**Ce que l'on voit**
+
+- La période affichée, encadrée de deux flèches, avec l'icône d'agenda pour aller à une date et l'icône du calendrier fléché pour revenir à aujourd'hui.
+- Les filtres : la **période affichée** (7 jours, 15 jours par défaut, 30 jours ou le mois), les **catégories**, le **rattachement** (stock commun de la ville, ou le matériel d'un ou plusieurs sites), le **statut des dossiers** pris en compte, la case **Retenu seulement** (masque les articles qu'aucun dossier ne retient sur la période) et la recherche par **nom du matériel**.
+- La grille : les articles actifs regroupés par catégorie, avec sous chaque nom le stock utilisable, les unités hors service et le rattachement éventuel, puis une colonne par jour. Le week-end est grisé.
+- Dans une case, le nombre d'unités retenues ce jour-là : en vert s'il en reste, en jaune si **tout le stock est retenu**, en rouge si le **stock est dépassé**. Une case vide signifie que rien n'est retenu.
+- En cas de dépassement, le sous-titre de la page indique le nombre de jours concernés.
+
+**Comment faire**
+
+1. Dans **Matériel**, cliquez sur **Planning**.
+2. Choisissez la période et, au besoin, une ou plusieurs catégories.
+3. Survolez une case pour lire le détail : unités retenues sur le stock, ce qui reste, et les dossiers concernés avec leur quantité.
+4. Cliquez sur une case : elle ouvre le dossier s'il est seul à retenir ce matériel ce jour-là, sinon la fiche du matériel et ses réservations à venir.
+5. Pour ne compter que les réservations acquises, cochez **Acceptée**, **Signée** et **Confirmée** dans le filtre des statuts.
+
+**Règles à connaître**
+
+- Un dossier retient son matériel sur toute sa durée, du début de son premier créneau à la fin du dernier, comme pour le contrôle du stock à la demande.
+- Le nombre d'une case est le plus grand nombre d'unités retenues en même temps ce jour-là : deux dossiers qui se suivent sans se recouvrir ne s'additionnent pas.
+- Le stock de référence est le stock utilisable d'aujourd'hui (stock total moins les unités hors service). Comme une demande qui dépasse le disponible est refusée, un dépassement n'apparaît en pratique qu'après une panne ou une perte signalée : il indique les dossiers à revoir.
+- Sans filtre de statut, tous les dossiers en cours comptent, demandes à traiter comprises.
+- Le filtre de rattachement choisit les articles affichés, pas les dossiers comptés : chaque case reste comparée à tout ce qui retient l'article.

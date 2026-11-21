@@ -4,6 +4,7 @@
  * disponible) d'un espace.
  */
 import type { Materiel, Option, Prisma } from "@/generated/prisma/client";
+import { proposable } from "@/lib/materiel-stock";
 import { prisma } from "@/server/db";
 import { enabledIn } from "@/server/features";
 import type { CurrentUser } from "@/server/guards";
@@ -81,14 +82,19 @@ export async function materielsPour(
   fenetre: { de: Date; a: Date } | null,
   excludeReservationId: number | null = null,
   conserver: number[] = [],
+  espace: { id: number; siteId: number } | null = null,
 ): Promise<MaterielDispo[]> {
   if (!enabledIn(user.settings, "materiel")) return [];
-  const materiels = await prisma.materiel.findMany({
+  const tous = await prisma.materiel.findMany({
     where: conserver.length
       ? { OR: [{ isActive: true }, { id: { in: conserver } }] }
       : { isActive: true },
     orderBy: [{ categorieId: "asc" }, { name: "asc" }],
   });
+  // Le matériel rattaché à un autre site ou à un autre espace n'est pas proposé.
+  const materiels = espace
+    ? tous.filter((m) => conserver.includes(m.id) || proposable(m, espace))
+    : tous;
   return Promise.all(
     materiels.map(async (m) => ({
       materiel: m,

@@ -67,7 +67,16 @@ export default async function ReserverPage({
     }),
     features.materiel
       ? prisma.materiel.findMany({
-          where: { isActive: true, stockTotal: { gt: 0 } },
+          // Le stock commun, le matériel du site de l'espace et celui de l'espace lui-même.
+          where: {
+            isActive: true,
+            stockTotal: { gt: 0 },
+            OR: [
+              { espaceId: espace.id },
+              { espaceId: null, siteId: espace.siteId },
+              { espaceId: null, siteId: null },
+            ],
+          },
           include: { categorie: true },
           orderBy: [{ categorie: { position: "asc" } }, { name: "asc" }],
         })

@@ -1,5 +1,5 @@
 import { champOuNull, parseInt_ } from "@/lib/forms-util";
-import { lireMateriel, supprimerMateriel } from "@/modules/materiel/server";
+import { lireMateriel, resoudreRattachement, supprimerMateriel } from "@/modules/materiel/server";
 import { auditRecord } from "@/server/audit";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
@@ -46,7 +46,11 @@ export async function POST(
         }
         const existant = await prisma.materiel.findUnique({ where: { id }, select: { id: true } });
         if (!existant) return pasTrouve();
-        const m = await prisma.materiel.update({ where: { id }, data: lireMateriel(form) });
+        const saisie = lireMateriel(form);
+        const m = await prisma.materiel.update({
+          where: { id },
+          data: { ...saisie, ...(await resoudreRattachement(saisie)) },
+        });
         await auditRecord("modification materiel", m.name, "materiel", user.email);
         return redirigerAvecMessage(fiche, "Matériel modifié.", "success");
       } catch (e) {

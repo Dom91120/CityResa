@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
 import { EnteteForm, PiedForm } from "@/components/formulaire";
-import { categoriesMateriel, chargerMateriel } from "@/modules/materiel/server";
+import {
+  categoriesMateriel,
+  chargerMateriel,
+  lieuxDeRattachement,
+} from "@/modules/materiel/server";
 import { FormulaireMateriel } from "@/modules/materiel/vues";
 import { idDeRoute, requireEdit } from "@/server/guards";
 import { contexteModule } from "@/server/module";
@@ -15,7 +19,11 @@ export default async function ModifierMaterielPage({
   const page = await contexteModule("materiel", "materiel");
   await requireEdit("materiel");
   const id = idDeRoute((await params).id);
-  const [m, categories] = await Promise.all([chargerMateriel(id), categoriesMateriel()]);
+  const [m, categories, lieux] = await Promise.all([
+    chargerMateriel(id),
+    categoriesMateriel(),
+    lieuxDeRattachement(),
+  ]);
   if (!m) notFound();
   return (
     <>
@@ -25,6 +33,8 @@ export default async function ModifierMaterielPage({
         action={`/materiel/${id}/modifier`}
         csrf={page.csrf}
         categories={categories}
+        sites={lieux.sites}
+        espaces={lieux.espaces}
       />
       <PiedForm
         retour={`/materiel/${id}`}

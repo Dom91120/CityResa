@@ -1,5 +1,5 @@
 import { EnteteForm } from "@/components/formulaire";
-import { categoriesMateriel } from "@/modules/materiel/server";
+import { categoriesMateriel, lieuxDeRattachement } from "@/modules/materiel/server";
 import { FormulaireMateriel } from "@/modules/materiel/vues";
 import { requireEdit } from "@/server/guards";
 import { contexteModule } from "@/server/module";
@@ -9,7 +9,7 @@ export const metadata = { title: "Nouveau matériel - CityRésa" };
 export default async function NouveauMaterielPage() {
   const page = await contexteModule("materiel", "materiel");
   await requireEdit("materiel");
-  const categories = await categoriesMateriel();
+  const [categories, lieux] = await Promise.all([categoriesMateriel(), lieuxDeRattachement()]);
   return (
     <>
       <EnteteForm
@@ -23,6 +23,8 @@ export default async function NouveauMaterielPage() {
         action="/materiel/nouveau"
         csrf={page.csrf}
         categories={categories}
+        sites={lieux.sites}
+        espaces={lieux.espaces}
       />
     </>
   );

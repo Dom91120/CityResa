@@ -8,11 +8,16 @@ export function FormulaireMateriel({
   action,
   csrf,
   categories,
+  sites,
+  espaces,
 }: {
   materiel: Materiel | null;
   action: string;
   csrf: string;
   categories: Referential[];
+  /** Les lieux auxquels le matériel peut être rattaché. */
+  sites: { id: number; name: string }[];
+  espaces: { id: number; name: string; site: { name: string } }[];
 }) {
   return (
     <form method="POST" id="form-principal" action={action} data-double-envoi>
@@ -33,6 +38,29 @@ export function FormulaireMateriel({
             valeur={materiel?.description}
             rows={3}
             placeholder="Dimensions, état, conditions de prêt…"
+          />
+        </Grille>
+      </SectionForm>
+      <SectionForm
+        titre="Rattachement"
+        icone="map-pin"
+        aide="Sans rattachement, le matériel est un stock commun, proposé avec toutes les réservations. Rattaché à un site, il n'est proposé que pour les espaces de ce site ; rattaché à un espace, pour ce seul espace."
+      >
+        <Grille colonnes={2}>
+          <Select
+            label="Site"
+            name="site_id"
+            options={sites.map((s) => [String(s.id), s.name])}
+            valeur={materiel?.espaceId ? null : materiel?.siteId}
+            blank="— Stock commun de la ville —"
+          />
+          <Select
+            label="Ou un espace précis"
+            name="espace_id"
+            options={espaces.map((e) => [String(e.id), `${e.name} · ${e.site.name}`])}
+            valeur={materiel?.espaceId}
+            blank="— Aucun —"
+            aide="S'il est choisi, l'espace l'emporte : son site est repris automatiquement."
           />
         </Grille>
       </SectionForm>

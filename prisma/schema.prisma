@@ -274,6 +274,7 @@ model Site {
   documents  Document[]
   vacations  Vacation[]
   personnels PersonnelSite[]
+  materiels  Materiel[]
 
   @@map("site")
 }
@@ -352,6 +353,7 @@ model Espace {
   indisponibilites Indisponibilite[]
   reservations     Reservation[]
   creneaux         Creneau[]
+  materiels        Materiel[]
 
   @@index([siteId])
   @@index([parentId])
@@ -421,6 +423,12 @@ model Materiel {
   categorieId Int?         @map("categorie_id")
   categorie   Referential? @relation(fields: [categorieId], references: [id])
   description String?
+  /// Rattachement facultatif. Aucun : stock commun de la ville, proposé partout. Un site : proposé
+  /// pour les seuls espaces de ce site. Un espace (son site est alors repris) : pour lui seul.
+  siteId      Int?         @map("site_id")
+  site        Site?        @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  espaceId    Int?         @map("espace_id")
+  espace      Espace?      @relation(fields: [espaceId], references: [id], onDelete: SetNull)
   stockTotal  Int          @default(0) @map("stock_total")
   montant     Float        @default(0)
   /// gratuit | forfait | unite | jour

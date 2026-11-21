@@ -1,4 +1,4 @@
-import { lireMateriel } from "@/modules/materiel/server";
+import { lireMateriel, resoudreRattachement } from "@/modules/materiel/server";
 import { auditRecord } from "@/server/audit";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
@@ -14,7 +14,8 @@ export async function POST(req: Request) {
     async (form) => {
       const user = await requireEdit("materiel");
       try {
-        const data = lireMateriel(form);
+        const saisie = lireMateriel(form);
+        const data = { ...saisie, ...(await resoudreRattachement(saisie)) };
         const m = await prisma.materiel.create({ data });
         await auditRecord("creation materiel", m.name, "materiel", user.email);
         return redirigerAvecMessage(`/materiel/${m.id}`, `Matériel « ${m.name} » créé.`, "success");

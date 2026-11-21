@@ -25,6 +25,7 @@ import {
 } from "@/lib/creneaux";
 import { manquesDossier, nomRepresentant, phraseManques } from "@/lib/dossier-usager";
 import { dateHeure, dateMoyenne, montant, plage } from "@/lib/libelles";
+import { proposable } from "@/lib/materiel-stock";
 import { STATUTS_OPTION } from "@/lib/options";
 import { calculerDevis, type Devis } from "@/lib/tarification";
 import { auditRecord } from "@/server/audit";
@@ -253,6 +254,26 @@ export async function deviser(
   });
 }
 
+/**
+ * Refuse le matériel rattaché à un autre site ou à un autre espace que celui du dossier (règle
+ * pure : `proposable`). Le stock commun accompagne n'importe quel espace.
+ */
+export async function verifierRattachement(
+  materielIds: number[],
+  espace: { id: number; siteId: number },
+): Promise<void> {
+  if (!materielIds.length) return;
+  const mats = await prisma.materiel.findMany({
+    where: { id: { in: materielIds } },
+    include: { site: true, espace: true },
+  });
+  const refuse = mats.find((m) => !proposable(m, espace));
+  if (refuse)
+    throw new UserFacingError(
+      `« ${refuse.name} » est réservé à ${refuse.espace ? `l'espace « ${refuse.espace.name} »` : `au site « ${refuse.site?.name ?? ""} »`} : il ne peut pas accompagner cette réservation.`,
+    );
+}
+
 /** Le stock de matériel disponible sur une période (stock total − mobilisé par les dossiers vivants). */
 export async function stockDisponible(
   materielId: number,
@@ -319,6 +340,10 @@ export async function creerReservation(
     );
   }
   const b = bornes(creneaux);
+  await verifierRattachement(
+    e.materiels.map((m) => m.materielId),
+    espace,
+  );
   for (const m of e.materiels) {
     const dispo = await stockDisponible(m.materielId, b.startAt, b.endAt);
     if (m.quantite > dispo) {

@@ -54,6 +54,7 @@ import {
   recalculerMontants,
   stockDisponible,
   verifierDisponibilite,
+  verifierRattachement,
 } from "@/server/reservations";
 import { deplacerSerie } from "@/server/serie";
 
@@ -139,6 +140,12 @@ async function appliquerChoix(
       ? prisma.materiel.findMany({ where: { id: { in: materiels.map((m) => m.id) } } })
       : [],
   ]);
+  // Seul le matériel ajouté est contrôlé : celui que le dossier retient déjà reste acquis.
+  const dejaRetenus = new Set(r.materiels.map((m) => m.materielId));
+  await verifierRattachement(
+    materiels.filter((m) => m.quantite > 0 && !dejaRetenus.has(m.id)).map((m) => m.id),
+    { id: r.espaceId, siteId: r.espace.siteId },
+  );
   for (const m of materiels) {
     const mat = mats.find((x) => x.id === m.id);
     if (!mat) continue;

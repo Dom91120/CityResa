@@ -2,7 +2,7 @@
  * Matériel : lecture du formulaire, stock mobilisé par les dossiers vivants, fiche,
  * suppression.
  *
- *   name · categorie_id · description · stock_total · montant · unite · is_active
+ *   name · categorie_id · site_id · espace_id · description · stock_total · montant · unite · is_active
  */
 import type { Prisma } from "@/generated/prisma/client";
 import { MATERIEL_UNITES, STATUTS_OCCUPANTS } from "@/lib/constantes";
@@ -15,6 +15,8 @@ export type MaterielEntree = {
   name: string;
   categorieId: number | null;
   description: string | null;
+  siteId: number | null;
+  espaceId: number | null;
   stockTotal: number;
   montant: number;
   unite: string;
@@ -33,6 +35,8 @@ export function lireMateriel(form: FormData): MaterielEntree {
     name,
     categorieId: idOuNull(form, "categorie_id"),
     description: champOuNull(form, "description"),
+    siteId: idOuNull(form, "site_id"),
+    espaceId: idOuNull(form, "espace_id"),
     stockTotal: parseInt_(form.get("stock_total"), 0, 0) ?? 0,
     montant: unite === "gratuit" ? 0 : Math.round(m * 100) / 100,
     unite,
@@ -69,8 +73,47 @@ export async function stockMobilise(materielIds: number[]): Promise<Map<number, 
   return out;
 }
 
+/**
+ * Le rattachement saisi, vérifié : un espace impose son site (le site saisi est ignoré) ; un
+ * site ou un espace inconnu est refusé.
+ */
+export async function resoudreRattachement(e: {
+  siteId: number | null;
+  espaceId: number | null;
+}): Promise<{ siteId: number | null; espaceId: number | null }> {
+  if (e.espaceId) {
+    const espace = await prisma.espace.findUnique({
+      where: { id: e.espaceId },
+      select: { id: true, siteId: true },
+    });
+    if (!espace) throw new UserFacingError("Espace de rattachement introuvable.");
+    return { siteId: espace.siteId, espaceId: espace.id };
+  }
+  if (e.siteId) {
+    const site = await prisma.site.findUnique({ where: { id: e.siteId }, select: { id: true } });
+    if (!site) throw new UserFacingError("Site de rattachement introuvable.");
+    return { siteId: site.id, espaceId: null };
+  }
+  return { siteId: null, espaceId: null };
+}
+
+/** Les sites et espaces proposés pour rattacher un matériel. */
+export async function lieuxDeRattachement() {
+  const [sites, espaces] = await Promise.all([
+    prisma.site.findMany({ orderBy: [{ position: "asc" }, { name: "asc" }] }),
+    prisma.espace.findMany({
+      where: { isActive: true },
+      include: { site: true },
+      orderBy: [{ site: { position: "asc" } }, { position: "asc" }, { name: "asc" }],
+    }),
+  ]);
+  return { sites, espaces };
+}
+
 export const INCLUDE_MATERIEL = {
   categorie: true,
+  site: true,
+  espace: true,
   _count: { select: { reservations: true } },
 } satisfies Prisma.MaterielInclude;
 
@@ -144,3 +187,63 @@ export async function categoriesMateriel() {
 
 /** Le prix d'un matériel : règle pure dans src/lib/tarification.ts. */
 export { tarifMateriel } from "@/lib/tarification";
+
+export type MobilisationDossier = Mobilisation & {
+  materielId: number;
+  reservationId: number;
+  numero: string;
+  titre: string;
+  qui: string;
+  status: string;
+};
+
+/**
+ * Le matériel retenu par les dossiers qui touchent la période (planning du matériel), pour les
+ * statuts demandés : comme pour le stock mobilisé, c'est toute la durée du dossier qui retient
+ * le matériel.
+ */
+export async function mobilisationsPeriode(
+  de: Date,
+  a: Date,
+  statuts: readonly string[],
+): Promise<MobilisationDossier[]> {
+  if (!statuts.length) return [];
+  const lignes = await prisma.reservationMateriel.findMany({
+    where: {
+      quantite: { gt: 0 },
+      reservation: { status: { in: [...statuts] }, startAt: { lt: a }, endAt: { gt: de } },
+    },
+    select: {
+      materielId: true,
+      quantite: true,
+      reservation: {
+        select: {
+          id: true,
+          numero: true,
+          title: true,
+          status: true,
+          startAt: true,
+          endAt: true,
+          organisation: { select: { name: true } },
+          user: { select: { firstName: true, lastName: true } },
+        },
+      },
+    },
+    orderBy: { reservation: { startAt: "asc" } },
+  });
+  return lignes.map((l) => ({
+    materielId: l.materielId,
+    quantite: l.quantite,
+    debut: l.reservation.startAt,
+    fin: l.reservation.endAt,
+    reservationId: l.reservation.id,
+    numero: l.reservation.numero,
+    titre: l.reservation.title,
+    status: l.reservation.status,
+    qui:
+      l.reservation.organisation?.name ??
+      (l.reservation.user
+        ? `${l.reservation.user.firstName} ${l.reservation.user.lastName}`.trim()
+        : ""),
+  }));
+}

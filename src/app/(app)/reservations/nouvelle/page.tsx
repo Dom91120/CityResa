@@ -83,7 +83,10 @@ export default async function NouvelleReservationPage({
       : null;
   const fenetre = debut && fin ? { de: debut, a: fin } : null;
   const [options, materiels] = espace
-    ? await Promise.all([optionsPour(espace.id), materielsPour(page.user, fenetre)])
+    ? await Promise.all([
+        optionsPour(espace.id),
+        materielsPour(page.user, fenetre, null, [], espace),
+      ])
     : [[], []];
   const pas = espace ? espace.slotStepMin * 60 : 900;
   const retour = "/reservations";

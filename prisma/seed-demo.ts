@@ -1369,6 +1369,17 @@ const MATERIELS = [
     montant: 0,
     unite: "gratuit",
   },
+  {
+    // Rattaché à un site : proposé pour les seules réservations du gymnase.
+    cle: "tapis",
+    name: "Tapis de gymnastique",
+    categorie: "Autre",
+    description: "Tapis de sol 2 × 1 m, épaisseur 4 cm, rangés dans le local du gymnase.",
+    stockTotal: 20,
+    montant: 0,
+    unite: "gratuit",
+    site: "sablons",
+  },
 ];
 
 // ── Usagers ──
@@ -2642,6 +2653,7 @@ async function creerSitesEtEspaces(): Promise<{
       data: {
         name: m.name,
         categorieId: refOuNull("materiel_categorie", m.categorie),
+        siteId: "site" in m && m.site ? (sites.get(m.site)?.id ?? null) : null,
         description: m.description,
         stockTotal: m.stockTotal,
         montant: m.montant,

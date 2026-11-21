@@ -1,6 +1,7 @@
 /**
  * Matériel : stock utilisable (hors unités en panne ou perdues), sortie et retour pour un
- * dossier avec manquants signalés, pannes et remises en service, contrôles périodiques.
+ * dossier avec manquants signalés, pannes et remises en service, contrôles périodiques,
+ * charge d'un jour face au stock (planning du matériel).
  * Logique PURE : testée dans materiel-stock.test.ts.
  */
 
@@ -132,4 +133,57 @@ export function picMobilisation(lignes: Mobilisation[]): number {
     if (courant > pic) pic = courant;
   }
   return pic;
+}
+
+/**
+ * Le pic d'unités retenues sur une fenêtre (un jour du planning du matériel) : seule la part
+ * des dossiers comprise dans la fenêtre compte, et seuls ceux qui s'y recouvrent s'additionnent.
+ */
+export function chargeSurFenetre(lignes: readonly Mobilisation[], de: Date, a: Date): number {
+  return picMobilisation(
+    lignes.map((l) => ({
+      debut: l.debut < de ? de : l.debut,
+      fin: l.fin > a ? a : l.fin,
+      quantite: l.quantite,
+    })),
+  );
+}
+
+export type NiveauCharge = "libre" | "partiel" | "complet" | "depasse";
+
+/** Où en est le stock un jour donné : rien de retenu, il en reste, tout est retenu, il en manque. */
+export function niveauCharge(charge: number, utilisable: number): NiveauCharge {
+  if (charge <= 0) return "libre";
+  if (charge > utilisable) return "depasse";
+  return charge === utilisable ? "complet" : "partiel";
+}
+
+export const NIVEAUX_CHARGE: Record<NiveauCharge, { label: string; teinte: string }> = {
+  libre: { label: "Rien de retenu", teinte: "slate" },
+  partiel: { label: "Retenu en partie", teinte: "emerald" },
+  complet: { label: "Tout le stock est retenu", teinte: "amber" },
+  depasse: { label: "Stock dépassé", teinte: "red" },
+};
+
+/** Le rattachement d'un matériel : aucun (stock commun), un site, ou un espace précis. */
+export type Rattachement = { siteId: number | null; espaceId: number | null };
+
+/**
+ * Ce matériel peut-il accompagner une réservation de cet espace ? Le stock commun, partout ;
+ * le matériel d'un site, pour les espaces de ce site ; celui d'un espace, pour lui seul.
+ */
+export function proposable(m: Rattachement, espace: { id: number; siteId: number }): boolean {
+  if (m.espaceId) return m.espaceId === espace.id;
+  if (m.siteId) return m.siteId === espace.siteId;
+  return true;
+}
+
+/** « Stock commun », « Site : Gymnase », « Espace : Dojo ». */
+export function libelleRattachement(m: {
+  site?: { name: string } | null;
+  espace?: { name: string } | null;
+}): string {
+  if (m.espace) return `Espace : ${m.espace.name}`;
+  if (m.site) return `Site : ${m.site.name}`;
+  return "Stock commun";
 }

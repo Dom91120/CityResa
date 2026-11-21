@@ -286,9 +286,17 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 
 - Catalogue (catégorie, description, stock total, tarif gratuit / forfait / unité / unité et
   par jour, photos).
+- Rattachement facultatif à un site ou à un espace : sans rattachement, stock commun proposé
+  avec toutes les réservations ; sinon, matériel proposé et accepté pour les seuls espaces du
+  site, ou pour le seul espace. Distinct des équipements d'un espace, descriptifs et non
+  réservables.
 - Stock disponible calculé sur la période du dossier (dossiers vivants) ; refus si insuffisant.
   La liste et la fiche affichent le **pic de mobilisation** à venir (seuls les dossiers qui se
   recouvrent s'additionnent).
+- **Planning du matériel** : articles regroupés par catégorie, une colonne par jour (7, 15 ou
+  30 jours, ou le mois), unités retenues chaque jour face au stock utilisable, signalement des
+  jours où le stock est entièrement retenu ou dépassé ; filtres par catégorie, rattachement,
+  statut des dossiers, nom, et matériel retenu seulement.
 
 ### Usagers et organisations
 

@@ -229,6 +229,7 @@ const CAPTURES = [
   { nom: "espace-modifier", compte: "gestionnaire", url: "/espaces/5/modifier", hauteur: 3600 },
   { nom: "materiel", compte: "gestionnaire", url: "/materiel", hauteur: 1100 },
   { nom: "materiel-fiche", compte: "gestionnaire", url: "/materiel/1", hauteur: 2000 },
+  { nom: "materiel-planning", compte: "gestionnaire", url: "/materiel/planning", hauteur: 1100 },
 
   // Usagers, équipe, messages
   { nom: "usagers", compte: "gestionnaire", url: "/usagers", hauteur: 1500 },

@@ -2,7 +2,7 @@ import { Vignette } from "@/components/documents";
 import { Icone } from "@/components/icones";
 import { Barre, Filtre, PaginationBar, Th, trier, Vide } from "@/components/liste";
 import { Chip } from "@/components/macros";
-import { controleEnRetard } from "@/lib/materiel-stock";
+import { controleEnRetard, libelleRattachement } from "@/lib/materiel-stock";
 import {
   categoriesMateriel,
   premieresPhotosMateriel,
@@ -22,7 +22,10 @@ export default async function MaterielPage({ searchParams }: { searchParams: Pro
   const catF = String(param(params, "categorie") ?? "");
   const etat = String(param(params, "etat") ?? "");
   const [materiels, categories] = await Promise.all([
-    prisma.materiel.findMany({ include: { categorie: true }, orderBy: { name: "asc" } }),
+    prisma.materiel.findMany({
+      include: { categorie: true, site: true, espace: true },
+      orderBy: { name: "asc" },
+    }),
     categoriesMateriel(),
   ]);
   const mobilise = await stockMobilise(materiels.map((m) => m.id));
@@ -31,6 +34,7 @@ export default async function MaterielPage({ searchParams }: { searchParams: Pro
     return {
       ...m,
       categorieNom: m.categorie?.label ?? "",
+      rattachement: libelleRattachement(m),
       mobilise: mob,
       disponible: Math.max(0, m.stockTotal - m.horsService - mob),
       controleRetard: controleEnRetard(m),
@@ -42,7 +46,7 @@ export default async function MaterielPage({ searchParams }: { searchParams: Pro
   if (etat === "inactifs") items = items.filter((m) => !m.isActive);
   if (etat === "hors_service") items = items.filter((m) => m.horsService > 0);
   if (etat === "controle") items = items.filter((m) => m.controleRetard);
-  items = textSearch(items, q, ["name", "categorieNom", "description"]);
+  items = textSearch(items, q, ["name", "categorieNom", "description", "rattachement"]);
   items = trier(
     items,
     page.search,
@@ -72,6 +76,9 @@ export default async function MaterielPage({ searchParams }: { searchParams: Pro
           </p>
         </div>
         <div className="page-actions">
+          <a href="/materiel/planning" className="btn btn-outline-secondary">
+            <Icone nom="calendar-days" taille={14} /> Planning
+          </a>
           {peutEditer ? (
             <a href="/materiel/nouveau" className="btn btn-primary">
               <Icone nom="plus" taille={14} /> Nouveau matériel
@@ -177,7 +184,12 @@ export default async function MaterielPage({ searchParams }: { searchParams: Pro
                           <small>{m.isActive ? (m.description ?? "") : "Inactif"}</small>
                         </span>
                       </td>
-                      <td>{m.categorieNom || <span className="text-faint">—</span>}</td>
+                      <td>
+                        <span className="cell2">
+                          <span>{m.categorieNom || <span className="text-faint">—</span>}</span>
+                          {m.siteId || m.espaceId ? <small>{m.rattachement}</small> : null}
+                        </span>
+                      </td>
                       <td className="text-end tabular">
                         <span className="cell2">
                           <span>{m.stockTotal}</span>

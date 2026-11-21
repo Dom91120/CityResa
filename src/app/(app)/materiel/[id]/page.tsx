@@ -6,7 +6,7 @@ import { VideBloc } from "@/components/liste";
 import { Chip, PastilleEspace, StatutResa } from "@/components/macros";
 import { CarteStat } from "@/components/stats";
 import { dateCourte, dateMoyenne, heure, plageHoraire } from "@/lib/libelles";
-import { decrireControle, stockUtilisable } from "@/lib/materiel-stock";
+import { decrireControle, libelleRattachement, stockUtilisable } from "@/lib/materiel-stock";
 import {
   chargerMateriel,
   reservationsAVenir,
@@ -142,6 +142,7 @@ export default async function MaterielFichePage({ params }: { params: Promise<{ 
           <Section titre="Synthèse" icone="package">
             <Lus>
               <Lu label="Catégorie" valeur={m.categorie?.label} tiret />
+              <Lu label="Rattachement" valeur={libelleRattachement(m)} />
               <Lu label="Tarification" valeur={tarifMateriel(m)} />
               <Lu label="Contrôle périodique" valeur={decrireControle(m, dateCourte)} pleine />
               <Lu label="Description" valeur={m.description} pleine pre />
