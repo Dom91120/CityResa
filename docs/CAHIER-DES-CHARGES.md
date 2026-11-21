@@ -6,8 +6,8 @@ subvention des associations, pour la **Ville de Châtillon (Hauts-de-Seine, 9232
 
 Ce document décrit le périmètre fonctionnel livré par CityRésa, ses règles de gestion, et la
 façon dont il couvre le cahier des charges d'origine (notes de cadrage, charte graphique et
-présentations de solutions du marché). Les conventions
-techniques sont dans `docs/CONVENTIONS.md`, le déploiement dans `docs/DEPLOY.md`.
+présentations de solutions du marché). Les conventions techniques sont dans
+`docs/CONVENTIONS.md`, le déploiement dans `docs/DEPLOY.md`.
 
 ---
 
