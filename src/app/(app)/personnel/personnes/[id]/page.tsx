@@ -11,9 +11,14 @@ import {
 } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { Chip } from "@/components/macros";
-import { heuresAttendues, heuresDuCycle, libellePlages, plagesDuJour } from "@/lib/affectation";
+import {
+  heuresAttendues,
+  heuresDuCycle,
+  libellePlages,
+  lireModeHoraires,
+  plagesDuJour,
+} from "@/lib/affectation";
 import { JOURS_ISO } from "@/lib/constantes";
-import { lireHoraires } from "@/lib/creneaux";
 import { dateCourte, dateHeure, plage } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
 import { libelleAbsence, nomPersonne } from "@/lib/personnel";
@@ -26,6 +31,7 @@ import {
   absencesDe,
   chargerPersonneComplete,
   couleurLibre,
+  horairesDe,
   referentiel,
   sitesDuPerimetre,
 } from "@/server/personnel";
@@ -78,7 +84,8 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
   const fiche = `/personnel/personnes/${id}`;
   const nom = nomPersonne(p);
   const lienIcs = p.icsToken ? `${user.settings.APP_BASE_URL}/ics/personnel/${p.icsToken}` : null;
-  const horaires = lireHoraires(p.horaires);
+  const horaires = horairesDe(p);
+  const modeHoraires = lireModeHoraires(p.horairesMode);
   const heuresCycle = heuresDuCycle(horaires);
   const attendues = heuresAttendues({
     quotite: p.quotite,
@@ -202,6 +209,11 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
                   valeur={
                     horaires ? (
                       <>
+                        <div className="small text-muted mb-1">
+                          {modeHoraires === "contrat"
+                            ? `Planning type du contrat « ${p.contratType?.label ?? ""} »`
+                            : "Horaires personnalisés"}
+                        </div>
                         <table
                           className="table table-sm mb-1 table-compacte"
                           style={{ maxWidth: 420 }}
@@ -243,7 +255,11 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
                       </>
                     ) : (
                       <span className="text-muted">
-                        Pas de cycle fixe : affectable à toute heure, hors absences.
+                        {modeHoraires === "contrat"
+                          ? p.contratType
+                            ? `Suit le planning type du contrat « ${p.contratType.label} », qui n'est pas encore défini : affectable à toute heure, hors absences.`
+                            : "Suit le planning type de son contrat, mais aucun type de contrat n'est renseigné : affectable à toute heure, hors absences."
+                          : "Pas de cycle fixe : affectable à toute heure, hors absences."}
                       </span>
                     )
                   }

@@ -238,6 +238,13 @@ disposition gracieuses accordées aux associations, top organisations ; export *
   **cycle hebdomadaire d'horaires** (par jour : repos ou jusqu'à deux plages, pour la coupure
   méridienne). Sans cycle, la personne est affectable à toute heure (vacataire). La fiche compare
   les heures du cycle aux heures attendues de la quotité (information, jamais bloquant).
+- **Plannings types** : un cycle d'horaires par type de contrat, saisi une fois. Chaque personne
+  suit le planning type de son contrat (il change, elle suit), a des horaires personnalisés, ou
+  n'a pas d'horaires fixes. Modifier un planning type revérifie les affectations à venir des
+  personnes qui le suivent.
+- **Planning de service, vue semaine** : fond de case selon la journée (travaillée, repos,
+  absence de toute la journée), heures planifiées de la semaine face à la durée de référence,
+  modification des horaires et ajout d'une absence depuis une case.
 - **Absences** : périodes datées (journées entières ou plage horaire) avec un motif du référentiel
   (congés annuels, RTT, maladie, formation, récupération, autre) et une note ; une absence retire
   la personne des créneaux où elle était affectée ou proposée sur la période, qui repassent en

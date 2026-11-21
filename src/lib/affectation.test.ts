@@ -11,8 +11,11 @@ import {
   fenetreSemaines,
   heuresAttendues,
   heuresDuCycle,
+  heuresPlanifiees,
+  horairesEffectifs,
   horsAbsences,
   libellePlages,
+  lireModeHoraires,
   type OccupationRef,
   type PersonneAffectable,
   periodesTravaillees,
@@ -378,5 +381,44 @@ describe("vacations hors absences", () => {
       [t("2026-11-09", "08:00").getTime(), t("2026-11-09", "12:00").getTime()],
       [t("2026-11-09", "14:00").getTime(), t("2026-11-09", "18:00").getTime()],
     ]);
+  });
+});
+
+describe("horaires effectifs et heures planifiées", () => {
+  const type = { "1": [["08:00", "12:00"]] as [string, string][] };
+  const perso = { "2": [["14:00", "18:00"]] as [string, string][] };
+
+  it("lit le mode, le planning type du contrat par défaut", () => {
+    expect(lireModeHoraires("perso")).toBe("perso");
+    expect(lireModeHoraires("libre")).toBe("libre");
+    expect(lireModeHoraires("contrat")).toBe("contrat");
+    expect(lireModeHoraires("n'importe")).toBe("contrat");
+    expect(lireModeHoraires(undefined)).toBe("contrat");
+  });
+
+  it("retient le planning type, les horaires personnalisés ou rien", () => {
+    expect(horairesEffectifs({ mode: "contrat", perso, type })).toBe(type);
+    expect(horairesEffectifs({ mode: "perso", perso, type })).toBe(perso);
+    expect(horairesEffectifs({ mode: "libre", perso, type })).toBeNull();
+    // Contrat sans planning type défini : pas de contrainte, même si un cycle personnel traîne.
+    expect(horairesEffectifs({ mode: "contrat", perso, type: null })).toBeNull();
+    expect(horairesEffectifs({ mode: "perso", perso: null, type })).toBeNull();
+  });
+
+  it("additionne les heures sans compter deux fois un recouvrement", () => {
+    const h = (jour: number, heure: number, min = 0) =>
+      new Date(Date.UTC(2026, 10, jour, heure, min));
+    const i = (a: Date, b: Date) => ({ startAt: a, endAt: b });
+    const de = h(16, 0);
+    const a = h(23, 0);
+    expect(heuresPlanifiees([], de, a)).toBe(0);
+    expect(heuresPlanifiees([i(h(17, 8), h(17, 12)), i(h(18, 14), h(18, 17, 30))], de, a)).toBe(
+      7.5,
+    );
+    // Une vacation de 17 h à 23 h et un créneau affecté de 20 h à 22 h : 6 h, pas 8.
+    expect(heuresPlanifiees([i(h(19, 17), h(19, 23)), i(h(19, 20), h(19, 22))], de, a)).toBe(6);
+    // Chevauchement partiel, puis part hors de la fenêtre ignorée.
+    expect(heuresPlanifiees([i(h(19, 8), h(19, 12)), i(h(19, 10), h(19, 14))], de, a)).toBe(6);
+    expect(heuresPlanifiees([i(h(15, 20), h(16, 2)), i(h(22, 22), h(23, 3))], de, a)).toBe(4);
   });
 });

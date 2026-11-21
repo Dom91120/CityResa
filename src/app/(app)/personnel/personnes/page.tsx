@@ -20,7 +20,7 @@ export default async function PersonnesPage({ searchParams }: { searchParams: Pr
     prisma.personnel.findMany({
       include: {
         _count: { select: { vacations: { where: { endAt: { gte: new Date() } } } } },
-        contratType: { select: { label: true } },
+        contratType: { select: { label: true, planningType: { select: { horaires: true } } } },
         sites: { include: { site: { select: { name: true } } } },
       },
       orderBy: [{ isActive: "desc" }, { lastName: "asc" }, { firstName: "asc" }],
@@ -130,7 +130,14 @@ export default async function PersonnesPage({ searchParams }: { searchParams: Pr
                         <>
                           {p.contratType.label}
                           <div className="text-muted">
-                            {p.quotite} %{p.horaires ? " · horaires fixes" : " · sans cycle"}
+                            {p.quotite} % ·{" "}
+                            {p.horairesMode === "perso"
+                              ? "horaires personnalisés"
+                              : p.horairesMode === "libre"
+                                ? "sans cycle"
+                                : p.contratType.planningType
+                                  ? "planning type"
+                                  : "planning type à définir"}
                           </div>
                         </>
                       ) : (

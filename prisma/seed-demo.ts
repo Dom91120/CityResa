@@ -3938,6 +3938,15 @@ async function creerPersonnel(): Promise<void> {
       r.id,
     ]),
   );
+  // Le planning type des titulaires : celui que suit le gardien de la Maison Blanche.
+  const titulaire = contrats.get("titulaire");
+  const horairesTitulaire = PERSONNEL.find((p) => p.cle === "ali")?.horaires;
+  if (titulaire && horairesTitulaire) {
+    await prisma.planningType.deleteMany({});
+    await prisma.planningType.create({
+      data: { contratTypeId: titulaire, horaires: horairesTitulaire, updatedBy: "démonstration" },
+    });
+  }
   for (const p of PERSONNEL) {
     const row = await prisma.personnel.create({
       data: {
@@ -3953,7 +3962,9 @@ async function creerPersonnel(): Promise<void> {
         quotite: p.quotite,
         heuresHebdo: p.heures,
         contratDebut: parseYmdUtc(`${new Date().getUTCFullYear() - 1}-09-01`),
-        horaires: p.horaires ?? Prisma.DbNull,
+        // Ali suit le planning type de son contrat ; les autres gardent leurs horaires propres.
+        horairesMode: p.cle === "ali" ? "contrat" : p.horaires ? "perso" : "libre",
+        horaires: p.cle === "ali" ? Prisma.DbNull : (p.horaires ?? Prisma.DbNull),
         sites: {
           create: p.sites.map((motif, i) => ({ siteId: siteDe(motif).id, principal: i === 0 })),
         },

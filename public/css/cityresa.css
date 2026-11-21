@@ -757,6 +757,21 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 /* Les vignettes restent centrées dans la hauteur ; la case leur réserve la place des plages, en haut
    comme en bas, pour qu’elles ne passent jamais dessous. */
 .planning-service td:has(> .plages-jour):has(> .evt) { padding-block: 21px; }
+/* Le fond d'une case dit la journée de la personne : travaillée (vert très pâle), repos ou hors
+   contrat (gris), absente toute la journée (hachures ambrées). Il prime sur le gris du week-end. */
+.planning-service td.jour-travail, .legende-fond.jour-travail { background: color-mix(in srgb, var(--emerald-text) 8%, var(--surface)); }
+.planning-service td.jour-repos, .legende-fond.jour-repos { background: var(--inset); }
+.planning-service td.jour-absent, .legende-fond.jour-absent { background: repeating-linear-gradient(45deg, var(--surface), var(--surface) 6px, color-mix(in srgb, var(--amber-text) 16%, var(--surface)) 6px, color-mix(in srgb, var(--amber-text) 16%, var(--surface)) 12px); }
+.legende-fond { display: inline-block; width: 16px; height: 12px; border: 1px solid var(--line); border-radius: 3px; vertical-align: -1px; margin-right: 3px; }
+.planning-service a.plages-jour { color: var(--muted); text-decoration: none; }
+.planning-service a.plages-jour:hover, .planning-service a.plages-jour:focus-visible { color: var(--primary); text-decoration: underline; }
+/* L'ajout d'une absence : un bouton discret en haut à droite de la case, visible au survol ou au clavier. */
+.planning-service .cell-action { position: absolute; top: 3px; right: 3px; z-index: 1; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 6px; color: var(--muted); background: var(--surface); border: 1px solid var(--line); opacity: 0; transition: opacity 0.1s; }
+.planning-service td:hover > .cell-action, .planning-service .cell-action:focus-visible { opacity: 1; }
+.planning-service .cell-action:hover { color: var(--primary); }
+@media (hover: none) { .planning-service .cell-action { opacity: 0.7; } }
+.planning-service .heures-semaine { font-variant-numeric: tabular-nums; }
+.planning-service .heures-semaine.depasse { color: var(--amber-text); font-weight: 600; }
 .planning td.weekend { background: var(--zebra); }
 .planning td.jour-cellule { cursor: pointer; }
 .planning td.jour-cellule:hover { background: var(--primary-dim); }

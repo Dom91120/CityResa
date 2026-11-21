@@ -15,7 +15,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 **Ce que l'on voit**
 
 - Le titre avec la semaine affichée, puis le résumé : nombre de vacations, nombre de créneaux réservés et leur état (couverts, partiels, à couvrir).
-- Les boutons **Personnes**, **Imprimer** (semaine en PDF A4 ou A3, une page par site, créneaux à couvrir hachurés ; le PDF reprend les sites et les personnes retenus dans les filtres) et **Ajouter une vacation**.
+- Les boutons **Personnes**, **Plannings types** (les horaires de travail par type de contrat, section 11.6), **Imprimer** (semaine en PDF A4 ou A3, une page par site, créneaux à couvrir hachurés ; le PDF reprend les sites et les personnes retenus dans les filtres) et **Ajouter une vacation**.
 - Les onglets **Planning** et **À couvrir** (avec le nombre de créneaux pas entièrement couverts), la période, centrée et encadrée de deux flèches, avec l'icône d'agenda pour aller à une date et l'icône du calendrier fléché pour revenir à aujourd'hui, précédée de la bascule **Semaine | Jour**, et à droite les filtres **Tous les sites** et **Toutes les personnes** (deux boutons à cases à cocher : un ou plusieurs choix, rien de coché = tous).
 - La première ligne, **À couvrir**, liste par jour les créneaux réservés (dossiers acceptés, signés ou confirmés) de vos sites, avec l'espace, les heures et une mention colorée :
   - **Couvert** (vert) : une ou plusieurs vacations du site, mises bout à bout, couvrent tout le créneau, ou une personne y est épinglée ;
@@ -23,12 +23,19 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
   - **À couvrir** (rouge) : personne n'est de service sur ce site à ce moment-là.
   La mention est suivie du nom des personnes concernées ; cliquer ouvre la fiche de la réservation.
 - Sous le tableau, une **légende** rappelle le sens des vignettes : pour la ligne « À couvrir », liseré vert (couvert), orange (partiel) ou rouge en pointillés (à couvrir) ; pour les personnes, liseré à la couleur de la personne (vacation), signet vert (créneau affecté), pointillés orange sur fond jaune (proposition à valider) et hachures (absence).
-- Ensuite, une ligne par personne avec sa couleur, sa fonction, et dans chaque jour ses vacations : le site, les heures et la note. Une vacation à cheval sur minuit s'affiche sur les deux jours.
+- Ensuite, une ligne par personne avec sa couleur, sa fonction, ses **heures de la semaine** (« 31 h / 35 h » : ce qui est planifié en vacations et en créneaux affectés, face à sa durée de référence ; en orange quand c'est dépassé) et l'horloge qui ouvre ses horaires de travail. Dans chaque jour : en haut, ses **horaires de travail** du jour (« 16h30 - 23h30 », « Repos », « Absent toute la journée »), puis ses vacations avec le site, les heures et la note.
+- Le **fond de la case** dit la journée de la personne : vert très pâle un jour travaillé, gris un jour de repos ou hors contrat, hachures ambrées quand une absence couvre toute sa journée. Une personne sans horaires fixes garde un fond neutre. Une seconde légende, sous le tableau, le rappelle.
+- Au survol d'une case, un petit bouton au calendrier barré, en haut à droite, sert à **ajouter une absence** ce jour-là. Une vacation à cheval sur minuit s'affiche sur les deux jours.
 - En vue **Jour**, le tableau devient une **frise horaire** : les heures en haut (de 7 h à minuit, davantage si un élément commence plus tôt), une ligne par personne, et chaque vignette placée et dimensionnée selon ses heures. La plage de travail du cycle apparaît en fond vert pâle sur la ligne de la personne ; « Repos » ou « Hors contrat » le remplace quand le cycle ne prévoit rien. Deux éléments simultanés s'empilent. On lit ainsi d'un coup d'œil qui est de service au moment d'un créneau à couvrir.
 
 ![Planning de service, vue Jour](captures/personnel-jour.webp)
 
 *Figure — la journée du mercredi 2 décembre 2026 en frise horaire : deux créneaux réservés, dont le conseil municipal encore à couvrir, et les plages de travail de chacun.*
+
+**Comment faire — modifier les horaires ou poser une absence depuis le planning**
+
+1. Pour changer les **horaires de travail** d'une personne, cliquez sur ses horaires dans une case (« 16h30 - 23h30 », « Repos »…) ou sur l'horloge à côté de son nom : la page de ses horaires s'ouvre (section 11.6). Après l'enregistrement, vous revenez au planning.
+2. Pour poser un **congé ou une absence**, survolez la case du jour voulu et cliquez sur le bouton au calendrier barré : le jour est prérempli (section 11.7). Après l'ajout, vous revenez au planning, où la case est hachurée.
 
 **Comment faire — ajouter une vacation**
 
@@ -134,7 +141,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 
 ## 11.6 Le contrat et les horaires de travail
 
-**À quoi ça sert** — Décrire le temps de travail de chaque personne pour que l'application sache quand elle est en poste : type de contrat, quotité, durée hebdomadaire, dates, et le cycle hebdomadaire d'horaires.
+**À quoi ça sert** — Décrire le temps de travail de chaque personne pour que l'application sache quand elle est en poste : type de contrat, quotité, durée hebdomadaire, dates, et ses horaires de travail. Ces horaires viennent soit du **planning type** de son type de contrat, soit d'horaires personnalisés.
 
 **Qui** — Agents et gestionnaires en écriture sur « Personnel de service ».
 
@@ -149,12 +156,30 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 1. Sur la fiche, cliquez sur **Modifier** : la fenêtre comporte l'identité, puis **Contrat et temps de travail** et **Sites d'intervention**.
 2. Choisissez le **Type de contrat** (fonctionnaire titulaire ou stagiaire, contractuel CDD ou CDI, vacataire, apprenti, mis à disposition ; liste dans Administration › Référentiels), la **Quotité (%)** (100 pour un temps complet, 80 pour un quatre-cinquièmes…) et, pour un temps non complet, la **Durée hebdomadaire (h)** du contrat (28 h par exemple).
 3. Renseignez le **Début** et la **Fin du contrat** si elle est connue : hors de ces dates, la personne n'est jamais proposée.
-4. Cochez **Horaires de travail fixes** pour saisir le cycle : pour chaque jour, cochez **Repos** ou indiquez le **Début** et la **Fin**, et au besoin une seconde plage (coupure méridienne). Décoché, la personne est affectable à toute heure de tous les jours, hors absences (vacataire appelé selon les besoins).
+4. Dans **Horaires de travail**, choisissez d'où viennent ses horaires :
+   - **Planning type du contrat** : la personne suit les horaires définis pour son type de contrat ; ils sont rappelés sous le choix. Si le planning type change, ses horaires changent avec lui ;
+   - **Horaires personnalisés** : la grille du dessous s'applique à elle seule. Pour chaque jour, cochez **Repos** ou indiquez le **Début** et la **Fin**, et au besoin une seconde plage (coupure méridienne) ;
+   - **Pas d'horaires fixes** : la personne est affectable à toute heure de tous les jours, hors absences (vacataire appelé selon les besoins).
 5. Cochez les **Sites où la personne peut être affectée** et choisissez son **Site principal**.
 6. Cliquez sur **Enregistrer**. Les affectations à venir qui ne tiennent plus (site retiré, horaire modifié) sont retirées et les créneaux repassent en affectation ; le message le dit.
 
+**Comment faire — définir les plannings types**
+
+1. Dans le planning de service, cliquez sur **Plannings types** (le lien figure aussi dans Administration › Paramètres). La page liste les types de contrat avec leurs horaires, le total par semaine et le nombre de personnes qui les suivent.
+2. Cliquez sur **Définir** (ou **Modifier**) en face d'un type de contrat.
+3. Remplissez la grille de la semaine : **Repos** ou les heures de **Début** et de **Fin**, avec une seconde plage si besoin.
+4. Cliquez sur **Enregistrer**. Toutes les personnes de ce contrat qui suivent le planning type prennent ces horaires ; leurs affectations à venir devenues impossibles sont retirées et remises en affectation, et le message le dit.
+5. Pour ne plus imposer d'horaires à ce contrat, ouvrez le planning type et cliquez sur **Supprimer**.
+
+![Plannings types](captures/personnel-plannings-types.webp)
+
+*Figure — les plannings types : celui des fonctionnaires titulaires est défini et suivi par une personne ; les autres types de contrat n'imposent pas d'horaires.*
+
 **Règles à connaître**
 
+- Il y a au plus **un planning type par type de contrat**. Une personne en mode « Planning type du contrat » dont le contrat n'a pas de planning type n'a aucune contrainte horaire ; la liste des plannings types le signale par une pastille jaune.
+- Passer une personne en horaires personnalisés ne touche pas au planning type ; revenir au planning type conserve sa grille personnelle, qui redevient active si vous la choisissez à nouveau.
+- Les horaires servent à l'affectation automatique et aux propositions. Une vacation ou une affectation **à la main** hors horaires reste possible, avec un avertissement.
 - Un créneau ne convient que s'il tient **entièrement** dans une plage du cycle : une personne en poste de 14 h à 21 h n'est pas proposée pour un créneau de 20 h à 22 h 30.
 - Quotité et durée hebdomadaire sont descriptives : l'application ne limite pas les heures affectées, mais elle classe les candidats pour répartir la charge (section 11.8).
 - Une personne sans site d'intervention n'est jamais proposée ; la liste des personnes le signale par un tiret dans la colonne **Sites**.
@@ -169,7 +194,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 
 **Comment faire**
 
-1. Sur la fiche, cliquez sur **Ajouter une absence**.
+1. Sur la fiche, cliquez sur **Ajouter une absence** ; ou, dans le planning de service, survolez la case du jour et cliquez sur le bouton au calendrier barré, qui préremplit le jour.
 2. Choisissez le **Motif** (congés annuels, RTT, maladie, formation, récupération, autre ; liste dans Administration › Référentiels), le premier jour (**Du**) et le dernier (**Au**, inclus).
 3. Laissez **Journée(s) entière(s)** coché, ou décochez-le pour une demi-journée ou un rendez-vous et indiquez l'**Heure de début** et l'**Heure de fin**.
 4. Cliquez sur **Ajouter**. Si la personne était affectée ou proposée sur un créneau de la période, l'affectation est retirée et le créneau repasse en affectation : le message indique combien. Si elle avait des vacations sur la période, le message le signale aussi.

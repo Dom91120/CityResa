@@ -222,6 +222,7 @@ model Referential {
   materiels     Materiel[]
   documents     Document[]
   personnelsContrat Personnel[] @relation("PersonnelContrat")
+  planningType      PlanningType?
   absences          Absence[]   @relation("AbsenceMotif")
   secteursSubvention Subvention[] @relation("SubventionSecteur")
 
@@ -449,6 +450,18 @@ model Materiel {
   @@map("materiel")
 }
 
+/// Planning type d'un type de contrat : le cycle hebdomadaire d'horaires de travail que suivent
+/// les personnes de ce contrat dont le mode d'horaires est « contrat ».
+model PlanningType {
+  contratTypeId Int         @id @map("contrat_type_id")
+  contratType   Referential @relation(fields: [contratTypeId], references: [id], onDelete: Cascade)
+  horaires      Json
+  updatedAt     DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  updatedBy     String?     @map("updated_by") @db.VarChar(160)
+
+  @@map("planning_type")
+}
+
 /// Agents en charge d'un espace (gestion des accès par service ou lieu).
 model EspaceGestionnaire {
   espaceId Int    @map("espace_id")
@@ -507,7 +520,10 @@ model Personnel {
   heuresHebdo  Decimal?  @map("heures_hebdo") @db.Decimal(4, 1)
   contratDebut DateTime? @map("contrat_debut") @db.Date
   contratFin   DateTime? @map("contrat_fin") @db.Date
-  /// Cycle hebdomadaire d'horaires de travail (jours ISO → plages « HH:MM ») ; null = pas de contrainte horaire.
+  /// D'où viennent les horaires de travail : contrat (le planning type du type de contrat) |
+  /// perso (le cycle `horaires` ci-dessous) | libre (pas d'horaires fixes).
+  horairesMode String @default("contrat") @map("horaires_mode") @db.VarChar(8)
+  /// Cycle hebdomadaire personnalisé (jours ISO → plages « HH:MM »), suivi en mode « perso ».
   horaires Json?
 
   vacations        Vacation[]

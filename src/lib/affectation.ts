@@ -65,6 +65,55 @@ export function travaille(horaires: Horaires | null, i: Intervalle): boolean {
   return dansHoraires(horaires, i);
 }
 
+export const MODES_HORAIRES: Record<string, string> = {
+  contrat: "Planning type du contrat",
+  perso: "Horaires personnalisés",
+  libre: "Pas d'horaires fixes",
+};
+
+export type ModeHoraires = "contrat" | "perso" | "libre";
+
+/** Le mode d'horaires saisi ou stocké ; une valeur inconnue suit le planning type du contrat. */
+export function lireModeHoraires(v: unknown): ModeHoraires {
+  return v === "perso" || v === "libre" ? v : "contrat";
+}
+
+/**
+ * Les horaires de travail réellement applicables à une personne : le planning type de son type
+ * de contrat, ses horaires personnalisés, ou aucun. Sans planning type défini pour son contrat,
+ * une personne en mode « contrat » n'a pas de contrainte horaire.
+ */
+export function horairesEffectifs(p: {
+  mode: ModeHoraires;
+  perso: Horaires | null;
+  type: Horaires | null;
+}): Horaires | null {
+  if (p.mode === "libre") return null;
+  return p.mode === "perso" ? p.perso : p.type;
+}
+
+/**
+ * Les heures planifiées sur une fenêtre : la durée couverte par les intervalles (vacations,
+ * créneaux affectés), deux intervalles qui se recouvrent ne comptant qu'une fois. Au dixième.
+ */
+export function heuresPlanifiees(intervalles: readonly Intervalle[], de: Date, a: Date): number {
+  const bornes = intervalles
+    .map((i) => [
+      Math.max(i.startAt.getTime(), de.getTime()),
+      Math.min(i.endAt.getTime(), a.getTime()),
+    ])
+    .filter(([d, f]) => f > d)
+    .sort((x, y) => x[0] - y[0]);
+  let total = 0;
+  let fin = Number.NEGATIVE_INFINITY;
+  for (const [d, f] of bornes) {
+    if (f <= fin) continue;
+    total += f - Math.max(d, fin);
+    fin = f;
+  }
+  return Math.round(total / 360_000) / 10;
+}
+
 /** Le total hebdomadaire des plages d'un cycle d'horaires, en heures. */
 export function heuresDuCycle(horaires: Horaires | null): number {
   if (!horaires) return 0;

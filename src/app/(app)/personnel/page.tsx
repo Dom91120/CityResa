@@ -129,6 +129,13 @@ export default async function PersonnelPage({
           <a href="/personnel/personnes" className="btn btn-ghost btn-sm">
             <Icone nom="users" taille={14} /> Personnes
           </a>
+          <a
+            href="/personnel/plannings-types"
+            className="btn btn-ghost btn-sm"
+            title="Les horaires de travail par type de contrat"
+          >
+            <Icone nom="clock" taille={14} /> Plannings types
+          </a>
           <div className="dropdown d-inline-block">
             <button
               type="button"

@@ -12,13 +12,19 @@ import { Chip } from "@/components/macros";
 import {
   type AbsenceRef,
   absencesDuJour,
+  heuresAttendues,
+  heuresPlanifiees,
   libellePlages,
+  lireModeHoraires,
+  MODES_HORAIRES,
+  type ModeHoraires,
   type PersonneAffectable,
   type PlageMinutes,
   periodesTravaillees,
+  plagesDuJour,
 } from "@/lib/affectation";
 import { JOURS_ISO } from "@/lib/constantes";
-import { lireHoraires } from "@/lib/creneaux";
+import { type Horaires, lireHoraires } from "@/lib/creneaux";
 import { ymdUtc } from "@/lib/date-utc";
 import { bornesFrise, minutesDuJour } from "@/lib/frise";
 import { heure, isoParis, nomCourt, plageHoraire } from "@/lib/libelles";
@@ -147,29 +153,62 @@ function Affectation({ c, jour, retour }: { c: AffectationRow; jour: string; ret
   );
 }
 
+/**
+ * Le fond d'une case de la vue Semaine : jour travaillé, repos (ou hors contrat), ou absence qui
+ * couvre toute la journée travaillée. Sans horaires fixes, seul l'absent de toute la journée
+ * est marqué.
+ */
+export function classeJour(
+  p: PersonneAffectable,
+  jour: string,
+  absences: readonly AbsenceRef[],
+): string {
+  const t = periodesTravaillees(p, jour, absences);
+  if (t.etat === "repos" || t.etat === "hors_contrat") return "jour-repos";
+  if (!t.plages.length) return "jour-absent";
+  return t.etat === "travail" ? "jour-travail" : "";
+}
+
 /** Les plages travaillées d'une personne un jour donné, et ses absences hachurées. */
 function JourTravail({
   p,
   jour,
   absences,
+  hrefHoraires,
 }: {
   p: PersonneAffectable;
   jour: string;
   absences: readonly AbsenceRef[];
+  /** L'adresse de saisie des horaires de la personne (agent qui peut modifier). */
+  hrefHoraires?: string;
 }) {
   const t = periodesTravaillees(p, jour, absences);
   const abs = absencesDuJour(absences, p.id, jour);
+  const texte =
+    t.etat === "repos"
+      ? "Repos"
+      : t.etat === "hors_contrat"
+        ? "Hors contrat"
+        : t.etat === "travail"
+          ? t.plages.length
+            ? libellePlages(t.plages)
+            : "Absent toute la journée"
+          : null;
   return (
     <>
-      {t.etat === "repos" ? (
-        <span className="plages-jour">Repos</span>
-      ) : t.etat === "hors_contrat" ? (
-        <span className="plages-jour">Hors contrat</span>
-      ) : t.etat === "travail" ? (
+      {texte === null ? null : hrefHoraires && t.etat !== "hors_contrat" ? (
+        <a
+          href={hrefHoraires}
+          className="plages-jour"
+          title="Horaires de travail, absences déduites · cliquer pour les modifier"
+        >
+          {texte}
+        </a>
+      ) : (
         <span className="plages-jour" title="Plages de travail du cycle, absences déduites">
-          {t.plages.length ? libellePlages(t.plages) : "Absent toute la journée"}
+          {texte}
         </span>
-      ) : null}
+      )}
       {abs.map((a, i) => (
         <Absence key={`a${i}`} a={a} />
       ))}
@@ -219,6 +258,24 @@ export function GrilleService({
   for (const v of vacations)
     if (!noms.has(v.personnelId)) noms.set(v.personnelId, nomPersonne(v.personnel));
   const affectables = new Map(contexte.personnes.map((p) => [p.id, p]));
+  const suite = retour ? `?next=${encodeURIComponent(retour)}` : "";
+  /** « 31 h / 35 h » : ce qui est planifié dans la semaine face à la durée de référence. */
+  const heuresSemaine = (p: PersonneRow) => {
+    const planifiees = heuresPlanifiees(
+      [
+        ...vacations.filter((v) => v.personnelId === p.id),
+        ...affectations.filter((c) => c.personnelId === p.id),
+      ],
+      fen.de,
+      fen.a,
+    );
+    const attendues = heuresAttendues({
+      quotite: p.quotite,
+      heuresHebdo: p.heuresHebdo === null ? null : Number(p.heuresHebdo),
+    });
+    const fr = (n: number) => String(n).replace(".", ",");
+    return { planifiees, attendues, texte: `${fr(planifiees)} h / ${fr(attendues)} h` };
+  };
   return (
     <>
       <div className="planning planning-service">
@@ -278,14 +335,62 @@ export function GrilleService({
                         {nomPersonne(p)}
                       </a>
                       <small>{p.fonction ?? ""}</small>
+                      {(() => {
+                        const h = heuresSemaine(p);
+                        return (
+                          <small
+                            className={
+                              h.planifiees > h.attendues
+                                ? "heures-semaine depasse"
+                                : "heures-semaine"
+                            }
+                            title="Heures planifiées cette semaine (vacations et créneaux affectés) / durée hebdomadaire de référence"
+                          >
+                            {h.texte}
+                          </small>
+                        );
+                      })()}
                     </span>
+                    {peutEditer ? (
+                      <a
+                        href={`/personnel/personnes/${p.id}/horaires${suite}`}
+                        className="btn btn-ghost btn-icone btn-sm ms-auto"
+                        title={`Horaires de travail de ${nomPersonne(p)}`}
+                        aria-label={`Modifier les horaires de travail de ${nomPersonne(p)}`}
+                      >
+                        <Icone nom="clock" taille={13} />
+                      </a>
+                    ) : null}
                   </div>
                 </td>
                 {fen.jours.map((j) => {
                   const aff = affectables.get(p.id);
+                  const fond = aff ? classeJour(aff, j, contexte.absences) : "";
                   return (
-                    <td key={j} className={estWeekend(j) ? "weekend" : undefined}>
-                      {aff ? <JourTravail p={aff} jour={j} absences={contexte.absences} /> : null}
+                    <td
+                      key={j}
+                      className={`${estWeekend(j) ? "weekend" : ""} ${fond}`.trim() || undefined}
+                    >
+                      {peutEditer ? (
+                        <a
+                          href={`/personnel/personnes/${p.id}/absence?date=${j}${suite ? `&${suite.slice(1)}` : ""}`}
+                          className="cell-action"
+                          title={`Ajouter une absence à ${nomPersonne(p)} ce jour`}
+                          aria-label={`Ajouter une absence à ${nomPersonne(p)} le ${enteteJour(j)}`}
+                        >
+                          <Icone nom="calendar-x" taille={12} />
+                        </a>
+                      ) : null}
+                      {aff ? (
+                        <JourTravail
+                          p={aff}
+                          jour={j}
+                          absences={contexte.absences}
+                          hrefHoraires={
+                            peutEditer ? `/personnel/personnes/${p.id}/horaires${suite}` : undefined
+                          }
+                        />
+                      ) : null}
                       {duJour(
                         vacations.filter((v) => v.personnelId === p.id),
                         j,
@@ -310,6 +415,17 @@ export function GrilleService({
         </table>
       </div>
       <LegendeService />
+      <ul className="list-inline small text-muted mt-1 mb-0" aria-label="Légende des fonds de case">
+        <li className="list-inline-item me-3">
+          <span className="legende-fond jour-travail" aria-hidden="true" /> Jour travaillé
+        </li>
+        <li className="list-inline-item me-3">
+          <span className="legende-fond jour-repos" aria-hidden="true" /> Repos ou hors contrat
+        </li>
+        <li className="list-inline-item">
+          <span className="legende-fond jour-absent" aria-hidden="true" /> Absent toute la journée
+        </li>
+      </ul>
     </>
   );
 }
@@ -616,28 +732,73 @@ const DEFAUT_SEMAINE: [string, string][] = [
   ["13:30", "17:00"],
 ];
 
-/** Le cycle hebdomadaire d'horaires de travail : par jour, repos ou jusqu'à deux plages. */
-export function GrilleHorairesTravail({ horaires }: { horaires: unknown }) {
-  const h = lireHoraires(horaires);
+/** « Lun. 8h00 – 12h00 · Mar. repos… » : un cycle d'horaires résumé en une ligne. */
+export function resumeHoraires(h: Horaires | null): string {
+  if (!h) return "";
+  return JOURS_ISO.map((j) => {
+    const plages = plagesDuJour(h, j.iso);
+    return plages.length ? `${j.court} ${libellePlages(plages)}` : null;
+  })
+    .filter(Boolean)
+    .join(" · ");
+}
+
+/**
+ * Le cycle hebdomadaire d'horaires de travail : par jour, repos ou jusqu'à deux plages. Pour une
+ * personne (`mode` fourni), trois choix précèdent la grille : suivre le planning type de son
+ * contrat, des horaires personnalisés (la grille), ou pas d'horaires fixes. Sans `mode`, la
+ * grille seule : c'est la saisie d'un planning type.
+ */
+export function GrilleHorairesTravail({
+  horaires,
+  mode,
+  type,
+}: {
+  horaires: unknown;
+  /** L'origine des horaires de la personne ; absent = saisie d'un planning type. */
+  mode?: ModeHoraires;
+  /** Le planning type du contrat de la personne (`null` = aucun n'est défini). */
+  type?: { label: string; horaires: Horaires | null } | null;
+}) {
+  const h = lireHoraires(horaires) ?? type?.horaires ?? null;
+  const aides: Record<ModeHoraires, string> = {
+    contrat: type
+      ? type.horaires
+        ? `${type.label} : ${resumeHoraires(type.horaires)}. Si ce planning type change, la personne suit.`
+        : `Aucun planning type n'est encore défini pour « ${type.label} » : en attendant, la personne n'a pas de contrainte horaire.`
+      : "Choisissez d'abord un type de contrat ; sans lui, la personne n'a pas de contrainte horaire.",
+    perso:
+      "La grille ci-dessous s'applique à cette personne seule, quel que soit le planning type.",
+    libre: "La personne peut être affectée à toute heure de ses jours (vacataire sans cycle).",
+  };
   return (
     <div style={{ gridColumn: "1 / -1" }}>
-      <div className="form-check form-switch mb-2">
-        <input
-          className="form-check-input"
-          type="checkbox"
-          role="switch"
-          name="horaires_fixes"
-          id="f-horaires_fixes"
-          defaultChecked={!!h}
-        />
-        <label className="form-check-label" htmlFor="f-horaires_fixes">
-          Horaires de travail fixes (cycle hebdomadaire)
-        </label>
-        <div className="form-text">
-          Décoché : la personne peut être affectée à toute heure de ses jours (vacataire sans
-          cycle). Coché : seuls les créneaux compris dans ses plages lui sont proposés.
-        </div>
-      </div>
+      {mode ? (
+        <fieldset className="mb-3">
+          <legend className="form-label">Horaires de travail</legend>
+          {(Object.keys(MODES_HORAIRES) as ModeHoraires[]).map((k) => (
+            <div key={k} className="form-check mb-1">
+              <input
+                className="form-check-input"
+                type="radio"
+                name="horaires_mode"
+                id={`f-horaires_mode_${k}`}
+                value={k}
+                defaultChecked={k === mode}
+              />
+              <label className="form-check-label" htmlFor={`f-horaires_mode_${k}`}>
+                {MODES_HORAIRES[k]}
+              </label>
+              <div className="form-text mt-0">{aides[k]}</div>
+            </div>
+          ))}
+          <div className="form-text">
+            Hors de ses horaires, la personne n'est pas proposée automatiquement ; une affectation à
+            la main reste possible, avec un avertissement.
+          </div>
+        </fieldset>
+      ) : null}
+      {mode ? <div className="form-label">Grille des horaires personnalisés</div> : null}
       <div className="horaires-travail">
         <span className="entete">Jour</span>
         <span className="entete">Repos</span>
@@ -749,7 +910,18 @@ export function ChampsContrat({
           valeur={p.contratFin ? ymdUtc(p.contratFin) : ""}
           aide="Vide = sans terme. Hors de ces dates, la personne n'est jamais proposée."
         />
-        <GrilleHorairesTravail horaires={p.horaires} />
+        <GrilleHorairesTravail
+          horaires={p.horaires}
+          mode={lireModeHoraires(p.horairesMode)}
+          type={
+            p.contratType
+              ? {
+                  label: p.contratType.label,
+                  horaires: lireHoraires(p.contratType.planningType?.horaires),
+                }
+              : null
+          }
+        />
       </Grille>
       <h6 className="mt-3 mb-2">Sites d'intervention</h6>
       <Grille colonnes={2}>

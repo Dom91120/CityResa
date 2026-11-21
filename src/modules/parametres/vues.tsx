@@ -337,6 +337,12 @@ export function VoletReservations({ cfg }: { cfg: AppSettings }) {
           />
         )}
       </div>
+      {cfg.PERSONNEL_ENABLED && (
+        <p className="small mb-3">
+          <a href="/personnel/plannings-types">Plannings types du personnel de service</a> : les
+          horaires de travail par type de contrat.
+        </p>
+      )}
       <Grille colonnes={2}>
         <Select
           label="Jour d'envoi du planning hebdomadaire"

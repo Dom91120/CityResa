@@ -3,7 +3,6 @@
  * activation, suppression, lien ICS, envoi du planning) et vacations (ajout avec répétition,
  * modification, suppression d'une vacation ou de sa série). Appelées depuis src/app/envoi/personnel.
  */
-import { Prisma } from "@/generated/prisma/client";
 import { lundiDe } from "@/lib/editions";
 import { champ, idOuNull, ids } from "@/lib/forms-util";
 import { isoParis } from "@/lib/libelles";
@@ -31,11 +30,14 @@ import {
   envoyerPlanningPersonne,
   lireAbsence,
   lireContrat,
+  lireGrilleHoraires,
+  lireHorairesPersonne,
   lirePersonne,
   lireSitesPersonne,
   lireVacation,
   mettreAJourSites,
   modifierVacation,
+  personnesSuivantPlanningType,
   sitesDuPerimetre,
   supprimerAbsence,
   supprimerPersonne,
@@ -172,6 +174,58 @@ export async function nouvellePersonne(form: FormData): Promise<Response> {
   }
 }
 
+export const ACTIONS_PLANNING_TYPE = ["enregistrer", "supprimer"];
+
+/**
+ * Enregistre ou retire le planning type d'un type de contrat, puis revérifie les affectations à
+ * venir des personnes qui le suivent (leurs horaires viennent de changer).
+ */
+export async function actionPlanningType(
+  contratTypeId: number,
+  action: string,
+  form: FormData,
+): Promise<Response> {
+  const user = await requireEdit(CATEGORIE);
+  const liste = "/personnel/plannings-types";
+  const type = await prisma.referential.findFirst({
+    where: { id: contratTypeId, kind: "contrat_type" },
+  });
+  if (!type) return pasTrouve();
+  try {
+    if (action === "supprimer") {
+      await prisma.planningType.deleteMany({ where: { contratTypeId } });
+    } else {
+      const horaires = lireGrilleHoraires(form);
+      await prisma.planningType.upsert({
+        where: { contratTypeId },
+        create: { contratTypeId, horaires, updatedBy: user.email },
+        update: { horaires, updatedBy: user.email },
+      });
+    }
+    await auditRecord(
+      action === "supprimer" ? "suppression planning type" : "modification planning type",
+      type.label,
+      CATEGORIE,
+      user.email,
+    );
+    const suivent = await personnesSuivantPlanningType(contratTypeId);
+    let retires = 0;
+    for (const id of suivent) retires += await reverifierAffectations(id, user.email);
+    const concernes = suivent.length
+      ? ` ${suivent.length} personne${suivent.length > 1 ? "s" : ""} le sui${suivent.length > 1 ? "vent" : "t"}.`
+      : " Personne ne le suit pour l'instant.";
+    return redirigerAvecMessage(
+      liste,
+      `${action === "supprimer" ? `Planning type « ${type.label} » retiré : ce contrat n'impose plus d'horaires.` : `Planning type « ${type.label} » enregistré.`}${concernes}${retires ? ` ${retires} affectation${retires > 1 ? "s" : ""} à venir retirée${retires > 1 ? "s" : ""} et remise${retires > 1 ? "s" : ""} en affectation.` : ""}`,
+      "success",
+    );
+  } catch (err) {
+    if (err instanceof UserFacingError)
+      return redirigerAvecMessage(`${liste}/${contratTypeId}`, err.message, "danger");
+    throw err;
+  }
+}
+
 export const ACTIONS_PERSONNE = [
   "modifier",
   "desactiver",
@@ -182,6 +236,7 @@ export const ACTIONS_PERSONNE = [
   "envoyer_planning",
   "absences_ajouter",
   "absences_supprimer",
+  "horaires",
 ];
 
 export async function actionPersonne(
@@ -209,7 +264,6 @@ export async function actionPersonne(
           data: {
             ...lirePersonne(form),
             ...contrat,
-            horaires: contrat.horaires ?? Prisma.DbNull,
           },
         });
         await mettreAJourSites(id, lireSitesPersonne(form));
@@ -220,6 +274,19 @@ export async function actionPersonne(
           retires
             ? `Fiche modifiée ; ${retires} affectation${retires > 1 ? "s" : ""} à venir retirée${retires > 1 ? "s" : ""} (plus disponible) et remise${retires > 1 ? "s" : ""} en affectation.`
             : "Fiche modifiée.",
+          "success",
+        );
+      }
+      case "horaires": {
+        // Les horaires seuls, depuis le planning : le reste de la fiche n'est pas touché.
+        await prisma.personnel.update({ where: { id }, data: lireHorairesPersonne(form) });
+        await auditRecord("modification horaires personnel", nom, CATEGORIE, user.email);
+        const retires = await reverifierAffectations(id, user.email);
+        return redirigerAvecMessage(
+          suite(form, fiche),
+          retires
+            ? `Horaires de ${nom} modifiés ; ${retires} affectation${retires > 1 ? "s" : ""} à venir retirée${retires > 1 ? "s" : ""} (plus disponible) et remise${retires > 1 ? "s" : ""} en affectation.`
+            : `Horaires de ${nom} modifiés.`,
           "success",
         );
       }
@@ -238,7 +305,7 @@ export async function actionPersonne(
             : null,
         ].filter(Boolean);
         return redirigerAvecMessage(
-          fiche,
+          suite(form, fiche),
           [message, ...suites].join(" "),
           vacations ? "warning" : "success",
         );

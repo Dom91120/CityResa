@@ -8,8 +8,11 @@ import type { Prisma } from "@/generated/prisma/client";
 import {
   type AbsenceRef,
   controleManuel,
+  horairesEffectifs,
   horsAbsences,
+  lireModeHoraires,
   MOTIFS_INDISPONIBLE,
+  type ModeHoraires,
   type MotifIndisponible,
   type OccupationRef,
   type PersonneAffectable,
@@ -152,7 +155,24 @@ export async function sitesDuPerimetre(user: CurrentUser): Promise<SiteRef[]> {
 
 // ── Disponibilité : personne affectable, absences ──
 
-export const INCLUDE_PERSONNE_AFFECTABLE = { sites: true } satisfies Prisma.PersonnelInclude;
+export const INCLUDE_PERSONNE_AFFECTABLE = {
+  sites: true,
+  // Le planning type du contrat, suivi par les personnes en mode « contrat ».
+  contratType: { include: { planningType: true } },
+} satisfies Prisma.PersonnelInclude;
+
+/** Les horaires réellement applicables à une personne chargée avec son type de contrat. */
+export function horairesDe(p: {
+  horairesMode: string;
+  horaires: unknown;
+  contratType?: { planningType?: { horaires: unknown } | null } | null;
+}): Horaires | null {
+  return horairesEffectifs({
+    mode: lireModeHoraires(p.horairesMode),
+    perso: lireHoraires(p.horaires),
+    type: lireHoraires(p.contratType?.planningType?.horaires),
+  });
+}
 
 export function versPersonneAffectable(
   p: Prisma.PersonnelGetPayload<{ include: typeof INCLUDE_PERSONNE_AFFECTABLE }>,
@@ -166,7 +186,7 @@ export function versPersonneAffectable(
     heuresHebdo: p.heuresHebdo === null ? null : Number(p.heuresHebdo),
     contratDebut: p.contratDebut ? ymdUtc(p.contratDebut) : null,
     contratFin: p.contratFin ? ymdUtc(p.contratFin) : null,
-    horaires: lireHoraires(p.horaires),
+    horaires: horairesDe(p),
     sites: p.sites.map((s) => ({ siteId: s.siteId, principal: s.principal })),
   };
 }
@@ -741,12 +761,27 @@ export type ContratEntree = {
   heuresHebdo: number | null;
   contratDebut: Date | null;
   contratFin: Date | null;
-  horaires: Horaires | null;
+  horairesMode: ModeHoraires;
+  /** Le cycle personnalisé, présent seulement en mode « perso » (sinon l'ancien est gardé). */
+  horaires?: Horaires;
 };
 
-/** Le cycle hebdomadaire d'horaires de travail : par jour, repos ou jusqu'à deux plages. */
-export function lireHorairesTravail(form: FormData): Horaires | null {
-  if (!coche(form, "horaires_fixes")) return null;
+/**
+ * L'origine des horaires d'une personne et, en mode « perso », son cycle personnalisé. Dans les
+ * autres modes la grille n'est pas lue : le cycle déjà enregistré est conservé tel quel.
+ */
+export function lireHorairesPersonne(form: FormData): {
+  horairesMode: ModeHoraires;
+  horaires?: Horaires;
+} {
+  const horairesMode = lireModeHoraires(champ(form, "horaires_mode"));
+  return horairesMode === "perso"
+    ? { horairesMode, horaires: lireGrilleHoraires(form) }
+    : { horairesMode };
+}
+
+/** Le cycle hebdomadaire saisi dans la grille : par jour, repos ou jusqu'à deux plages. */
+export function lireGrilleHoraires(form: FormData): Horaires {
   const out: Horaires = {};
   for (const j of JOURS_ISO) {
     if (coche(form, `repos_${j.iso}`)) {
@@ -791,7 +826,7 @@ export function lireContrat(form: FormData): ContratEntree {
     heuresHebdo,
     contratDebut: RE_YMD.test(debut) ? parseYmdUtc(debut) : null,
     contratFin: RE_YMD.test(fin) ? parseYmdUtc(fin) : null,
-    horaires: lireHorairesTravail(form),
+    ...lireHorairesPersonne(form),
   };
 }
 
@@ -816,7 +851,7 @@ export async function mettreAJourSites(
 }
 
 export const INCLUDE_PERSONNE = {
-  contratType: true,
+  contratType: { include: { planningType: true } },
   sites: { include: { site: { select: { id: true, name: true } } } },
 } satisfies Prisma.PersonnelInclude;
 
@@ -824,6 +859,40 @@ export type PersonneComplete = Prisma.PersonnelGetPayload<{ include: typeof INCL
 
 export async function chargerPersonneComplete(id: number): Promise<PersonneComplete | null> {
   return prisma.personnel.findUnique({ where: { id }, include: INCLUDE_PERSONNE });
+}
+
+/** Les types de contrat avec leur planning type et le nombre de personnes qui le suivent. */
+export async function typesDeContratAvecPlanning() {
+  const [types, suivis] = await Promise.all([
+    prisma.referential.findMany({
+      where: { kind: "contrat_type", isActive: true },
+      include: { planningType: true },
+      orderBy: [{ position: "asc" }, { label: "asc" }],
+    }),
+    prisma.personnel.groupBy({
+      by: ["contratTypeId"],
+      where: { isActive: true, horairesMode: "contrat" },
+      _count: true,
+    }),
+  ]);
+  const parType = new Map(suivis.map((s) => [s.contratTypeId, s._count]));
+  return types.map((t) => ({
+    id: t.id,
+    label: t.label,
+    horaires: lireHoraires(t.planningType?.horaires),
+    modifieLe: t.planningType?.updatedAt ?? null,
+    modifiePar: t.planningType?.updatedBy ?? null,
+    suivi: parType.get(t.id) ?? 0,
+  }));
+}
+
+/** Les personnes en service qui suivent le planning type d'un type de contrat. */
+export async function personnesSuivantPlanningType(contratTypeId: number): Promise<number[]> {
+  const rows = await prisma.personnel.findMany({
+    where: { contratTypeId, horairesMode: "contrat", isActive: true },
+    select: { id: true },
+  });
+  return rows.map((r) => r.id);
 }
 
 export async function referentiel(kind: "contrat_type" | "absence_motif") {
