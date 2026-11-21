@@ -11,19 +11,18 @@ import {
 } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { Chip } from "@/components/macros";
-import {
-  heuresAttendues,
-  heuresDuCycle,
-  libellePlages,
-  lireModeHoraires,
-  plagesDuJour,
-} from "@/lib/affectation";
-import { JOURS_ISO } from "@/lib/constantes";
+import { ScriptDiffere } from "@/components/scripts";
+import { heuresAttendues, heuresDuCycle, lireModeHoraires } from "@/lib/affectation";
 import { dateCourte, dateHeure, plage } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
 import { libelleAbsence, nomPersonne } from "@/lib/personnel";
 import { avecRetour } from "@/lib/url";
-import { ChampsAbsence, ChampsContrat } from "@/modules/personnel/vues";
+import {
+  ChampsAbsence,
+  ChampsContrat,
+  resumeHoraires,
+  SemaineHoraires,
+} from "@/modules/personnel/vues";
 import { prisma } from "@/server/db";
 import { idDeRoute } from "@/server/guards";
 import { contexteModule } from "@/server/module";
@@ -214,30 +213,8 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
                             ? `Planning type du contrat « ${p.contratType?.label ?? ""} »`
                             : "Horaires personnalisés"}
                         </div>
-                        <table
-                          className="table table-sm mb-1 table-compacte"
-                          style={{ maxWidth: 420 }}
-                        >
-                          <tbody>
-                            {JOURS_ISO.map((j) => {
-                              const plages = plagesDuJour(horaires, j.iso);
-                              return (
-                                <tr key={j.iso}>
-                                  <td className="text-muted text-nowrap" style={{ width: "1%" }}>
-                                    {j.long}
-                                  </td>
-                                  <td>
-                                    {plages.length ? (
-                                      libellePlages(plages)
-                                    ) : (
-                                      <span className="text-faint">Repos</span>
-                                    )}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
+                        <SemaineHoraires horaires={horaires} compacte />
+                        <div className="small text-muted mb-1">{resumeHoraires(horaires)}</div>
                         <span className="small text-muted">
                           {String(heuresCycle).replace(".", ",")} h par semaine
                           {ecart ? (
@@ -492,6 +469,8 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
           >
             <ChampsAbsence motifs={motifs} aujourdhui={aujourdhui} />
           </ModalAction>
+          {/* L'aperçu graphique des horaires de la fenêtre « Modifier la fiche ». */}
+          <ScriptDiffere src="/js/horaires.js" nonce={page.nonce} />
         </>
       ) : null}
     </>

@@ -261,6 +261,12 @@ const CAPTURES = [
   },
   { nom: "personnel-fiche", compte: "gestionnaire", url: "/personnel/personnes/2", hauteur: 2600 },
   {
+    nom: "personnel-horaires",
+    compte: "gestionnaire",
+    url: "/personnel/personnes/2/horaires",
+    hauteur: 1300,
+  },
+  {
     nom: "personnel-plannings-types",
     compte: "gestionnaire",
     url: "/personnel/plannings-types",

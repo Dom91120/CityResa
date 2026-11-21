@@ -149,7 +149,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 
 *Figure — la fiche de Nadia Benmoussa, gardienne contractuelle à 80 % : contrat, cycle du jeudi au dimanche, sites d'intervention, absence de congés et créneaux affectés.*
 
-**Ce que l'on voit** — Dans la section **Contrat et temps de travail** : le **Contrat** (type), la **Quotité** et la durée hebdomadaire, la **Période** du contrat, et le tableau des **Horaires** jour par jour (« Repos » ou les plages, par exemple « 8h00 - 12h00 · 13h30 - 17h00 »), suivi du total d'heures du cycle. Quand ce total s'écarte des heures attendues (35 h × quotité, ou la durée saisie pour un temps non complet), une pastille orange le signale : c'est une information, pas un blocage. La section **Sites d'intervention** liste les sites où la personne peut être affectée, le principal marqué d'une étoile.
+**Ce que l'on voit** — Dans la section **Contrat et temps de travail** : le **Contrat** (type), la **Quotité** et la durée hebdomadaire, la **Période** du contrat, et les **Horaires** de la semaine **en image** : un jour par ligne, les heures de minuit à minuit, une barre verte par plage travaillée et le total du jour à droite, avec en dessous le rappel en clair (« Jeu. 14h00 - 23h00 · … ») et le total d'heures du cycle. Au-dessus, la fiche précise s'il s'agit du planning type du contrat ou d'horaires personnalisés. Quand ce total s'écarte des heures attendues (35 h × quotité, ou la durée saisie pour un temps non complet), une pastille orange le signale : c'est une information, pas un blocage. La section **Sites d'intervention** liste les sites où la personne peut être affectée, le principal marqué d'une étoile.
 
 **Comment faire**
 
@@ -160,6 +160,14 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
    - **Planning type du contrat** : la personne suit les horaires définis pour son type de contrat ; ils sont rappelés sous le choix. Si le planning type change, ses horaires changent avec lui ;
    - **Horaires personnalisés** : la grille du dessous s'applique à elle seule. Pour chaque jour, cochez **Repos** ou indiquez le **Début** et la **Fin**, et au besoin une seconde plage (coupure méridienne) ;
    - **Pas d'horaires fixes** : la personne est affectable à toute heure de tous les jours, hors absences (vacataire appelé selon les besoins).
+
+   L'**aperçu de la semaine**, sous ces choix, montre le résultat en image et se redessine à chaque saisie : changez de choix, cochez un repos ou modifiez une heure, les barres et les totaux suivent. La grille de saisie n'apparaît que pour les horaires personnalisés.
+
+   En horaires personnalisés, vous pouvez aussi **dessiner directement dans l'aperçu**, à la souris ou au doigt : glissez sur la ligne d'un jour pour créer une plage, glissez une barre pour la déplacer, tirez l'un de ses bords pour l'allonger ou la raccourcir, double-cliquez dessus pour la retirer. Le dessin avance par quart d'heure, admet deux plages par jour (la coupure méridienne) et s'arrête au contact de la plage voisine. Les champs d'heures suivent chaque geste ; ils restent la saisie de référence, notamment au clavier.
+
+   ![Horaires de travail d'une personne](captures/personnel-horaires.webp)
+
+   *Figure — les horaires de Nadia Benmoussa, personnalisés : l'aperçu de la semaine (du jeudi au dimanche, 28 h) au-dessus de la grille de saisie.*
 5. Cochez les **Sites où la personne peut être affectée** et choisissez son **Site principal**.
 6. Cliquez sur **Enregistrer**. Les affectations à venir qui ne tiennent plus (site retiré, horaire modifié) sont retirées et les créneaux repassent en affectation ; le message le dit.
 
@@ -167,13 +175,13 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 
 1. Dans le planning de service, cliquez sur **Plannings types** (le lien figure aussi dans Administration › Paramètres). La page liste les types de contrat avec leurs horaires, le total par semaine et le nombre de personnes qui les suivent.
 2. Cliquez sur **Définir** (ou **Modifier**) en face d'un type de contrat.
-3. Remplissez la grille de la semaine : **Repos** ou les heures de **Début** et de **Fin**, avec une seconde plage si besoin.
+3. Remplissez la grille de la semaine : **Repos** ou les heures de **Début** et de **Fin**, avec une seconde plage si besoin. L'aperçu de la semaine, au-dessus, se redessine à chaque saisie ; vous pouvez aussi y dessiner les plages à la souris, comme pour les horaires d'une personne.
 4. Cliquez sur **Enregistrer**. Toutes les personnes de ce contrat qui suivent le planning type prennent ces horaires ; leurs affectations à venir devenues impossibles sont retirées et remises en affectation, et le message le dit.
 5. Pour ne plus imposer d'horaires à ce contrat, ouvrez le planning type et cliquez sur **Supprimer**.
 
 ![Plannings types](captures/personnel-plannings-types.webp)
 
-*Figure — les plannings types : celui des fonctionnaires titulaires est défini et suivi par une personne ; les autres types de contrat n'imposent pas d'horaires.*
+*Figure — les plannings types : celui des fonctionnaires titulaires, dessiné jour par jour (du lundi au vendredi en soirée, 35 h), est suivi par une personne ; les autres types de contrat n'imposent pas d'horaires.*
 
 **Règles à connaître**
 

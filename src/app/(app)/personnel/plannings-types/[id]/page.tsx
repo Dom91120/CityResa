@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { EnteteForm, PiedForm, SectionForm } from "@/components/formulaire";
+import { ScriptDiffere } from "@/components/scripts";
 import { GrilleHorairesTravail } from "@/modules/personnel/vues";
 import { idDeRoute, requireEdit } from "@/server/guards";
 import { contexteModule } from "@/server/module";
@@ -46,6 +47,7 @@ export default async function PlanningTypePage({ params }: { params: Promise<{ i
         supprimer={type.horaires ? `${liste}/${type.id}/supprimer` : null}
         confirmation={`Retirer le planning type « ${type.label} » ? Les personnes qui le suivent n'auront plus de contrainte horaire.`}
       />
+      <ScriptDiffere src="/js/horaires.js" nonce={page.nonce} />
     </>
   );
 }

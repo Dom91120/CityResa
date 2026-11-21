@@ -2,7 +2,7 @@ import { Icone } from "@/components/icones";
 import { Chip } from "@/components/macros";
 import { heuresDuCycle } from "@/lib/affectation";
 import { dateCourte } from "@/lib/libelles";
-import { resumeHoraires } from "@/modules/personnel/vues";
+import { SemaineHoraires } from "@/modules/personnel/vues";
 import { contexteModule } from "@/server/module";
 import { typesDeContratAvecPlanning } from "@/server/personnel";
 
@@ -61,7 +61,7 @@ export default async function PlanningsTypesPage() {
                   <td className="small">
                     {t.horaires ? (
                       <span className="cell2">
-                        <span>{resumeHoraires(t.horaires) || "Repos toute la semaine"}</span>
+                        <SemaineHoraires horaires={t.horaires} compacte />
                         {t.modifieLe ? (
                           <small>
                             Modifié le {dateCourte(t.modifieLe)}

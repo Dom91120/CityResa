@@ -13,6 +13,7 @@ import {
   type AbsenceRef,
   absencesDuJour,
   heuresAttendues,
+  heuresDuCycle,
   heuresPlanifiees,
   libellePlages,
   lireModeHoraires,
@@ -743,6 +744,84 @@ export function resumeHoraires(h: Horaires | null): string {
     .join(" · ");
 }
 
+/** Les repères de l'axe du temps de la vue graphique : toutes les quatre heures. */
+const REPERES_HEURES = [0, 4, 8, 12, 16, 20, 24];
+
+/**
+ * Une semaine d'horaires en image : un jour par ligne, les heures de minuit à minuit en abscisse,
+ * une barre par plage travaillée, le total du jour à droite et celui de la semaine en bas.
+ * `vivant` : l'aperçu d'un formulaire, redessiné par horaires.js à chaque saisie (le planning
+ * type du contrat lui est passé dans `type`). `compacte` : sans libellé dans les barres.
+ */
+export function SemaineHoraires({
+  horaires,
+  compacte = false,
+  vivant = false,
+  type,
+  vide = "Pas d'horaires fixes : disponible à toute heure",
+}: {
+  horaires: Horaires | null;
+  compacte?: boolean;
+  vivant?: boolean;
+  type?: Horaires | null;
+  /** Le message affiché quand il n'y a pas d'horaires. */
+  vide?: string;
+}) {
+  const fr = (n: number) => String(Math.round(n * 10) / 10).replace(".", ",");
+  return (
+    <div
+      className={`semaine-horaires${compacte ? " semaine-horaires--compacte" : ""}`}
+      role="img"
+      aria-label={`Horaires de la semaine : ${resumeHoraires(horaires) || vide}`}
+      data-semaine-horaires={vivant ? "" : undefined}
+      data-type={vivant && type ? JSON.stringify(type) : undefined}
+      data-vide={vivant ? vide : undefined}
+    >
+      <div className="sh-ligne sh-entete" aria-hidden="true">
+        <span />
+        <div className="sh-piste">
+          {REPERES_HEURES.map((x) => (
+            <span key={x} style={{ left: `${(x / 24) * 100}%` }}>
+              {x}h
+            </span>
+          ))}
+        </div>
+        <span />
+      </div>
+      {JOURS_ISO.map((j) => {
+        const plages = horaires ? plagesDuJour(horaires, j.iso) : [];
+        const total = plages.reduce((s, p) => s + (p.finMin - p.debutMin) / 60, 0);
+        return (
+          <div key={j.iso} className="sh-ligne" data-jour={j.iso} aria-hidden="true">
+            <span className="sh-jour">{compacte ? j.court : j.long}</span>
+            <div className="sh-piste">
+              {plages.map((p) => (
+                <span
+                  key={p.debutMin}
+                  className="sh-plage"
+                  style={{
+                    left: `${(p.debutMin / 1440) * 100}%`,
+                    width: `${((p.finMin - p.debutMin) / 1440) * 100}%`,
+                  }}
+                  title={libellePlages([p])}
+                >
+                  {libellePlages([p])}
+                </span>
+              ))}
+            </div>
+            <span className="sh-total">{horaires ? (total ? `${fr(total)} h` : "Repos") : ""}</span>
+          </div>
+        );
+      })}
+      <div className="sh-ligne sh-pied" aria-hidden="true">
+        <span />
+        <span className="sh-vide">{horaires ? "" : vide}</span>
+        <span className="sh-total">{horaires ? `${fr(heuresDuCycle(horaires))} h` : ""}</span>
+      </div>
+    </div>
+  );
+}
+
 /**
  * Le cycle hebdomadaire d'horaires de travail : par jour, repos ou jusqu'à deux plages. Pour une
  * personne (`mode` fourni), trois choix précèdent la grille : suivre le planning type de son
@@ -761,6 +840,13 @@ export function GrilleHorairesTravail({
   type?: { label: string; horaires: Horaires | null } | null;
 }) {
   const h = lireHoraires(horaires) ?? type?.horaires ?? null;
+  // Ce que la grille de saisie affiche (une semaine de bureau par défaut) : l'aperçu en part.
+  const saisie: Horaires = Object.fromEntries(
+    JOURS_ISO.map((j) => [
+      String(j.iso),
+      h ? (h[String(j.iso)] ?? []) : j.iso <= 5 ? DEFAUT_SEMAINE : [],
+    ]),
+  );
   const aides: Record<ModeHoraires, string> = {
     contrat: type
       ? type.horaires
@@ -798,58 +884,79 @@ export function GrilleHorairesTravail({
           </div>
         </fieldset>
       ) : null}
-      {mode ? <div className="form-label">Grille des horaires personnalisés</div> : null}
-      <div className="horaires-travail">
-        <span className="entete">Jour</span>
-        <span className="entete">Repos</span>
-        <span className="entete">Début</span>
-        <span className="entete">Fin</span>
-        <span className="entete">2e début</span>
-        <span className="entete">2e fin</span>
-        {JOURS_ISO.map((j) => {
-          const plages = h ? (h[String(j.iso)] ?? []) : j.iso <= 5 ? DEFAUT_SEMAINE : [];
-          const repos = plages.length === 0;
-          const [p1, p2] = plages;
-          const champs: [string, string, string][] = [
-            ["h1_de", p1?.[0] ?? "", "début"],
-            ["h1_a", p1?.[1] ?? "", "fin"],
-            ["h2_de", p2?.[0] ?? "", "second début"],
-            ["h2_a", p2?.[1] ?? "", "seconde fin"],
-          ];
-          return (
-            <Fragment key={j.iso}>
-              <label className="jour" htmlFor={`f-h1_de_${j.iso}`}>
-                {j.long}
-              </label>
-              <div className="form-check m-0">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  name={`repos_${j.iso}`}
-                  id={`f-repos_${j.iso}`}
-                  defaultChecked={repos}
-                  aria-label={`${j.long} : repos`}
-                />
-              </div>
-              {champs.map(([cle, val, libelle]) => (
-                <input
-                  key={cle}
-                  type="time"
-                  name={`${cle}_${j.iso}`}
-                  id={`f-${cle}_${j.iso}`}
-                  className="form-control form-control-sm"
-                  defaultValue={val}
-                  step={300}
-                  aria-label={`${j.long} : ${libelle}`}
-                />
-              ))}
-            </Fragment>
-          );
-        })}
-      </div>
-      <div className="form-text">
-        Une case « Repos » cochée ignore les heures du jour. La seconde plage sert à la coupure
-        méridienne.
+      <div className="form-label">Aperçu de la semaine</div>
+      <SemaineHoraires
+        horaires={mode === "contrat" ? (type?.horaires ?? null) : mode === "libre" ? null : saisie}
+        vivant
+        type={type?.horaires ?? null}
+        vide={
+          mode === "contrat"
+            ? "Pas de planning type pour ce contrat : disponible à toute heure"
+            : undefined
+        }
+      />
+      {/* Le mode d'emploi du dessin : montré par horaires.js quand l'aperçu est modifiable. */}
+      <p className="form-text mt-0 mb-3" data-aide-dessin hidden>
+        <Icone nom="pencil" taille={12} /> Dessinez directement dans l'aperçu : glissez sur une
+        ligne pour créer une plage, glissez une barre pour la déplacer, tirez un de ses bords pour
+        l'étirer, double-cliquez pour la retirer. Deux plages au plus par jour, par pas d'un quart
+        d'heure ; les champs ci-dessous suivent, et restent utilisables au clavier.
+      </p>
+      {/* La grille de saisie : masquée par horaires.js tant que le mode n'est pas « personnalisés ». */}
+      <div data-grille-perso>
+        {mode ? <div className="form-label">Grille des horaires personnalisés</div> : null}
+        <div className="horaires-travail">
+          <span className="entete">Jour</span>
+          <span className="entete">Repos</span>
+          <span className="entete">Début</span>
+          <span className="entete">Fin</span>
+          <span className="entete">2e début</span>
+          <span className="entete">2e fin</span>
+          {JOURS_ISO.map((j) => {
+            const plages = h ? (h[String(j.iso)] ?? []) : j.iso <= 5 ? DEFAUT_SEMAINE : [];
+            const repos = plages.length === 0;
+            const [p1, p2] = plages;
+            const champs: [string, string, string][] = [
+              ["h1_de", p1?.[0] ?? "", "début"],
+              ["h1_a", p1?.[1] ?? "", "fin"],
+              ["h2_de", p2?.[0] ?? "", "second début"],
+              ["h2_a", p2?.[1] ?? "", "seconde fin"],
+            ];
+            return (
+              <Fragment key={j.iso}>
+                <label className="jour" htmlFor={`f-h1_de_${j.iso}`}>
+                  {j.long}
+                </label>
+                <div className="form-check m-0">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    name={`repos_${j.iso}`}
+                    id={`f-repos_${j.iso}`}
+                    defaultChecked={repos}
+                    aria-label={`${j.long} : repos`}
+                  />
+                </div>
+                {champs.map(([cle, val, libelle]) => (
+                  <input
+                    key={cle}
+                    type="time"
+                    name={`${cle}_${j.iso}`}
+                    id={`f-${cle}_${j.iso}`}
+                    className="form-control form-control-sm"
+                    defaultValue={val}
+                    step={300}
+                    aria-label={`${j.long} : ${libelle}`}
+                  />
+                ))}
+              </Fragment>
+            );
+          })}
+        </div>
+        <div className="form-text">
+          Une case « Repos » cochée ignore les heures du jour. La seconde plage sert à la coupure
+          méridienne.
+        </div>
       </div>
     </div>
   );

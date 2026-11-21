@@ -983,6 +983,37 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .photo-site { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 10px; }
 
 /* Personnel de service : cycle d'horaires de travail (deux plages par jour) et affectations. */
+/* Une semaine d'horaires en image : un jour par ligne, les heures de minuit à minuit, une barre
+   par plage travaillée, le total du jour à droite. Les traits de fond marquent les quatre heures. */
+.semaine-horaires { display: grid; gap: 3px; max-width: 660px; margin-bottom: 14px; font-size: 0.72rem; }
+.sh-ligne { display: grid; grid-template-columns: 64px 1fr 48px; align-items: center; gap: 8px; }
+.sh-jour { font-weight: 500; font-size: 0.8rem; color: var(--body); }
+.sh-piste { position: relative; height: 24px; border-radius: 6px; overflow: hidden; background-color: var(--inset); background-image: linear-gradient(to right, var(--line) 1px, transparent 1px); background-size: calc(100% / 6) 100%; }
+.sh-entete .sh-piste { height: 14px; overflow: visible; background: none; color: var(--muted); }
+.sh-entete .sh-piste span { position: absolute; top: 0; transform: translateX(-50%); font-size: 0.66rem; }
+.sh-entete .sh-piste span:first-child { transform: none; }
+.sh-entete .sh-piste span:last-child { transform: translateX(-100%); }
+.sh-plage { position: absolute; top: 2px; bottom: 2px; display: flex; align-items: center; padding: 0 6px; border-radius: 5px; background: var(--primary); color: #fff; font-size: 0.68rem; font-weight: 600; white-space: nowrap; overflow: hidden; }
+.sh-total { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sh-pied .sh-total { font-weight: 700; color: var(--strong); }
+.sh-vide { color: var(--muted); }
+/* Aperçu modifiable (horaires.js) : on dessine dans les lignes. La croix invite à créer, la main
+   à déplacer, les bords de la barre à l'étirer ; le défilement tactile est neutralisé sur la piste. */
+.semaine-horaires.est-modifiable .sh-ligne[data-jour] .sh-piste { cursor: crosshair; touch-action: none; height: 28px; }
+.semaine-horaires.est-modifiable .sh-ligne[data-jour] .sh-piste:hover { box-shadow: inset 0 0 0 1px var(--primary); }
+.semaine-horaires.est-modifiable .sh-plage { cursor: grab; user-select: none; }
+.semaine-horaires.est-modifiable .sh-plage::before, .semaine-horaires.est-modifiable .sh-plage::after { content: ""; position: absolute; top: 0; bottom: 0; width: 7px; cursor: ew-resize; background: rgba(255, 255, 255, 0.28); }
+.semaine-horaires.est-modifiable .sh-plage::before { left: 0; border-radius: 5px 0 0 5px; }
+.semaine-horaires.est-modifiable .sh-plage::after { right: 0; border-radius: 0 5px 5px 0; }
+.semaine-horaires.est-modifiable .sh-plage { padding: 0 10px; }
+.semaine-horaires.est-en-geste, .semaine-horaires.est-en-geste .sh-plage { cursor: grabbing; }
+.semaine-horaires--compacte { max-width: 420px; gap: 2px; margin-bottom: 4px; }
+.semaine-horaires--compacte .sh-ligne { grid-template-columns: 30px 1fr 40px; gap: 6px; }
+.semaine-horaires--compacte .sh-jour { font-size: 0.68rem; color: var(--muted); }
+.semaine-horaires--compacte .sh-piste { height: 10px; border-radius: 4px; }
+.semaine-horaires--compacte .sh-entete, .semaine-horaires--compacte .sh-pied { display: none; }
+.semaine-horaires--compacte .sh-plage { top: 0; bottom: 0; padding: 0; border-radius: 3px; font-size: 0; }
+.semaine-horaires--compacte .sh-total { font-size: 0.66rem; }
 .horaires-travail { display: grid; grid-template-columns: 70px 54px 1fr 1fr 1fr 1fr; gap: 6px 8px; align-items: center; max-width: 620px; }
 .horaires-travail .jour { font-weight: 500; font-size: 0.8rem; }
 .horaires-travail .entete { font-size: 0.72rem; color: var(--muted); }

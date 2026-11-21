@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { EnteteForm, PiedForm, SectionForm } from "@/components/formulaire";
+import { ScriptDiffere } from "@/components/scripts";
 import { lireModeHoraires } from "@/lib/affectation";
 import { lireHoraires } from "@/lib/creneaux";
 import { nomPersonne } from "@/lib/personnel";
@@ -66,6 +67,7 @@ export default async function HorairesPersonnePage({
         </SectionForm>
       </form>
       <PiedForm retour={retour} />
+      <ScriptDiffere src="/js/horaires.js" nonce={page.nonce} />
     </>
   );
 }
