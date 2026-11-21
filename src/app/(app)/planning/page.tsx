@@ -4,9 +4,18 @@ import { SegTabs, urlAvec, VideBloc } from "@/components/liste";
 import { ScriptDiffere } from "@/components/scripts";
 import { nomCourt } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
-import { legende, lireCouleur, lireVuesEnregistrees, qsVue } from "@/lib/planning-vues";
+import {
+  filtrerEvts,
+  legende,
+  lireCouleur,
+  lireFiltresEvts,
+  lireVuesEnregistrees,
+  qsVue,
+  resumeFiltres,
+} from "@/lib/planning-vues";
 import {
   FiltreCouleur,
+  FiltreCreneaux,
   FiltreEspaces,
   FiltreSites,
   SelecteurPeriode,
@@ -47,6 +56,7 @@ export default async function PlanningPage({
   const date = lireDate(param(params, "date"));
   const fen = fenetre(vue, date);
   const filtres = lireFiltresPlanning(params);
+  const filtresEvts = lireFiltresEvts(params);
   const couleur = lireCouleur(param(params, "couleur"));
   const vuesEnregistrees = lireVuesEnregistrees(page.user.listPrefs);
   const qsActuelle = qsVue(page.search);
@@ -54,10 +64,15 @@ export default async function PlanningPage({
     espacesPlanning(page.user, filtres),
     espacesDuPerimetre(page.user),
   ]);
-  const { creneaux, blocages } = await occupationsPlanning(
+  const occupations = await occupationsPlanning(
     espaces.map((e) => e.id),
     fen,
   );
+  const blocages = occupations.blocages;
+  const creneaux = filtrerEvts(occupations.creneaux, filtresEvts);
+  const masques = occupations.creneaux.length - creneaux.length;
+  const secteur = filtres.secteur ?? "";
+  const resume = resumeFiltres(filtresEvts, secteur);
   const aujourdhui = todayParisISO();
   const peutEditer = page.user.canEdit("reservations");
   const retour = `${page.pathname}${page.search.toString() ? `?${page.search.toString()}` : ""}`;
@@ -69,6 +84,14 @@ export default async function PlanningPage({
   for (const id of filtres.sites) qsFiltres.append("site", String(id));
   for (const id of filtres.espaces) qsFiltres.append("espace", String(id));
   const filtresQs = qsFiltres.toString();
+  // Le PDF de la semaine reprend aussi le secteur et les filtres des créneaux.
+  const qsPdf = new URLSearchParams(qsFiltres);
+  if (secteur) qsPdf.set("secteur", secteur);
+  for (const s of filtresEvts.statuts) qsPdf.append("statut", s);
+  for (const t of filtresEvts.types) qsPdf.append("type", t);
+  if (filtresEvts.q) qsPdf.set("q", filtresEvts.q);
+  const filtresPdfQs = qsPdf.toString();
+  const secteurs = [...new Set(tous.map((e) => e.secteur))];
   const nbEvts = creneaux.length;
   const props = {
     fen,
@@ -93,6 +116,7 @@ export default async function PlanningPage({
             {espaces.length} espace{espaces.length > 1 ? "s" : ""} · {nbEvts} créneau
             {nbEvts > 1 ? "x" : ""} réservé
             {nbEvts > 1 ? "s" : ""}
+            {masques ? ` (${masques} masqué${masques > 1 ? "s" : ""} par les filtres)` : ""}
             {blocages.length
               ? ` · ${blocages.length} blocage${blocages.length > 1 ? "s" : ""}`
               : ""}
@@ -162,7 +186,8 @@ export default async function PlanningPage({
                 </button>
               </form>
               <div className="px-2 small text-muted">
-                Mémorise la vue, les sites, les espaces et la couleur ; la date reste celle du jour.
+                Mémorise la vue, les sites, les espaces, les filtres et la couleur ; la date reste
+                celle du jour.
               </div>
             </div>
           </div>
@@ -210,7 +235,7 @@ export default async function PlanningPage({
               <li>
                 <a
                   className="dropdown-item"
-                  href={`/planning/semaine.pdf?date=${fen.date}${filtresQs ? `&${filtresQs}` : ""}&format=A4`}
+                  href={`/planning/semaine.pdf?date=${fen.date}${filtresPdfQs ? `&${filtresPdfQs}` : ""}&format=A4`}
                   target="_blank"
                   rel="noopener"
                 >
@@ -220,7 +245,7 @@ export default async function PlanningPage({
               <li>
                 <a
                   className="dropdown-item"
-                  href={`/planning/semaine.pdf?date=${fen.date}${filtresQs ? `&${filtresQs}` : ""}&format=A3`}
+                  href={`/planning/semaine.pdf?date=${fen.date}${filtresPdfQs ? `&${filtresPdfQs}` : ""}&format=A3`}
                   target="_blank"
                   rel="noopener"
                 >
@@ -285,6 +310,12 @@ export default async function PlanningPage({
             choisis={filtres.espaces}
             hrefTous={lien({ espace: null })}
           />
+          <FiltreCreneaux
+            filtres={filtresEvts}
+            secteur={secteur}
+            secteurs={secteurs}
+            hrefAucun={lien({ secteur: null, statut: null, type: null, q: null })}
+          />
           <FiltreCouleur choisie={couleur} />
           <noscript>
             <button type="submit" className="btn btn-sm btn-outline-secondary">
@@ -293,6 +324,14 @@ export default async function PlanningPage({
           </noscript>
         </form>
       </div>
+      {resume ? (
+        <p className="small text-muted mb-2">
+          <Icone nom="filter" taille={12} /> {resume} ·{" "}
+          <a href={lien({ secteur: null, statut: null, type: null, q: null })}>
+            Retirer ces filtres
+          </a>
+        </p>
+      ) : null}
       {legende(couleur).length ? (
         <ul className="list-inline small text-muted mb-2" aria-label="Légende des couleurs">
           {legende(couleur).map(([l, c]) => (

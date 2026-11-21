@@ -192,6 +192,10 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 
 - Vues jour / semaine / mois, filtrage par site et espace, couleur par espace, créneaux et
   blocages (indisponibilités), événements publics.
+- Filtres des créneaux, sous un seul bouton : secteur des espaces (salles / sports), statut du
+  dossier, type d'usager, recherche sur l'usager, le titre ou le numéro. Ils masquent des
+  créneaux sans retirer les blocages ; les vues enregistrées et le PDF de la semaine les
+  reprennent.
 - API de disponibilités utilisée par le portail (calendrier d'un espace).
 
 ### Personnel de service (module débrayable)

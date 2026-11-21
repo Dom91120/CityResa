@@ -1,13 +1,17 @@
 /**
- * Planning : couleur des créneaux (par espace, par statut ou par type d'usager), vues
+ * Planning : couleur des créneaux (par espace, par statut ou par type d'usager), filtres des
+ * créneaux (statut, type d'usager, recherche) et secteur des espaces, vues
  * enregistrées par agent (nom + filtres), dépôt d'un créneau glissé sur une autre case
  * (même espace, autre jour ou autre heure) et lignes de la vue liste.
  * Logique PURE : testée dans planning-vues.test.ts.
  */
 import {
   ORGANISATION_TYPE_TEINTES,
+  ORGANISATION_TYPES,
   RESERVATION_STATUS,
   type ReservationStatus,
+  SECTEURS,
+  STATUTS_OCCUPANTS,
 } from "@/lib/constantes";
 import type { Intervalle } from "@/lib/creneaux";
 import { hm, parisParts, toParisWall } from "@/lib/paris-time";
@@ -72,6 +76,86 @@ const LIBELLES_TYPES: Record<string, string> = {
   collectivite: "Autre collectivité",
   autre: "Autre",
 };
+
+// ── Filtres des créneaux ──
+
+/**
+ * Les filtres qui masquent des créneaux sans toucher à la grille : statut du dossier, type
+ * d'usager, recherche sur l'usager, le titre ou le numéro. Aucun choix = tout est affiché ;
+ * les blocages restent toujours visibles.
+ */
+export type FiltresEvts = { statuts: ReservationStatus[]; types: string[]; q: string };
+
+function valeurs(brut: string | string[] | undefined): string[] {
+  const liste = Array.isArray(brut) ? brut : brut ? [brut] : [];
+  return [...new Set(liste.map((v) => v.trim()).filter(Boolean))];
+}
+
+function premiere(brut: string | string[] | undefined): string {
+  return ((Array.isArray(brut) ? brut[0] : brut) ?? "").trim();
+}
+
+/** Les filtres lus dans l'URL (?statut=…&type=…&q=…), valeurs inconnues écartées. */
+export function lireFiltresEvts(params: {
+  statut?: string | string[];
+  type?: string | string[];
+  q?: string | string[];
+}): FiltresEvts {
+  return {
+    statuts: STATUTS_OCCUPANTS.filter((s) => valeurs(params.statut).includes(s)),
+    types: valeurs(params.type).filter((t) => t in ORGANISATION_TYPES),
+    q: premiere(params.q).slice(0, 80),
+  };
+}
+
+/** Le secteur demandé (?secteur=sport) ; « » = tous. */
+export function lireSecteur(brut: string | string[] | undefined): string {
+  const s = premiere(brut);
+  return s in SECTEURS ? s : "";
+}
+
+export function nbFiltresEvts(f: FiltresEvts): number {
+  return (f.statuts.length ? 1 : 0) + (f.types.length ? 1 : 0) + (f.q ? 1 : 0);
+}
+
+const sansAccent = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+
+/**
+ * Les créneaux retenus par les filtres. Un dossier sans organisation est celui d'un particulier ;
+ * la recherche ignore la casse et les accents, tous ses mots doivent être trouvés.
+ */
+export function filtrerEvts<
+  T extends {
+    status: string;
+    typeUsager: string | null;
+    qui: string;
+    titre: string;
+    numero: string;
+  },
+>(evts: readonly T[], f: FiltresEvts): T[] {
+  const mots = sansAccent(f.q).split(/\s+/).filter(Boolean);
+  return evts.filter((e) => {
+    if (f.statuts.length && !f.statuts.includes(e.status as ReservationStatus)) return false;
+    if (f.types.length && !f.types.includes(e.typeUsager ?? "particulier")) return false;
+    if (mots.length) {
+      const texte = sansAccent(`${e.qui} ${e.titre} ${e.numero}`);
+      if (!mots.every((m) => texte.includes(m))) return false;
+    }
+    return true;
+  });
+}
+
+/** Les filtres en clair, pour l'écran et le sous-titre du PDF ; « » sans filtre. */
+export function resumeFiltres(f: FiltresEvts, secteur = ""): string {
+  const parts: string[] = [];
+  if (secteur && SECTEURS[secteur]) parts.push(`Secteur : ${SECTEURS[secteur].label}`);
+  if (f.statuts.length)
+    parts.push(`Statut : ${f.statuts.map((s) => RESERVATION_STATUS[s].label).join(", ")}`);
+  if (f.types.length)
+    parts.push(`Usagers : ${f.types.map((t) => ORGANISATION_TYPES[t] ?? t).join(", ")}`);
+  if (f.q) parts.push(`Recherche : « ${f.q} »`);
+  return parts.join(" · ");
+}
 
 // ── Vues enregistrées ──
 

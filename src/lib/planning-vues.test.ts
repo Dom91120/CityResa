@@ -5,12 +5,17 @@ import {
   couleurEvt,
   deplacementDepuisDepot,
   ecrireVuesEnregistrees,
+  filtrerEvts,
   legende,
   lignesListe,
   lireCouleur,
+  lireFiltresEvts,
+  lireSecteur,
   lireVuesEnregistrees,
   MAX_VUES,
+  nbFiltresEvts,
   qsVue,
+  resumeFiltres,
   retirerVue,
 } from "@/lib/planning-vues";
 
@@ -129,5 +134,77 @@ describe("vue liste", () => {
       ["b5", "Indisponible"],
       ["c1", "AG"],
     ]);
+  });
+});
+
+describe("filtres des créneaux", () => {
+  const evts = [
+    {
+      status: "confirmee",
+      typeUsager: "association",
+      qui: "Judo Club Châtillon",
+      titre: "Entraînement",
+      numero: "R-2026-0001",
+    },
+    {
+      status: "a_traiter",
+      typeUsager: null,
+      qui: "Léa Martin",
+      titre: "Anniversaire",
+      numero: "R-2026-0002",
+    },
+    {
+      status: "acceptee",
+      typeUsager: "entreprise",
+      qui: "Atelier Dupré",
+      titre: "Séminaire",
+      numero: "R-2026-0003",
+    },
+  ];
+  const tout = { statuts: [], types: [], q: "" };
+
+  it("lit l'URL en écartant les valeurs inconnues", () => {
+    expect(lireFiltresEvts({})).toEqual(tout);
+    expect(
+      lireFiltresEvts({ statut: ["confirmee", "annulee", "x"], type: "association", q: " judo " }),
+    ).toEqual({ statuts: ["confirmee"], types: ["association"], q: "judo" });
+    expect(lireFiltresEvts({ type: ["entreprise", "martien"] }).types).toEqual(["entreprise"]);
+    expect(lireSecteur("sport")).toBe("sport");
+    expect(lireSecteur(["salle", "sport"])).toBe("salle");
+    expect(lireSecteur("piscine")).toBe("");
+    expect(lireSecteur(undefined)).toBe("");
+  });
+
+  it("compte les filtres actifs", () => {
+    expect(nbFiltresEvts(tout)).toBe(0);
+    expect(nbFiltresEvts({ statuts: ["confirmee", "signee"], types: ["autre"], q: "a" })).toBe(3);
+  });
+
+  it("retient par statut, par type d'usager et par recherche", () => {
+    expect(filtrerEvts(evts, tout)).toHaveLength(3);
+    expect(filtrerEvts(evts, { ...tout, statuts: ["confirmee", "acceptee"] })).toHaveLength(2);
+    // Sans organisation : un particulier.
+    expect(filtrerEvts(evts, { ...tout, types: ["particulier"] }).map((e) => e.qui)).toEqual([
+      "Léa Martin",
+    ]);
+    // Casse et accents ignorés ; tous les mots sont exigés ; le numéro et le titre comptent.
+    expect(filtrerEvts(evts, { ...tout, q: "chatillon JUDO" })).toHaveLength(1);
+    expect(filtrerEvts(evts, { ...tout, q: "judo seminaire" })).toHaveLength(0);
+    expect(filtrerEvts(evts, { ...tout, q: "0003" })[0]?.qui).toBe("Atelier Dupré");
+    expect(filtrerEvts(evts, { statuts: ["a_traiter"], types: ["association"], q: "" })).toEqual(
+      [],
+    );
+  });
+
+  it("résume les filtres en clair", () => {
+    expect(resumeFiltres(tout)).toBe("");
+    expect(
+      resumeFiltres(
+        { statuts: ["confirmee"], types: ["association", "entreprise"], q: "judo" },
+        "sport",
+      ),
+    ).toBe(
+      "Secteur : Sports · Statut : Confirmée · Usagers : Association, Entreprise · Recherche : « judo »",
+    );
   });
 });

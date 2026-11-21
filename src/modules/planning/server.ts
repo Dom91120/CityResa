@@ -8,6 +8,7 @@ import { chevauche } from "@/lib/creneaux";
 import { parseInt_ } from "@/lib/forms-util";
 import { dateJourEntier, dateJourMois, dateLongue, moisAnnee } from "@/lib/libelles";
 import { addParisDays, parisMidnight, parisParts, todayParisISO } from "@/lib/paris-time";
+import { lireSecteur } from "@/lib/planning-vues";
 import { prisma } from "@/server/db";
 import type { CurrentUser } from "@/server/guards";
 import type { Params } from "@/server/paging";
@@ -116,8 +117,8 @@ export function periodeAffichee(fen: Fenetre): string {
   return fen.label;
 }
 
-/** Les filtres du planning : aucun site ou aucun espace coché = tous. */
-export type FiltresPlanning = { sites: number[]; espaces: number[] };
+/** Les filtres du planning : aucun site, aucun espace coché ou aucun secteur choisi = tous. */
+export type FiltresPlanning = { sites: number[]; espaces: number[]; secteur?: string };
 
 /** Les identifiants d'un paramètre répété (?site=1&site=3), sans doublon ni valeur invalide. */
 export function identifiants(brut: string | string[] | undefined): number[] {
@@ -128,7 +129,11 @@ export function identifiants(brut: string | string[] | undefined): number[] {
 }
 
 export function lireFiltresPlanning(params: Params): FiltresPlanning {
-  return { sites: identifiants(params.site), espaces: identifiants(params.espace) };
+  return {
+    sites: identifiants(params.site),
+    espaces: identifiants(params.espace),
+    secteur: lireSecteur(params.secteur),
+  };
 }
 
 export const INCLUDE_ESPACE_PLANNING = {
@@ -172,6 +177,7 @@ export async function espacesPlanning(
   if (user.espacesGeres.length) and.push({ id: { in: user.espacesGeres } });
   if (f.sites.length) and.push({ siteId: { in: f.sites } });
   if (f.espaces.length) and.push({ id: { in: f.espaces } });
+  if (f.secteur) and.push({ secteur: f.secteur });
   return prisma.espace.findMany({
     where: { AND: and },
     include: INCLUDE_ESPACE_PLANNING,

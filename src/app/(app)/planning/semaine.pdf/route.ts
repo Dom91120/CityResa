@@ -1,4 +1,5 @@
 import { lundiDe } from "@/lib/editions";
+import { lireFiltresEvts, resumeFiltres } from "@/lib/planning-vues";
 import { espacesPlanning, lireDate, lireFiltresPlanning } from "@/modules/planning/server";
 import { saisonActive } from "@/server/calendrier";
 import { getSettings } from "@/server/config-store";
@@ -15,9 +16,11 @@ import { pasTrouve } from "@/server/http";
 import { reponsePdf } from "@/server/pdf";
 
 /**
- * GET /planning/semaine.pdf?date=&site=…&espace=…&format=A4|A3&type=semaine|type
+ * GET /planning/semaine.pdf?date=&site=…&espace=…&secteur=&statut=…&type=…&q=&format=A4|A3
  * Le planning hebdomadaire des espaces choisis (une page par espace), noir et blanc,
- * paysage ; `type=type` édite la semaine type de la saison active.
+ * paysage, avec les filtres de l'écran (statut, type d'usager, recherche) rappelés en
+ * sous-titre. `type` porte les types d'usager retenus ; sa seule valeur « type » édite la
+ * semaine type de la saison active, qui ignore ces filtres de créneaux.
  */
 export async function GET(req: Request) {
   const user = await requireView("planning");
@@ -25,6 +28,12 @@ export async function GET(req: Request) {
   const filtres = lireFiltresPlanning({
     site: url.searchParams.getAll("site"),
     espace: url.searchParams.getAll("espace"),
+    secteur: url.searchParams.get("secteur") ?? undefined,
+  });
+  const filtresEvts = lireFiltresEvts({
+    statut: url.searchParams.getAll("statut"),
+    type: url.searchParams.getAll("type"),
+    q: url.searchParams.get("q") ?? undefined,
   });
   const espaces = await espacesPlanning(user, filtres);
   if (!espaces.length) return pasTrouve();
@@ -45,9 +54,10 @@ export async function GET(req: Request) {
     fichier = `semaine-type-${saison.label}.pdf`;
   } else {
     const lundi = lundiDe(lireDate(url.searchParams.get("date") ?? undefined));
-    evts = await occupationsSemaine(ids, lundi);
+    evts = await occupationsSemaine(ids, lundi, filtresEvts);
     jours = libellesJours(lundi);
-    sousTitre = `Semaine du ${jours[0]} au ${jours[6]}`;
+    const resume = resumeFiltres(filtresEvts);
+    sousTitre = `Semaine du ${jours[0]} au ${jours[6]}${resume ? ` · ${resume}` : ""}`;
     fichier = `planning-${lundi}.pdf`;
   }
   const pdf = await pdfPlanningSemaine({

@@ -18,6 +18,7 @@ import {
 } from "@/lib/editions";
 import { dateCourte, dateHeure, dateMoyenne, NOMS_JOURS_COURTS } from "@/lib/libelles";
 import { parisMidnight } from "@/lib/paris-time";
+import { type FiltresEvts, filtrerEvts } from "@/lib/planning-vues";
 import { fenetre, occupationsPlanning } from "@/modules/planning/server";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
@@ -28,13 +29,19 @@ const p = (s: string | null | undefined) => escapeHtml(s ?? "");
 
 export type EspaceEdition = { id: number; name: string; site: string };
 
-/** Les occupations d'une semaine (créneaux vivants et blocages) projetées sur ses jours. */
+/**
+ * Les occupations d'une semaine (créneaux vivants et blocages) projetées sur ses jours ; les
+ * filtres du planning, s'il y en a, écartent des créneaux mais jamais un blocage.
+ */
 export async function occupationsSemaine(
   espaceIds: number[],
   lundi: string,
+  filtres?: FiltresEvts,
 ): Promise<EvtSemaine[]> {
   const jours = joursDeLaSemaine(lundi);
-  const { creneaux, blocages } = await occupationsPlanning(espaceIds, fenetre("semaine", lundi));
+  const occ = await occupationsPlanning(espaceIds, fenetre("semaine", lundi));
+  const blocages = occ.blocages;
+  const creneaux = filtres ? filtrerEvts(occ.creneaux, filtres) : occ.creneaux;
   return projeter(
     [
       ...creneaux.map((c) => ({

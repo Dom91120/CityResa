@@ -1,6 +1,12 @@
 import { Icone } from "@/components/icones";
+import {
+  ORGANISATION_TYPES,
+  RESERVATION_STATUS,
+  SECTEURS,
+  STATUTS_OCCUPANTS,
+} from "@/lib/constantes";
 import { nomCourt } from "@/lib/libelles";
-import { COULEURS, type Couleur } from "@/lib/planning-vues";
+import { COULEURS, type Couleur, type FiltresEvts, nbFiltresEvts } from "@/lib/planning-vues";
 import type { espacesDuPerimetre } from "@/modules/planning/server";
 
 type EspaceDuPerimetre = Awaited<ReturnType<typeof espacesDuPerimetre>>[number];
@@ -180,6 +186,127 @@ export function FiltreCouleur({ choisie }: { choisie: Couleur }) {
             <span>{l}</span>
           </label>
         ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Les filtres des créneaux du planning, réunis sous un seul bouton pour tenir sur la ligne :
+ * secteur des espaces (`secteur`), statut du dossier (`statut`, répété), type d'usager (`type`,
+ * répété) et recherche sur l'usager, le titre ou le numéro (`q`). Le bouton passe en vert et
+ * affiche le nombre de filtres dès qu'il y en a un.
+ */
+export function FiltreCreneaux({
+  filtres,
+  secteur,
+  secteurs,
+  hrefAucun,
+}: {
+  filtres: FiltresEvts;
+  secteur: string;
+  /** Les secteurs présents dans le périmètre ; le choix n'est proposé que s'il y en a plusieurs. */
+  secteurs: string[];
+  /** Le lien qui efface ces filtres. */
+  hrefAucun: string;
+}) {
+  const nb = nbFiltresEvts(filtres) + (secteur ? 1 : 0);
+  const libelle = nb
+    ? `Filtrer les créneaux : ${nb} filtre${nb > 1 ? "s" : ""} actif${nb > 1 ? "s" : ""}`
+    : "Filtrer les créneaux";
+  const cases = (name: string, options: [string, string][], choisis: string[]) =>
+    options.map(([v, l]) => (
+      <label
+        key={v}
+        className="dropdown-item d-flex align-items-center gap-2"
+        style={{ cursor: "pointer" }}
+      >
+        <input
+          type="checkbox"
+          className="form-check-input m-0"
+          name={name}
+          value={v}
+          defaultChecked={choisis.includes(v)}
+        />
+        <span>{l}</span>
+      </label>
+    ));
+  return (
+    <div className="dropdown">
+      <button
+        type="button"
+        className={`btn btn-outline-secondary btn-sm${nb ? " filtre-actif" : ""}`}
+        data-bs-toggle="dropdown"
+        data-bs-auto-close="outside"
+        aria-expanded="false"
+        aria-label={libelle}
+        title={libelle}
+      >
+        <Icone nom="filter" taille={14} />
+        {nb ? <span>{nb}</span> : null}
+        <Icone nom="chevron-down" taille={12} />
+      </button>
+      <div
+        className="dropdown-menu dropdown-menu-end p-2"
+        style={{ minWidth: 270, maxHeight: 480, overflowY: "auto" }}
+      >
+        <div className="px-2 pb-2 d-flex gap-1">
+          <input
+            type="search"
+            name="q"
+            className="form-control form-control-sm"
+            defaultValue={filtres.q}
+            placeholder="Usager, titre, numéro…"
+            aria-label="Rechercher un usager, un titre ou un numéro de dossier"
+            maxLength={80}
+          />
+          <button
+            type="submit"
+            className="btn btn-outline-secondary btn-sm btn-icone"
+            title="Rechercher"
+            aria-label="Rechercher"
+          >
+            <Icone nom="search" taille={14} />
+          </button>
+        </div>
+        {secteurs.length > 1 ? (
+          <>
+            <div className="dropdown-header px-2">Secteur</div>
+            {[["", "Tous les secteurs"] as [string, string]]
+              .concat(secteurs.map((s) => [s, SECTEURS[s]?.label ?? s]))
+              .map(([v, l]) => (
+                <label
+                  key={v}
+                  className="dropdown-item d-flex align-items-center gap-2"
+                  style={{ cursor: "pointer" }}
+                >
+                  <input
+                    type="radio"
+                    className="form-check-input m-0"
+                    name="secteur"
+                    value={v}
+                    defaultChecked={v === secteur}
+                  />
+                  <span>{l}</span>
+                </label>
+              ))}
+          </>
+        ) : secteur ? (
+          <input type="hidden" name="secteur" value={secteur} />
+        ) : null}
+        <div className="dropdown-header px-2">Statut du dossier</div>
+        {cases(
+          "statut",
+          STATUTS_OCCUPANTS.map((s) => [s, RESERVATION_STATUS[s].label]),
+          filtres.statuts,
+        )}
+        <div className="dropdown-header px-2">Type d'usager</div>
+        {cases("type", Object.entries(ORGANISATION_TYPES), filtres.types)}
+        {nb ? (
+          <a href={hrefAucun} className="dropdown-item text-muted small">
+            <Icone nom="x" taille={12} /> Retirer ces filtres
+          </a>
+        ) : null}
       </div>
     </div>
   );

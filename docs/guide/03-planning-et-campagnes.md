@@ -17,7 +17,7 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 - Sous le titre : la période affichée, le nombre d'espaces et de créneaux réservés, et le rappel, à la ligne, « Cliquez sur une case pour réserver ».
 - La barre d'outils : **Mes vues**, **Semaine type**, **Présences**, **Imprimer**, **Bloquer un créneau** et **Nouvelle réservation**.
 - Les onglets **Semaine**, **Mois**, **Jour** et **Liste**, la période en cours, encadrée de deux flèches pour passer à la période précédente ou suivante, avec dans le même cadre l'icône d'agenda qui ouvre un calendrier pour aller à une date, puis l'icône du calendrier fléché pour revenir à aujourd'hui.
-- Les filtres, à droite : **Tous les sites** et **Tous les espaces** (deux boutons qui ouvrent des cases à cocher : vous pouvez retenir plusieurs sites et plusieurs espaces ; rien de coché = tous) et **Couleur** (le bouton à la palette). Sur un écran assez large, vues, période et filtres tiennent sur une seule ligne.
+- Les filtres, à droite : **Tous les sites** et **Tous les espaces** (deux boutons qui ouvrent des cases à cocher : vous pouvez retenir plusieurs sites et plusieurs espaces ; rien de coché = tous), **Filtrer les créneaux** (le bouton à l'entonnoir) et **Couleur** (le bouton à la palette). Sur un écran assez large, vues, période et filtres tiennent sur une seule ligne.
 - La grille : chaque espace avec sa photo et son site, puis les sept jours. Chaque réservation est une étiquette avec son titre et ses horaires, bordée à gauche de la couleur de l'espace. Le samedi et le dimanche sont grisés.
 
 **Comment faire**
@@ -25,8 +25,9 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 1. Cliquez sur **Planning** dans le menu de gauche : la semaine en cours s'affiche.
 2. Changez de semaine avec les flèches, ou cliquez sur l'icône d'agenda de la période pour choisir une date.
 3. Limitez l'affichage avec les filtres de sites et d'espaces.
-4. Cliquez sur une étiquette pour ouvrir le dossier de réservation.
-5. Cliquez sur une case vide pour saisir une réservation : la page « Nouvelle réservation » s'ouvre avec l'espace et la date déjà remplis.
+4. Pour ne voir que certains créneaux, ouvrez **Filtrer les créneaux** : cochez un ou plusieurs **statuts du dossier** ou **types d'usager**, choisissez un **secteur** (salles ou sports, proposé si vous gérez les deux) ou saisissez le nom d'un usager, un titre ou un numéro de dossier puis validez avec la loupe. Le bouton passe en vert et indique le nombre de filtres ; une ligne sous la barre les rappelle, avec le lien **Retirer ces filtres**. Les blocages restent toujours affichés, et le sous-titre de la page indique combien de créneaux sont masqués.
+5. Cliquez sur une étiquette pour ouvrir le dossier de réservation.
+6. Cliquez sur une case vide pour saisir une réservation : la page « Nouvelle réservation » s'ouvre avec l'espace et la date déjà remplis.
 
 **Règles à connaître**
 
@@ -110,14 +111,14 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 
 **Comment faire**
 
-1. Réglez le planning comme vous le souhaitez : vue, sites, espaces, couleur.
+1. Réglez le planning comme vous le souhaitez : vue, sites, espaces, filtres des créneaux, couleur.
 2. Ouvrez **Mes vues**, saisissez un nom (par exemple « Gymnases, par statut ») et cliquez sur **Enregistrer**.
 3. Pour retrouver cet affichage, ouvrez **Mes vues** et cliquez sur son nom.
 4. Pour supprimer une vue, cliquez sur la croix à côté de son nom.
 
 **Règles à connaître**
 
-- Une vue mémorise la vue, les sites, les espaces et la couleur ; la date reste celle du jour.
+- Une vue mémorise la vue, les sites, les espaces, les filtres des créneaux et la couleur ; la date reste celle du jour.
 - Douze vues au plus par agent. Les vues sont personnelles et ne se partagent pas.
 
 ## 3.6 Déplacer un créneau par glisser-déposer
@@ -190,7 +191,7 @@ Quand un seul espace est affiché, un bouton **Feuille de salle** apparaît à c
 
 **Comment faire**
 
-1. Réglez les filtres de sites et d'espaces : le PDF reprend la sélection en cours.
+1. Réglez les filtres de sites et d'espaces : le PDF reprend la sélection en cours, ainsi que les filtres des créneaux, rappelés sous le titre.
 2. Ouvrez **Imprimer** et choisissez le format. Le PDF s'ouvre dans un nouvel onglet.
 3. Pour la feuille de salle, filtrez sur un seul espace puis cliquez sur **Feuille de salle**. Elle est aussi disponible depuis la fiche de l'espace (**Feuille de salle (PDF, QR code)**).
 
