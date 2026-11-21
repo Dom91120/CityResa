@@ -13,7 +13,7 @@ import { ymdUtc } from "@/lib/date-utc";
 import { bornesFrise, minutesDuJour, ouvertureDuJour } from "@/lib/frise";
 import { heure, nomCourt, plageHoraire } from "@/lib/libelles";
 import { parisMidnight, parisParts, toParisWall } from "@/lib/paris-time";
-import { type Couleur, couleurEvt } from "@/lib/planning-vues";
+import { type Couleur, couleurEvt, type Groupe, grouperEspaces } from "@/lib/planning-vues";
 import { avecRetour } from "@/lib/url";
 import {
   type Blocage,
@@ -166,7 +166,24 @@ type VueProps = {
   retour: string;
   /** Mode de couleur des créneaux : espace (défaut), statut ou type d'usager. */
   couleur?: Couleur;
+  /** Regroupement des espaces : aucun (défaut), par site ou par secteur. */
+  groupe?: Groupe;
 };
+
+/** Le bandeau qui ouvre un groupe d'espaces (rien sans regroupement). */
+function LigneGroupe({ titre, nb, colonnes }: { titre: string; nb: number; colonnes: number }) {
+  if (!titre) return null;
+  return (
+    <tr className="groupe">
+      <th scope="colgroup" colSpan={colonnes}>
+        {titre}{" "}
+        <span className="fw-normal">
+          · {nb} espace{nb > 1 ? "s" : ""}
+        </span>
+      </th>
+    </tr>
+  );
+}
 
 function enteteJour(jour: string): string {
   const d = parisMidnight(jour);
@@ -185,6 +202,7 @@ export function VueSemaine({
   aujourdhui,
   retour,
   couleur = "espace",
+  groupe = "",
 }: VueProps) {
   const deplacable = peutEditer;
   return (
@@ -204,56 +222,64 @@ export function VueSemaine({
           </tr>
         </thead>
         <tbody>
-          {espaces.map((e) => (
-            <tr key={e.id}>
-              <td className="col-espace">
-                <EspaceCell e={e} retour={retour} />
-              </td>
-              {fen.jours.map((j) => {
-                const evts = duJour(
-                  creneaux.filter((c) => c.espaceId === e.id),
-                  j,
-                );
-                const blocs = duJour(
-                  blocages.filter((b) => b.espaceId === e.id),
-                  j,
-                );
-                return (
-                  <td
-                    key={j}
-                    className={`${peutEditer ? "jour-cellule" : ""}${estWeekend(j) ? " weekend" : ""}`}
-                    data-creer={peutEditer ? urlCreer(e.id, j) : undefined}
-                    data-jour={peutEditer ? j : undefined}
-                    data-espace-id={peutEditer ? e.id : undefined}
-                    title={peutEditer ? "Cliquer pour réserver ce jour" : undefined}
-                  >
-                    {blocs.map((b) => (
-                      <Bloc
-                        key={`b${b.id}`}
-                        b={b}
-                        jour={j}
-                        csrf={csrf}
-                        peutEditer={peutEditer}
-                        retour={retour}
-                      />
-                    ))}
-                    {evts.map((ev) => (
-                      <Evt
-                        retour={retour}
-                        key={ev.id}
-                        e={ev}
-                        espace={e}
-                        jour={j}
-                        compact
-                        couleur={couleur}
-                        deplacable={deplacable && STATUTS_DEPLACABLES.includes(ev.status)}
-                      />
-                    ))}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
+          {grouperEspaces(espaces, groupe).flatMap((g) => [
+            <LigneGroupe
+              key={`g-${g.cle}`}
+              titre={g.titre}
+              nb={g.espaces.length}
+              colonnes={fen.jours.length + 1}
+            />,
+            ...g.espaces.map((e) => (
+              <tr key={e.id}>
+                <td className="col-espace">
+                  <EspaceCell e={e} retour={retour} />
+                </td>
+                {fen.jours.map((j) => {
+                  const evts = duJour(
+                    creneaux.filter((c) => c.espaceId === e.id),
+                    j,
+                  );
+                  const blocs = duJour(
+                    blocages.filter((b) => b.espaceId === e.id),
+                    j,
+                  );
+                  return (
+                    <td
+                      key={j}
+                      className={`${peutEditer ? "jour-cellule" : ""}${estWeekend(j) ? " weekend" : ""}`}
+                      data-creer={peutEditer ? urlCreer(e.id, j) : undefined}
+                      data-jour={peutEditer ? j : undefined}
+                      data-espace-id={peutEditer ? e.id : undefined}
+                      title={peutEditer ? "Cliquer pour réserver ce jour" : undefined}
+                    >
+                      {blocs.map((b) => (
+                        <Bloc
+                          key={`b${b.id}`}
+                          b={b}
+                          jour={j}
+                          csrf={csrf}
+                          peutEditer={peutEditer}
+                          retour={retour}
+                        />
+                      ))}
+                      {evts.map((ev) => (
+                        <Evt
+                          retour={retour}
+                          key={ev.id}
+                          e={ev}
+                          espace={e}
+                          jour={j}
+                          compact
+                          couleur={couleur}
+                          deplacable={deplacable && STATUTS_DEPLACABLES.includes(ev.status)}
+                        />
+                      ))}
+                    </td>
+                  );
+                })}
+              </tr>
+            )),
+          ])}
         </tbody>
       </table>
     </div>
@@ -477,6 +503,7 @@ export function VueJour({
   peutEditer,
   retour,
   couleur = "espace",
+  groupe = "",
 }: VueProps) {
   const jour = fen.jours[0];
   /** Pose un élément daté sur la journée (rien s'il ne la touche pas). */
@@ -541,36 +568,41 @@ export function VueJour({
             </tr>
           </thead>
           <tbody>
-            {lignes.map((l) => (
-              <tr key={l.espace.id}>
-                <td className="col-espace">
-                  <EspaceCell e={l.espace} retour={retour} />
-                </td>
-                <td>
-                  <PisteFrise
-                    elements={[...l.blocs, ...l.evts]}
-                    plages={l.ouverture ? soustraire([JOURNEE], l.ouverture) : []}
-                    titrePlage="Fermé"
-                    classePlage="frise-plage--ferme"
-                    mention={
-                      l.ouverture && !l.ouverture.length && !l.evts.length && !l.blocs.length
-                        ? "Fermé"
-                        : undefined
-                    }
-                    bornes={bornes}
-                    cases={
-                      peutEditer
-                        ? {
-                            jour,
-                            espaceId: l.espace.id,
-                            creer: (h) => urlCreer(l.espace.id, jour, h),
-                          }
-                        : undefined
-                    }
-                  />
-                </td>
-              </tr>
-            ))}
+            {grouperEspaces(espaces, groupe).flatMap((g) => [
+              <LigneGroupe key={`g-${g.cle}`} titre={g.titre} nb={g.espaces.length} colonnes={2} />,
+              ...lignes
+                .filter((l) => g.espaces.includes(l.espace))
+                .map((l) => (
+                  <tr key={l.espace.id}>
+                    <td className="col-espace">
+                      <EspaceCell e={l.espace} retour={retour} />
+                    </td>
+                    <td>
+                      <PisteFrise
+                        elements={[...l.blocs, ...l.evts]}
+                        plages={l.ouverture ? soustraire([JOURNEE], l.ouverture) : []}
+                        titrePlage="Fermé"
+                        classePlage="frise-plage--ferme"
+                        mention={
+                          l.ouverture && !l.ouverture.length && !l.evts.length && !l.blocs.length
+                            ? "Fermé"
+                            : undefined
+                        }
+                        bornes={bornes}
+                        cases={
+                          peutEditer
+                            ? {
+                                jour,
+                                espaceId: l.espace.id,
+                                creer: (h) => urlCreer(l.espace.id, jour, h),
+                              }
+                            : undefined
+                        }
+                      />
+                    </td>
+                  </tr>
+                )),
+            ])}
           </tbody>
         </table>
       </div>

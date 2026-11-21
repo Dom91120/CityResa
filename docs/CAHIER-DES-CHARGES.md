@@ -196,6 +196,8 @@ disposition gracieuses accordées aux associations, top organisations ; export *
   dossier, type d'usager, recherche sur l'usager, le titre ou le numéro. Ils masquent des
   créneaux sans retirer les blocages ; les vues enregistrées et le PDF de la semaine les
   reprennent.
+- Regroupement des espaces par site ou par secteur dans les vues semaine et jour (bandeau par
+  groupe), mémorisé par les vues enregistrées.
 - Vue liste sur une période au choix : semaine, 7, 15 ou 30 jours, mois ou dates libres (92
   jours au plus).
 - Éditions : PDF de la semaine (A4 ou A3, une page par espace), feuille de salle, et export

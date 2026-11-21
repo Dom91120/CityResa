@@ -17,7 +17,7 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 - Sous le titre : la période affichée, le nombre d'espaces et de créneaux réservés, et le rappel, à la ligne, « Cliquez sur une case pour réserver ».
 - La barre d'outils : **Mes vues**, **Semaine type**, **Présences**, **Imprimer, exporter**, **Bloquer un créneau** et **Nouvelle réservation**.
 - Les onglets **Semaine**, **Mois**, **Jour** et **Liste**, la période en cours, encadrée de deux flèches pour passer à la période précédente ou suivante, avec dans le même cadre l'icône d'agenda qui ouvre un calendrier pour aller à une date, puis l'icône du calendrier fléché pour revenir à aujourd'hui.
-- Les filtres, à droite : **Tous les sites** et **Tous les espaces** (deux boutons qui ouvrent des cases à cocher : vous pouvez retenir plusieurs sites et plusieurs espaces ; rien de coché = tous), **Filtrer les créneaux** (le bouton à l'entonnoir) et **Couleur** (le bouton à la palette). Sur un écran assez large, vues, période et filtres tiennent sur une seule ligne.
+- Les filtres, à droite : **Tous les sites** et **Tous les espaces** (deux boutons qui ouvrent des cases à cocher : vous pouvez retenir plusieurs sites et plusieurs espaces ; rien de coché = tous), **Filtrer les créneaux** (le bouton à l'entonnoir) et **Affichage** (le bouton à la palette : couleur des créneaux et regroupement des espaces). Sur un écran assez large, vues, période et filtres tiennent sur une seule ligne.
 - La grille : chaque espace avec sa photo et son site, puis les sept jours. Chaque réservation est une étiquette avec son titre et ses horaires, bordée à gauche de la couleur de l'espace. Le samedi et le dimanche sont grisés.
 
 **Comment faire**
@@ -107,19 +107,21 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 
 **Ce que l'on voit**
 
-- Le filtre **Couleur**, le bouton à la palette en bout de barre, propose trois modes : **par espace** (par défaut), **par statut du dossier** ou **par type d'usager**. Une légende s'affiche sous les filtres quand le mode n'est pas « par espace ».
+- Le menu **Affichage**, le bouton à la palette en bout de barre, règle d'abord la **couleur des créneaux**, avec trois modes : **par espace** (par défaut), **par statut du dossier** ou **par type d'usager**. Une légende s'affiche sous les filtres quand le mode n'est pas « par espace ».
+- Le même menu propose, dans les vues Semaine et Jour, de **regrouper les espaces** : **sans regroupement** (par défaut), **par site** ou **par secteur** (salles, puis sports). Un bandeau ouvre alors chaque groupe, avec son nom et le nombre d'espaces. Le bouton passe en vert dès qu'un de ces deux réglages n'est pas celui par défaut.
 - Le menu **Mes vues** liste vos vues enregistrées, chacune avec une croix pour la supprimer, et un champ **Nom de la vue actuelle** avec le bouton **Enregistrer**.
 
 **Comment faire**
 
-1. Réglez le planning comme vous le souhaitez : vue, sites, espaces, filtres des créneaux, couleur.
+1. Réglez le planning comme vous le souhaitez : vue, sites, espaces, filtres des créneaux, couleur, regroupement.
 2. Ouvrez **Mes vues**, saisissez un nom (par exemple « Gymnases, par statut ») et cliquez sur **Enregistrer**.
 3. Pour retrouver cet affichage, ouvrez **Mes vues** et cliquez sur son nom.
 4. Pour supprimer une vue, cliquez sur la croix à côté de son nom.
 
 **Règles à connaître**
 
-- Une vue mémorise la vue, les sites, les espaces, les filtres des créneaux et la couleur ; la date reste celle du jour.
+- Une vue mémorise la vue, les sites, les espaces, les filtres des créneaux, la couleur et le regroupement ; la date reste celle du jour.
+- Le regroupement ne change que l'ordre et la présentation des lignes : les espaces affichés, les créneaux et le glisser-déposer restent les mêmes. Il ne s'applique ni à la vue Mois, ni à la vue Liste, ni au PDF.
 - Douze vues au plus par agent. Les vues sont personnelles et ne se partagent pas.
 
 ## 3.6 Déplacer un créneau par glisser-déposer

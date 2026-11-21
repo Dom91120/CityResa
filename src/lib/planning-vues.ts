@@ -1,6 +1,7 @@
 /**
  * Planning : couleur des créneaux (par espace, par statut ou par type d'usager), filtres des
- * créneaux (statut, type d'usager, recherche) et secteur des espaces, vues
+ * créneaux (statut, type d'usager, recherche) et secteur des espaces, regroupement des espaces
+ * par site ou par secteur, vues
  * enregistrées par agent (nom + filtres), dépôt d'un créneau glissé sur une autre case
  * (même espace, autre jour ou autre heure) et lignes de la vue liste.
  * Logique PURE : testée dans planning-vues.test.ts.
@@ -76,6 +77,48 @@ const LIBELLES_TYPES: Record<string, string> = {
   collectivite: "Autre collectivité",
   autre: "Autre",
 };
+
+// ── Regroupement des espaces ──
+
+export const GROUPES: Record<string, string> = {
+  "": "Sans regroupement",
+  site: "Par site",
+  secteur: "Par secteur",
+};
+
+export type Groupe = "" | "site" | "secteur";
+
+export function lireGroupe(v: string | undefined): Groupe {
+  return v === "site" || v === "secteur" ? v : "";
+}
+
+export type GroupeEspaces<T> = { cle: string; titre: string; espaces: T[] };
+
+/**
+ * Les espaces répartis en groupes, l'ordre reçu étant conservé dans chaque groupe : par site
+ * (dans l'ordre où les sites apparaissent) ou par secteur (salles, puis sports). Sans
+ * regroupement, un seul groupe sans titre.
+ */
+export function grouperEspaces<
+  T extends { siteId: number; secteur: string; site: { name: string } },
+>(espaces: readonly T[], mode: Groupe): GroupeEspaces<T>[] {
+  if (mode === "") return [{ cle: "", titre: "", espaces: [...espaces] }];
+  const groupes = new Map<string, GroupeEspaces<T>>();
+  for (const e of espaces) {
+    const cle = mode === "site" ? String(e.siteId) : e.secteur;
+    const titre = mode === "site" ? e.site.name : (SECTEURS[e.secteur]?.label ?? e.secteur);
+    const g = groupes.get(cle) ?? { cle, titre, espaces: [] };
+    g.espaces.push(e);
+    groupes.set(cle, g);
+  }
+  const liste = [...groupes.values()];
+  if (mode === "secteur") {
+    const ordre = Object.keys(SECTEURS);
+    const rang = (c: string) => (ordre.includes(c) ? ordre.indexOf(c) : ordre.length);
+    liste.sort((a, b) => rang(a.cle) - rang(b.cle));
+  }
+  return liste;
+}
 
 // ── Filtres des créneaux ──
 

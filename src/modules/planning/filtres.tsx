@@ -6,7 +6,14 @@ import {
   STATUTS_OCCUPANTS,
 } from "@/lib/constantes";
 import { nomCourt } from "@/lib/libelles";
-import { COULEURS, type Couleur, type FiltresEvts, nbFiltresEvts } from "@/lib/planning-vues";
+import {
+  COULEURS,
+  type Couleur,
+  type FiltresEvts,
+  GROUPES,
+  type Groupe,
+  nbFiltresEvts,
+} from "@/lib/planning-vues";
 import type { espacesDuPerimetre } from "@/modules/planning/server";
 
 type EspaceDuPerimetre = Awaited<ReturnType<typeof espacesDuPerimetre>>[number];
@@ -148,17 +155,25 @@ export function FiltreEspaces({
 }
 
 /**
- * Le choix de la couleur des créneaux (`couleur`, vide = par espace) : un bouton réduit à son
- * icône, pour tenir sur la ligne des filtres ; le mode en cours est coché dans le menu et rappelé
- * dans l'infobulle.
+ * Les réglages d'affichage d'un planning : la couleur des créneaux (`couleur`, vide = par espace)
+ * et, pour les vues en grille, le regroupement des espaces (`groupe`, vide = aucun). Un bouton
+ * réduit à son icône, pour tenir sur la ligne des filtres ; les choix en cours sont cochés dans le
+ * menu et rappelés dans l'infobulle.
  */
-export function FiltreCouleur({ choisie }: { choisie: Couleur }) {
-  const libelle = `Couleur des créneaux : ${(COULEURS[choisie] ?? "").toLowerCase()}`;
+export function FiltreCouleur({
+  choisie,
+  groupe,
+}: {
+  choisie: Couleur;
+  /** Le regroupement des espaces en cours ; absent = la vue ne se regroupe pas (mois, liste). */
+  groupe?: Groupe;
+}) {
+  const libelle = `Affichage : couleur ${(COULEURS[choisie] ?? "").toLowerCase()}${groupe ? `, espaces regroupés ${GROUPES[groupe].toLowerCase()}` : ""}`;
   return (
     <div className="dropdown">
       <button
         type="button"
-        className={`btn btn-outline-secondary btn-sm${choisie === "espace" ? "" : " filtre-actif"}`}
+        className={`btn btn-outline-secondary btn-sm${choisie === "espace" && !groupe ? "" : " filtre-actif"}`}
         data-bs-toggle="dropdown"
         data-bs-auto-close="outside"
         aria-expanded="false"
@@ -186,6 +201,27 @@ export function FiltreCouleur({ choisie }: { choisie: Couleur }) {
             <span>{l}</span>
           </label>
         ))}
+        {groupe === undefined ? null : (
+          <>
+            <div className="dropdown-header px-2">Regrouper les espaces</div>
+            {Object.entries(GROUPES).map(([k, l]) => (
+              <label
+                key={k}
+                className="dropdown-item d-flex align-items-center gap-2"
+                style={{ cursor: "pointer" }}
+              >
+                <input
+                  type="radio"
+                  className="form-check-input m-0"
+                  name="groupe"
+                  value={k}
+                  defaultChecked={k === groupe}
+                />
+                <span>{l}</span>
+              </label>
+            ))}
+          </>
+        )}
       </div>
     </div>
   );

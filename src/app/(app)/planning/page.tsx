@@ -9,6 +9,7 @@ import {
   legende,
   lireCouleur,
   lireFiltresEvts,
+  lireGroupe,
   lireVuesEnregistrees,
   qsVue,
   resumeFiltres,
@@ -56,6 +57,9 @@ export default async function PlanningPage({
   const filtres = lireFiltresPlanning(params);
   const filtresEvts = lireFiltresEvts(params);
   const couleur = lireCouleur(param(params, "couleur"));
+  const groupe = lireGroupe(param(params, "groupe"));
+  // Le regroupement vaut pour les grilles d'espaces (semaine, jour).
+  const seGroupe = fen.vue === "semaine" || fen.vue === "jour";
   const vuesEnregistrees = lireVuesEnregistrees(page.user.listPrefs);
   const qsActuelle = qsVue(page.search);
   const [espaces, tous] = await Promise.all([
@@ -107,6 +111,7 @@ export default async function PlanningPage({
     aujourdhui,
     retour,
     couleur,
+    groupe,
   };
 
   return (
@@ -190,8 +195,8 @@ export default async function PlanningPage({
                 </button>
               </form>
               <div className="px-2 small text-muted">
-                Mémorise la vue, les sites, les espaces, les filtres et la couleur ; la date reste
-                celle du jour.
+                Mémorise la vue, les sites, les espaces, les filtres, la couleur et le regroupement
+                ; la date reste celle du jour.
               </div>
             </div>
           </div>
@@ -350,7 +355,8 @@ export default async function PlanningPage({
             secteurs={secteurs}
             hrefAucun={lien({ secteur: null, statut: null, type: null, q: null })}
           />
-          <FiltreCouleur choisie={couleur} />
+          {!seGroupe && groupe ? <input type="hidden" name="groupe" value={groupe} /> : null}
+          <FiltreCouleur choisie={couleur} groupe={seGroupe ? groupe : undefined} />
           <noscript>
             <button type="submit" className="btn btn-sm btn-outline-secondary">
               Afficher

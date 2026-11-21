@@ -6,11 +6,13 @@ import {
   deplacementDepuisDepot,
   ecrireVuesEnregistrees,
   filtrerEvts,
+  grouperEspaces,
   legende,
   lignesExport,
   lignesListe,
   lireCouleur,
   lireFiltresEvts,
+  lireGroupe,
   lireSecteur,
   lireVuesEnregistrees,
   MAX_VUES,
@@ -258,5 +260,55 @@ describe("export", () => {
     expect(x[1].typeUsager).toBe("Particulier");
     // Un blocage, sur un espace hors de la sélection.
     expect(x[2]).toMatchObject({ statut: "Bloqué", objet: "Indisponible", espace: "", usager: "" });
+  });
+});
+
+describe("regroupement des espaces", () => {
+  const e = (id: number, siteId: number, site: string, secteur: string) => ({
+    id,
+    siteId,
+    secteur,
+    site: { name: site },
+  });
+  const espaces = [
+    e(1, 1, "Maison Blanche", "salle"),
+    e(2, 1, "Maison Blanche", "salle"),
+    e(3, 7, "Gymnase les Sablons", "sport"),
+    e(4, 2, "Gabriel Péri", "salle"),
+    e(5, 7, "Gymnase les Sablons", "sport"),
+  ];
+
+  it("lit le mode", () => {
+    expect(lireGroupe(undefined)).toBe("");
+    expect(lireGroupe("site")).toBe("site");
+    expect(lireGroupe("secteur")).toBe("secteur");
+    expect(lireGroupe("x")).toBe("");
+  });
+
+  it("sans regroupement : un seul groupe sans titre, ordre conservé", () => {
+    const g = grouperEspaces(espaces, "");
+    expect(g).toHaveLength(1);
+    expect(g[0].titre).toBe("");
+    expect(g[0].espaces.map((x) => x.id)).toEqual([1, 2, 3, 4, 5]);
+    expect(grouperEspaces([], "site")).toEqual([]);
+  });
+
+  it("par site : dans l'ordre d'apparition des sites, espaces réunis", () => {
+    const g = grouperEspaces(espaces, "site");
+    expect(g.map((x) => x.titre)).toEqual([
+      "Maison Blanche",
+      "Gymnase les Sablons",
+      "Gabriel Péri",
+    ]);
+    expect(g[1].espaces.map((x) => x.id)).toEqual([3, 5]);
+  });
+
+  it("par secteur : salles puis sports, quel que soit l'ordre reçu", () => {
+    const g = grouperEspaces([espaces[2], ...espaces], "secteur");
+    expect(g.map((x) => x.titre)).toEqual(["Salles", "Sports"]);
+    expect(g[0].espaces.map((x) => x.id)).toEqual([1, 2, 4]);
+    // Un secteur inconnu du référentiel vient à la fin, sous son code.
+    const h = grouperEspaces([e(9, 3, "Ailleurs", "autre"), ...espaces], "secteur");
+    expect(h.map((x) => x.titre)).toEqual(["Salles", "Sports", "autre"]);
   });
 });
