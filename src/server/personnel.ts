@@ -551,6 +551,8 @@ export async function pdfPlanningService(
   siteIds: number[] | undefined,
   cfg: AppSettings,
   format: "A4" | "A3" = "A4",
+  /** Les personnes retenues à l'écran (aucune = toutes) : seules leurs vacations sont éditées. */
+  personnelIds: number[] = [],
 ): Promise<Buffer> {
   const jours = joursDeLaSemaine(lundi);
   const de = parisMidnight(jours[0]);
@@ -558,14 +560,14 @@ export async function pdfPlanningService(
   const fin = new Date(a.getTime() + 86_400_000);
   const [sites, etat] = await Promise.all([
     sitesDuPerimetre(user),
-    etatService(user, de, fin, { siteIds }),
+    etatService(user, de, fin, { siteIds, personnelIds }),
   ]);
   const retenus = siteIds ? sites.filter((s) => siteIds.includes(s.id)) : sites;
   const evts = evtsVacations(etat.vacations.map(versVacationDatee), etat.etats, jours);
   const libelles = libellesJours(lundi);
   return pdfPlanningSemaine({
     titre: "Planning de service",
-    sousTitre: `Semaine du ${libelles[0]} au ${libelles[6]}`,
+    sousTitre: `Semaine du ${libelles[0]} au ${libelles[6]}${personnelIds.length ? ` · ${personnelIds.length} personne${personnelIds.length > 1 ? "s" : ""} sélectionnée${personnelIds.length > 1 ? "s" : ""}` : ""}`,
     format,
     collectivite: cfg.COLLECTIVITE_NOM,
     legende: "Vacations du personnel de service ; créneaux réservés à couvrir hachurés.",

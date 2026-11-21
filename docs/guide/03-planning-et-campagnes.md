@@ -233,7 +233,8 @@ Quand un seul espace est affiché, un bouton **Feuille de salle** apparaît à c
 
 **Règles à connaître**
 
-- Seuls les dossiers acquis à récurrence hebdomadaire de la saison y figurent.
+- Seuls les dossiers acquis (acceptés, signés ou confirmés) à récurrence hebdomadaire de la saison y figurent ; une demande encore à traiter n'apparaît pas.
+- Le PDF édite la saison affichée, avec les sites et les espaces retenus.
 - Un dossier qui se répète plusieurs jours par semaine apparaît dans chacun de ces jours (ici, l'entraînement de twirling du mardi et du mercredi à la Salle de la Folie Desmares).
 - Sans saison déclarée, la page invite à en créer une dans Administration › Calendrier des saisons.
 

@@ -1,7 +1,7 @@
 import { lundiDe } from "@/lib/editions";
 import { lireFiltresEvts, resumeFiltres } from "@/lib/planning-vues";
 import { espacesPlanning, lireDate, lireFiltresPlanning } from "@/modules/planning/server";
-import { saisonActive } from "@/server/calendrier";
+import { saisonActive, saisons } from "@/server/calendrier";
 import { getSettings } from "@/server/config-store";
 import {
   evtsDeSeries,
@@ -20,7 +20,8 @@ import { reponsePdf } from "@/server/pdf";
  * Le planning hebdomadaire des espaces choisis (une page par espace), noir et blanc,
  * paysage, avec les filtres de l'écran (statut, type d'usager, recherche) rappelés en
  * sous-titre. `type` porte les types d'usager retenus ; sa seule valeur « type » édite la
- * semaine type de la saison active, qui ignore ces filtres de créneaux.
+ * semaine type de la saison `saison` (à défaut, la saison active), qui ignore ces filtres de
+ * créneaux.
  */
 export async function GET(req: Request) {
   const user = await requireView("planning");
@@ -46,7 +47,11 @@ export async function GET(req: Request) {
   let sousTitre: string;
   let fichier: string;
   if (type) {
-    const saison = await saisonActive();
+    // La saison demandée (celle de l'écran) ; à défaut, la saison active.
+    const demandee = Number(url.searchParams.get("saison")) || null;
+    const saison =
+      (demandee ? (await saisons()).find((s) => s.id === demandee) : null) ??
+      (await saisonActive());
     if (!saison) return pasTrouve();
     evts = evtsDeSeries(await seriesSemaineType(ids, saison));
     jours = libellesJoursType();

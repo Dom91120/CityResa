@@ -92,6 +92,7 @@ export default async function PersonnelPage({
   const qs = new URLSearchParams();
   qs.set("date", fen.date);
   for (const id of sitesChoisis) qs.append("site", String(id));
+  for (const id of personnesChoisies) qs.append("personne", String(id));
   const pdf = `/personnel/semaine.pdf?${qs.toString()}`;
   const nbAuto = sites.filter((s) => contexte.sites.get(s.id)?.affectationAuto).length;
 

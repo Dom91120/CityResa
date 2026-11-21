@@ -314,7 +314,7 @@ Le formulaire compte trois parties.
 **Ce que l'on voit**
 
 - La recherche (nom, catégorie), le filtre **Toutes les catégories** et le filtre d'état (**Actifs et inactifs** par défaut, ou Actifs, Inactifs, Avec unités hors service, Contrôle en retard).
-- Pour chaque article : nom et description, **Catégorie** (avec, en dessous, le site ou l'espace auquel l'article est rattaché, s'il l'est), **Stock** (avec la mention « 2 hors service » en rouge pour les tables), **Mobilisé (pic)**, **Disponible** (pastille rouge à 0, jaune si faible) et **Tarification** (« 3 € par unité », « 30 € par unité et par jour », « Gratuit »…).
+- Pour chaque article : nom et description, **Catégorie** (avec, en dessous, le site ou l'espace auquel l'article est rattaché, s'il l'est), **Stock** (avec, le cas échéant, le nombre d'unités hors service en rouge et la mention « contrôle en retard »), **Mobilisé (pic)**, **Disponible** (pastille rouge à 0, jaune si faible) et **Tarification** (« 3 € par unité », « 30 € par unité et par jour », « Gratuit »…).
 - L'œil ouvre la fiche, le crayon la modification ; le bouton **Nouveau matériel** crée un article et le bouton **Planning** ouvre le planning du matériel (voir 4.16).
 
 **Comment faire — créer un article**

@@ -5,7 +5,7 @@
  */
 import QRCode from "qrcode";
 import { Prisma } from "@/generated/prisma/client";
-import { STATUTS_OCCUPANTS } from "@/lib/constantes";
+import { STATUTS_FERMES } from "@/lib/constantes";
 import {
   couloirs,
   type EvtSemaine,
@@ -65,7 +65,11 @@ export async function occupationsSemaine(
   );
 }
 
-/** Les séries hebdomadaires vivantes des espaces sur une saison, ramenées sur une semaine. */
+/**
+ * Les séries hebdomadaires acquises (dossiers acceptés, signés ou confirmés) des espaces sur une
+ * saison, ramenées sur une semaine. Une demande encore à traiter n'y figure pas : la semaine type
+ * décrit ce qui est accordé, pas ce qui est demandé.
+ */
 export async function seriesSemaineType(
   espaceIds: number[],
   saison: { debut: string; fin: string },
@@ -76,7 +80,7 @@ export async function seriesSemaineType(
   const dossiers = await prisma.reservation.findMany({
     where: {
       espaceId: { in: espaceIds },
-      status: { in: STATUTS_OCCUPANTS },
+      status: { in: STATUTS_FERMES },
       recurrence: { not: Prisma.DbNull },
       creneaux: { some: { status: "prevu", startAt: { gte: de, lt: a } } },
     },

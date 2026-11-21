@@ -48,6 +48,8 @@ export default async function SemaineTypePage({
   for (const id of filtres.sites) q.append("site", String(id));
   for (const id of filtres.espaces) q.append("espace", String(id));
   q.set("type", "type");
+  // Le PDF édite la saison affichée, pas forcément la saison active.
+  if (saison) q.set("saison", String(saison.id));
   const nbDossiers = new Set(series.map((s) => s.reservationId)).size;
 
   return (
