@@ -771,8 +771,13 @@ export function SemaineHoraires({
   return (
     <div
       className={`semaine-horaires${compacte ? " semaine-horaires--compacte" : ""}`}
-      role="img"
-      aria-label={`Horaires de la semaine : ${resumeHoraires(horaires) || vide}`}
+      // Aperçu d'un formulaire : horaires.js y ajoute des boutons, ce n'est plus une simple image.
+      role={vivant ? "group" : "img"}
+      aria-label={
+        vivant
+          ? "Aperçu de la semaine"
+          : `Horaires de la semaine : ${resumeHoraires(horaires) || vide}`
+      }
       data-semaine-horaires={vivant ? "" : undefined}
       data-type={vivant && type ? JSON.stringify(type) : undefined}
       data-vide={vivant ? vide : undefined}
@@ -805,7 +810,7 @@ export function SemaineHoraires({
                   }}
                   title={libellePlages([p])}
                 >
-                  {libellePlages([p])}
+                  <span className="sh-texte">{libellePlages([p])}</span>
                 </span>
               ))}
             </div>
@@ -854,7 +859,7 @@ export function GrilleHorairesTravail({
         : `Aucun planning type n'est encore défini pour « ${type.label} » : en attendant, la personne n'a pas de contrainte horaire.`
       : "Choisissez d'abord un type de contrat ; sans lui, la personne n'a pas de contrainte horaire.",
     perso:
-      "La grille ci-dessous s'applique à cette personne seule, quel que soit le planning type.",
+      "Des horaires propres à cette personne, quel que soit le planning type : dessinez-les dans l'aperçu ci-dessous.",
     libre: "La personne peut être affectée à toute heure de ses jours (vacataire sans cycle).",
   };
   return (
@@ -899,12 +904,18 @@ export function GrilleHorairesTravail({
       <p className="form-text mt-0 mb-3" data-aide-dessin hidden>
         <Icone nom="pencil" taille={12} /> Dessinez directement dans l'aperçu : glissez sur une
         ligne pour créer une plage, glissez une barre pour la déplacer, tirez un de ses bords pour
-        l'étirer, double-cliquez pour la retirer. Deux plages au plus par jour, par pas d'un quart
-        d'heure ; les champs ci-dessous suivent, et restent utilisables au clavier.
+        l'étirer, double-cliquez pour la retirer. Pour recopier une journée, utilisez le bouton de
+        copie au bout de sa ligne, ou glissez le nom du jour sur un autre. Deux plages au plus par
+        jour, par pas d'un quart d'heure.
       </p>
-      {/* La grille de saisie : masquée par horaires.js tant que le mode n'est pas « personnalisés ». */}
-      <div data-grille-perso>
-        {mode ? <div className="form-label">Grille des horaires personnalisés</div> : null}
+      {/* La grille de saisie : masquée par horaires.js hors du mode « personnalisés », et repliée
+          par lui quand le dessin est possible (dépliée d'office sans script). Elle reste la saisie
+          au clavier et à la minute près, et c'est elle que le formulaire envoie. */}
+      <details className="grille-horaires" data-grille-perso open>
+        <summary>
+          <Icone nom="keyboard" taille={13} /> Saisir les heures au clavier
+          <span className="grille-horaires-aide">à la minute près, ou sans souris</span>
+        </summary>
         <div className="horaires-travail">
           <span className="entete">Jour</span>
           <span className="entete">Repos</span>
@@ -957,7 +968,7 @@ export function GrilleHorairesTravail({
           Une case « Repos » cochée ignore les heures du jour. La seconde plage sert à la coupure
           méridienne.
         </div>
-      </div>
+      </details>
     </div>
   );
 }

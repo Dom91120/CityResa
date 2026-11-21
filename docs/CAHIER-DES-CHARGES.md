@@ -243,8 +243,8 @@ disposition gracieuses accordées aux associations, top organisations ; export *
   n'a pas d'horaires fixes. Modifier un planning type revérifie les affectations à venir des
   personnes qui le suivent. Plannings types et horaires d'une personne sont représentés en
   image (un jour par ligne, une barre par plage, totaux) ; l'aperçu suit la saisie et se
-  dessine à la souris (créer, déplacer, étirer, retirer une plage), les champs d'heures restant
-  la saisie de référence.
+  dessine à la souris (créer, déplacer, étirer, retirer une plage, recopier une journée sur
+  d'autres), les champs d'heures restant la saisie de référence.
 - **Planning de service, vue semaine** : fond de case selon la journée (travaillée, repos,
   absence de toute la journée), heures planifiées de la semaine face à la durée de référence,
   modification des horaires et ajout d'une absence depuis une case.

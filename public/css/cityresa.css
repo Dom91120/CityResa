@@ -993,7 +993,11 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .sh-entete .sh-piste span { position: absolute; top: 0; transform: translateX(-50%); font-size: 0.66rem; }
 .sh-entete .sh-piste span:first-child { transform: none; }
 .sh-entete .sh-piste span:last-child { transform: translateX(-100%); }
-.sh-plage { position: absolute; top: 2px; bottom: 2px; display: flex; align-items: center; padding: 0 6px; border-radius: 5px; background: var(--primary); color: #fff; font-size: 0.68rem; font-weight: 600; white-space: nowrap; overflow: hidden; }
+.sh-plage { position: absolute; top: 2px; bottom: 2px; display: flex; align-items: center; padding: 0 6px; border-radius: 5px; background: var(--primary); color: #fff; font-size: 0.68rem; font-weight: 400; white-space: nowrap; overflow: hidden; }
+/* Le libellé d'une plage : centré dans la barre, entre ses deux poignées ; la police a plus de
+   blanc au-dessus de ses chiffres qu'en dessous, d'où le petit décalage vers le bas. */
+.sh-plage { justify-content: center; line-height: 1; }
+.sh-texte { display: block; padding-top: 1px; white-space: nowrap; }
 .sh-total { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .sh-pied .sh-total { font-weight: 700; color: var(--strong); }
 .sh-vide { color: var(--muted); }
@@ -1005,8 +1009,35 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .semaine-horaires.est-modifiable .sh-plage::before, .semaine-horaires.est-modifiable .sh-plage::after { content: ""; position: absolute; top: 0; bottom: 0; width: 7px; cursor: ew-resize; background: rgba(255, 255, 255, 0.28); }
 .semaine-horaires.est-modifiable .sh-plage::before { left: 0; border-radius: 5px 0 0 5px; }
 .semaine-horaires.est-modifiable .sh-plage::after { right: 0; border-radius: 0 5px 5px 0; }
-.semaine-horaires.est-modifiable .sh-plage { padding: 0 10px; }
+.semaine-horaires.est-modifiable .sh-plage { padding: 0 9px; }
+/* La grille de saisie des heures, repliée sous l'aperçu : la saisie au clavier et à la minute près. */
+.grille-horaires { margin-bottom: 8px; }
+.grille-horaires > summary { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; margin-left: -8px; border-radius: 8px; font-size: 0.8rem; font-weight: 500; color: var(--body); cursor: pointer; list-style: none; }
+.grille-horaires > summary::-webkit-details-marker { display: none; }
+.grille-horaires > summary::after { content: ""; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(-45deg); transition: transform 0.12s; }
+.grille-horaires[open] > summary::after { transform: rotate(45deg); }
+.grille-horaires > summary:hover { background: var(--inset); }
+.grille-horaires-aide { font-weight: 400; color: var(--muted); }
+.grille-horaires[open] > summary { margin-bottom: 8px; }
 .semaine-horaires.est-en-geste, .semaine-horaires.est-en-geste .sh-plage { cursor: grabbing; }
+/* Copie d'une journée (horaires.js) : un bouton au bout de chaque ligne ouvre le choix des jours
+   de destination ; le nom du jour se glisse aussi sur une autre ligne. */
+.semaine-horaires.sh-avec-actions .sh-ligne { grid-template-columns: 64px 1fr 48px 26px; }
+.sh-copier { position: relative; visibility: hidden; }
+.semaine-horaires.est-modifiable .sh-copier { visibility: visible; }
+.sh-copier > summary { list-style: none; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; color: var(--muted); cursor: pointer; }
+.sh-copier > summary::-webkit-details-marker { display: none; }
+.sh-copier > summary:hover, .sh-copier[open] > summary { color: var(--primary); background: var(--inset); }
+.sh-copier-menu { position: absolute; right: 0; top: 100%; z-index: 20; min-width: 230px; padding: 6px; margin-top: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12); font-size: 0.8rem; }
+.sh-copier-menu .dropdown-item { border-radius: 6px; cursor: pointer; }
+.semaine-horaires.est-modifiable .sh-ligne[data-jour] .sh-jour { cursor: grab; user-select: none; touch-action: none; border-radius: 5px; padding: 2px 4px; margin: -2px -4px; }
+.semaine-horaires.est-modifiable .sh-ligne[data-jour] .sh-jour:hover { background: var(--inset); }
+.semaine-horaires.est-en-copie, .semaine-horaires.est-en-copie .sh-jour, .semaine-horaires.est-en-copie .sh-piste { cursor: copy !important; }
+.sh-ligne.sh-source .sh-jour { color: var(--primary); font-weight: 700; }
+.sh-ligne.sh-cible .sh-piste { box-shadow: inset 0 0 0 2px var(--primary); }
+.sh-ligne.sh-copiee .sh-piste { animation: sh-copiee 0.9s ease-out; }
+@keyframes sh-copiee { from { box-shadow: inset 0 0 0 2px var(--primary); } to { box-shadow: inset 0 0 0 2px transparent; } }
+@media (prefers-reduced-motion: reduce) { .sh-ligne.sh-copiee .sh-piste { animation: none; } }
 .semaine-horaires--compacte { max-width: 420px; gap: 2px; margin-bottom: 4px; }
 .semaine-horaires--compacte .sh-ligne { grid-template-columns: 30px 1fr 40px; gap: 6px; }
 .semaine-horaires--compacte .sh-jour { font-size: 0.68rem; color: var(--muted); }
@@ -1014,6 +1045,52 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .semaine-horaires--compacte .sh-entete, .semaine-horaires--compacte .sh-pied { display: none; }
 .semaine-horaires--compacte .sh-plage { top: 0; bottom: 0; padding: 0; border-radius: 3px; font-size: 0; }
 .semaine-horaires--compacte .sh-total { font-size: 0.66rem; }
+/* Habillage de la semaine d'horaires : une carte, des lignes aérées, un rail clair gradué toutes
+   les quatre heures, des plages en pastilles au dégradé de la couleur principale, les totaux en
+   pastilles discrètes. Ces règles complètent celles du dessus (structure et gestes). */
+.semaine-horaires:not(.semaine-horaires--compacte) { gap: 0; max-width: 780px; padding: 12px 16px 10px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -18px rgba(15, 23, 42, 0.25); }
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-ligne { grid-template-columns: 86px 1fr 58px; gap: 14px; padding: 4px 0; }
+.semaine-horaires:not(.semaine-horaires--compacte).sh-avec-actions .sh-ligne { grid-template-columns: 86px 1fr 58px 28px; }
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-entete { padding: 0 0 6px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-entete .sh-piste span { font-size: 0.64rem; font-weight: 600; letter-spacing: 0.04em; color: var(--faint); }
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-jour { font-size: 0.82rem; font-weight: 600; color: var(--strong); }
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-ligne[data-jour="6"] .sh-jour, .semaine-horaires:not(.semaine-horaires--compacte) .sh-ligne[data-jour="7"] .sh-jour { color: var(--muted); font-weight: 500; }
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-ligne[data-jour] .sh-piste { height: 32px; border-radius: 10px; background-color: var(--zebra); background-image: linear-gradient(to right, color-mix(in srgb, var(--line) 80%, transparent) 1px, transparent 1px); box-shadow: inset 0 0 0 1px var(--line); }
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-plage { top: 4px; bottom: 4px; padding: 0 10px; border-radius: 8px; background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 72%, #34d399)); box-shadow: 0 1px 2px rgba(var(--primary-rgb), 0.3), 0 4px 10px -4px rgba(var(--primary-rgb), 0.55); font-size: 0.72rem; font-weight: 400; letter-spacing: 0.01em; transition: box-shadow 0.12s, transform 0.12s; }
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-total { font-size: 0.78rem; font-weight: 600; color: var(--body); }
+/* « Repos » : une étiquette grise plutôt qu'un total. */
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-ligne[data-jour] .sh-piste:empty + .sh-total:not(:empty) { justify-self: end; padding: 2px 8px; border-radius: var(--radius-pill); background: var(--inset); color: var(--muted); font-size: 0.68rem; font-weight: 500; }
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-pied { display: flex; align-items: center; gap: 14px; padding: 8px 0 0; margin-top: 4px; border-top: 1px solid var(--line); }
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-pied > span:first-child { display: none; }
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-pied .sh-vide { flex: 1; font-size: 0.78rem; }
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-pied .sh-total { padding: 3px 10px; border-radius: var(--radius-pill); background: var(--primary-soft); color: var(--primary-text); font-size: 0.8rem; font-weight: 700; }
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-pied .sh-total:empty { display: none; }
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-pied .sh-total:not(:empty)::before { content: "Semaine · "; font-weight: 500; }
+.semaine-horaires:not(.semaine-horaires--compacte).sh-avec-actions .sh-pied > span:last-child { width: 28px; flex: none; }
+/* Aperçu modifiable : la ligne survolée s'éclaire, les poignées sont une petite grille de points
+   (2 colonnes × 3 lignes) à chaque extrémité : le motif d'agrippement de l'agenda des usagers de
+   CultuRésa, tourné à la verticale. Le rembourrage réduit la zone peinte à cette grille. */
+.semaine-horaires.est-modifiable:not(.semaine-horaires--compacte) .sh-ligne[data-jour] .sh-piste { height: 32px; }
+.semaine-horaires.est-modifiable:not(.semaine-horaires--compacte) .sh-ligne[data-jour] .sh-piste:hover { background-color: var(--primary-dim); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 45%, transparent); }
+.semaine-horaires.est-modifiable:not(.semaine-horaires--compacte) .sh-plage { padding: 0 12px; font-size: 0.7rem; }
+.semaine-horaires.est-modifiable:not(.semaine-horaires--compacte) .sh-plage:hover { box-shadow: 0 2px 4px rgba(var(--primary-rgb), 0.35), 0 8px 16px -6px rgba(var(--primary-rgb), 0.6); transform: translateY(-1px); }
+.semaine-horaires.est-modifiable:not(.semaine-horaires--compacte) .sh-plage::before, .semaine-horaires.est-modifiable:not(.semaine-horaires--compacte) .sh-plage::after { box-sizing: border-box; width: 12px; padding: 6px 2px; background: radial-gradient(circle, rgba(255, 255, 255, 0.85) 0.9px, transparent 1.3px) 0 0 / 4px 4px content-box; border-radius: 0; }
+.semaine-horaires.est-en-geste .sh-plage { transition: none; transform: none; }
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-copier > summary { width: 28px; height: 28px; border-radius: 8px; color: var(--faint); }
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-ligne:hover .sh-copier > summary { color: var(--muted); }
+.semaine-horaires:not(.semaine-horaires--compacte) .sh-ligne.sh-cible .sh-piste { background-color: var(--primary-dim); }
+/* Variante compacte (listes, fiches) : le même habillage en petit — rail clair bordé et gradué
+   toutes les quatre heures, plages au dégradé, jours en gras (week-end estompé), « Repos » en
+   étiquette. Sans axe des heures, sans libellé dans les barres, sans total de semaine. */
+.semaine-horaires--compacte { max-width: 440px; gap: 3px; }
+.semaine-horaires--compacte .sh-ligne { grid-template-columns: 32px 1fr 46px; gap: 8px; }
+.semaine-horaires--compacte .sh-jour { font-size: 0.7rem; font-weight: 600; color: var(--strong); }
+.semaine-horaires--compacte .sh-ligne[data-jour="6"] .sh-jour, .semaine-horaires--compacte .sh-ligne[data-jour="7"] .sh-jour { color: var(--muted); font-weight: 500; }
+.semaine-horaires--compacte .sh-piste { height: 14px; border-radius: 5px; background-color: var(--zebra); background-image: linear-gradient(to right, color-mix(in srgb, var(--line) 80%, transparent) 1px, transparent 1px); background-size: calc(100% / 6) 100%; box-shadow: inset 0 0 0 1px var(--line); }
+.semaine-horaires--compacte .sh-plage { top: 2px; bottom: 2px; border-radius: 3px; background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 72%, #34d399)); box-shadow: 0 1px 2px rgba(var(--primary-rgb), 0.3); }
+.semaine-horaires--compacte .sh-total { font-size: 0.68rem; font-weight: 600; color: var(--body); }
+.semaine-horaires--compacte .sh-ligne[data-jour] .sh-piste:empty + .sh-total:not(:empty) { justify-self: end; padding: 0 6px; border-radius: var(--radius-pill); background: var(--inset); color: var(--muted); font-size: 0.62rem; font-weight: 500; }
+@media (prefers-reduced-motion: reduce) { .semaine-horaires .sh-plage { transition: none; } .semaine-horaires.est-modifiable .sh-plage:hover { transform: none; } }
 .horaires-travail { display: grid; grid-template-columns: 70px 54px 1fr 1fr 1fr 1fr; gap: 6px 8px; align-items: center; max-width: 620px; }
 .horaires-travail .jour { font-weight: 500; font-size: 0.8rem; }
 .horaires-travail .entete { font-size: 0.72rem; color: var(--muted); }

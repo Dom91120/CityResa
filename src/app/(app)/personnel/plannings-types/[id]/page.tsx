@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { EnteteForm, PiedForm, SectionForm } from "@/components/formulaire";
 import { ScriptDiffere } from "@/components/scripts";
+import { dateCourte } from "@/lib/libelles";
 import { GrilleHorairesTravail } from "@/modules/personnel/vues";
 import { idDeRoute, requireEdit } from "@/server/guards";
 import { contexteModule } from "@/server/module";
@@ -40,6 +41,12 @@ export default async function PlanningTypePage({ params }: { params: Promise<{ i
           aide="Ces horaires s'appliquent aux personnes de ce type de contrat qui suivent le planning type. Hors de ces plages, elles ne sont pas proposées automatiquement ; leurs affectations à venir devenues impossibles sont retirées et remises en affectation."
         >
           <GrilleHorairesTravail horaires={type.horaires} />
+          {type.modifieLe ? (
+            <p className="form-text mb-2">
+              Dernière modification le {dateCourte(type.modifieLe)}
+              {type.modifiePar ? ` par ${type.modifiePar}` : ""}.
+            </p>
+          ) : null}
         </SectionForm>
       </form>
       <PiedForm

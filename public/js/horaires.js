@@ -4,7 +4,8 @@
 //                             choix « planning type / personnalisés / pas d'horaires fixes ») ;
 //                             data-type porte le planning type du contrat, data-vide le message
 //                             affiché quand il n'y a pas d'horaires.
-//   [data-grille-perso]       la grille de saisie, masquée hors du mode « personnalisés ».
+//   [data-grille-perso]       la grille de saisie, masquée hors du mode « personnalisés » et
+//                             repliée au chargement (elle reste dépliée sans script).
 //   [data-aide-dessin]        le mode d'emploi du dessin, montré quand l'aperçu est modifiable.
 // Quand la grille fait foi (horaires personnalisés, planning type), l'aperçu se dessine à la
 // souris ou au doigt : glisser sur une ligne crée une plage, glisser une barre la déplace, ses
@@ -32,6 +33,24 @@
     function champ(m) {
         if (m === 1440) m = 0;
         return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+    }
+
+    // « 9h », « 12h30 » : l'heure sans ses minutes nulles, pour une barre étroite.
+    function heureCourte(m) {
+        if (m === 1440) m = 0;
+        return Math.floor(m / 60) + 'h' + (m % 60 ? String(m % 60).padStart(2, '0') : '');
+    }
+
+    // Le libellé d'une barre selon la place : heures complètes, abrégées, ou rien (l'infobulle
+    // garde toujours les heures complètes).
+    function ajuster(barre, p) {
+        var texte = barre.firstChild;
+        var style = getComputedStyle(barre);
+        // La place réelle du texte : la barre moins ses marges intérieures (où logent les poignées).
+        var place = barre.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+        if (texte.offsetWidth <= place) return;
+        texte.textContent = heureCourte(p[0]) + '-' + heureCourte(p[1]);
+        if (texte.offsetWidth > place) texte.textContent = '';
     }
 
     function nombre(h) {
@@ -113,6 +132,8 @@
             var aide = form.querySelector('[data-aide-dessin]');
             var pied = vue.querySelector('.sh-pied');
             var geste = null;
+            // Le dessin suffit le plus souvent : la grille de saisie se replie, un clic la rouvre.
+            if (grille && 'open' in grille) grille.open = false;
             // Le dernier appui sur une barre : deux appuis rapprochés au même endroit la retirent. Le
             // double-clic du navigateur ne convient pas, les barres étant redessinées entre les deux.
             var dernier = null;
@@ -139,9 +160,15 @@
                         barre.dataset.index = String(i);
                         barre.style.left = (p[0] / 1440) * 100 + '%';
                         barre.style.width = ((p[1] - p[0]) / 1440) * 100 + '%';
-                        barre.textContent = heure(p[0]) + ' - ' + heure(p[1]);
-                        barre.title = barre.textContent + (modifiable ? ' · glisser pour déplacer, tirer un bord pour étirer, double-clic pour retirer' : '');
+                        var complet = heure(p[0]) + ' - ' + heure(p[1]);
+                        var texte = document.createElement('span');
+                        texte.className = 'sh-texte';
+                        texte.textContent = complet;
+                        barre.appendChild(texte);
+                        barre.title = complet + (modifiable ? ' · glisser pour déplacer, tirer un bord pour étirer, double-clic pour retirer' : '');
+                        barre.setAttribute('aria-label', complet);
                         piste.appendChild(barre);
+                        ajuster(barre, p);
                         jour += (p[1] - p[0]) / 60;
                     });
                     semaine += jour;
@@ -246,9 +273,168 @@
             vue.addEventListener('pointerup', finir);
             vue.addEventListener('pointercancel', finir);
 
+            // ── Copie d'une journée sur d'autres ──
+
+            var lignes = Array.prototype.slice.call(vue.querySelectorAll('.sh-ligne[data-jour]'));
+            var annonce = document.createElement('span');
+            annonce.className = 'visually-hidden';
+            annonce.setAttribute('role', 'status');
+            vue.appendChild(annonce);
+
+            function nomDuJour(j) {
+                var l = vue.querySelector('.sh-ligne[data-jour="' + j + '"] .sh-jour');
+                return l ? l.textContent.trim() : 'jour ' + j;
+            }
+
+            // Recopie les plages d'un jour sur d'autres, à la place de ce qui s'y trouvait.
+            function copier(source, cibles) {
+                cibles = cibles.filter(function (c) { return c !== source; });
+                if (!cibles.length || mode() !== 'perso') return;
+                var plages = plagesDuJour(form, source);
+                cibles.forEach(function (c) {
+                    ecrire(form, c, plages.map(function (p) { return p.slice(); }));
+                });
+                dessiner();
+                cibles.forEach(function (c) {
+                    var l = vue.querySelector('.sh-ligne[data-jour="' + c + '"]');
+                    if (!l) return;
+                    l.classList.add('sh-copiee');
+                    setTimeout(function () { l.classList.remove('sh-copiee'); }, 900);
+                });
+                annonce.textContent = 'Horaires du ' + nomDuJour(source).toLowerCase() + ' copiés sur ' +
+                    (cibles.length === 1 ? nomDuJour(cibles[0]).toLowerCase() : cibles.length + ' jours') + '.';
+            }
+
+            function bouton(texte, action) {
+                var b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'dropdown-item';
+                b.textContent = texte;
+                b.addEventListener('click', action);
+                return b;
+            }
+
+            // Une quatrième colonne : le bouton « Copier vers… » de chaque jour (un <details>,
+            // utilisable au clavier sans autre script).
+            vue.classList.add('sh-avec-actions');
+            vue.querySelectorAll('.sh-entete, .sh-pied').forEach(function (l) {
+                l.appendChild(document.createElement('span'));
+            });
+            lignes.forEach(function (ligne) {
+                var j = Number(ligne.dataset.jour);
+                var nom = nomDuJour(j);
+                var details = document.createElement('details');
+                details.className = 'sh-copier';
+                var resume = document.createElement('summary');
+                resume.title = 'Copier les horaires du ' + nom.toLowerCase() + ' vers d\'autres jours';
+                resume.setAttribute('aria-label', resume.title);
+                var icone = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                icone.setAttribute('class', 'lucide');
+                icone.setAttribute('width', '13');
+                icone.setAttribute('height', '13');
+                icone.setAttribute('aria-hidden', 'true');
+                var use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+                use.setAttribute('href', '/vendor/lucide.svg#copy');
+                icone.appendChild(use);
+                resume.appendChild(icone);
+                details.appendChild(resume);
+
+                var menu = document.createElement('div');
+                menu.className = 'sh-copier-menu';
+                var titre = document.createElement('div');
+                titre.className = 'dropdown-header px-2';
+                titre.textContent = 'Copier ' + nom.toLowerCase() + ' vers…';
+                menu.appendChild(titre);
+                var fermer = function () { details.open = false; };
+                menu.appendChild(bouton('Du lundi au vendredi', function () { copier(j, [1, 2, 3, 4, 5]); fermer(); }));
+                menu.appendChild(bouton('Toute la semaine', function () { copier(j, [1, 2, 3, 4, 5, 6, 7]); fermer(); }));
+                var cases = [];
+                lignes.forEach(function (autre) {
+                    var k = Number(autre.dataset.jour);
+                    if (k === j) return;
+                    var label = document.createElement('label');
+                    label.className = 'dropdown-item d-flex align-items-center gap-2';
+                    var c = document.createElement('input');
+                    c.type = 'checkbox';
+                    c.className = 'form-check-input m-0';
+                    c.value = String(k);
+                    // Sans nom : la case sert au menu, elle n'est pas envoyée avec le formulaire.
+                    label.appendChild(c);
+                    label.appendChild(document.createTextNode(nomDuJour(k)));
+                    menu.appendChild(label);
+                    cases.push(c);
+                });
+                var valider = bouton('Copier vers les jours cochés', function () {
+                    copier(j, cases.filter(function (c) { return c.checked; }).map(function (c) { return Number(c.value); }));
+                    cases.forEach(function (c) { c.checked = false; });
+                    fermer();
+                });
+                valider.className = 'btn btn-primary btn-sm mt-1 w-100';
+                menu.appendChild(valider);
+                details.appendChild(menu);
+                ligne.appendChild(details);
+                // La ligne porte désormais un bouton : elle ne doit plus être masquée aux lecteurs d'écran.
+                ligne.removeAttribute('aria-hidden');
+            });
+            // Un seul menu ouvert à la fois ; un clic ailleurs ou Échap le referme.
+            document.addEventListener('click', function (e) {
+                vue.querySelectorAll('details.sh-copier[open]').forEach(function (d) {
+                    if (!d.contains(e.target)) d.open = false;
+                });
+            });
+            vue.addEventListener('keydown', function (e) {
+                if (e.key !== 'Escape') return;
+                vue.querySelectorAll('details.sh-copier[open]').forEach(function (d) {
+                    d.open = false;
+                    d.querySelector('summary').focus();
+                });
+            });
+
+            // Glisser le nom d'un jour sur une autre ligne y copie ses horaires.
+            var copie = null;
+            function ligneSous(e) {
+                var el = document.elementFromPoint(e.clientX, e.clientY);
+                var l = el ? el.closest('.sh-ligne[data-jour]') : null;
+                return l && vue.contains(l) ? l : null;
+            }
+            function marquer(cible) {
+                lignes.forEach(function (l) { l.classList.toggle('sh-cible', l === cible); });
+            }
+            vue.addEventListener('pointerdown', function (e) {
+                var nom = e.target.closest('.sh-ligne[data-jour] .sh-jour');
+                if (!nom || mode() !== 'perso' || (e.pointerType === 'mouse' && e.button !== 0)) return;
+                copie = { source: nom.closest('.sh-ligne'), nom: nom };
+                nom.setPointerCapture(e.pointerId);
+                copie.source.classList.add('sh-source');
+                vue.classList.add('est-en-copie');
+                e.preventDefault();
+            });
+            vue.addEventListener('pointermove', function (e) {
+                if (!copie) return;
+                var l = ligneSous(e);
+                marquer(l && l !== copie.source ? l : null);
+            });
+            function finirCopie(e, annule) {
+                if (!copie) return;
+                var l = annule ? null : ligneSous(e);
+                var source = copie.source;
+                source.classList.remove('sh-source');
+                vue.classList.remove('est-en-copie');
+                marquer(null);
+                copie = null;
+                if (l && l !== source) copier(Number(source.dataset.jour), [Number(l.dataset.jour)]);
+            }
+            vue.addEventListener('pointerup', function (e) { finirCopie(e, false); });
+            vue.addEventListener('pointercancel', function (e) { finirCopie(e, true); });
+
             form.addEventListener('input', dessiner);
             form.addEventListener('change', dessiner);
             dessiner();
+            // Les libellés sont ajustés à la largeur des barres : on les recalcule quand la police
+            // de la page est chargée (elle est plus large que la police d'attente) et quand la
+            // fenêtre change de taille.
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(dessiner);
+            window.addEventListener('resize', function () { if (!geste) dessiner(); });
         });
     });
 })();

@@ -74,6 +74,7 @@ const ICONES = [
   "shield",
   "shield-check",
   "key-round",
+  "keyboard",
   "lock",
   "lock-keyhole",
   "unlock",

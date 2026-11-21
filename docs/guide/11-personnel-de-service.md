@@ -158,16 +158,24 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 3. Renseignez le **Début** et la **Fin du contrat** si elle est connue : hors de ces dates, la personne n'est jamais proposée.
 4. Dans **Horaires de travail**, choisissez d'où viennent ses horaires :
    - **Planning type du contrat** : la personne suit les horaires définis pour son type de contrat ; ils sont rappelés sous le choix. Si le planning type change, ses horaires changent avec lui ;
-   - **Horaires personnalisés** : la grille du dessous s'applique à elle seule. Pour chaque jour, cochez **Repos** ou indiquez le **Début** et la **Fin**, et au besoin une seconde plage (coupure méridienne) ;
+   - **Horaires personnalisés** : des horaires propres à cette personne, que vous dessinez dans l'aperçu ou saisissez au clavier (voir ci-dessous) ;
    - **Pas d'horaires fixes** : la personne est affectable à toute heure de tous les jours, hors absences (vacataire appelé selon les besoins).
 
-   L'**aperçu de la semaine**, sous ces choix, montre le résultat en image et se redessine à chaque saisie : changez de choix, cochez un repos ou modifiez une heure, les barres et les totaux suivent. La grille de saisie n'apparaît que pour les horaires personnalisés.
+   L'**aperçu de la semaine**, sous ces choix, montre le résultat en image et se redessine à chaque saisie : changez de choix, cochez un repos ou modifiez une heure, les barres et les totaux suivent. 
 
-   En horaires personnalisés, vous pouvez aussi **dessiner directement dans l'aperçu**, à la souris ou au doigt : glissez sur la ligne d'un jour pour créer une plage, glissez une barre pour la déplacer, tirez l'un de ses bords pour l'allonger ou la raccourcir, double-cliquez dessus pour la retirer. Le dessin avance par quart d'heure, admet deux plages par jour (la coupure méridienne) et s'arrête au contact de la plage voisine. Les champs d'heures suivent chaque geste ; ils restent la saisie de référence, notamment au clavier.
+   En horaires personnalisés, vous pouvez aussi **dessiner directement dans l'aperçu**, à la souris ou au doigt : glissez sur la ligne d'un jour pour créer une plage, glissez une barre pour la déplacer, tirez l'un de ses bords, repérés par de petits points, pour l'allonger ou la raccourcir, double-cliquez dessus pour la retirer. Le dessin avance par quart d'heure, admet deux plages par jour (la coupure méridienne) et s'arrête au contact de la plage voisine. Sur une barre étroite, les heures sont abrégées (« 9h-12h ») ou masquées : survolez-la pour les lire en entier.
+
+   Sous l'aperçu, **Saisir les heures au clavier** déplie la grille des heures : pour chaque jour, cochez **Repos** ou indiquez le **Début** et la **Fin**, et au besoin une seconde plage (coupure méridienne). Elle sert à saisir sans souris, ou à la minute près (8h50, 17h35), le dessin avançant par quart d'heure. Dessin et grille restent toujours d'accord : modifier l'un met l'autre à jour.
+
+   Pour **recopier une journée sur une autre**, deux façons :
+   - cliquez sur le bouton de copie au bout de la ligne du jour à recopier, puis choisissez **Du lundi au vendredi**, **Toute la semaine**, ou cochez les jours voulus et cliquez sur **Copier vers les jours cochés** ;
+   - ou glissez le **nom du jour** sur la ligne d'un autre jour.
+
+   Dans les deux cas, les horaires du jour de destination sont **remplacés** par ceux du jour copié. Rien n'est enregistré tant que vous n'avez pas cliqué sur **Enregistrer**.
 
    ![Horaires de travail d'une personne](captures/personnel-horaires.webp)
 
-   *Figure — les horaires de Nadia Benmoussa, personnalisés : l'aperçu de la semaine (du jeudi au dimanche, 28 h) au-dessus de la grille de saisie.*
+   *Figure — les horaires de Nadia Benmoussa, personnalisés : l'aperçu de la semaine (du jeudi au dimanche, 28 h), où l'on dessine, et la grille de saisie repliée en dessous.*
 5. Cochez les **Sites où la personne peut être affectée** et choisissez son **Site principal**.
 6. Cliquez sur **Enregistrer**. Les affectations à venir qui ne tiennent plus (site retiré, horaire modifié) sont retirées et les créneaux repassent en affectation ; le message le dit.
 
@@ -175,7 +183,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 
 1. Dans le planning de service, cliquez sur **Plannings types** (le lien figure aussi dans Administration › Paramètres). La page liste les types de contrat avec leurs horaires, le total par semaine et le nombre de personnes qui les suivent.
 2. Cliquez sur **Définir** (ou **Modifier**) en face d'un type de contrat.
-3. Remplissez la grille de la semaine : **Repos** ou les heures de **Début** et de **Fin**, avec une seconde plage si besoin. L'aperçu de la semaine, au-dessus, se redessine à chaque saisie ; vous pouvez aussi y dessiner les plages à la souris, comme pour les horaires d'une personne.
+3. Dessinez les plages de chaque jour dans l'aperçu de la semaine, comme pour les horaires d'une personne (créer, déplacer, étirer, retirer, recopier une journée) ; ou dépliez **Saisir les heures au clavier** pour remplir la grille : **Repos**, ou les heures de **Début** et de **Fin**, avec une seconde plage si besoin.
 4. Cliquez sur **Enregistrer**. Toutes les personnes de ce contrat qui suivent le planning type prennent ces horaires ; leurs affectations à venir devenues impossibles sont retirées et remises en affectation, et le message le dit.
 5. Pour ne plus imposer d'horaires à ce contrat, ouvrez le planning type et cliquez sur **Supprimer**.
 
