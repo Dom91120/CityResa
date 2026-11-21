@@ -14,6 +14,7 @@ import {
   resumeFiltres,
 } from "@/lib/planning-vues";
 import {
+  FiltreChoix,
   FiltreCouleur,
   FiltreCreneaux,
   FiltreEspaces,
@@ -22,12 +23,11 @@ import {
 } from "@/modules/planning/filtres";
 import { VueListe } from "@/modules/planning/liste";
 import {
+  ETENDUES,
   espacesDuPerimetre,
   espacesPlanning,
-  fenetre,
-  lireDate,
+  fenetreDemandee,
   lireFiltresPlanning,
-  lireVue,
   occupationsPlanning,
   periodeAffichee,
   type Vue,
@@ -52,9 +52,7 @@ export default async function PlanningPage({
 }) {
   const page = await contexteModule("planning");
   const params = await searchParams;
-  const vue = lireVue(param(params, "vue"));
-  const date = lireDate(param(params, "date"));
-  const fen = fenetre(vue, date);
+  const fen = fenetreDemandee(params);
   const filtres = lireFiltresPlanning(params);
   const filtresEvts = lireFiltresEvts(params);
   const couleur = lireCouleur(param(params, "couleur"));
@@ -91,6 +89,12 @@ export default async function PlanningPage({
   for (const t of filtresEvts.types) qsPdf.append("type", t);
   if (filtresEvts.q) qsPdf.set("q", filtresEvts.q);
   const filtresPdfQs = qsPdf.toString();
+  // L'export Excel reprend la période affichée, quelle que soit la vue.
+  const qsExport = new URLSearchParams(qsPdf);
+  qsExport.set("date", fen.date);
+  if (fen.vue !== "semaine") qsExport.set("vue", fen.vue);
+  if (fen.etendue) qsExport.set("etendue", fen.etendue);
+  if (fen.au) qsExport.set("au", fen.au);
   const secteurs = [...new Set(tous.map((e) => e.secteur))];
   const nbEvts = creneaux.length;
   const props = {
@@ -224,7 +228,8 @@ export default async function PlanningPage({
               data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-              <Icone nom="printer" taille={14} /> Imprimer <Icone nom="chevron-down" taille={12} />
+              <Icone nom="printer" taille={14} /> Imprimer, exporter{" "}
+              <Icone nom="chevron-down" taille={12} />
             </button>
             <ul className="dropdown-menu dropdown-menu-end">
               <li>
@@ -250,6 +255,11 @@ export default async function PlanningPage({
                   rel="noopener"
                 >
                   <Icone nom="file-text" taille={14} /> Semaine en PDF (A3)
+                </a>
+              </li>
+              <li>
+                <a className="dropdown-item" href={`/planning/export.xlsx?${qsExport.toString()}`}>
+                  <Icone nom="download" taille={14} /> Période affichée en Excel
                 </a>
               </li>
             </ul>
@@ -283,9 +293,9 @@ export default async function PlanningPage({
         />
         <SelecteurPeriode
           texte={periodeAffichee(fen)}
-          hrefPrecedent={lien({ date: fen.precedent })}
-          hrefSuivant={lien({ date: fen.suivant })}
-          hrefAujourdhui={lien({ date: null })}
+          hrefPrecedent={lien({ date: fen.precedent, au: fen.precedentAu ?? null })}
+          hrefSuivant={lien({ date: fen.suivant, au: fen.suivantAu ?? null })}
+          hrefAujourdhui={lien({ date: null, au: null })}
           date={fen.date}
           formulaire="filtres-planning"
         />
@@ -298,6 +308,30 @@ export default async function PlanningPage({
           data-auto-submit-natif
         >
           {fen.vue !== "semaine" ? <input type="hidden" name="vue" value={fen.vue} /> : null}
+          {fen.vue === "liste" ? (
+            <>
+              <FiltreChoix
+                name="etendue"
+                icone="calendar-range"
+                titre="Période de la liste"
+                options={ETENDUES}
+                choisi={fen.etendue ?? ""}
+              />
+              {fen.etendue === "libre" ? (
+                <label className="d-flex align-items-center gap-1 small text-muted mb-0">
+                  au
+                  <input
+                    type="date"
+                    name="au"
+                    className="form-control form-control-sm"
+                    defaultValue={fen.au}
+                    min={fen.date}
+                    aria-label="Dernier jour de la période"
+                  />
+                </label>
+              ) : null}
+            </>
+          ) : null}
           <FiltreSites
             sites={sites}
             choisis={filtres.sites}

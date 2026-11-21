@@ -7,6 +7,7 @@ import {
   ecrireVuesEnregistrees,
   filtrerEvts,
   legende,
+  lignesExport,
   lignesListe,
   lireCouleur,
   lireFiltresEvts,
@@ -65,9 +66,9 @@ describe("vues enregistrées", () => {
   });
 
   it("mémorise les filtres sans la date", () => {
-    expect(qsVue(new URLSearchParams("date=2026-11-05&site=2&espace=4&espace=5&couleur="))).toBe(
-      "site=2&espace=4&espace=5",
-    );
+    expect(
+      qsVue(new URLSearchParams("date=2026-11-05&au=2026-11-20&site=2&espace=4&espace=5&couleur=")),
+    ).toBe("site=2&espace=4&espace=5");
   });
 });
 
@@ -206,5 +207,56 @@ describe("filtres des créneaux", () => {
     ).toBe(
       "Secteur : Sports · Statut : Confirmée · Usagers : Association, Entreprise · Recherche : « judo »",
     );
+  });
+});
+
+describe("export", () => {
+  it("met les lignes de la liste en clair, avec de vraies dates", () => {
+    const lignes = lignesListe(
+      [
+        {
+          id: 1,
+          reservationId: 7,
+          numero: "RES-1",
+          titre: "Gala",
+          status: "confirmee",
+          qui: "Judo Club",
+          typeUsager: "association",
+          espaceId: 3,
+          startAt: parisDateTimeToInstant("2026-11-21", "20:00") as Date,
+          endAt: parisDateTimeToInstant("2026-11-22", "01:30") as Date,
+        },
+        {
+          id: 2,
+          reservationId: 8,
+          numero: "RES-2",
+          titre: "Anniversaire",
+          status: "a_traiter",
+          qui: "Léa Martin",
+          espaceId: 3,
+          startAt: parisDateTimeToInstant("2026-11-22", "14:00") as Date,
+          endAt: parisDateTimeToInstant("2026-11-23", "00:00") as Date,
+        },
+      ],
+      [{ id: 5, espaceId: 9, motif: null, ...cr("2026-11-23", "08:00", "12:00") }],
+    );
+    const x = lignesExport(lignes, new Map([[3, { name: "Salle des fêtes", site: "Mairie" }]]));
+    expect(x[0]).toMatchObject({
+      debut: "20:00",
+      fin: "01:30",
+      site: "Mairie",
+      espace: "Salle des fêtes",
+      dossier: "RES-1",
+      typeUsager: "Association",
+      statut: "Confirmée",
+    });
+    expect(x[0].date.toISOString()).toBe("2026-11-21T00:00:00.000Z");
+    expect(x[0].jusquau?.toISOString()).toBe("2026-11-22T00:00:00.000Z");
+    // Une fin à minuit pile reste sur le jour du créneau ; sans organisation, un particulier.
+    expect(x[1].jusquau).toBeNull();
+    expect(x[1].fin).toBe("00:00");
+    expect(x[1].typeUsager).toBe("Particulier");
+    // Un blocage, sur un espace hors de la sélection.
+    expect(x[2]).toMatchObject({ statut: "Bloqué", objet: "Indisponible", espace: "", usager: "" });
   });
 });

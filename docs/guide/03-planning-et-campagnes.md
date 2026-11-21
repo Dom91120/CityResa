@@ -15,7 +15,7 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 **Ce que l'on voit**
 
 - Sous le titre : la période affichée, le nombre d'espaces et de créneaux réservés, et le rappel, à la ligne, « Cliquez sur une case pour réserver ».
-- La barre d'outils : **Mes vues**, **Semaine type**, **Présences**, **Imprimer**, **Bloquer un créneau** et **Nouvelle réservation**.
+- La barre d'outils : **Mes vues**, **Semaine type**, **Présences**, **Imprimer, exporter**, **Bloquer un créneau** et **Nouvelle réservation**.
 - Les onglets **Semaine**, **Mois**, **Jour** et **Liste**, la période en cours, encadrée de deux flèches pour passer à la période précédente ou suivante, avec dans le même cadre l'icône d'agenda qui ouvre un calendrier pour aller à une date, puis l'icône du calendrier fléché pour revenir à aujourd'hui.
 - Les filtres, à droite : **Tous les sites** et **Tous les espaces** (deux boutons qui ouvrent des cases à cocher : vous pouvez retenir plusieurs sites et plusieurs espaces ; rien de coché = tous), **Filtrer les créneaux** (le bouton à l'entonnoir) et **Couleur** (le bouton à la palette). Sur un écran assez large, vues, période et filtres tiennent sur une seule ligne.
 - La grille : chaque espace avec sa photo et son site, puis les sept jours. Chaque réservation est une étiquette avec son titre et ses horaires, bordée à gauche de la couleur de l'espace. Le samedi et le dimanche sont grisés.
@@ -96,6 +96,7 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 
 1. Cliquez sur l'onglet **Liste**.
 2. Changez de période avec les flèches, comme dans les autres vues.
+3. Pour voir plus qu'une semaine, ouvrez le filtre **Période de la liste** (à gauche des filtres) : **Semaine** (par défaut), **7 jours**, **15 jours**, **30 jours** à partir de la date affichée, **Mois** (le mois de cette date) ou **Dates libres**. En dates libres, le premier jour se choisit avec l'icône d'agenda de la période et le dernier dans le champ **au** ; la liste couvre au plus 92 jours. Les flèches avancent ou reculent d'une période entière.
 3. Cliquez sur l'objet pour ouvrir le dossier.
 
 ## 3.5 Couleurs et vues enregistrées
@@ -181,25 +182,28 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 
 **Qui** — Tout agent qui a accès au planning.
 
-**Ce que l'on voit** — Le menu **Imprimer** propose :
+**Ce que l'on voit** — Le menu **Imprimer, exporter** propose :
 
 - **Cette page** : l'impression du planning tel qu'il est affiché ;
 - **Semaine en PDF (A4, une page par espace)** ;
-- **Semaine en PDF (A3)**.
+- **Semaine en PDF (A3)** ;
+- **Période affichée en Excel** : un classeur avec une ligne par créneau ou blocage.
 
 Quand un seul espace est affiché, un bouton **Feuille de salle** apparaît à côté.
 
 **Comment faire**
 
 1. Réglez les filtres de sites et d'espaces : le PDF reprend la sélection en cours, ainsi que les filtres des créneaux, rappelés sous le titre.
-2. Ouvrez **Imprimer** et choisissez le format. Le PDF s'ouvre dans un nouvel onglet.
-3. Pour la feuille de salle, filtrez sur un seul espace puis cliquez sur **Feuille de salle**. Elle est aussi disponible depuis la fiche de l'espace (**Feuille de salle (PDF, QR code)**).
+2. Ouvrez **Imprimer, exporter** et choisissez le format. Le PDF s'ouvre dans un nouvel onglet.
+3. Pour un tableur, choisissez **Période affichée en Excel** : le classeur reprend la période de la vue en cours (la semaine, le mois, le jour, ou la période choisie dans la vue Liste), les sites, les espaces et les filtres des créneaux.
+4. Pour la feuille de salle, filtrez sur un seul espace puis cliquez sur **Feuille de salle**. Elle est aussi disponible depuis la fiche de l'espace (**Feuille de salle (PDF, QR code)**).
 
 **Règles à connaître**
 
 - Le planning PDF est en paysage, en noir et blanc, daté de son édition, avec une page par espace, le week-end grisé, les fermetures hachurées et les chevauchements côte à côte.
 - La feuille de salle (A4) présente le programme de la semaine, les consignes, le règlement et un QR code vers la page publique de l'espace.
-- Il n'existe pas de planning mensuel imprimable ni de version en couleur.
+- Le classeur Excel contient les colonnes Date, Début, Fin, Jusqu'au (pour un créneau qui se termine un autre jour), Site, Espace, Objet, Dossier, Usager, Type d'usager et Statut, avec un filtre automatique ; une seconde feuille rappelle la période et les filtres.
+- Il n'existe pas de planning mensuel imprimable en PDF ni de version en couleur ; pour un mois ou une période libre, utilisez l'export Excel.
 
 ## 3.9 La semaine type
 

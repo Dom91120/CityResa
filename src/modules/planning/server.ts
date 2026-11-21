@@ -11,7 +11,7 @@ import { addParisDays, parisMidnight, parisParts, todayParisISO } from "@/lib/pa
 import { lireSecteur } from "@/lib/planning-vues";
 import { prisma } from "@/server/db";
 import type { CurrentUser } from "@/server/guards";
-import type { Params } from "@/server/paging";
+import { type Params, param } from "@/server/paging";
 
 export type Vue = "semaine" | "mois" | "jour" | "liste";
 
@@ -28,7 +28,31 @@ export type Fenetre = {
   suivant: string;
   /** Pour la vue mois : le mois « YYYY-MM » affiché. */
   mois: string;
+  /** Vue liste : l'étendue choisie (« » = la semaine). */
+  etendue?: Etendue;
+  /** Vue liste en dates libres : le dernier jour affiché, puis celui des périodes voisines. */
+  au?: string;
+  precedentAu?: string;
+  suivantAu?: string;
 };
+
+/** Les étendues de la vue liste : la semaine de la date, N jours à partir d'elle, son mois, ou deux dates. */
+export const ETENDUES: [string, string][] = [
+  ["", "Semaine"],
+  ["7j", "7 jours"],
+  ["15j", "15 jours"],
+  ["30j", "30 jours"],
+  ["mois", "Mois"],
+  ["libre", "Dates libres"],
+];
+export type Etendue = "" | "7j" | "15j" | "30j" | "mois" | "libre";
+
+/** La plus longue période libre affichée par la liste (jours). */
+export const MAX_JOURS_LISTE = 92;
+
+export function lireEtendue(v: string | undefined): Etendue {
+  return ETENDUES.some(([k]) => k === v) ? (v as Etendue) : "";
+}
 
 export const HEURE_DEBUT_JOUR = 7;
 export const HEURE_FIN_JOUR = 23;
@@ -107,12 +131,65 @@ export function fenetre(vue: Vue, date: string): Fenetre {
 }
 
 /**
+ * La fenêtre de la vue liste : la semaine de la date (par défaut), 7, 15 ou 30 jours à partir de
+ * la date, son mois calendaire, ou des dates libres de `date` à `au` inclus (une semaine si `au`
+ * manque ou précède `date` ; au plus MAX_JOURS_LISTE jours). Les flèches décalent d'une période.
+ */
+export function fenetreListe(date: string, etendue: Etendue, au?: string): Fenetre {
+  if (etendue === "") return { ...fenetre("liste", date), etendue };
+  const ancre = parisMidnight(date);
+  if (etendue === "mois") {
+    const m = fenetre("mois", date);
+    const de = parisMidnight(`${m.mois}-01`);
+    const a = parisMidnight(m.suivant);
+    const jours: string[] = [];
+    for (let cur = de; cur < a; cur = addParisDays(cur, 1)) jours.push(cle(cur));
+    return { ...m, vue: "liste", jours, de, a, etendue };
+  }
+  let nb = etendue === "7j" ? 7 : etendue === "15j" ? 15 : 30;
+  if (etendue === "libre") {
+    const fin = au && /^\d{4}-\d{2}-\d{2}$/.test(au) ? parisMidnight(au).getTime() : Number.NaN;
+    const ecart = Math.round((fin - ancre.getTime()) / 86_400_000) + 1;
+    nb = Number.isNaN(ecart) || ecart < 1 ? 7 : Math.min(ecart, MAX_JOURS_LISTE);
+  }
+  const jours = Array.from({ length: nb }, (_, i) => cle(addParisDays(ancre, i)));
+  const dernier = addParisDays(ancre, nb - 1);
+  const f: Fenetre = {
+    vue: "liste",
+    date,
+    jours,
+    de: ancre,
+    a: addParisDays(ancre, nb),
+    label: `Du ${dateJourMois(ancre)} au ${dateJourMois(dernier)}/${cle(dernier).slice(0, 4)}`,
+    precedent: cle(addParisDays(ancre, -nb)),
+    suivant: cle(addParisDays(ancre, nb)),
+    mois: date.slice(0, 7),
+    etendue,
+  };
+  if (etendue === "libre") {
+    f.au = cle(dernier);
+    f.precedentAu = cle(addParisDays(ancre, -1));
+    f.suivantAu = cle(addParisDays(ancre, 2 * nb - 1));
+  }
+  return f;
+}
+
+/** La fenêtre demandée par l'URL (?vue=&date=&etendue=&au=) : écran et export partagent la règle. */
+export function fenetreDemandee(params: Params): Fenetre {
+  const vue = lireVue(param(params, "vue"));
+  const date = lireDate(param(params, "date"));
+  return vue === "liste"
+    ? fenetreListe(date, lireEtendue(param(params, "etendue")), param(params, "au"))
+    : fenetre(vue, date);
+}
+
+/**
  * La période dans le sélecteur d'une barre de planning, en version courte : en vue Semaine,
  * l'onglet dit déjà « Semaine », on écrit donc « Du 9/11 au 15/11/2026 » ; en vue Jour, la date
  * est en chiffres, « Samedi 14/11/2026 ».
  */
 export function periodeAffichee(fen: Fenetre): string {
-  if (fen.vue === "semaine") return fen.label.replace(/^Semaine du /, "Du ");
+  if (fen.vue === "semaine" || fen.vue === "liste") return fen.label.replace(/^Semaine du /, "Du ");
   if (fen.vue === "jour") return dateJourEntier(fen.de);
   return fen.label;
 }

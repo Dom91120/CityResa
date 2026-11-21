@@ -196,6 +196,10 @@ disposition gracieuses accordées aux associations, top organisations ; export *
   dossier, type d'usager, recherche sur l'usager, le titre ou le numéro. Ils masquent des
   créneaux sans retirer les blocages ; les vues enregistrées et le PDF de la semaine les
   reprennent.
+- Vue liste sur une période au choix : semaine, 7, 15 ou 30 jours, mois ou dates libres (92
+  jours au plus).
+- Éditions : PDF de la semaine (A4 ou A3, une page par espace), feuille de salle, et export
+  Excel de la période affichée (une ligne par créneau ou blocage, filtres compris).
 - API de disponibilités utilisée par le portail (calendrier d'un espace).
 
 ### Personnel de service (module débrayable)
@@ -537,7 +541,7 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 | Module ASSO : espace dédié, compte, dépôt de demandes de subvention | **Oui** — « Mes subventions », dépôt avec pièces, suivi. |
 | Back-office collectivité et application dédiée aux élus | **Oui / partiel** — instruction côté agents, rôle Élu avec avis dans la même application (le vote est enregistré par les agents) (responsive), pas d'application mobile séparée. |
 | CRM : fichier de contacts unique, filtres, segmentation, historique | **Oui** — organisations et contacts, type, profil, notes, pièces, historique des dossiers et factures ; recherche globale. |
-| Planning unique imprimable, exportable Excel, récurrences, annulations, alertes | **Oui / partiel** — planning multi-espaces, flux ICS, exports Excel des statistiques ; impression par le navigateur. |
+| Planning unique imprimable, exportable Excel, récurrences, annulations, alertes | **Oui / partiel** — planning multi-espaces, flux ICS, PDF de la semaine, export Excel de la période affichée et des statistiques. |
 | Devis et factures avec mise en page paramétrable | **Partiel** — devis en direct, factures et conventions PDF à l'identité de la collectivité (texte de convention paramétrable, pas d'éditeur de mise en page). |
 | Modèles de documents, emailings | **Partiel** — modèles de courriel ; pas d'emailing de masse. |
 | Plusieurs services et accès, droits paramétrables | **Oui** — rôles, permissions par catégorie, périmètre par espace. |

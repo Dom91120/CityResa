@@ -218,10 +218,13 @@ export function ecrireVuesEnregistrees(
   return JSON.stringify(prefs);
 }
 
-/** Les filtres de la vue courante à mémoriser : tout sauf la date, pour que la vue reste « d'aujourd'hui ». */
+/**
+ * Les filtres de la vue courante à mémoriser : tout sauf les dates (`date`, et `au` d'une liste en
+ * dates libres), pour que la vue reste « d'aujourd'hui ».
+ */
 export function qsVue(search: URLSearchParams): string {
   const p = new URLSearchParams();
-  for (const [k, v] of search) if (k !== "date" && v !== "") p.append(k, v);
+  for (const [k, v] of search) if (k !== "date" && k !== "au" && v !== "") p.append(k, v);
   return p.toString();
 }
 
@@ -267,6 +270,8 @@ export type LigneListe = {
   status: string | null;
   reservationId: number | null;
   numero: string | null;
+  /** Type de l'organisation ; null pour un particulier sans organisation et pour un blocage. */
+  typeUsager: string | null;
 };
 
 /** Créneaux et blocages fondus en une liste chronologique. */
@@ -278,6 +283,7 @@ export function lignesListe(
     titre: string;
     status: string;
     qui: string;
+    typeUsager?: string | null;
     espaceId: number;
     startAt: Date;
     endAt: Date;
@@ -302,6 +308,7 @@ export function lignesListe(
       status: c.status,
       reservationId: c.reservationId,
       numero: c.numero,
+      typeUsager: c.typeUsager ?? null,
     })),
     ...blocages.map((b) => ({
       cle: `b${b.id}`,
@@ -314,7 +321,59 @@ export function lignesListe(
       status: null,
       reservationId: null,
       numero: null,
+      typeUsager: null,
     })),
   ];
   return l.sort((a, b) => a.startAt.getTime() - b.startAt.getTime() || a.espaceId - b.espaceId);
+}
+
+// ── Export ──
+
+export type LigneExport = {
+  /** Le jour de début, à minuit UTC de sa date de Paris : une vraie date de tableur. */
+  date: Date;
+  debut: string;
+  fin: string;
+  /** Le jour de fin quand le créneau déborde sur un autre jour ; sinon null. */
+  jusquau: Date | null;
+  site: string;
+  espace: string;
+  objet: string;
+  dossier: string;
+  usager: string;
+  typeUsager: string;
+  statut: string;
+};
+
+const jourUtc = (d: Date) => {
+  const w = toParisWall(d);
+  return new Date(Date.UTC(w.y, w.mo - 1, w.da));
+};
+
+/** Les lignes du classeur : celles de la vue liste, en clair, une par créneau ou blocage. */
+export function lignesExport(
+  lignes: readonly LigneListe[],
+  espaces: ReadonlyMap<number, { name: string; site: string }>,
+): LigneExport[] {
+  return lignes.map((l) => {
+    // Une fin à minuit pile appartient au jour qui s'achève, pas au suivant.
+    const finJour = jourUtc(new Date(l.endAt.getTime() - 1));
+    const date = jourUtc(l.startAt);
+    const resa = l.genre === "reservation";
+    return {
+      date,
+      debut: hm(toParisWall(l.startAt).min),
+      fin: hm(toParisWall(l.endAt).min),
+      jusquau: finJour.getTime() === date.getTime() ? null : finJour,
+      site: espaces.get(l.espaceId)?.site ?? "",
+      espace: espaces.get(l.espaceId)?.name ?? "",
+      objet: l.titre,
+      dossier: l.numero ?? "",
+      usager: l.qui,
+      typeUsager: resa ? (ORGANISATION_TYPES[l.typeUsager ?? "particulier"] ?? "") : "",
+      statut: l.status
+        ? (RESERVATION_STATUS[l.status as ReservationStatus]?.label ?? l.status)
+        : "Bloqué",
+    };
+  });
 }
