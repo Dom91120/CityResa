@@ -6,7 +6,8 @@ subvention des associations, pour la Ville de Châtillon. Même socle technique 
 `../sentinelle-next` (Next.js 16, Prisma 7 / PostgreSQL 18, Better Auth, Bootstrap + feuille
 maison, formulaires POST réécrits vers `/envoi`, CSP à nonce). Thème Vert.
 Les conventions de code vivent dans `docs/CONVENTIONS.md`, le périmètre fonctionnel dans
-`docs/CAHIER-DES-CHARGES.md`, le guide utilisateur (captures, parcours métier) dans `docs/guide/` :
+`docs/CAHIER-DES-CHARGES.md` (organisation des services et écarts à traiter aux § 2 et § 8),
+les scénarios de test et de prise en main dans `docs/SCENARIOS.md`, le guide utilisateur (captures, parcours métier) dans `docs/guide/` :
 un changement visible à l'écran s'y reporte (texte, capture, PDF).
 
 ## Commandes

@@ -79,6 +79,48 @@ Le périmètre d'un agent s'applique aussi aux écrans **Espaces** et **Sites** 
 modifie et ne supprime que les espaces de son périmètre, ne crée que des espaces de son
 secteur, et ne voit que les sites qui portent au moins un de ses espaces (ou aucun espace).
 
+### Organisation des services de la Ville
+
+Les acteurs ci-dessus sont des **rôles** dans l'application. Dans l'organisation de la Ville, ils
+se répartissent entre quatre services, des élus et trois populations d'usagers. Ce paragraphe
+décrit l'organisation telle qu'elle est ; ce que l'application en couvre aujourd'hui, et ce
+qu'elle n'en couvre pas encore, figure au § 8.
+
+| Service | Ce qu'il gère | Pour qui | Conditions |
+| --- | --- | --- | --- |
+| **Service des sports** | Les **équipements sportifs** (gymnases, stade, complexes, salle sportive, terrain multisport) : créneaux de la saison et créneaux ponctuels. Il planifie le **personnel de service** (gardiens, agents d'accueil, vacataires) en regard de ces créneaux. | Les **associations sportives** | Mise à disposition, avec personnel de service sur place |
+| **Vie associative** | Les **salles municipales** réservées par les associations (réunions, assemblées générales, activités, manifestations) ; le suivi des associations (fiche, pièces) ; les demandes de **subvention**. | Les **associations** | **Gratuité** |
+| **Service des fêtes** | Les **salles municipales** louées pour des événements privés ou professionnels : convention, **facturation** (acompte, solde, caution), états des lieux. | Les **particuliers** et les **entreprises** | **Payant** |
+| **Communication** | Le **suivi** des dossiers du Service des fêtes et de la Vie associative, leur **relecture**, et le **remplacement** de ces deux services (suppléance : le service traite à leur place). | Les deux services ci-dessus | — |
+
+- Les **mêmes salles** servent à la Vie associative et au Service des fêtes : ce qui distingue
+  les deux services n'est pas le lieu mais le **type de demandeur** (association d'un côté,
+  particulier ou entreprise de l'autre) et le caractère gratuit ou payant de la mise à
+  disposition.
+- Le Service des sports travaille sur des lieux qui lui sont propres ; c'est le seul des quatre
+  dont le périmètre se confond avec un ensemble d'espaces.
+- La Communication n'a ni espaces ni usagers en propre : son périmètre est celui des deux
+  services qu'elle suit.
+
+**Les élus** interviennent dans les circuits, sans traiter eux-mêmes les dossiers : ils donnent
+leur avis sur les demandes de subvention avant le vote, et sont associés aux décisions qui
+engagent la Ville au-delà de la gestion courante (attribution des créneaux de la saison, gratuité
+accordée hors grille, dérogation, refus ou réquisition sensibles). Le détail de ces interventions,
+circuit par circuit, reste à arrêter avec la Ville (§ 8).
+
+**Les usagers** se répartissent en trois populations (associations, entreprises, particuliers),
+les associations sportives formant un cas à part ; chacune a son service de référence :
+
+| Population | Ce qu'elle demande | Service de référence |
+| --- | --- | --- |
+| **Associations sportives** | Créneaux hebdomadaires de la saison et créneaux ponctuels dans les équipements sportifs ; subvention | Service des sports |
+| **Associations** (sportives ou non) | Salles municipales, gratuitement ; subvention | Vie associative |
+| **Entreprises** | Salles municipales pour séminaires, formations, événements ; factures | Service des fêtes |
+| **Particuliers** | Salles municipales pour fêtes familiales ; factures, caution | Service des fêtes |
+
+Une même association peut donc relever de deux services : le Service des sports pour ses
+entraînements au gymnase, la Vie associative pour son assemblée générale en salle.
+
 ---
 
 ## 3. Parcours en étapes
@@ -592,3 +634,49 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 - **Hébergement et conformité** : auto-hébergement Docker (voir `docs/DEPLOY.md`), données en
   France sous la responsabilité de la collectivité ; registre RGPD, mentions légales et
   accessibilité (RGAA) à compléter par la collectivité ; sauvegardes quotidiennes incluses.
+- **Organisation par service** (Service des sports, Vie associative, Service des fêtes,
+  Communication, élus de délégation) : couverte en partie seulement, voir § 8.
+
+---
+
+## 8. Organisation des services : couverture actuelle et écarts à traiter
+
+L'organisation décrite au § 2 (quatre services, des élus, trois populations d'usagers) a été
+précisée après la construction de l'application. Cette section dit, point par point, comment
+elle se traduit aujourd'hui dans CityRésa et ce qui manque. Les écarts sont numérotés pour
+servir de base aux évolutions ; les scénarios de `docs/SCENARIOS.md` les signalent là où on les
+rencontre.
+
+### Ce que l'application couvre déjà
+
+| Besoin | Traduction actuelle |
+| --- | --- |
+| Service des sports, sur ses équipements | Secteur **Sports** : les agents de ce secteur ne voient et ne traitent que les équipements sportifs (réservations, planning, messages, espaces, sites). |
+| Créneaux de la saison des associations sportives | **Campagnes de créneaux** : vœux déposés sur le portail, arbitrage par priorité, attribution en lot, un dossier récurrent par créneau attribué. |
+| Personnel de service du Service des sports | Module **Personnel de service** : vacations par site, couverture des créneaux, affectation automatique ou proposée, absences, contrats, planning PDF et courriel hebdomadaire. Le module vaut aussi pour les salles. |
+| Vie associative : gratuité pour les associations | Profil tarifaire **Association de la commune** au tarif nul sur chaque espace : le devis affiche « Gratuit » et aucune facture n'est émise. La **gratuité accordée** à la main, avec son fondement, couvre les cas hors grille. Les mises à disposition gratuites sont chiffrées dans la **valorisation** annuelle. |
+| Service des fêtes : location payante | Grilles tarifaires **Particulier** (commune / extérieur) et **Entreprise**, devis, convention signée par code, factures d'acompte, de solde et de caution, états des lieux, frais d'annulation. |
+| Subventions des associations | Module **Subventions** : campagne, dossier en ligne, instruction, avis des élus, vote, versement. |
+| Élus : avis sur les subventions | Rôle **Élu** : écriture sur les subventions (avis, montant proposé, commentaire), lecture sur tout le reste, tableau de bord. |
+| Distinguer les associations sportives | Case **Association sportive** de la fiche de l'organisation (variante du dossier de subvention et du plan de budget). |
+| Suivre sans traiter, ou traiter à la place d'un service | Un compte au rôle **Lecteur** (suivi) ou **Agent** / **Gestionnaire** (remplacement) du secteur Salles. |
+
+### Écarts
+
+| N° | Besoin de l'organisation | Aujourd'hui | Évolution à étudier |
+| --- | --- | --- | --- |
+| E1 | **Séparer Vie associative et Service des fêtes**, qui partagent les mêmes salles et se distinguent par le type de demandeur. | Un seul secteur **Salles** : tout agent du secteur voit et traite toutes les demandes des salles, associations comme particuliers et entreprises. Le périmètre d'un agent se règle par espace, jamais par type d'usager. Seuls le filtre « type d'usager » des listes et du planning et l'« agent assigné », choisi à la main, permettent à chacun de retrouver ses dossiers. | Notion de **service** portée par l'agent (au-delà du secteur) ; aiguillage d'une demande vers un service selon l'espace **et** le type de demandeur ; notifications, tableau de bord, compteurs et droits de décision limités au service. |
+| E2 | **Communication** : suivre, relire, remplacer. | Aucun compte ni rôle prévu. Le suivi et le remplacement s'obtiennent en donnant à ses agents un compte du secteur Salles (Lecteur, Agent ou Gestionnaire). La **relecture** n'existe pas : aucune étape ne soumet un dossier, une convention ou un message à un second regard avant envoi. | Préciser avec la Ville ce qui est relu (réponse à l'usager, convention, événement ouvert au public, facture) et à quel moment ; selon la réponse, étape « à relire » dans le circuit ou simple mise en copie. Suppléance déclarée (dates, service remplacé) plutôt qu'un compte permanent. |
+| E3 | **Élus dans les circuits** de réservation. | L'élu n'agit que sur les subventions. Sur les réservations, les campagnes de créneaux, la gratuité, les dérogations et les réquisitions, il lit sans pouvoir donner d'avis ni valider. | Arrêter la liste des décisions soumises à un élu ; **avis ou visa d'un élu** sur un dossier de réservation (comme l'avis de subvention), demandé par l'agent, tracé dans l'historique, bloquant ou non selon le cas. |
+| E4 | **Élu de délégation** (sports, vie associative, fêtes…). | Un élu est transversal : il voit tout et peut donner un avis sur toute demande de subvention. Le « secteur d'instruction » d'un dossier de subvention (Sport, Culture, Solidarité…) est une étiquette, sans effet sur qui est sollicité ; l'élu n'est pas notifié quand un dossier attend son avis. | Délégation portée par le compte de l'élu ; avis demandé aux seuls élus concernés ; notification à l'élu. |
+| E5 | **Subventions : quel service instruit ?** Les associations sportives relèvent du Service des sports, les autres de la Vie associative. | Les droits sur les subventions tiennent au **rôle** (Gestionnaire : tout ; Agent : lecture), pas au service. Un seul service de contact se règle dans les paramètres (« Service de la vie associative »). | Répartition de l'instruction par service selon la case « association sportive » ou le secteur d'instruction ; contact du service instructeur sur le dossier. |
+| E6 | **Usagers : service de référence.** | Le fichier des usagers est commun à tous les agents : tout agent en écriture valide une fiche, vérifie des pièces ou modifie une organisation, quel que soit son secteur. | Service de référence déduit du type (et de la case « sportive ») ; fiches à valider et pièces à vérifier présentées au bon service. |
+| E7 | **Nommer les services** dans les écrans et les documents. | Les services n'existent pas en tant que tels : l'application connaît deux secteurs (Salles, Sports) et la fonction saisie sur chaque compte. Convention, courriels et factures portent l'identité de la collectivité, pas celle du service. | Référentiel des services (nom, courriel, téléphone) ; service affiché sur le dossier, la convention et les courriels. |
+| E8 | **Gratuité des associations : périmètre exact.** | La gratuité tient à la grille : nulle pour une association de la commune, payante pour une association extérieure (150 € la journée salle Gabriel Péri dans le jeu de démonstration). | Confirmer la règle de la Ville : gratuité pour toutes les associations ou pour les seules associations châtillonnaises ; avec ou sans plafond annuel. |
+| E9 | **Facturation réservée au Service des fêtes.** | Les rôles Agent et Gestionnaire ont l'écriture sur les paiements dans les deux secteurs. | Droit « Paiements » par service, ou confirmation que la règle actuelle convient. |
+| E10 | **Comptes de démonstration** par service. | Le jeu de démonstration compte une gestionnaire du secteur Salles (qui tient à la fois la Vie associative et le Service des fêtes), un agent du secteur Sports et un élu ; aucun compte Communication, aucun financier. | Un compte par service et par niveau, un élu par délégation, pour dérouler les scénarios à plusieurs mains. |
+| E11 | **Campagnes de créneaux par service.** Le Service des sports mène celle des gymnases, la Vie associative celle des salles. | Les campagnes ne suivent pas le secteur : tout agent en écriture voit toutes les campagnes et peut ouvrir aux vœux n'importe quel espace. Seule la décision sur un vœu est limitée aux espaces dont l'agent a la charge. | Campagne rattachée à un secteur (ou à un service) ; liste des campagnes et choix des espaces limités au périmètre de l'agent. |
+
+Tant que ces écarts ne sont pas traités, la séparation entre Vie associative, Service des fêtes
+et Communication repose sur l'organisation du travail (filtres, agent assigné, vues
+enregistrées du planning), pas sur les droits.
