@@ -51,7 +51,7 @@ export default async function DashboardPage({
   const now = new Date();
   const [kpi, occupation, usagers, revenus, aTraiter, prochains, notifs, alertesDuJour] =
     await Promise.all([
-      indicateurs(p, prec, user.espacesGeres),
+      indicateurs(p, prec, user.espacesGeres, user.fileDeTravail),
       occupationParEspace(p),
       repartitionUsagers(p),
       revenusParMois(p.a > now ? now : p.a),

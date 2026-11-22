@@ -80,6 +80,11 @@ export type Filtres = {
   types: string[];
   /** Identifiants d'agents ; « aucun » retient les dossiers non assignés. */
   agents: string[];
+  /**
+   * Services retenus (identifiants, « aucun » = dossiers sans service). Vide : la file de
+   * travail de l'agent, c'est-à-dire ses services s'il en a ; « tous » lève cette limite.
+   */
+  services: string[];
   periode: string;
   /** « retard » : cautions encaissées non clôturées après le délai ; « a_valider » : retenues à valider. */
   caution: string;
@@ -107,6 +112,9 @@ export function lireFiltres(params: Params): Filtres {
     espaces: identifiants(params.espace),
     types: valeurs(params.type).filter((t) => t in ORGANISATION_TYPES),
     agents: valeurs(params.agent),
+    services: valeurs(params.service).filter(
+      (s) => s === "tous" || s === "aucun" || /^\d+$/.test(s),
+    ),
     periode: PERIODES.some(([k]) => k === per) ? per : "",
     caution: ["retard", "a_valider"].includes(param(params, "caution") ?? "")
       ? (param(params, "caution") as string)
@@ -116,6 +124,16 @@ export function lireFiltres(params: Params): Filtres {
     tri,
     sens: sens === "asc" || sens === "desc" ? sens : "",
   };
+}
+
+/**
+ * Les services effectivement retenus : le choix de l'agent, sinon sa file de travail (ses
+ * services et les dossiers sans service) ; null = aucun filtre de service.
+ */
+export function servicesRetenus(f: Filtres, user: CurrentUser): string[] | null {
+  if (f.services.includes("tous")) return null;
+  if (f.services.length) return f.services;
+  return user.fileDeTravail ? [...user.fileDeTravail.map(String), "aucun"] : null;
 }
 
 /** La clause WHERE des filtres (hors statut), périmètre compris. */
@@ -137,6 +155,14 @@ export function whereListe(f: Filtres, user: CurrentUser): Prisma.ReservationWhe
     const cas: Prisma.ReservationWhereInput[] = [];
     if (ids.length) cas.push({ agentId: { in: ids } });
     if (f.agents.includes("aucun")) cas.push({ agentId: null });
+    and.push(cas.length === 1 ? cas[0] : { OR: cas });
+  }
+  const services = servicesRetenus(f, user);
+  if (services) {
+    const ids = services.filter((s) => s !== "aucun").map(Number);
+    const cas: Prisma.ReservationWhereInput[] = [];
+    if (ids.length) cas.push({ serviceId: { in: ids } });
+    if (services.includes("aucun")) cas.push({ serviceId: null });
     and.push(cas.length === 1 ? cas[0] : { OR: cas });
   }
   if (f.periode) {
@@ -294,8 +320,9 @@ export function trierListe(rows: ReservationListe[], f: Filtres, onglet: Onglet)
 export async function optionsFiltres(): Promise<{
   sites: { id: number; name: string }[];
   agents: [string, string][];
+  services: [string, string][];
 }> {
-  const [sites, agents] = await Promise.all([
+  const [sites, agents, services] = await Promise.all([
     prisma.site.findMany({
       where: { isActive: true },
       orderBy: [{ position: "asc" }, { name: "asc" }],
@@ -304,8 +331,18 @@ export async function optionsFiltres(): Promise<{
       where: { kind: "agent", isActive: true },
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
     }),
+    prisma.service.findMany({
+      where: { isActive: true },
+      orderBy: [{ position: "asc" }, { name: "asc" }],
+    }),
   ]);
   return {
+    services: services.length
+      ? [
+          ...services.map((s): [string, string] => [String(s.id), s.name]),
+          ["aucun", "Sans service"],
+        ]
+      : [],
     sites: sites.map((s) => ({ id: s.id, name: s.name })),
     agents: [
       ...agents.map((a): [string, string] => [

@@ -91,6 +91,7 @@ export async function creer(form: FormData): Promise<Response> {
     });
     if (!user.gereEspace(entree.espaceId))
       return redirigerAvecMessage(retour, "Cet espace n'est pas dans votre périmètre.", "danger");
+    entree.agitPour = user.agitPour;
     if (!entree.organisationId)
       return redirigerAvecMessage(
         retour,
@@ -558,6 +559,10 @@ async function facturer({ user, r, fiche }: Contexte, form: FormData): Promise<R
     throw new UserFacingError("Le module Paiements est désactivé.");
   if (!user.canEdit("paiements"))
     throw new UserFacingError("Vous n'avez pas le droit d'émettre une facture.");
+  if (!user.factureOuverte(r.serviceId))
+    throw new UserFacingError(
+      "La facturation de ce dossier revient au service auquel il est confié.",
+    );
   const type = champ(form, "type");
   if (type !== "acompte" && type !== "solde" && type !== "caution")
     throw new UserFacingError("Type de facture inconnu.");
@@ -622,6 +627,13 @@ export async function actionReservation(
     return redirigerAvecMessage(
       fiche,
       "Cet espace n'est pas dans votre périmètre : vous ne pouvez pas agir sur ce dossier.",
+      "danger",
+    );
+  // Un dossier confié à un service se décide dans ce service ; écrire dans le fil reste ouvert.
+  if (!user.agitPour(r.serviceId) && cle !== "message")
+    return redirigerAvecMessage(
+      fiche,
+      "Ce dossier est confié à un autre service : vous pouvez le consulter et écrire dans le fil, pas le décider.",
       "danger",
     );
   const ctx: Contexte = { user, r, fiche };

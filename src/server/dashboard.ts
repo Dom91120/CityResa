@@ -8,6 +8,7 @@ import { minutesDe, parisParts } from "@/lib/paris-time";
 import { prisma } from "@/server/db";
 import type { CurrentUser } from "@/server/guards";
 import { compterARepondre } from "@/server/messages-attente";
+import { clauseServices } from "@/server/nav";
 
 export type Periode = { de: Date; a: Date; label: string };
 
@@ -25,7 +26,12 @@ function heuresOuvertureHebdo(h: Horaires | null): number {
 }
 
 /** `espacesGeres` : le périmètre de l'agent pour le compteur « à traiter » (vide = tous). */
-export async function indicateurs(p: Periode, prec: Periode, espacesGeres: number[] = []) {
+export async function indicateurs(
+  p: Periode,
+  prec: Periode,
+  espacesGeres: number[] = [],
+  file: number[] | null = null,
+) {
   const compter = async (q: Periode) => {
     const [demandes, confirmees, annulees, revenus] = await Promise.all([
       prisma.reservation.count({ where: { createdAt: { gte: q.de, lt: q.a } } }),
@@ -54,6 +60,7 @@ export async function indicateurs(p: Periode, prec: Periode, espacesGeres: numbe
         where: {
           status: { in: ["a_traiter", "en_traitement"] },
           ...(espacesGeres.length ? { espaceId: { in: espacesGeres } } : {}),
+          ...clauseServices(file),
         },
       }),
       prisma.reservation.count({ where: { status: "acceptee", signedAt: null } }),
@@ -188,6 +195,7 @@ export async function aTraiterPour(user: CurrentUser, limite = 8) {
     where: {
       status: { in: ["a_traiter", "en_traitement"] },
       ...(user.espacesGeres.length ? { espaceId: { in: user.espacesGeres } } : {}),
+      ...clauseServices(user.fileDeTravail),
     },
     include: {
       espace: { select: { name: true, shortName: true, color: true } },

@@ -54,7 +54,7 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
     );
   const { user, csrf, features } = page;
   const peutEditer = user.canEdit("reservations");
-  const peutDecider = user.gereEspace(r.espaceId);
+  const peutDecider = user.gereDossier(r);
   const aTraiter = r.status === "a_traiter" || r.status === "en_traitement";
 
   const [
@@ -198,7 +198,17 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
 
       <div className="fiche-colonnes">
         <div className="d-flex flex-column gap-3">
-          <CarteDecision r={r} csrf={csrf} peutDecider={peutDecider} features={features} />
+          <CarteDecision
+            r={r}
+            csrf={csrf}
+            peutDecider={peutDecider}
+            features={features}
+            autreService={
+              user.gereEspace(r.espaceId) && !user.agitPour(r.serviceId)
+                ? (circuit?.service?.name ?? "un autre service")
+                : null
+            }
+          />
           {circuit ? (
             <CarteCircuit
               etat={circuit}

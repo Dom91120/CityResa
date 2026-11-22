@@ -14,11 +14,13 @@ import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import type { Role as RoleRow, User as UserRow } from "@/generated/prisma/client";
 import { PERMISSION_CATEGORIES, type PermissionCategory } from "@/lib/constantes";
+import { type Acteur, agitPour, factureOuverte, fileDeTravail } from "@/lib/services";
 import { auth } from "@/server/auth";
 import { type AppSettings, getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
-import { categoryEnabledIn } from "@/server/features";
+import { categoryEnabledIn, enabledIn } from "@/server/features";
 import { redirigerAvecFlashDepuisRendu } from "@/server/flash";
+import { servicesDe } from "@/server/services";
 
 const TOUCH_THROTTLE_MS = 60_000;
 
@@ -92,6 +94,16 @@ export type CurrentUser = {
   gereEspace: (espaceId: number) => boolean;
   /** L'espace est-il dans le périmètre de l'agent (sans condition de droit) ? */
   voitEspace: (espaceId: number) => boolean;
+  /** Les services pour lesquels l'agent agit aujourd'hui (membre, responsable, suppléant). */
+  services: number[];
+  /** L'agent agit-il pour ce service ? Vrai sans service, pour un administrateur, module coupé. */
+  agitPour: (serviceId: number | null | undefined) => boolean;
+  /** L'agent peut-il décider sur ce dossier : droit, périmètre d'espaces ET service du dossier. */
+  gereDossier: (d: { espaceId: number; serviceId: number | null }) => boolean;
+  /** Les services auxquels se limite sa file de travail ; null = pas de limite. */
+  fileDeTravail: number[] | null;
+  /** Peut-il toucher à la facture d'un dossier de ce service ? (un agent sans service : oui) */
+  factureOuverte: (serviceId: number | null | undefined) => boolean;
 };
 
 export function buildCurrentUser(
@@ -100,8 +112,10 @@ export function buildCurrentUser(
   settings: AppSettings,
   espacesGeres: number[] = [],
   perimetreExplicite = espacesGeres.length > 0,
+  services: number[] = [],
 ): CurrentUser {
   const isAdmin = roleObj ? Boolean(roleObj.isAdmin) : row.role === "admin";
+  const acteur: Acteur = { actif: enabledIn(settings, "processus"), isAdmin, services };
   const isUsager = roleObj ? Boolean(roleObj.isUsager) : row.kind === "usager";
   const isAgent = !isUsager;
   const permLevel = (category: string): number => {
@@ -156,6 +170,14 @@ export function buildCurrentUser(
     gereEspace: (espaceId) =>
       canEdit("reservations") && (espacesGeres.length === 0 || espacesGeres.includes(espaceId)),
     voitEspace: (espaceId) => espacesGeres.length === 0 || espacesGeres.includes(espaceId),
+    services,
+    agitPour: (serviceId) => agitPour(acteur, serviceId),
+    gereDossier: (d) =>
+      canEdit("reservations") &&
+      (espacesGeres.length === 0 || espacesGeres.includes(d.espaceId)) &&
+      agitPour(acteur, d.serviceId),
+    fileDeTravail: fileDeTravail(acteur),
+    factureOuverte: (serviceId) => factureOuverte(acteur, serviceId),
   };
 }
 
@@ -176,6 +198,7 @@ export async function loadUser(userId: string): Promise<CurrentUser | null> {
     settings,
     await perimetre(row, espaces),
     espaces.length > 0,
+    row.kind === "agent" && enabledIn(settings, "processus") ? await servicesDe(row.id) : [],
   );
 }
 

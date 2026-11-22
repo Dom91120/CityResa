@@ -10,6 +10,7 @@ import {
   lireFiltres,
   ONGLETS,
   optionsFiltres,
+  servicesRetenus,
   TRIS,
   TRIS_COURTS,
   triDefaut,
@@ -42,8 +43,14 @@ export default async function ReservationsPage({
   const [triCol, triSens] = triDefaut(onglet);
   const triCourant = f.tri ? `${f.tri}:${f.sens || "asc"}` : `${triCol}:${triSens}`;
   const filtresActifs = Boolean(
-    f.sites.length || f.espaces.length || f.types.length || f.agents.length || f.periode,
+    f.sites.length ||
+      f.espaces.length ||
+      f.types.length ||
+      f.agents.length ||
+      f.services.length ||
+      f.periode,
   );
+  const filtreServices = page.features.processus && options.services.length > 0;
   const exportUrl = `/reservations/export.csv${page.search.toString() ? `?${page.search.toString()}` : ""}`;
 
   return (
@@ -100,6 +107,7 @@ export default async function ReservationsPage({
             espace: f.espaces.map(String),
             type: f.types,
             agent: f.agents,
+            service: f.services,
             periode: f.periode,
             vue: f.vue === "table" ? "table" : null,
           }}
@@ -123,6 +131,20 @@ export default async function ReservationsPage({
                 plusieurs={(n) => `${n} types`}
                 hrefTous={sans("type")}
               />
+              {filtreServices ? (
+                <FiltreCases
+                  name="service"
+                  icone="building-2"
+                  options={options.services}
+                  choisis={servicesRetenus(f, page.user) ?? []}
+                  tous="Tous les services"
+                  plusieurs={(n) => (f.services.length ? `${n} services` : "Mes services")}
+                  hrefTous={urlAvec(page.pathname, page.search, {
+                    service: page.user.fileDeTravail ? "tous" : null,
+                    page: null,
+                  })}
+                />
+              ) : null}
               <FiltreCases
                 name="agent"
                 icone="user-round"

@@ -33,7 +33,7 @@ export default async function ModifierCreneauPage({
   if (
     !voitEspace(page.user, r.espaceId) ||
     !page.user.canEdit("reservations") ||
-    !page.user.gereEspace(r.espaceId)
+    !page.user.gereDossier(r)
   )
     redirigerAvecFlashDepuisRendu(fiche, "Vous ne pouvez pas modifier ce dossier.", "danger");
   if (!serieModifiable(r))

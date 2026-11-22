@@ -221,11 +221,14 @@ export function CarteDecision({
   csrf,
   peutDecider,
   features,
+  autreService = null,
 }: {
   r: ReservationComplete;
   csrf: string;
   peutDecider: boolean;
   features: FeatureFlags;
+  /** Le dossier est confié à un service pour lequel l'agent n'agit pas : son nom. */
+  autreService?: string | null;
 }) {
   const st = r.status as ReservationStatus;
   // Un refus est une décision ; une annulation a sa propre date et son propre auteur.
@@ -520,8 +523,10 @@ export function CarteDecision({
         </>
       ) : (
         <div className="decision-aide">
-          <Icone nom="lock" taille={14} /> Vous n'avez pas la main sur cet espace : la décision
-          revient à ses gestionnaires.
+          <Icone nom="lock" taille={14} />{" "}
+          {autreService
+            ? `Ce dossier est confié à ${autreService} : la décision lui revient.`
+            : "Vous n'avez pas la main sur cet espace : la décision revient à ses gestionnaires."}
         </div>
       )}
     </div>

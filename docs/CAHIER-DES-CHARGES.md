@@ -667,7 +667,7 @@ rencontre.
 
 | N° | Besoin de l'organisation | Aujourd'hui | Évolution à étudier |
 | --- | --- | --- | --- |
-| E1 | **Séparer Vie associative et Service des fêtes**, qui partagent les mêmes salles et se distinguent par le type de demandeur. | Un seul secteur **Salles** : tout agent du secteur voit et traite toutes les demandes des salles, associations comme particuliers et entreprises. Le périmètre d'un agent se règle par espace, jamais par type d'usager. Seuls le filtre « type d'usager » des listes et du planning et l'« agent assigné », choisi à la main, permettent à chacun de retrouver ses dossiers. | Notion de **service** portée par l'agent (au-delà du secteur) ; aiguillage d'une demande vers un service selon l'espace **et** le type de demandeur ; notifications, tableau de bord, compteurs et droits de décision limités au service. |
+| E1 *(traité, § 9 lot 2)* | **Séparer Vie associative et Service des fêtes**, qui partagent les mêmes salles et se distinguent par le type de demandeur. | Un seul secteur **Salles** : tout agent du secteur voit et traite toutes les demandes des salles, associations comme particuliers et entreprises. Le périmètre d'un agent se règle par espace, jamais par type d'usager. Seuls le filtre « type d'usager » des listes et du planning et l'« agent assigné », choisi à la main, permettent à chacun de retrouver ses dossiers. | Notion de **service** portée par l'agent (au-delà du secteur) ; aiguillage d'une demande vers un service selon l'espace **et** le type de demandeur ; notifications, tableau de bord, compteurs et droits de décision limités au service. |
 | E2 | **Communication** : suivre, relire, remplacer. | Aucun compte ni rôle prévu. Le suivi et le remplacement s'obtiennent en donnant à ses agents un compte du secteur Salles (Lecteur, Agent ou Gestionnaire). La **relecture** n'existe pas : aucune étape ne soumet un dossier, une convention ou un message à un second regard avant envoi. | Préciser avec la Ville ce qui est relu (réponse à l'usager, convention, événement ouvert au public, facture) et à quel moment ; selon la réponse, étape « à relire » dans le circuit ou simple mise en copie. Suppléance déclarée (dates, service remplacé) plutôt qu'un compte permanent. |
 | E3 | **Élus dans les circuits** de réservation. | L'élu n'agit que sur les subventions. Sur les réservations, les campagnes de créneaux, la gratuité, les dérogations et les réquisitions, il lit sans pouvoir donner d'avis ni valider. | Arrêter la liste des décisions soumises à un élu ; **avis ou visa d'un élu** sur un dossier de réservation (comme l'avis de subvention), demandé par l'agent, tracé dans l'historique, bloquant ou non selon le cas. |
 | E4 | **Élu de délégation** (sports, vie associative, fêtes…). | Un élu est transversal : il voit tout et peut donner un avis sur toute demande de subvention. Le « secteur d'instruction » d'un dossier de subvention (Sport, Culture, Solidarité…) est une étiquette, sans effet sur qui est sollicité ; l'élu n'est pas notifié quand un dossier attend son avis. | Délégation portée par le compte de l'élu ; avis demandé aux seuls élus concernés ; notification à l'élu. |
@@ -675,7 +675,7 @@ rencontre.
 | E6 | **Usagers : service de référence.** | Le fichier des usagers est commun à tous les agents : tout agent en écriture valide une fiche, vérifie des pièces ou modifie une organisation, quel que soit son secteur. | Service de référence déduit du type (et de la case « sportive ») ; fiches à valider et pièces à vérifier présentées au bon service. |
 | E7 | **Nommer les services** dans les écrans et les documents. | Les services n'existent pas en tant que tels : l'application connaît deux secteurs (Salles, Sports) et la fonction saisie sur chaque compte. Convention, courriels et factures portent l'identité de la collectivité, pas celle du service. | Référentiel des services (nom, courriel, téléphone) ; service affiché sur le dossier, la convention et les courriels. |
 | E8 | **Gratuité des associations : périmètre exact.** | La gratuité tient à la grille : nulle pour une association de la commune, payante pour une association extérieure (150 € la journée salle Gabriel Péri dans le jeu de démonstration). | Confirmer la règle de la Ville : gratuité pour toutes les associations ou pour les seules associations châtillonnaises ; avec ou sans plafond annuel. |
-| E9 | **Facturation réservée au Service des fêtes.** | Les rôles Agent et Gestionnaire ont l'écriture sur les paiements dans les deux secteurs. | Droit « Paiements » par service, ou confirmation que la règle actuelle convient. |
+| E9 *(traité, § 9 lot 2)* | **Facturation réservée au Service des fêtes.** | Les rôles Agent et Gestionnaire ont l'écriture sur les paiements dans les deux secteurs. | Droit « Paiements » par service, ou confirmation que la règle actuelle convient. |
 | E10 | **Comptes de démonstration** par service. | Le jeu de démonstration compte une gestionnaire du secteur Salles (qui tient à la fois la Vie associative et le Service des fêtes), un agent du secteur Sports et un élu ; aucun compte Communication, aucun financier. | Un compte par service et par niveau, un élu par délégation, pour dérouler les scénarios à plusieurs mains. |
 | E11 | **Campagnes de créneaux par service.** Le Service des sports mène celle des gymnases, la Vie associative celle des salles. | Les campagnes ne suivent pas le secteur : tout agent en écriture voit toutes les campagnes et peut ouvrir aux vœux n'importe quel espace. Seule la décision sur un vœu est limitée aux espaces dont l'agent a la charge. | Campagne rattachée à un secteur (ou à un service) ; liste des campagnes et choix des espaces limités au périmètre de l'agent. |
 
@@ -870,11 +870,33 @@ Restent dans le code, hors de portée du paramétrage :
 sur une réservation), E4 pour les réservations (délégation, notification de l'élu), E7 en
 partie (les services existent et figurent sur le dossier).
 
+**Lot 2, livré** — droits par service, sur les réservations :
+
+- une personne **agit pour un service** si elle en est membre ou responsable, ou si elle est
+  du service qui le supplée pendant la période (`src/lib/services.ts`) ;
+- **décider** sur un dossier confié à un service (statut, créneaux, convention, caution) et
+  **facturer ou encaisser** ses factures reviennent aux personnes de ce service et aux
+  administrateurs ; ce droit s'ajoute au rôle et au périmètre d'espaces ;
+- un agent sans service garde la vue d'ensemble sans décider, mais encaisse pour tous (régie,
+  finances) ;
+- **consulter** un dossier et **écrire dans son fil** restent ouverts à tout le périmètre
+  d'espaces : deux services qui partagent une salle voient l'occupation l'un de l'autre ;
+- la **file de travail** (compteur du menu, « à traiter » du tableau de bord, filtre par
+  défaut de la liste) se limite aux services de l'agent et aux dossiers sans service ; la
+  liste gagne un filtre par service ;
+- les **notifications** d'un dossier (nouvelle demande, message, annulation) vont aux
+  personnes de son service ;
+- un agent ne crée pas directement acceptée une demande qui revient à un autre service.
+
+Écarts traités : **E1** (Vie associative et Service des fêtes séparés par le service du
+dossier, lui-même déduit du type de demandeur par l'aiguillage) et **E9** (facturation
+réservée au service du dossier).
+
 **Reste à faire**
 
 | Sujet | Écart |
 | --- | --- |
-| Périmètre et droits **par service** : listes, tableau de bord, compteurs et décision limités aux dossiers du service ; notification de la nouvelle demande aux membres du service | E1, E9 |
+| Droits par service sur ce qui reste réglé **par espace** : présences, personnel de service, fermetures, planning (filtre par service) | E1 |
 | Circuits des **subventions** (service instructeur, élus de la délégation), des **campagnes de créneaux**, de la **validation d'une fiche d'usager**, de la retenue sur caution et de l'annulation | E4, E5, E6, E11 |
 | Autres **moments** d'insertion : avant un refus, une annulation, une réquisition, l'émission d'une facture | E3, E9 |
 | Règle de réunion **tous / majorité** (aujourd'hui : une seule réponse suffit) | — |

@@ -209,6 +209,11 @@ export type DemandeEntree = {
   sansCourriel?: boolean;
   /** Option : date limite au-delà de laquelle un dossier non acquis est libéré d'office. */
   optionExpiresAt?: Date | null;
+  /**
+   * L'agent qui saisit agit-il pour ce service ? Sinon, il enregistre la demande « à traiter »
+   * mais ne la crée pas acceptée : la décision revient au service auquel elle est confiée.
+   */
+  agitPour?: (serviceId: number | null) => boolean;
 };
 
 /** Le devis d'une demande (pur calcul, sans écriture). */
@@ -432,6 +437,20 @@ export async function creerReservation(
     startAt: creneaux[0].startAt,
     createdAt: now,
   });
+  if (
+    e.agitPour &&
+    circuit?.serviceId &&
+    STATUTS_FERMES.includes(statut) &&
+    !e.agitPour(circuit.serviceId)
+  ) {
+    const s = await prisma.service.findUnique({
+      where: { id: circuit.serviceId },
+      select: { name: true },
+    });
+    throw new UserFacingError(
+      `Cette demande revient au service « ${s?.name ?? "concerné"} » : enregistrez-la « À traiter », il la décidera.`,
+    );
+  }
   const retenuParCircuit = Boolean(circuit?.bloquantes.length) && STATUTS_FERMES.includes(statut);
   if (retenuParCircuit) statut = "a_traiter";
   // Un dossier acquis d'emblée (saisie d'un agent, espace sans validation) obéit à la règle des pièces.
@@ -552,6 +571,7 @@ export async function creerReservation(
       `Nouvelle demande ${r.numero}`,
       `${espace.name} · ${dates} · ${demandeur}`,
       `/reservations/${r.id}`,
+      r.serviceId,
     );
     await envoyerDepuisModele(
       "reservation_nouvelle_agent",
@@ -879,6 +899,7 @@ export async function changerStatut(
         `Annulation de ${r.numero}`,
         `${r.espace.name} · ${plage(r.startAt, r.endAt)}`,
         `/reservations/${r.id}`,
+        r.serviceId,
       );
   }
   if (effectif === "en_traitement" && opts.message) {
@@ -929,6 +950,7 @@ export async function ajouterMessage(
       `Message de ${auteur.name} sur ${r.numero}`,
       extrait,
       `/reservations/${r.id}`,
+      r.serviceId,
     );
     await envoyerDepuisModele(
       "message_recu",

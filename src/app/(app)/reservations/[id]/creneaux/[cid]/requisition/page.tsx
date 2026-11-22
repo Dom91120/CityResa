@@ -31,7 +31,7 @@ export default async function RequisitionPage({
   if (
     !voitEspace(page.user, r.espaceId) ||
     !page.user.canEdit("reservations") ||
-    !page.user.gereEspace(r.espaceId)
+    !page.user.gereDossier(r)
   )
     redirigerAvecFlashDepuisRendu(fiche, "Vous ne pouvez pas agir sur ce dossier.", "danger");
   const obstacle = obstacleRequisition(r, cible);

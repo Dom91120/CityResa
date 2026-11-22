@@ -26,6 +26,13 @@ async function calculer(): Promise<Record<string, number>> {
   return { a_traiter, messages, usagers_a_valider, factures_a_payer, subventions_a_traiter };
 }
 
+/** La clause qui limite une requête de réservations à la file de travail d'un agent. */
+export function clauseServices(file: number[] | null): {
+  OR?: ({ serviceId: null } | { serviceId: { in: number[] } })[];
+} {
+  return file ? { OR: [{ serviceId: null }, { serviceId: { in: file } }] } : {};
+}
+
 export function invalidateNavCounts(): void {
   memo.cache = null;
 }
@@ -68,16 +75,19 @@ export async function navCounts(user: CurrentUser): Promise<Record<string, numbe
   const c = memo.cache.counts;
   if (user.canView("reservations")) {
     // Un agent rattaché à des espaces ne compte que leurs demandes, comme sa liste.
-    counts.a_traiter = user.espacesGeres.length
-      ? await prisma.reservation
-          .count({
-            where: {
-              status: { in: ["a_traiter", "en_traitement"] },
-              espaceId: { in: user.espacesGeres },
-            },
-          })
-          .catch(() => c.a_traiter)
-      : c.a_traiter;
+    // …et, s'il appartient à des services, que les demandes de ses services ou sans service.
+    counts.a_traiter =
+      user.espacesGeres.length || user.fileDeTravail
+        ? await prisma.reservation
+            .count({
+              where: {
+                status: { in: ["a_traiter", "en_traitement"] },
+                ...(user.espacesGeres.length ? { espaceId: { in: user.espacesGeres } } : {}),
+                ...clauseServices(user.fileDeTravail),
+              },
+            })
+            .catch(() => c.a_traiter)
+        : c.a_traiter;
   }
   if (user.canView("messages")) counts.messages = c.messages;
   if (user.canView("usagers")) counts.usagers_a_valider = c.usagers_a_valider;

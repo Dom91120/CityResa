@@ -82,7 +82,35 @@ Les trois natures d'étape :
 - L'usager ne voit une étape que si elle porte un libellé qui lui est destiné (« Votre demande est en cours de validation »).
 - Chaque demande et chaque réponse sont inscrites à l'historique du dossier.
 
-## 12.4 Les services et les délégations
+## 12.4 Ce que le service change pour un agent
+
+**À quoi ça sert** — Séparer le travail de services qui partagent les mêmes espaces (la Vie associative et le Service des fêtes sur les salles), sans cacher à l'un l'occupation décidée par l'autre.
+
+**Qui** — Les agents qui appartiennent à un service. Un agent agit pour un service s'il en est **membre** ou **responsable**, ou s'il est du service qui le **supplée** pendant la période de suppléance.
+
+**Ce qui est réservé au service d'un dossier**
+
+- **Décider** : approuver, décliner, demander des informations, modifier, annuler, toucher aux créneaux, à la convention, à la caution. Sur le dossier d'un autre service, la carte de décision indique « Ce dossier est confié à … : la décision lui revient ».
+- **Facturer et encaisser** les factures du dossier.
+- **Être prévenu** : une nouvelle demande, un message de l'usager ou une annulation préviennent les personnes du service, plus les gestionnaires de l'espace.
+
+**Ce qui reste ouvert à tous les agents du périmètre**
+
+- **Consulter** le dossier et le planning : deux services qui partagent une salle voient l'occupation l'un de l'autre.
+- **Écrire dans le fil** du dossier (message à l'usager, note interne).
+
+**La file de travail** — Pour un agent qui appartient à au moins un service, le compteur **Réservations** du menu, le bloc « À traiter » du tableau de bord et la liste des réservations se limitent par défaut aux dossiers de **ses services** et à ceux qui n'ont pas de service. Dans la liste, le filtre des services affiche alors **Mes services** ; **Tous les services** montre le reste, en consultation.
+
+**Règles à connaître**
+
+- Le droit par service **s'ajoute** aux droits existants : il faut toujours le droit d'écriture sur les réservations et avoir l'espace dans son périmètre.
+- Un dossier **sans service** (circuit standard) se décide comme avant, par les agents chargés de l'espace.
+- Un agent qui n'appartient à **aucun service** garde la vue d'ensemble mais ne décide pas sur un dossier confié à un service. Il encaisse en revanche toutes les factures : c'est le cas de la régie ou des finances.
+- Un **administrateur** agit sur tous les dossiers.
+- Un agent ne crée pas directement « Acceptée » ou « Confirmée » une demande qui revient à un autre service : il l'enregistre « À traiter ».
+- Présences, personnel de service, fermetures et campagnes de créneaux restent réglés par espace.
+
+## 12.5 Les services et les délégations
 
 **À quoi ça sert** — Déclarer les services de la Ville et les délégations des élus, sur lesquels les circuits s'appuient.
 
@@ -108,9 +136,9 @@ Les trois natures d'étape :
 **Règles à connaître**
 
 - Un service sans membre ou une délégation sans élu ne peut pas recevoir d'étape : la publication d'un circuit qui s'adresse à lui est refusée.
-- Appartenir à un service ne change pas les droits d'un agent (rôle, secteur, espaces) : cela détermine les étapes qu'il reçoit.
+- Appartenir à un service détermine les étapes qu'un agent reçoit et les dossiers sur lesquels il décide (12.4) ; son rôle, son secteur et ses espaces continuent de s'appliquer.
 
-## 12.5 Les circuits
+## 12.6 Les circuits
 
 **À quoi ça sert** — Décrire, pour chaque famille de demandes, le service qui les reçoit et les étapes qui précèdent l'acceptation.
 
@@ -161,7 +189,7 @@ Les trois natures d'étape :
 - Un circuit qu'un dossier a suivi ne se supprime pas : désactivez-le.
 - À l'installation, un seul circuit existe, le **Circuit standard**, sans service ni étape : les demandes se traitent comme avant le module.
 
-## 12.6 La simulation
+## 12.7 La simulation
 
 **À quoi ça sert** — Vérifier, avant de publier, ce qui arriverait à un dossier.
 

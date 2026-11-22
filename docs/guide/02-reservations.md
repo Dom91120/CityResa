@@ -16,7 +16,7 @@ Ce chapitre décrit le traitement des dossiers de réservation par les agents : 
 
 - En haut à droite : **Exporter** (la liste filtrée en fichier tableur), **Planning** et **Nouvelle réservation**.
 - Une rangée d'onglets avec leur compteur : **Toutes**, **À traiter**, **Signature**, **Confirmées**, **Terminées**, **Refusées / annulées**, **Archivées**. L'onglet « Toutes » ne montre pas les dossiers archivés.
-- Une zone de recherche (numéro, titre, organisation, demandeur) et des filtres. **Tous les sites**, **Tous les espaces**, **Tous les types d'usager** et **Tous les agents** sont des boutons qui ouvrent des cases à cocher, comme sur le planning : vous pouvez retenir plusieurs sites, plusieurs espaces (ceux des sites cochés), plusieurs types ou plusieurs agents ; rien de coché = tous, et le bouton rappelle le choix (« 2 sites »). Viennent ensuite, sous la même forme de bouton mais à choix unique, la période (ce mois-ci, ce trimestre, cette année, 30 ou 90 derniers jours, 12 derniers mois) et l'ordre de tri.
+- Une zone de recherche (numéro, titre, organisation, demandeur) et des filtres. **Tous les sites**, **Tous les espaces**, **Tous les types d'usager** et **Tous les agents** sont des boutons qui ouvrent des cases à cocher, comme sur le planning : vous pouvez retenir plusieurs sites, plusieurs espaces (ceux des sites cochés), plusieurs types ou plusieurs agents ; rien de coché = tous, et le bouton rappelle le choix (« 2 sites »). Si la Ville a déclaré ses services (chapitre 12), un bouton **Tous les services** s'y ajoute : pour un agent qui appartient à un service, il affiche **Mes services** et la liste se limite par défaut à ses dossiers. Viennent ensuite, sous la même forme de bouton mais à choix unique, la période (ce mois-ci, ce trimestre, cette année, 30 ou 90 derniers jours, 12 derniers mois) et l'ordre de tri.
 - Deux petits boutons à droite pour passer de l'affichage en **cartes** à l'affichage en **tableau**.
 - Chaque carte présente la photo de l'espace, le titre de l'événement, la pastille de statut, le numéro (de la forme R260001 : R pour réservation, l'année sur deux chiffres, puis le rang sur quatre), l'espace et son site, le demandeur avec son type (Particulier, Association, Entreprise…), la nature de l'événement, le nombre de participants, la date et les horaires (et le nombre de créneaux quand il y en a plusieurs).
 - À droite de chaque carte, une frise d'avancement en quatre étapes (Demande, Signature, Confirmée, Terminée), la date de réception et un bouton : **Répondre** pour une demande à traiter, **Suivre** pour un dossier accepté, signé ou confirmé, **Voir** pour les autres.
@@ -62,7 +62,7 @@ Ce chapitre décrit le traitement des dossiers de réservation par les agents : 
 
 **À quoi ça sert** — Tout savoir d'une réservation sur une seule page et agir sur elle.
 
-**Qui** — Tous les agents qui voient le dossier. Seuls les agents qui ont la main sur l'espace (droit d'écriture sur les réservations et espace dans leur périmètre) voient les boutons de décision ; les autres lisent la mention « Vous n'avez pas la main sur cet espace ».
+**Qui** — Tous les agents qui voient le dossier. Seuls les agents qui ont la main sur l'espace (droit d'écriture sur les réservations et espace dans leur périmètre) voient les boutons de décision ; les autres lisent la mention « Vous n'avez pas la main sur cet espace », ou « Ce dossier est confié à … : la décision lui revient » quand le dossier relève d'un autre service (chapitre 12).
 
 ![Fiche d'un dossier confirmé](captures/reservation-confirmee.webp)
 

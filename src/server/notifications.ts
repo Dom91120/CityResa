@@ -4,6 +4,7 @@
 
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
+import { enabledIn } from "@/server/features";
 
 export type NotifType =
   | "reservation"
@@ -37,7 +38,14 @@ export async function notifier(
  */
 export async function agentsPour(
   espaceId: number | null,
+  serviceId: number | null = null,
 ): Promise<{ id: string; email: string; name: string }[]> {
+  // Un dossier confié à un service : ce sont les personnes de ce service qu'on prévient.
+  if (serviceId && enabledIn(await getSettings(), "processus")) {
+    const { personnesDuService } = await import("@/server/circuits");
+    const duService = await personnesDuService(serviceId);
+    if (duService.length) return duService;
+  }
   if (espaceId) {
     const lies = await prisma.espaceGestionnaire.findMany({
       where: { espaceId, role: { in: ["gestionnaire", "notifie"] }, user: { isActive: true } },
@@ -77,8 +85,9 @@ export async function notifierAgents(
   title: string,
   body: string | null,
   link: string | null,
+  serviceId: number | null = null,
 ): Promise<string[]> {
-  const agents = await agentsPour(espaceId);
+  const agents = await agentsPour(espaceId, serviceId);
   await Promise.all(agents.map((a) => notifier(a.id, type, title, body, link)));
   const cfg = await getSettings();
   const extra = cfg.AGENTS_NOTIFIES.split(",")

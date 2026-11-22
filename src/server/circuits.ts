@@ -29,6 +29,7 @@ import {
 } from "@/lib/circuits";
 import { plage } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
+import { suppleanceEnCours } from "@/lib/services";
 import { auditRecord } from "@/server/audit";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
@@ -62,16 +63,7 @@ export async function processusActif(): Promise<boolean> {
 
 // ── Référentiel ──
 
-/** Un service est-il suppléé aujourd'hui ? */
-function suppleanceEnCours(
-  s: { suppleantId: number | null; suppleanceDu: Date | null; suppleanceAu: Date | null },
-  jour: string,
-): boolean {
-  if (!s.suppleantId) return false;
-  const du = s.suppleanceDu ? s.suppleanceDu.toISOString().slice(0, 10) : null;
-  const au = s.suppleanceAu ? s.suppleanceAu.toISOString().slice(0, 10) : null;
-  return (!du || du <= jour) && (!au || jour <= au);
-}
+const ymd = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : null);
 
 /** Les personnes qui agissent pour un service : membres, responsable, et suppléant en cours. */
 export async function personnesDuService(serviceId: number): Promise<Personne[]> {
@@ -82,6 +74,7 @@ export async function personnesDuService(serviceId: number): Promise<Personne[]>
       membres: { include: { user: { select: { ...SELECT_PERSONNE, isActive: true } } } },
       suppleant: {
         include: {
+          responsable: { select: { ...SELECT_PERSONNE, isActive: true } },
           membres: { include: { user: { select: { ...SELECT_PERSONNE, isActive: true } } } },
         },
       },
@@ -91,8 +84,18 @@ export async function personnesDuService(serviceId: number): Promise<Personne[]>
   const tous = [
     ...s.membres.map((m) => m.user),
     ...(s.responsable ? [s.responsable] : []),
-    ...(suppleanceEnCours(s, todayParisISO()) && s.suppleant?.isActive
-      ? s.suppleant.membres.map((m) => m.user)
+    ...(suppleanceEnCours(
+      {
+        suppleantId: s.suppleantId,
+        suppleanceDu: ymd(s.suppleanceDu),
+        suppleanceAu: ymd(s.suppleanceAu),
+      },
+      todayParisISO(),
+    ) && s.suppleant?.isActive
+      ? [
+          ...s.suppleant.membres.map((m) => m.user),
+          ...(s.suppleant.responsable ? [s.suppleant.responsable] : []),
+        ]
       : []),
   ].filter((u) => u.isActive);
   return [...new Map(tous.map((u) => [u.id, personne(u)])).values()];

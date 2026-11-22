@@ -118,6 +118,7 @@ et fêtes » est confiée à Pierre Durand. Le dossier R260008 attend déjà son
 | 12 | La fin de l'année | Vie associative | 15 min | Valorisation, statistiques |
 | 13 | Faire vivre l'outil | Administrateur | 20 min | Paramètres, tâches planifiées, journal |
 | 14 | Décrire un circuit | Administrateur | 30 min | Services, aiguillage, étapes, simulation, versions |
+| 15 | Deux services, les mêmes salles | Tous | 25 min | Droits par service, file de travail, suppléance |
 
 ---
 
@@ -146,10 +147,10 @@ chacun. Les mêmes données ne donnent pas les mêmes écrans.
   **secteur** (Salles ou Sports) et les **espaces rattachés** fixent sur quoi.
 - Un agent sans secteur (élu, administrateur) voit tout.
 
-> **Écart E1** — Sophie voit toutes les demandes des salles, celles des associations (Vie
-> associative) comme celles des particuliers et des entreprises (Service des fêtes). Rien ne
-> sépare les deux services. Dans **Réservations**, essayez le filtre **Tous les types
-> d'usager** : c'est aujourd'hui le seul moyen pour chaque service de ne voir que ses dossiers.
+> **Écart E1, traité** — Chaque dossier est confié à un service, et seul ce service le décide
+> (guide 12.4). Dans le jeu de démonstration, Sophie appartient aux deux services des salles :
+> elle décide donc partout, et son filtre des services affiche **Mes services**. Le scénario 15
+> la retire du Service des fêtes pour voir la séparation.
 
 ---
 
@@ -307,8 +308,8 @@ gratuit est quand même **valorisé** en fin d'année.
 > **Écart E8** — À confirmer avec la Ville : la gratuité vaut-elle pour toutes les associations
 > ou pour les seules associations châtillonnaises ? Est-elle plafonnée dans l'année ?
 >
-> **Écart E1** — À l'étape 4, c'est le compte du secteur Salles qui instruit : rien ne réserve
-> ce dossier à la Vie associative, ni les dossiers du scénario 2 au Service des fêtes.
+> **Écart E1, traité** — À l'étape 4, la carte **Circuit** indique « Dossier confié à Vie
+> associative » ; les dossiers du scénario 2 le sont au Service des fêtes (scénario 15).
 >
 > **Écart E6** — À l'étape 12, n'importe quel agent en écriture (Karim compris) peut valider la
 > fiche : vérifiez-le en vous connectant avec son compte.
@@ -554,8 +555,8 @@ comme au scénario 10, rôle **Financier**, sans secteur).
 | 8 | Sophie | **Exporter** (ch. 6.6). | Le journal pour la comptabilité. |
 | 9 | Financier (si créé) | Parcourez l'application. | Écriture et suppression sur Paiements, lecture partout ailleurs. |
 
-> **Écart E9** — Connectez-vous avec Karim : il a lui aussi l'écriture sur les paiements, alors
-> que seul le Service des fêtes facture.
+> **Écart E9, traité** — La facture d'un dossier se traite dans le service auquel il est
+> confié ; un agent sans service (régie, finances) encaisse pour tous. Le scénario 15 le vérifie.
 
 ---
 
@@ -605,7 +606,7 @@ le décrit, on le simule, on le publie, on le vérifie.
 
 | # | Qui | Action | Constat |
 | --- | --- | --- | --- |
-| 1 | Administrateur | **Processus et circuits** (ch. 12.5) : lisez les quatre circuits et leur ordre. | Trois circuits à règle, puis le Circuit standard « par défaut ». |
+| 1 | Administrateur | **Processus et circuits** (ch. 12.6) : lisez les quatre circuits et leur ordre. | Trois circuits à règle, puis le Circuit standard « par défaut ». |
 | 2 | Administrateur | Onglet **Services** › crayon de **Communication** : cochez les deux comptes du scénario 10, choisissez un responsable. | Le service n'affiche plus « Aucun membre ». |
 | 3 | Administrateur | Circuit **Salles · associations** › **Étapes** › **Ajouter** : « Relecture par la Communication », nature Relecture, qui répond : le service Communication, délai 3 jours ; critère « Événement ouvert au public » : Oui. | Le circuit passe en **Brouillon v2** ; le bandeau dit « prêt à être publié » et ce qui a changé ; le logigramme montre la nouvelle étape. |
 | 4 | Administrateur | Avant l'étape 2, tentez la même étape avec un service sans membre, puis **Publier**. | Publication refusée : « le service n'a aucun membre ». |
@@ -624,6 +625,38 @@ le décrit, on le simule, on le publie, on le vérifie.
 la publication contrôle que chaque étape a quelqu'un pour y répondre ; une relecture ou un visa
 retient l'acceptation, un avis non ; un dossier garde la version de son circuit ; la suppléance
 est datée.
+
+---
+
+## Scénario 15 — Deux services, les mêmes salles
+
+**Situation** — La Vie associative et le Service des fêtes partagent les salles. On donne à
+chacun son agent, puis on vérifie que chacun décide chez lui, voit chez l'autre, et que la
+Communication remplace le Service des fêtes pendant ses congés.
+
+**Comptes** — Administrateur, Sophie, les comptes Communication du scénario 10.
+
+| # | Qui | Action | Constat |
+| --- | --- | --- | --- |
+| 1 | Sophie | Notez le compteur **Réservations** du menu ; ouvrez **Réservations** › **À traiter**. | Le filtre des services affiche **Mes services** : elle est des deux services des salles. |
+| 2 | Administrateur | **Processus et circuits** › **Services** › **Service des fêtes** : décochez Sophie, retirez-la comme responsable ; cochez à la place le compte « Communication – suppléance » du scénario 10, puis créez-lui un service à part si vous préférez. | Sophie n'agit plus que pour la Vie associative. |
+| 3 | Sophie | Rechargez le tableau de bord. | Le compteur **Réservations** et le bloc « À traiter » ont baissé : seules restent les demandes des associations et celles sans service. |
+| 4 | Sophie | **Réservations** › **À traiter**, puis filtre des services › **Tous les services**. | Par défaut, ses dossiers ; avec « Tous les services », ceux du Service des fêtes réapparaissent. |
+| 5 | Sophie | Ouvrez une demande d'un **particulier**. | Elle la lit en entier ; la carte de décision n'a plus de bouton et indique « Ce dossier est confié à Service des fêtes : la décision lui revient ». |
+| 6 | Sophie | Écrivez une note interne dans le fil du dossier. | Acceptée : le fil reste ouvert. |
+| 7 | Sophie | **Paiements** : ouvrez une facture d'un particulier, **Enregistrer un paiement**. | Refus : « Cette facture relève d'un dossier confié à un autre service ». |
+| 8 | Sophie | **+ Nouvelle réservation** pour un particulier, statut initial « Acceptée ». | Refus : la demande revient au Service des fêtes ; avec « À traiter », elle est enregistrée. |
+| 9 | Sophie | **Planning**. | Tous les créneaux des salles, ceux du Service des fêtes compris. |
+| 10 | Communication (suppléance) | Connectez-vous : tableau de bord, puis une demande d'un particulier. | Sa file contient les dossiers du Service des fêtes ; elle approuve. |
+| 11 | Martine | Portail : nouvelle demande de salle. | — |
+| 12 | Sophie, puis Communication | Regardez la cloche de chacun. | Seul le compte du Service des fêtes est prévenu de la nouvelle demande. |
+| 13 | Administrateur | Remettez Sophie dans le Service des fêtes. Puis, sur ce service : **Suppléé par** Communication, du jour à dans une semaine, et retirez-en le compte Communication. | Le compte Communication continue d'agir pour le Service des fêtes, par suppléance ; passé la date, il ne le pourra plus. |
+| 14 | Administrateur | Créez un compte **Financier** sans service (scénario 10), enregistrez un paiement avec lui. | Accepté : un agent sans service encaisse pour tous, mais ne décide sur aucun dossier confié à un service. |
+
+**Règles illustrées** — le service d'un dossier vient de son circuit, donc du type de demandeur ;
+décider et facturer reviennent au service ; consulter, écrire dans le fil et voir le planning
+restent ouverts ; la file de travail suit les services de l'agent ; la suppléance ouvre les
+mêmes droits pendant sa période.
 
 ---
 
@@ -649,6 +682,7 @@ est datée.
 | 12 | Fin d'année | | | | |
 | 13 | Administration | | | | |
 | 14 | Décrire un circuit | | | | |
+| 15 | Deux services, les mêmes salles | | | | |
 
 ### Les écarts rencontrés
 

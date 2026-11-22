@@ -24,11 +24,20 @@ function erreur(e: unknown, retour: string): Promise<Response> {
 }
 
 /** POST /paiements/[id]/paiement */
+/** La facture d'un dossier confié à un service se traite dans ce service (ou en régie). */
+function exigerService(user: CurrentUser, serviceId: number | null | undefined): void {
+  if (!user.factureOuverte(serviceId))
+    throw new UserFacingError(
+      "Cette facture relève d'un dossier confié à un autre service : elle se traite dans ce service.",
+    );
+}
+
 export async function encaisser(user: CurrentUser, id: number, form: FormData): Promise<Response> {
   const retour = suite(form, `/paiements/${id}`);
   try {
     const f = await chargerFacture(id);
     if (!f) return pasTrouve();
+    exigerService(user, f.reservation?.serviceId);
     const p = lirePaiement(form);
     await enregistrerPaiement(id, p.montant, p.mode, p.reference, {
       id: user.id,
@@ -62,6 +71,7 @@ export async function annuler(user: CurrentUser, id: number, form: FormData): Pr
   try {
     const f = await chargerFacture(id);
     if (!f) return pasTrouve();
+    exigerService(user, f.reservation?.serviceId);
     if (f.status === "annulee")
       return redirigerAvecMessage(retour, "Cette facture est déjà annulée.", "info");
     if (f.paiements.length)
@@ -90,6 +100,7 @@ export async function renvoyer(user: CurrentUser, id: number, form: FormData): P
   try {
     const f = await chargerFacture(id);
     if (!f) return pasTrouve();
+    exigerService(user, f.reservation?.serviceId);
     if (f.status === "annulee") throw new UserFacingError("Cette facture est annulée.");
     const parti = await envoyerFacture(id);
     if (!parti)
