@@ -1074,6 +1074,14 @@ L'écart **E7** est ainsi traité pour les subventions.
 - pour une subvention, elle distingue désormais l'avis des élus des étapes avant le vote et
   avant le versement.
 
+**Lot 19, livré** — bascule d'un dossier sur la version en service :
+
+- la carte Circuit signale un dossier qui suit une version remplacée et propose à l'agent qui
+  l'instruit de le faire **passer à la version en service** (réservation, subvention, campagne) ;
+- les étapes déjà demandées qui existent encore suivent le dossier avec leur réponse, les
+  étapes en attente disparues sont annulées, le dossier prend le service de la nouvelle
+  version ; le passage est inscrit à l'historique.
+
 **Reste à faire**
 
 | Sujet | Écart |
@@ -1083,7 +1091,6 @@ L'écart **E7** est ainsi traité pour les subventions.
 | **Échéance** : passage d'office à l'étape suivante ou transmission au suppléant (aujourd'hui : une relance, l'alerte au responsable, et l'échéance en rouge) | — |
 | **Effets** paramétrables d'une étape (modèle de courriel propre à l'étape, mise en copie, document) | E2 |
 | Service sur les factures | E7 |
-| **Bascule** d'un dossier en cours sur une nouvelle version | — |
 | Catégorie de permission « **Processus** » (aujourd'hui : administrateur seul) | — |
 
 ### Limites voulues

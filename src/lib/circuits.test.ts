@@ -27,6 +27,7 @@ import {
   lireObjet,
   lireReunion,
   type Referentiel,
+  repartirEtapes,
   restantARepondre,
   STATUTS_DU_MOMENT,
   type Test,
@@ -497,6 +498,23 @@ describe("état des étapes", () => {
       { cle: "visa2", nature: "visa" as const, etat: "refusee" as const },
     ]);
     expect(retenues.map((e) => e.cle)).toEqual(["visa", "visa2"]);
+  });
+});
+
+describe("bascule d'un dossier sur une autre version", () => {
+  it("reporte les étapes conservées et annule les étapes ouvertes disparues", () => {
+    const nouvelle = lireDefinition({ etapes: [etape({ cle: "a" }), etape({ cle: "c" })] });
+    expect(
+      repartirEtapes(
+        [
+          { id: 1, cle: "a", status: "validee" },
+          { id: 2, cle: "a", status: "annulee" },
+          { id: 3, cle: "b", status: "ouverte" },
+          { id: 4, cle: "b", status: "validee" },
+        ],
+        nouvelle,
+      ),
+    ).toEqual({ reportees: [1, 2], annulees: [3] });
   });
 });
 

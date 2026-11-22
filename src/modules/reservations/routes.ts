@@ -676,6 +676,15 @@ export async function actionReservation(
         return await assigner(ctx, form);
       case "etapes/demander":
         return await demanderEtape(ctx, form);
+      case "etapes/basculer": {
+        const { basculerVersion } = await import("@/server/circuits");
+        const b = await basculerVersion(ctx.r, ctx.user.name);
+        return redirigerAvecMessage(
+          `${ctx.fiche}#circuit`,
+          `Le dossier suit maintenant la version ${b.numero} de son circuit${b.annulees ? ` ; ${b.annulees} étape(s) en attente annulée(s)` : ""}.`,
+          "success",
+        );
+      }
       case "creneaux/ajouter":
         return await ajouterCreneau(ctx, form);
       case "convention/regenerer":

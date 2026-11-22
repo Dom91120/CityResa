@@ -13,7 +13,7 @@ Le cycle d'un dossier ne change pas : le module y **insère** des étapes, il ne
 | **Circuit** | Pour un type de demandes : le service auquel elles sont confiées et les étapes qui précèdent leur acceptation. |
 | **Règle d'aiguillage** | La condition qui fait qu'un circuit reçoit une demande (« une salle demandée par une association »). |
 | **Étape** | Une relecture, un avis ou un visa, demandé à un service, à un élu ou à un rôle, sous condition ou toujours, à un **moment** du dossier. |
-| **Version** | Un circuit se modifie en brouillon, puis se publie. Un dossier garde la version avec laquelle il a commencé. |
+| **Version** | Un circuit se modifie en brouillon, puis se publie. Un dossier garde la version avec laquelle il a commencé, sauf si l'agent le fait passer sur la version en service. |
 
 Les trois natures d'étape :
 
@@ -222,6 +222,7 @@ Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écrit
 - À la création d'une demande, les circuits sont examinés dans l'**ordre** : le premier dont la règle est vraie la reçoit ; le **circuit par défaut** prend le reste. Il y en a un seul, sans règle.
 - La publication est refusée tant qu'il reste une incohérence (étape sans libellé, service sans membre, délégation sans élu, circuit sans règle) : la fiche les liste.
 - Les dossiers en cours **gardent la version** de leur circuit ; la nouvelle version s'applique aux demandes créées ensuite.
+- Un dossier en cours peut **rejoindre la version en service** : quand il en suit une autre, sa carte Circuit l'indique et l'agent qui l'instruit dispose du bouton **Passer à la version N** (réservation, subvention ou campagne). Les étapes déjà demandées qui existent encore dans la nouvelle version sont conservées avec leur réponse ; celles en attente qui n'existent plus sont annulées ; le dossier prend le service que désigne la nouvelle version (une campagne garde le sien). Le passage est inscrit à l'historique et ne se défait pas.
 - **Abandonner le brouillon** revient à la version en service ; une version archivée se **reprend en brouillon**.
 - **Exporter (fichier)**, dans le menu « ... » d'un circuit, télécharge sa définition en JSON : le brouillon s'il y en a un, sinon la version en service. **Importer un fichier…** la recharge dans le brouillon d'un circuit du même type (réservations, subventions ou campagnes) : aiguillage et étapes sont remplacés, rien ne s'applique avant la publication. Services et délégations sont retrouvés par leur **nom** ; s'il en manque un, ou un rôle, l'import est refusé en le nommant. Les critères qui citent un espace, un site ou un profil gardent leurs identifiants : relisez-les après un import venu d'une autre base. L'export sert de sauvegarde avant une refonte, de modèle pour un circuit voisin, ou à passer d'une base d'essai à la base réelle.
 - Un circuit qu'un dossier a suivi ne se supprime pas : désactivez-le.

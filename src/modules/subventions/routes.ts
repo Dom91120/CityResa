@@ -145,6 +145,26 @@ export async function statut(user: CurrentUser, id: number, form: FormData): Pro
   }
 }
 
+/** POST /subventions/[id]/etapes/basculer : le dossier passe sur la version en service. */
+export async function basculerCircuit(user: CurrentUser, id: number): Promise<Response> {
+  const fiche = `/subventions/${id}`;
+  try {
+    await exigerInstruction(user, id);
+    const { basculerVersion } = await import("@/server/circuits");
+    const { porteurSubventionParId } = await import("@/server/circuits-subvention");
+    const p = await porteurSubventionParId(id);
+    if (!p) return pasTrouve();
+    const b = await basculerVersion(p, user.name);
+    return redirigerAvecMessage(
+      `${fiche}#circuit`,
+      `Le dossier suit maintenant la version ${b.numero} de son circuit${b.annulees ? ` ; ${b.annulees} étape(s) en attente annulée(s)` : ""}.`,
+      "success",
+    );
+  } catch (e) {
+    return erreur(e, `${fiche}#circuit`);
+  }
+}
+
 /** POST /subventions/[id]/supprimer */
 export async function supprimer(user: CurrentUser, id: number): Promise<Response> {
   try {

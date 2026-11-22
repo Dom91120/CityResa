@@ -444,6 +444,8 @@ textarea.form-control { min-height: 90px; }
 .liste-entete > .seg-tabs { flex: 0 1 auto; min-width: 0; margin-bottom: 0; }
 .liste-entete > .list-toolbar { flex: 1 1 auto; min-width: 0; margin-bottom: 0; }
 .liste-entete > .list-toolbar > .list-search { width: 200px; }
+/* Carte Circuit : le dossier suit une version qui n'est plus en service. */
+.circuit-version { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 0.82rem; color: var(--muted); }
 /* Barre étagée : la recherche sur sa ligne, les filtres sur la suivante, à leur aise. */
 .list-toolbar--etagee { flex-basis: 100%; }
 .list-toolbar--etagee > .list-search { flex: 0 1 360px; width: auto; max-width: 360px; }

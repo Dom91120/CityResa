@@ -30,6 +30,7 @@ import {
   type Objet,
   REUNIONS,
   type Referentiel,
+  repartirEtapes,
   restantARepondre,
   STATUTS_DU_MOMENT,
 } from "@/lib/circuits";
@@ -385,6 +386,8 @@ export type EtapeDossier = Etape & {
 export type EtatCircuit = {
   circuit: { id: number; name: string } | null;
   version: { id: number; numero: number; status: string } | null;
+  /** La version en service du circuit, quand le dossier en suit une autre. */
+  enService: { id: number; numero: number } | null;
   service: { id: number; name: string; email: string | null; phone: string | null } | null;
   etapes: EtapeDossier[];
   /** Les étapes qui retiennent encore l'acceptation. */
@@ -499,9 +502,17 @@ export async function etatCircuit(d: Dossier): Promise<EtatCircuit | null> {
       derniere,
     });
   }
+  const publiee =
+    v.status === "publiee"
+      ? null
+      : await prisma.circuitVersion.findFirst({
+          where: { circuitId: v.circuitId, status: "publiee" },
+          select: { id: true, numero: true },
+        });
   return {
     circuit: { id: v.circuit.id, name: v.circuit.name },
     version: { id: v.id, numero: v.numero, status: v.status },
+    enService: publiee,
     service,
     etapes,
     retenues: etapesRetenant(etapes.filter((e) => e.bloquante)),
@@ -615,6 +626,54 @@ export async function ouvrirEtape(
     contexte,
     echeance: e.delaiJours ? new Date(Date.now() + e.delaiJours * JOUR) : null,
   });
+}
+
+/**
+ * Fait passer un dossier en cours sur la version en service de son circuit : les étapes déjà
+ * demandées qui existent encore le suivent avec leur réponse, les étapes ouvertes disparues
+ * sont annulées, et le dossier prend le service que désigne la nouvelle version.
+ */
+export async function basculerVersion(
+  d: Dossier,
+  acteur: string,
+): Promise<{ numero: number; reportees: number; annulees: number }> {
+  const p = porteur(d);
+  const etat = await etatCircuit(p);
+  if (!etat?.version || !p.circuitVersionId)
+    throw new UserFacingError("Ce dossier ne suit aucun circuit.");
+  if (!etat.enService) throw new UserFacingError("Ce dossier suit déjà la version en service.");
+  const cible = await prisma.circuitVersion.findUnique({ where: { id: etat.enService.id } });
+  if (!cible) throw new UserFacingError("La version en service est introuvable.");
+  const def = lireDefinition(cible.definition);
+  const rows = await prisma.dossierEtape.findMany({
+    where: { objet: p.objet, objetId: p.id, circuitVersionId: p.circuitVersionId },
+    select: { id: true, cle: true, status: true },
+  });
+  const { reportees, annulees } = repartirEtapes(rows, def);
+  const suivi = { circuitVersionId: cible.id };
+  // Une campagne garde le service qui la conduit ; les autres dossiers suivent le circuit.
+  const avecService = def.serviceId ? { ...suivi, serviceId: def.serviceId } : suivi;
+  await prisma.$transaction([
+    prisma.dossierEtape.updateMany({
+      where: { id: { in: reportees } },
+      data: { circuitVersionId: cible.id },
+    }),
+    prisma.dossierEtape.updateMany({
+      where: { id: { in: annulees } },
+      data: { status: "annulee", closAt: new Date(), closPar: acteur },
+    }),
+    p.objet === "subvention"
+      ? prisma.subvention.update({ where: { id: p.id }, data: avecService })
+      : p.objet === "campagne"
+        ? prisma.campagne.update({ where: { id: p.id }, data: suivi })
+        : prisma.reservation.update({ where: { id: p.id }, data: avecService }),
+  ]);
+  await p.historiser(
+    `Circuit : passage à la version ${cible.numero}`,
+    `${etat.circuit?.name ?? ""} · depuis la version ${etat.version.numero}${annulees.length ? ` · ${annulees.length} étape(s) en attente annulée(s)` : ""}`,
+    acteur,
+  );
+  return { numero: cible.numero, reportees: reportees.length, annulees: annulees.length };
 }
 
 /** Ouvre les étapes applicables pas encore demandées ; renvoie celles qui viennent de l'être. */

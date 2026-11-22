@@ -736,6 +736,22 @@ export function etapesRetenant<T extends { nature: Nature }>(
   return etapes.filter((e) => NATURES[e.nature].bloquante && e.etat !== "validee");
 }
 
+/**
+ * Un dossier qui passe sur une autre version de son circuit : les étapes déjà demandées dont
+ * la clé existe encore sont reportées (avec leur réponse), les étapes ouvertes qui n'existent
+ * plus sont annulées ; une étape close qui n'existe plus reste à l'historique, sans effet.
+ */
+export function repartirEtapes(
+  etapes: readonly { id: number; cle: string; status: string }[],
+  nouvelle: Definition,
+): { reportees: number[]; annulees: number[] } {
+  const cles = new Set(nouvelle.etapes.map((e) => e.cle));
+  return {
+    reportees: etapes.filter((e) => cles.has(e.cle)).map((e) => e.id),
+    annulees: etapes.filter((e) => !cles.has(e.cle) && e.status === "ouverte").map((e) => e.id),
+  };
+}
+
 /** Deux versions d'un circuit : ce qui a changé, en clair. */
 export function comparer(avant: Definition, apres: Definition, ref: Referentiel): string[] {
   const out: string[] = [];

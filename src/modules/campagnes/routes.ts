@@ -150,6 +150,18 @@ export async function actionCampagne(
           b.erreurs ? "warning" : "success",
         );
       }
+      case "etapes/basculer": {
+        const { basculerVersion } = await import("@/server/circuits");
+        const { porteurCampagneParId } = await import("@/server/circuits-campagne");
+        const p = await porteurCampagneParId(id);
+        if (!p) return pasTrouve();
+        const b = await basculerVersion(p, user.name);
+        return redirigerAvecMessage(
+          `${fiche}#circuit`,
+          `La campagne suit maintenant la version ${b.numero} de son circuit.`,
+          "success",
+        );
+      }
       case "etapes/demander": {
         const { etatCircuit, ouvrirEtape } = await import("@/server/circuits");
         const { aiguillerCampagne, porteurCampagneParId } = await import(

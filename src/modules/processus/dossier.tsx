@@ -65,6 +65,22 @@ export function CarteCircuit({
             : ""}
         </p>
       ) : null}
+      {etat.enService && etat.version && peutDecider && !sansEntete ? (
+        <form method="POST" action={`${fiche}/etapes/basculer`} className="circuit-version">
+          <input type="hidden" name="csrf_token" value={csrf} />
+          <span>
+            Ce dossier suit la version {etat.version.numero} du circuit ; la version{" "}
+            {etat.enService.numero} est en service.
+          </span>{" "}
+          <button
+            type="submit"
+            className="btn btn-sm btn-outline-secondary"
+            data-confirm={`Faire passer ce dossier sur la version ${etat.enService.numero} du circuit ? Les étapes déjà demandées qui existent encore sont conservées ; celles en attente qui n'existent plus sont annulées.`}
+          >
+            <Icone nom="rotate-ccw" taille={13} /> Passer à la version {etat.enService.numero}
+          </button>
+        </form>
+      ) : null}
       {retenues.length ? (
         <p className="circuit-verrou">
           <Icone nom="lock" taille={14} />{" "}
