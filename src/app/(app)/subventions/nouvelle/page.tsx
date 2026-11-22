@@ -96,8 +96,9 @@ export default async function NouvelleSubventionPage({
           <Icone nom="lightbulb" taille={16} />
           <span>
             Le dossier est pré-rempli depuis la fiche de l'association et son dossier précédent. Il
-            reçoit son numéro (SUB-EXERCICE-NNNN) au dépôt ; un dépôt hors période de campagne est
-            possible avec un motif de dérogation.
+            reçoit son numéro (de la forme S270001 : S, l'exercice sur deux chiffres, le rang sur
+            quatre) au dépôt ; un dépôt hors période de campagne est possible avec un motif de
+            dérogation.
             {ouverte
               ? ` Campagne ouverte : ${ouverte.label}, dépôt jusqu'au ${dateCourte(ouverte.clotureDate)}.`
               : " Aucune campagne ouverte actuellement."}

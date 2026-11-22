@@ -3,9 +3,11 @@ import { Icone } from "@/components/icones";
 import { Chip, StatutSubvention } from "@/components/macros";
 import { SUBVENTION_NATURES, SUBVENTION_TYPES } from "@/lib/constantes";
 import { dateCourte, montant } from "@/lib/libelles";
+import { contactService } from "@/lib/mentions-subvention";
 import { organisationDe } from "@/modules/portail/catalogue";
 import { BlocVide } from "@/modules/portail/vues";
 import { CarteCampagne } from "@/modules/subventions/dossier-vues";
+import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { contexteUsager } from "@/server/page";
 import { brouillonCourant, contexteCampagne } from "@/server/subventions-dossier";
@@ -56,6 +58,7 @@ export default async function MesSubventionsPage() {
       <CarteCampagne
         c={campagne}
         depotOuvert={depotOuvert}
+        contact={contactService(await getSettings())}
         actions={
           campagne ? (
             dejaDeposee ? (

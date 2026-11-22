@@ -36,7 +36,7 @@ import type { CurrentUser } from "@/server/guards";
 import { envoyerDepuisModele } from "@/server/mailer";
 import { invalidateNavCounts } from "@/server/nav";
 import { notifier, notifierAgents } from "@/server/notifications";
-import { prochainNumero } from "@/server/numerotation";
+import { estNumeroProvisoire, prochainNumero } from "@/server/numerotation";
 import { htmlVersPdf } from "@/server/pdf";
 import { locauxMisADisposition } from "@/server/valorisation";
 
@@ -87,10 +87,6 @@ export function enRedaction(s: { status: string }): boolean {
   return s.status === "brouillon";
 }
 
-function numeroProvisoire(exercice: number, organisationId: number): string {
-  return `prov-${exercice}-${organisationId}-${Math.floor(Math.random() * 9000 + 1000)}`;
-}
-
 // ── Brouillon ──
 
 export type NouveauBrouillon = {
@@ -135,7 +131,7 @@ export async function creerBrouillon(
   const dossier = preRemplir(org, dossierPrecedent, accordee, locaux, org.sportive);
   const s = await prisma.subvention.create({
     data: {
-      numero: numeroProvisoire(e.exercice, org.id),
+      numero: await prochainNumero("PRO", e.exercice),
       organisationId: org.id,
       campagneId: e.campagne?.id ?? null,
       exercice: e.exercice,
@@ -352,7 +348,7 @@ export async function deposerDossier(
       "La campagne est close : le dépôt n'est plus possible sur le portail.",
     );
   // Un dossier renvoyé comme incomplet garde son numéro ; un brouillon en reçoit un au premier dépôt.
-  const numero = s.numero.startsWith("prov-") ? await prochainNumero("SUB", s.exercice) : s.numero;
+  const numero = estNumeroProvisoire(s.numero) ? await prochainNumero("SUB", s.exercice) : s.numero;
   const now = new Date();
   await prisma.subvention.update({
     where: { id },
@@ -470,13 +466,20 @@ export async function changerSecteur(id: number, form: FormData, acteur: Acteur)
 
 // ── PDF ──
 
+/**
+ * Les marges de la feuille du dossier ; le pied porte le numéro de page. Les côtés sont à 1,24 cm,
+ * là où s'arrête l'en-tête du formulaire de la Ville : le gabarit ajoute un retrait de 1,26 cm
+ * au corps du texte, qui retrouve ainsi ses 2,5 cm.
+ */
+const MARGES_DOSSIER = { top: "10.6mm", right: "12.4mm", bottom: "25mm", left: "12.4mm" };
+
 /** Génère (ou régénère) le PDF du dossier et l'accroche à la demande. */
 export async function genererDossierPdf(s: SubventionComplete, acteur: string): Promise<number> {
   const html = await htmlDossierSubvention(
     { ...s, dossierLu: dossierDe(s) },
     await kindsFournis(s.id),
   );
-  const pdf = await htmlVersPdf(html);
+  const pdf = await htmlVersPdf(html, MARGES_DOSSIER, { numeroPages: true });
   if (s.dossierDocumentId)
     await prisma.document.delete({ where: { id: s.dossierDocumentId } }).catch(() => {});
   const doc = await enregistrerPdf(
@@ -498,5 +501,7 @@ export async function pdfDossier(id: number): Promise<Buffer | null> {
   if (!s) return null;
   return htmlVersPdf(
     await htmlDossierSubvention({ ...s, dossierLu: dossierDe(s) }, await kindsFournis(id)),
+    MARGES_DOSSIER,
+    { numeroPages: true },
   );
 }

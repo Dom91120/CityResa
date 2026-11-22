@@ -53,7 +53,7 @@ function enteteJour(jour: string): [string, string] {
   ];
 }
 
-/** « 12 sur 40 retenus · RES-2026-0003 Judo Club (12) » : le détail d'une case, en infobulle. */
+/** « 12 sur 40 retenus · R260003 Judo Club (12) » : le détail d'une case, en infobulle. */
 function detail(charge: number, utilisable: number, dossiers: MobilisationDossier[]): string {
   const reste = utilisable - charge;
   const bilan =

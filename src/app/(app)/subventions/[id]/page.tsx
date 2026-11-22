@@ -237,7 +237,7 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
       <div className="fiche-colonnes fiche-colonnes--50-50">
         <div className="data-card">
           <Section titre="Cadre réservé à l'administration" icone="clipboard-check">
-            <Lus>
+            <Lus intitule="75px">
               <Lu label="Numéro" valeur={redaction ? null : s.numero} tiret />
               <Lu label="Reçu le" valeur={s.recuAt ? dateHeure(s.recuAt) : null} tiret />
               <Lu
@@ -303,14 +303,14 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
                 </button>
               </form>
             ) : (
-              <Lus>
+              <Lus intitule="75px">
                 <Lu label="Secteur" valeur={s.secteur?.label} />
               </Lus>
             )}
           </Section>
 
           <Section titre="Synthèse de la demande" icone="hand-coins">
-            <Lus>
+            <Lus intitule="72px">
               <Lu label="Objet" valeur={s.objet} pleine />
               <Lu label="Type" valeur={SUBVENTION_TYPES[s.type] ?? s.type} />
               <Lu
@@ -379,7 +379,7 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
           ))}
 
           <Section titre="Association" icone="building-2" ouverte={false}>
-            <Lus>
+            <Lus intitule="62px">
               <Lu
                 label="Nom"
                 valeur={

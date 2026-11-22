@@ -22,6 +22,11 @@ import {
   type Moyen,
 } from "@/lib/dossier-subvention";
 import { dateCourte, montant, pluriel } from "@/lib/libelles";
+import {
+  type ContactService,
+  DELAI_BILAN,
+  MENTION_FAUSSE_DECLARATION,
+} from "@/lib/mentions-subvention";
 import { todayParisISO } from "@/lib/paris-time";
 import type { Piece } from "@/lib/pieces-subvention";
 import {
@@ -49,17 +54,37 @@ export function ChipCampagne({ c }: { c: CampagneSubvention }) {
   return <Chip teinte={teinte}>{label}</Chip>;
 }
 
+/** « Une question ? » : le service qui accompagne les associations, courriel et téléphone. */
+export function AideService({ contact, classes }: { contact: ContactService; classes?: string }) {
+  if (!contact.email && !contact.telephone) return null;
+  return (
+    <p className={`small text-muted mb-0${classes ? ` ${classes}` : ""}`}>
+      <Icone nom="message-circle" taille={13} /> Une question sur votre dossier ? {contact.nom}
+      {contact.email ? (
+        <>
+          {" · "}
+          <a href={`mailto:${contact.email}`}>{contact.email}</a>
+        </>
+      ) : null}
+      {contact.telephone ? ` · ${contact.telephone}` : ""}
+    </p>
+  );
+}
+
 /** La carte de la campagne en cours (portail et back-office). */
 export function CarteCampagne({
   c,
   depotOuvert,
   actions,
   compteurs,
+  contact,
 }: {
   c: CampagneSubvention | null;
   depotOuvert: boolean;
   actions?: React.ReactNode;
   compteurs?: React.ReactNode;
+  /** Le service à contacter, rappelé aux associations sous les consignes. */
+  contact?: ContactService;
 }) {
   if (!c)
     return (
@@ -99,6 +124,7 @@ export function CarteCampagne({
           {c.consignes}
         </p>
       ) : null}
+      {contact ? <AideService contact={contact} classes="mt-2" /> : null}
       {actions ? <div className="mt-3 d-flex gap-2 flex-wrap">{actions}</div> : null}
     </div>
   );
@@ -972,6 +998,10 @@ function FicheBilan({ s, d, plan }: ContexteFiche) {
   const b = d.bilan;
   return (
     <>
+      <div className="astuce mb-3">
+        <Icone nom="lightbulb" taille={16} />
+        <span>{DELAI_BILAN}</span>
+      </div>
       <SectionForm titre={`Subvention ${s.exercice - 1}`} icone="banknote">
         <Grille colonnes={3}>
           <Num
@@ -1098,6 +1128,7 @@ function FicheAttestation({ d }: ContexteFiche) {
               </label>
             </div>
           </fieldset>
+          <p className="form-text mb-0">{MENTION_FAUSSE_DECLARATION}</p>
         </div>
       </SectionForm>
       <SectionForm
@@ -1469,7 +1500,7 @@ export function LectureFiche({
     case "bureau": {
       const b = d.bureau;
       return (
-        <Lus>
+        <Lus intitule="87px">
           <LuContact label="Président(e)" c={b.president} />
           <LuContact label="Trésorier(ère)" c={b.tresorier} />
           <LuContact label="Vice-président(e)" c={b.vicePresident} />
@@ -1490,7 +1521,7 @@ export function LectureFiche({
     case "effectifs": {
       const e = d.effectifs;
       return (
-        <Lus>
+        <Lus intitule="92px">
           <Lu label="Bénévoles" valeur={num(e.benevoles)} />
           <Lu label="Volontaires" valeur={num(e.volontaires)} />
           <Lu
@@ -1534,7 +1565,7 @@ export function LectureFiche({
         pa.reunionAssociationsSportives ? "Réunion des associations sportives" : null,
       ].filter(Boolean);
       return (
-        <Lus>
+        <Lus intitule="78px">
           <Lu label="Orientations" valeur={r.orientations} pleine pre />
           <Lu label="Vie locale" valeur={vie.length ? vie.join(" · ") : null} pleine />
           <Lu label="Solidarité" valeur={pa.solidarite} />
@@ -1555,7 +1586,7 @@ export function LectureFiche({
       const ratio = ratioDemande(s.montantDemande, t.produitsDirects);
       return (
         <>
-          <Lus>
+          <Lus intitule="77px">
             <Lu
               label="Exercice"
               valeur={
@@ -1596,7 +1627,7 @@ export function LectureFiche({
       const m = d.motivation;
       return (
         <>
-          <Lus>
+          <Lus intitule="87px">
             <Lu label="Objet" valeur={s.objet} />
             <Lu label="Type" valeur={SUBVENTION_TYPES[s.type] ?? s.type} />
             <Lu label="Montant demandé" valeur={<strong>{montant(s.montantDemande)}</strong>} />
@@ -1663,7 +1694,7 @@ export function LectureFiche({
               realise={b.realise}
             />
           </div>
-          <Lus>
+          <Lus intitule="59px">
             <Lu label="Synthèse" valeur={b.synthese} pleine pre />
           </Lus>
         </>
@@ -1672,7 +1703,7 @@ export function LectureFiche({
     case "attestation": {
       const a = d.attestation;
       return (
-        <Lus>
+        <Lus intitule="83px">
           <Lu label="Obligations à jour" valeur={oui(a.obligationsAJour)} />
           <Lu label="Informations sincères" valeur={oui(a.informationsSinceres)} />
           <Lu

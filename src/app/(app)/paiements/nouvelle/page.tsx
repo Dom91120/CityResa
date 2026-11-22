@@ -91,8 +91,8 @@ export default async function NouvelleFacturePage() {
         <div className="astuce mb-3">
           <Icone nom="lightbulb" taille={16} />
           <span>
-            Le numéro est attribué à l'émission (FAC-ANNÉE-NNNN). Le PDF est produit à la demande
-            depuis la fiche de la facture.
+            Le numéro est attribué à l'émission (F260001 : F, l'année sur deux chiffres, le rang sur
+            quatre). Le PDF est produit à la demande depuis la fiche de la facture.
           </span>
         </div>
         <PiedForm retour="/paiements" libelle="Émettre la facture" />

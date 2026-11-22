@@ -3565,7 +3565,7 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
     };
     await prisma.subvention.create({
       data: {
-        numero: `prov-${annee + 1}-${yoga.id}-1234`,
+        numero: await prochainNumero("PRO", annee + 1),
         organisationId: yoga.id,
         campagneId: campagnes.get(annee + 1) ?? null,
         exercice: annee + 1,
@@ -3840,26 +3840,27 @@ const JEUDI_DIMANCHE: Horaires = {
 
 const PERSONNEL: PersonnelSpec[] = [
   {
-    cle: "ali",
-    prenom: "Ali",
-    nom: "Keita",
+    cle: "ron",
+    prenom: "Ron",
+    nom: "Weasley",
     fonction: "Gardien",
-    email: "ali.keita@exemple.fr",
+    email: "ron.weasley@exemple.fr",
     phone: "06 12 34 56 78",
     color: "#3b82f6",
     note: "Clés de la Maison Blanche et du gymnase. Astreinte téléphonique le week-end.",
     contrat: "titulaire",
     quotite: 100,
     heures: 35,
-    horaires: SOIRS_SEMAINE,
+    // Suit le planning type des titulaires ; ses soirées ont été reprises par Harry Potter.
+    horaires: null,
     sites: ["maison blanche", "gabriel"],
   },
   {
-    cle: "nadia",
-    prenom: "Nadia",
-    nom: "Benmoussa",
+    cle: "hermione",
+    prenom: "Hermione",
+    nom: "Granger",
     fonction: "Gardienne",
-    email: "nadia.benmoussa@exemple.fr",
+    email: "hermione.granger@exemple.fr",
     phone: "06 23 45 67 89",
     color: "#10b981",
     note: "À 80 % : du jeudi au dimanche.",
@@ -3870,11 +3871,11 @@ const PERSONNEL: PersonnelSpec[] = [
     sites: ["sablons", "folie"],
   },
   {
-    cle: "lucas",
-    prenom: "Lucas",
-    nom: "Perrin",
+    cle: "neville",
+    prenom: "Neville",
+    nom: "Londubat",
     fonction: "Agent d'accueil",
-    email: "lucas.perrin@exemple.fr",
+    email: "neville.londubat@exemple.fr",
     phone: null,
     color: "#f59e0b",
     note: "Accueil du public, ouverture le matin.",
@@ -3885,9 +3886,9 @@ const PERSONNEL: PersonnelSpec[] = [
     sites: ["maison blanche", "gabriel"],
   },
   {
-    cle: "fatou",
-    prenom: "Fatou",
-    nom: "Diallo",
+    cle: "albus",
+    prenom: "Albus",
+    nom: "Dumbledore",
     fonction: "Vacataire",
     email: null,
     phone: "07 98 76 54 32",
@@ -3909,6 +3910,22 @@ const PERSONNEL: PersonnelSpec[] = [
       "gabriel",
       "folie",
     ],
+  },
+  {
+    // A repris les soirées de la Maison Blanche et le cycle du soir de Ron Weasley.
+    cle: "harry",
+    prenom: "Harry",
+    nom: "Potter",
+    fonction: "Gardien",
+    email: "harry.potter@exemple.fr",
+    phone: null,
+    color: "#ec4899",
+    note: "Reprend les soirées de la Maison Blanche.",
+    contrat: "vacataire",
+    quotite: 100,
+    heures: 35,
+    horaires: SOIRS_SEMAINE,
+    sites: ["maison blanche", "gabriel"],
   },
 ];
 
@@ -3938,10 +3955,23 @@ async function creerPersonnel(): Promise<void> {
       r.id,
     ]),
   );
-  // Le planning type des titulaires : celui que suit le gardien de la Maison Blanche.
+  // Le planning type des titulaires : des journées de bureau du lundi au vendredi, coupure
+  // méridienne comprise (37,5 h). Le gardien de la Maison Blanche le suit.
   const titulaire = contrats.get("titulaire");
-  const horairesTitulaire = PERSONNEL.find((p) => p.cle === "ali")?.horaires;
-  if (titulaire && horairesTitulaire) {
+  const journee: [string, string][] = [
+    ["09:00", "12:00"],
+    ["13:00", "17:30"],
+  ];
+  const horairesTitulaire: Horaires = {
+    "1": journee,
+    "2": journee,
+    "3": journee,
+    "4": journee,
+    "5": journee,
+    "6": [],
+    "7": [],
+  };
+  if (titulaire) {
     await prisma.planningType.deleteMany({});
     await prisma.planningType.create({
       data: { contratTypeId: titulaire, horaires: horairesTitulaire, updatedBy: "démonstration" },
@@ -3957,14 +3987,14 @@ async function creerPersonnel(): Promise<void> {
         phone: p.phone,
         color: p.color,
         note: p.note,
-        icsToken: p.cle === "ali" ? "demo-ali-keita-planning-de-service-0001" : null,
+        icsToken: p.cle === "ron" ? "demo-ron-weasley-planning-de-service-0001" : null,
         contratTypeId: contrats.get(p.contrat) ?? null,
         quotite: p.quotite,
         heuresHebdo: p.heures,
         contratDebut: parseYmdUtc(`${new Date().getUTCFullYear() - 1}-09-01`),
-        // Ali suit le planning type de son contrat ; les autres gardent leurs horaires propres.
-        horairesMode: p.cle === "ali" ? "contrat" : p.horaires ? "perso" : "libre",
-        horaires: p.cle === "ali" ? Prisma.DbNull : (p.horaires ?? Prisma.DbNull),
+        // Ron suit le planning type de son contrat ; les autres gardent leurs horaires propres.
+        horairesMode: p.cle === "ron" ? "contrat" : p.horaires ? "perso" : "libre",
+        horaires: p.horaires ?? Prisma.DbNull,
         sites: {
           create: p.sites.map((motif, i) => ({ siteId: siteDe(motif).id, principal: i === 0 })),
         },
@@ -3975,12 +4005,12 @@ async function creerPersonnel(): Promise<void> {
   }
   // La Maison Blanche affecte d'office ; les autres sites proposent au gestionnaire.
   await prisma.site.update({ where: { id: maisonBlanche.id }, data: { affectationAuto: true } });
-  // Absences : Nadia en congés la semaine prochaine, Lucas en formation mercredi prochain.
+  // Absences : Hermione en congés la semaine prochaine, Neville en formation mercredi prochain.
   const lundiProchain = js(1, 1);
   await prisma.absence.createMany({
     data: [
       {
-        personnelId: personnes.get("nadia")?.id as number,
+        personnelId: personnes.get("hermione")?.id as number,
         motifId: motifs.get("conges") ?? null,
         startAt: a(lundiProchain + 3, "00:00"),
         endAt: a(lundiProchain + 7, "00:00"),
@@ -3988,7 +4018,7 @@ async function creerPersonnel(): Promise<void> {
         createdBy: "sophie.martin@exemple.fr",
       },
       {
-        personnelId: personnes.get("lucas")?.id as number,
+        personnelId: personnes.get("neville")?.id as number,
         motifId: motifs.get("formation") ?? null,
         startAt: a(lundiProchain + 2, "08:00"),
         endAt: a(lundiProchain + 2, "12:30"),
@@ -4024,36 +4054,37 @@ async function creerPersonnel(): Promise<void> {
     });
     compter("vacations");
   };
-  // Ali : chaque soir de semaine à la Maison Blanche, huit semaines à partir de lundi dernier.
+  // Harry : chaque soir de semaine à la Maison Blanche, huit semaines à partir de lundi dernier.
+  // (Ron Weasley, qui les assurait, n'a plus de vacation pour le moment.)
   for (let semaine = 0; semaine < 8; semaine++) {
     for (let j = 0; j < 5; j++) {
-      await vac("ali", maisonBlanche.id, lundi + semaine * 7 + j, "17:00", "23:30", {
-        serieId: "demo-serie-ali-soirs",
+      await vac("harry", maisonBlanche.id, lundi + semaine * 7 + j, "17:00", "23:30", {
+        serieId: "demo-serie-harry-soirs",
         note: "Ouverture, fermeture et remise des clés",
       });
     }
   }
-  // Nadia : les week-ends au gymnase, quatre semaines.
+  // Hermione : les week-ends au gymnase, quatre semaines.
   for (let semaine = 0; semaine < 4; semaine++) {
-    await vac("nadia", gymnase.id, lundi + semaine * 7 + 5, "08:00", "20:00", {
-      serieId: "demo-serie-nadia-we",
+    await vac("hermione", gymnase.id, lundi + semaine * 7 + 5, "08:00", "20:00", {
+      serieId: "demo-serie-hermione-we",
     });
-    await vac("nadia", gymnase.id, lundi + semaine * 7 + 6, "08:00", "18:00", {
-      serieId: "demo-serie-nadia-we",
+    await vac("hermione", gymnase.id, lundi + semaine * 7 + 6, "08:00", "18:00", {
+      serieId: "demo-serie-hermione-we",
     });
   }
-  // Lucas : l'accueil du matin à la Maison Blanche, cette semaine et la suivante.
+  // Neville : l'accueil du matin à la Maison Blanche, cette semaine et la suivante.
   for (let semaine = 0; semaine < 2; semaine++) {
     for (let j = 0; j < 5; j++) {
-      await vac("lucas", maisonBlanche.id, lundi + semaine * 7 + j, "08:30", "13:00");
+      await vac("neville", maisonBlanche.id, lundi + semaine * 7 + j, "08:30", "13:00");
     }
   }
-  // Fatou : deux renforts ponctuels au gymnase en soirée.
-  await vac("fatou", gymnase.id, lundi + 2, "18:00", "22:30", { note: "Renfort match" });
-  await vac("fatou", gymnase.id, lundi + 9, "18:00", "22:30", { note: "Renfort match" });
-  // Un doublon à arbitrer : le même soir, Fatou est aussi prévue à la Maison Blanche. Les deux
-  // vacations se chevauchent (la vue Jour les empile sur deux niveaux).
-  await vac("fatou", maisonBlanche.id, lundi + 9, "20:30", "23:30", {
+  // Albus : deux renforts ponctuels au gymnase en soirée.
+  await vac("albus", gymnase.id, lundi + 2, "18:00", "22:30", { note: "Renfort match" });
+  await vac("albus", gymnase.id, lundi + 9, "18:00", "20:30", { note: "Renfort match" });
+  // Le même soir, Albus enchaîne à la Maison Blanche dès la fin du renfort : les deux vacations se
+  // suivent sans se chevaucher (l'application refuse les chevauchements à la saisie).
+  await vac("albus", maisonBlanche.id, lundi + 9, "20:30", "23:30", {
     note: "Remplacement à confirmer",
   });
 
@@ -4073,15 +4104,15 @@ async function creerPersonnel(): Promise<void> {
     (c) => c.espace.siteId !== maisonBlanche.id && c.espace.siteId !== gymnase.id,
   );
   for (const [c, cle] of [
-    [surMaisonBlanche, "lucas"],
-    [ailleurs, "nadia"],
+    [surMaisonBlanche, "neville"],
+    [ailleurs, "hermione"],
   ] as const) {
     if (!c) continue;
     await prisma.creneau.update({ where: { id: c.id }, data: { personnelId: id(cle) } });
     compter("créneaux épinglés");
   }
   // Un épinglage incompatible avec le contrat ou une absence est retiré, comme dans l'application.
-  for (const cle of ["lucas", "nadia"]) await reverifierAffectations(id(cle), "démonstration");
+  for (const cle of ["neville", "hermione"]) await reverifierAffectations(id(cle), "démonstration");
   // L'affectation automatique ou proposée sur les 30 prochains jours, comme la tâche quotidienne.
   const bilan = await affecterCreneaux({ de: now, a: addParisDays(now, 30) }, "démonstration");
   compter("créneaux affectés d'office", bilan.affectes);

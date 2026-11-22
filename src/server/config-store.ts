@@ -84,6 +84,14 @@ export const MANAGED = new Set<string>([
   "SMS_SENDER",
   "CONVENTION_TEXTE",
   "AGENTS_NOTIFIES",
+  "ACCESSIBILITE_ETAT",
+  "ACCESSIBILITE_DATE",
+  "ACCESSIBILITE_TEXTE",
+  "MENTIONS_LEGALES_TEXTE",
+  "DONNEES_PERSONNELLES_TEXTE",
+  "SUBVENTIONS_SERVICE_NOM",
+  "SUBVENTIONS_SERVICE_EMAIL",
+  "SUBVENTIONS_SERVICE_TELEPHONE",
 ]);
 
 /** Réglages NON gérés en base (amorçage et sécurité), lus dans l'environnement seul. */
@@ -186,6 +194,11 @@ export type AppSettings = EnvOnly & {
   MENTIONS_LEGALES_TEXTE: string;
   /** Compléments de la page « Données personnelles » (délégué à la protection des données…). */
   DONNEES_PERSONNELLES_TEXTE: string;
+  /** Le service qui accompagne les associations pour leur dossier de subvention. */
+  SUBVENTIONS_SERVICE_NOM: string;
+  /** Son courriel et son téléphone ; vides : ceux de la collectivité. */
+  SUBVENTIONS_SERVICE_EMAIL: string;
+  SUBVENTIONS_SERVICE_TELEPHONE: string;
   AGENTS_NOTIFIES: string;
   BACKUP_DB_KEEP: number;
   [key: string]: unknown;
@@ -302,6 +315,9 @@ export function envDefaults(): AppSettings {
     ACCESSIBILITE_TEXTE: envStr("ACCESSIBILITE_TEXTE", ""),
     MENTIONS_LEGALES_TEXTE: envStr("MENTIONS_LEGALES_TEXTE", ""),
     DONNEES_PERSONNELLES_TEXTE: envStr("DONNEES_PERSONNELLES_TEXTE", ""),
+    SUBVENTIONS_SERVICE_NOM: envStr("SUBVENTIONS_SERVICE_NOM", "Service de la vie associative"),
+    SUBVENTIONS_SERVICE_EMAIL: envStr("SUBVENTIONS_SERVICE_EMAIL", "asso@chatillon92.fr"),
+    SUBVENTIONS_SERVICE_TELEPHONE: envStr("SUBVENTIONS_SERVICE_TELEPHONE", "01 42 31 82 31"),
     CONVENTION_TEXTE: envStr("CONVENTION_TEXTE", CONVENTION_TEXTE_DEFAUT),
     AGENTS_NOTIFIES: envStr("AGENTS_NOTIFIES", ""),
     BACKUP_DB_KEEP: envInt("BACKUP_DB_KEEP", 14),

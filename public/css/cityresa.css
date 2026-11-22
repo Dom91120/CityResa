@@ -249,7 +249,7 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
 
 /* ============================ CONTENU ============================ */
 .main-content { margin-left: var(--sidebar-w); padding: 24px 28px 48px; min-height: calc(100vh - var(--topbar-h)); }
-.page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
 /* Au-dessus de la tablette, les actions restent à droite du titre. Quand la place manque, ce sont
    elles qui passent à la ligne les premières : le bloc titre garde sa largeur naturelle et ne se
    replie que lorsqu'il ne resterait plus 360px aux actions (deux boutons côte à côte). */
@@ -270,9 +270,14 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
 
 /* Cartes */
 .data-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-xs); overflow: hidden; }
-.data-card + .data-card { margin-top: 16px; }
+/* Un seul pas vertical entre deux cartes, 14 px, le même que sous l'en-tête de page. */
+.data-card + .data-card { margin-top: 14px; }
 /* Côte à côte dans les colonnes d'une fiche : pas de marge, les deux cartes partent à la même hauteur. */
 .fiche-colonnes > .data-card + .data-card { margin-top: 0; }
+/* Une colonne de fiche empile ses cartes par un écart (gap-3 de Bootstrap) : il est ramené au même
+   pas, et la marge entre cartes voisines ne s'y ajoute pas. */
+.fiche-colonnes > .d-flex.flex-column { gap: 14px !important; }
+.d-flex.flex-column > .data-card + .data-card { margin-top: 0; }
 .card-header-custom { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
 .card-header-custom h6, .card-titre { margin: 0; font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
 .card-body-custom { padding: 18px; }
@@ -323,7 +328,7 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
 .chip-slate { background: var(--slate-dim); color: var(--slate-text); }
 .chip-red { background: var(--red-dim); color: var(--red-text); }
 .chip-lime { background: var(--lime-dim); color: var(--lime-text); }
-.chip-lg { font-size: 0.8rem; padding: 5px 12px; }
+.chip-lg { font-size: 0.8rem; padding: 2px 10px; }
 .chip-dot::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .badge-status { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: var(--radius-pill); font-size: 0.72rem; font-weight: 500; }
 .badge-success { background: var(--success-dim); color: var(--success-text); }
@@ -374,7 +379,11 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
 /* ============================ FORMULAIRES ============================ */
 .form-label { font-size: 0.8rem; font-weight: 500; color: var(--body); margin-bottom: 4px; }
 .form-label .req { color: var(--primary); }
-.form-control, .form-select { font-family: var(--font-sans); font-size: 0.85rem; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--body); padding: 8px 12px; }
+.form-control, .form-select { font-family: var(--font-sans); font-size: 0.85rem; border-radius: 10px; border: 1px solid var(--line); background-color: var(--surface); color: var(--body); padding: 8px 12px; }
+/* Une liste déroulante garde la flèche de Bootstrap (image de fond) : seule la couleur de fond est
+   reprise ci-dessus, et la marge de droite lui laisse sa place. */
+.form-select:not([multiple]):not([size]) { padding-right: 34px; background-position: right 12px center; }
+.form-select-sm:not([multiple]):not([size]) { padding-right: 30px; background-position: right 10px center; background-size: 14px 10px; }
 .form-control::placeholder { color: var(--faint); }
 .form-control-sm, .form-select-sm { font-size: 0.8rem; padding: 5px 10px; border-radius: 8px; }
 .form-control-lg { font-size: 1rem; padding: 11px 14px; border-radius: 12px; }
@@ -465,6 +474,10 @@ textarea.form-control { min-height: 90px; }
 .table thead th { line-height: 1; }
 .table tbody tr:last-child td { border-bottom: 0; }
 .table td.actions { text-align: right; white-space: nowrap; }
+/* Colonne souple : elle prend la place que laissent les autres et coupe son texte par « … », pour
+   que le tableau tienne dans la largeur sans défilement horizontal. */
+.table .col-souple { max-width: 0; width: 26%; min-width: 130px; }
+.table .col-souple--large { width: 34%; min-width: 170px; }
 /* Tableau resserré (tableau de bord) : lignes moins hautes. */
 .table-serree > :not(caption) > * > * { padding: 8px 12px; }
 /* Tableau compact (liste des réservations) : marges réduites et espacement serré. */
@@ -545,14 +558,14 @@ textarea.form-control { min-height: 90px; }
 /* ============================ FICHE ============================ */
 .fiche-entete { align-items: center; }
 /* Fil d'Ariane d'une fiche : lien de retour nommé, puis la référence de la fiche. */
-.fiche-fil { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; font-size: 0.78rem; color: var(--muted); }
+.fiche-fil { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 2px; font-size: 0.78rem; color: var(--muted); }
 .fiche-fil a { display: inline-flex; align-items: center; gap: 5px; color: var(--body); text-decoration: none; }
 .fiche-fil a:hover { color: var(--strong); text-decoration: underline; }
 .fiche-fil-courant { color: var(--strong); font-weight: 500; }
 /* Sous-titre d'une fiche en une ligne d'informations, chacune avec son icône. */
 .fiche-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; line-height: 1.3; }
 .fiche-meta > span { display: inline-flex; align-items: center; gap: 5px; }
-.fiche-colonnes { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px; align-items: start; }
+.fiche-colonnes { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 14px 20px; align-items: start; }
 /* Variante : colonne de gauche un peu plus large (6/5), pour les fiches dont la gauche est dense (espace, profil). */
 .fiche-colonnes--6-5 { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
 .fiche-colonnes--50-50 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
@@ -671,6 +684,11 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .pastille-espace { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
 /* Une icône à la place de la pastille : même encombrement, pour que le texte reste aligné. */
 .pastille-icone { width: 10px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--strong); }
+/* Le repère de ligne quand il est un lien (l'horloge des horaires d'une personne) : même place, zone de clic élargie. */
+a.pastille-action { position: relative; color: var(--faint); text-decoration: none; border-radius: 6px; }
+a.pastille-action::after { content: ""; position: absolute; inset: -9px; border-radius: 8px; }
+a.pastille-action:hover, a.pastille-action:focus-visible { color: var(--primary); }
+a.pastille-action:hover::after { background: color-mix(in srgb, var(--primary) 10%, transparent); }
 .progression { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; }
 .progression .barre { flex: 1; height: 6px; border-radius: 3px; background: var(--inset); overflow: hidden; }
 .progression .barre span { display: block; height: 100%; background: var(--gradient); border-radius: 3px; }
@@ -758,10 +776,10 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
    comme en bas, pour qu’elles ne passent jamais dessous. */
 .planning-service td:has(> .plages-jour):has(> .evt) { padding-block: 21px; }
 /* Le fond d'une case dit la journée de la personne : travaillée (vert très pâle), repos ou hors
-   contrat (gris), absente toute la journée (hachures ambrées). Il prime sur le gris du week-end. */
-.planning-service td.jour-travail, .legende-fond.jour-travail { background: color-mix(in srgb, var(--emerald-text) 8%, var(--surface)); }
-.planning-service td.jour-repos, .legende-fond.jour-repos { background: var(--inset); }
-.planning-service td.jour-absent, .legende-fond.jour-absent { background: repeating-linear-gradient(45deg, var(--surface), var(--surface) 6px, color-mix(in srgb, var(--amber-text) 16%, var(--surface)) 6px, color-mix(in srgb, var(--amber-text) 16%, var(--surface)) 12px); }
+   contrat (gris), absente (hachures grises et blanches). Il prime sur le gris du week-end. */
+.planning.planning-service td.jour-travail, .legende-fond.jour-travail { background: color-mix(in srgb, var(--emerald-text) 8%, var(--surface)); }
+.planning.planning-service td.jour-repos, .legende-fond.jour-repos { background: var(--inset); }
+.planning.planning-service td.jour-absent, .legende-fond.jour-absent { background: repeating-linear-gradient(45deg, var(--surface), var(--surface) 6px, var(--inset) 6px, var(--inset) 12px); }
 .legende-fond { display: inline-block; width: 16px; height: 12px; border: 1px solid var(--line); border-radius: 3px; vertical-align: -1px; margin-right: 3px; }
 .planning-service a.plages-jour { color: var(--muted); text-decoration: none; }
 .planning-service a.plages-jour:hover, .planning-service a.plages-jour:focus-visible { color: var(--primary); text-decoration: underline; }
@@ -770,8 +788,20 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .planning-service td:hover > .cell-action, .planning-service .cell-action:focus-visible { opacity: 1; }
 .planning-service .cell-action:hover { color: var(--primary); }
 @media (hover: none) { .planning-service .cell-action { opacity: 0.7; } }
-.planning-service .heures-semaine { font-variant-numeric: tabular-nums; }
-.planning-service .heures-semaine.depasse { color: var(--amber-text); font-weight: 600; }
+/* Sous le nom d'une personne : « 22 h sur 28 h », une jauge, et la part planifiée hors
+   des sites affichés. En orange quand la durée du contrat est dépassée. */
+.planning-service .heures-semaine { display: block; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.planning-service .heures-semaine > small { display: block; white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.25; }
+.planning-service .heures-semaine.depasse > small:first-child { color: var(--amber-text); font-weight: 600; }
+.planning-service .heures-semaine .ailleurs { font-style: italic; }
+.jauge-heures { display: block; height: 4px; margin: 3px 0 2px; border-radius: var(--radius-pill); background: var(--inset); overflow: hidden; }
+/* La jauge occupe toute la case, quelle que soit la longueur du nom : même largeur sur toutes les lignes. */
+.planning-service .espace-cell > .cell2 { flex: 1 1 auto; }
+/* À droite, la même marge qu'à gauche (repère de ligne + écart), pour une jauge centrée dans la case. */
+.planning.planning-service .espace-cell { padding-right: 21px; }
+.jauge-heures > span { display: block; height: 100%; border-radius: var(--radius-pill); background: var(--primary); }
+.heures-semaine.depasse .jauge-heures > span { background: var(--amber-text); }
+.jauge-heures.legende-jauge { display: inline-block; width: 34px; margin: 0 4px 0 0; vertical-align: middle; }
 .planning td.weekend { background: var(--zebra); }
 .planning td.jour-cellule { cursor: pointer; }
 .planning td.jour-cellule:hover { background: var(--primary-dim); }
@@ -782,6 +812,8 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .evt:hover { box-shadow: var(--shadow-md); color: var(--body); }
 .evt .evt-titre { font-weight: 600; color: var(--strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 .evt .evt-heure { color: var(--muted); }
+/* Planning de service : les heures des vignettes à la taille de la ligne d'horaires du jour (.plages-jour). */
+.planning-service .evt .evt-heure { font-size: 0.66rem; }
 /* Heures et précision à la suite, sur trois lignes au plus (vacations du planning de service). */
 .evt .evt-ligne { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; padding-block: 0.14em; margin-block: -0.14em; }
 .evt .evt-qui { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }

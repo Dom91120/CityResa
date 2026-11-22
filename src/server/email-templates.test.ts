@@ -18,8 +18,8 @@ describe("rendre", () => {
   });
 
   it("tolère les espaces dans les accolades et les nombres", () => {
-    expect(rendre("{{ numero }} · {{montant}}", { numero: "RES-2026-0001", montant: 150 })).toBe(
-      "RES-2026-0001 · 150",
+    expect(rendre("{{ numero }} · {{montant}}", { numero: "R260001", montant: 150 })).toBe(
+      "R260001 · 150",
     );
   });
 
@@ -40,7 +40,7 @@ describe("rendre", () => {
   it("rend les modèles de départ sans laisser de variable connue", () => {
     const vars = {
       prenom: "Nadia",
-      numero: "RES-2026-0001",
+      numero: "R260001",
       espace: "Gymnase",
       dates: "lundi",
       lien: "http://x",
@@ -48,7 +48,7 @@ describe("rendre", () => {
     };
     const html = rendre(EMAIL_TEMPLATE_SEEDS[0].body, vars);
     expect(html).toContain("Bonjour Nadia");
-    expect(html).toContain("RES-2026-0001");
+    expect(html).toContain("R260001");
     expect(html).not.toMatch(/\{\{\s*(prenom|numero|espace|dates|lien|collectivite)\s*\}\}/);
   });
 });

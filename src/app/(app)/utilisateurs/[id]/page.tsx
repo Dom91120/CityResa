@@ -128,7 +128,7 @@ export default async function UtilisateurPage({ params }: { params: Promise<{ id
       <div className="fiche-colonnes fiche-colonnes--6-5">
         <div className="data-card overflow-visible">
           <Section titre="Compte" icone="circle-user">
-            <Lus>
+            <Lus intitule="83px">
               <Lu
                 label="Nature"
                 valeur={u.kind === "agent" ? "Agent de la collectivité" : "Usager du portail"}
@@ -167,7 +167,7 @@ export default async function UtilisateurPage({ params }: { params: Promise<{ id
           </Section>
 
           <Section titre="Sécurité" icone="shield-check">
-            <Lus>
+            <Lus intitule="80px">
               <Lu label="Double authentification" valeur={<OuiNon v={u.twoFactorEnabled} />} />
               <Lu
                 label="Verrouillage 2FA"

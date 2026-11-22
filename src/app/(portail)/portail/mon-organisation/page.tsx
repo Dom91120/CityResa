@@ -87,7 +87,7 @@ export default async function MonOrganisationPage() {
         <div>
           <div className="data-card">
             <Section titre="Situation" icone="badge-check">
-              <Lus colonnes={1}>
+              <Lus intitule="85px" colonnes={1}>
                 <Lu
                   label="Validation"
                   valeur={

@@ -19,7 +19,7 @@ Ce chapitre couvre le module destiné aux associations : le circuit des demandes
 - Quatre cartes d'indicateurs (elles ne se cliquent pas : les onglets et le filtre d'exercice filtrent la liste) : **Demandé** pour l'exercice, **Accordé** (montant et nombre de subventions votées), **Versé** (montant et nombre de versements) et **En cours d'instruction**.
 - Les onglets **Brouillons**, **Déposées**, **En instruction**, **Avis**, **Votées**, **Refusées**, **Versées** et **Toutes**.
 - La recherche (numéro, association, objet) et les filtres **Tous les exercices**, **Toutes les campagnes**, **Tous les types**, **Toutes les associations**, puis **Filtrer**.
-- Pour chaque dossier : le **Numéro** (SUB-ANNÉE-NNNN, ou un numéro provisoire en rédaction) avec l'exercice, la date de dépôt et la mention « sportive », l'**Association**, l'**Objet** avec le type et le nombre de bénéficiaires, les montants **Demandé** et **Accordé**, et le **Statut**.
+- Pour chaque dossier : le **Numéro** (de la forme S270001 : S pour subvention, l'exercice sur deux chiffres, puis le rang sur quatre ; un dossier en rédaction porte un numéro provisoire, P270001, remplacé au dépôt) avec l'exercice et la date de dépôt, l'**Association** (avec la mention « Association sportive » le cas échéant), l'**Objet** avec le type et le nombre de bénéficiaires, les montants **Demandé** et **Accordé**, et le **Statut**.
 
 **Comment faire — commencer un dossier au nom d'une association**
 
@@ -59,7 +59,7 @@ L'association remplit normalement son dossier elle-même depuis « Mes subventio
 
 ![Fiche d'un dossier en cours d'instruction](captures/subvention-instruction.webp)
 
-*Figure — le dossier SUB-2027-0001 d'Around dance, ouvert aux avis des élus, vu par la gestionnaire qui l'instruit.*
+*Figure — le dossier S270001 d'Around dance, ouvert aux avis des élus, vu par la gestionnaire qui l'instruit.*
 
 **Ce que l'on voit**
 
@@ -99,7 +99,7 @@ L'association remplit normalement son dossier elle-même depuis « Mes subventio
 - Les étapes s'enchaînent toujours dans cet ordre : Rédaction → Déposé → En instruction → Avis des élus → Voté → Versé. Le refus clôt le dossier depuis les trois premières étapes ; le renvoi comme incomplet ramène en rédaction.
 - Un dossier voté, refusé ou versé est clos : il ne peut plus être modifié et ne reçoit plus d'avis.
 - Seul un dossier en rédaction ou simplement déposé, sans aucun avis, peut être supprimé ; sinon, refusez-le.
-- Le PDF du dossier est généré au dépôt et accroché aux pièces ; le bouton **PDF** le rend à jour à tout moment.
+- Le PDF du dossier est généré au dépôt et accroché aux pièces ; le bouton **PDF** le rend à jour à tout moment. Il est présenté comme le formulaire papier de la Ville, dans sa variante sportive ou non : page de garde avec le cadre réservé, fiches 1-1 à 8, pièces, attestation signée et contrat d'engagement républicain ; les réponses de l'association y sont en bleu.
 
 ## 7.3 L'avis des élus
 

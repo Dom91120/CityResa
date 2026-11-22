@@ -140,7 +140,7 @@ export default async function MaterielFichePage({ params }: { params: Promise<{ 
       <div className="fiche-colonnes">
         <div className="data-card overflow-visible">
           <Section titre="Synthèse" icone="package">
-            <Lus>
+            <Lus intitule="92px">
               <Lu label="Catégorie" valeur={m.categorie?.label} tiret />
               <Lu label="Rattachement" valeur={libelleRattachement(m)} />
               <Lu label="Tarification" valeur={tarifMateriel(m)} />

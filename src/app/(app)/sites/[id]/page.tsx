@@ -94,7 +94,7 @@ export default async function SitePage({ params }: { params: Promise<{ id: strin
       <div className="fiche-colonnes fiche-colonnes--50-50">
         <div className="data-card overflow-visible">
           <Section titre="Synthèse" icone="map-pin">
-            <Lus>
+            <Lus intitule="72px">
               <Lu label="Adresse" valeur={adresse} />
               <Lu
                 label="Carte"

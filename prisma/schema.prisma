@@ -1398,7 +1398,7 @@ model SchedulerRun {
   @@map("scheduler_run")
 }
 
-/// Compteurs de numérotation (RES-2026-0001, FAC-2026-0001, SUB-2026-0001).
+/// Compteurs de numérotation (R260001 pour les réservations, F260001 pour les factures, S260001 pour les subventions, P270001 en rédaction).
 model Sequence {
   key   String @id @db.VarChar(32)
   value Int    @default(0)

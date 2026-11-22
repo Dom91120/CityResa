@@ -22,9 +22,9 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
   - **Partiel** (orange) : une vacation le touche sans le couvrir entièrement ;
   - **À couvrir** (rouge) : personne n'est de service sur ce site à ce moment-là.
   La mention est suivie du nom des personnes concernées ; cliquer ouvre la fiche de la réservation.
-- Sous le tableau, une **légende** rappelle le sens des vignettes : pour la ligne « À couvrir », liseré vert (couvert), orange (partiel) ou rouge en pointillés (à couvrir) ; pour les personnes, liseré à la couleur de la personne (vacation), signet vert (créneau affecté), pointillés orange sur fond jaune (proposition à valider) et hachures (absence).
-- Ensuite, une ligne par personne avec sa couleur, sa fonction, ses **heures de la semaine** (« 31 h / 35 h » : ce qui est planifié en vacations et en créneaux affectés, face à sa durée de référence ; en orange quand c'est dépassé) et l'horloge qui ouvre ses horaires de travail. Dans chaque jour : en haut, ses **horaires de travail** du jour (« 16h30 - 23h30 », « Repos », « Absent toute la journée »), puis ses vacations avec le site, les heures et la note.
-- Le **fond de la case** dit la journée de la personne : vert très pâle un jour travaillé, gris un jour de repos ou hors contrat, hachures ambrées quand une absence couvre toute sa journée. Une personne sans horaires fixes garde un fond neutre. Une seconde légende, sous le tableau, le rappelle.
+- Sous le tableau, une **légende** rappelle le sens des vignettes : pour la ligne « À couvrir », liseré vert (couvert), orange (partiel) ou rouge en pointillés (à couvrir) ; pour les personnes, liseré gris (vacation), signet vert (créneau affecté), pointillés orange sur fond jaune (proposition à valider) et hachures (absence).
+- Ensuite, une ligne par personne : à gauche, l'horloge qui ouvre ses horaires de travail, puis son nom, sa fonction, le décompte de sa semaine, « **22 h sur 28 h** » avec une petite jauge : le premier nombre est le total des heures planifiées dans la semaine (vacations et créneaux affectés, **tous sites confondus**), le second la durée hebdomadaire de son contrat. Le décompte passe en orange quand le contrat est dépassé. Si une partie de ces heures se déroule sur des sites que la grille n'affiche pas (filtre de sites, ou sites hors de votre périmètre), une ligne le précise : « dont 22 h hors des sites affichés ». Dans chaque jour : en haut, ses **horaires de travail** du jour (« 14h-23h », « Repos », « Absent »), puis ses vacations avec le site, les heures et la note.
+- Le **fond de la case** dit la journée de la personne : vert très pâle un jour travaillé, gris un jour de repos ou hors contrat, hachures grises et blanches quand une absence couvre toutes ses heures de travail. Une personne sans horaires fixes garde un fond neutre. Une seconde légende, sous le tableau, le rappelle.
 - Au survol d'une case, un petit bouton au calendrier barré, en haut à droite, sert à **ajouter une absence** ce jour-là. Une vacation à cheval sur minuit s'affiche sur les deux jours.
 - En vue **Jour**, le tableau devient une **frise horaire** : les heures en haut (de 7 h à minuit, davantage si un élément commence plus tôt), une ligne par personne, et chaque vignette placée et dimensionnée selon ses heures. La plage de travail du cycle apparaît en fond vert pâle sur la ligne de la personne ; « Repos » ou « Hors contrat » le remplace quand le cycle ne prévoit rien. Deux éléments simultanés s'empilent. On lit ainsi d'un coup d'œil qui est de service au moment d'un créneau à couvrir.
 
@@ -34,7 +34,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 
 **Comment faire — modifier les horaires ou poser une absence depuis le planning**
 
-1. Pour changer les **horaires de travail** d'une personne, cliquez sur ses horaires dans une case (« 16h30 - 23h30 », « Repos »…) ou sur l'horloge à côté de son nom : la page de ses horaires s'ouvre (section 11.6). Après l'enregistrement, vous revenez au planning.
+1. Pour changer les **horaires de travail** d'une personne, cliquez sur ses horaires dans une case (« 14h-23h », « Repos »…) ou sur l'horloge à côté de son nom : la page de ses horaires s'ouvre (section 11.6). Après l'enregistrement, vous revenez au planning.
 2. Pour poser un **congé ou une absence**, survolez la case du jour voulu et cliquez sur le bouton au calendrier barré : le jour est prérempli (section 11.7). Après l'ajout, vous revenez au planning, où la case est hachurée.
 
 **Comment faire — ajouter une vacation**
@@ -92,7 +92,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 
 ![Fiche d'une personne](captures/personnel-fiche.webp)
 
-*Figure — la fiche d'Ali Keita, gardien : identité, lien d'agenda ICS, vacations à venir et créneaux épinglés.*
+*Figure — la fiche de Hermione Granger, gardienne : identité, contrat et horaires de travail, sites d'intervention, absences et vacations à venir.*
 
 **La fiche**
 
@@ -147,7 +147,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 
 ![Fiche d'une personne avec son contrat](captures/personnel-fiche.webp)
 
-*Figure — la fiche de Nadia Benmoussa, gardienne contractuelle à 80 % : contrat, cycle du jeudi au dimanche, sites d'intervention, absence de congés et créneaux affectés.*
+*Figure — la fiche de Hermione Granger, gardienne contractuelle à 80 % : contrat, cycle du jeudi au dimanche, sites d'intervention, absence de congés et créneaux affectés.*
 
 **Ce que l'on voit** — Dans la section **Contrat et temps de travail** : le **Contrat** (type), la **Quotité** et la durée hebdomadaire, la **Période** du contrat, et les **Horaires** de la semaine **en image** : un jour par ligne, les heures de minuit à minuit, une barre verte par plage travaillée et le total du jour à droite, avec en dessous le rappel en clair (« Jeu. 14h00 - 23h00 · … ») et le total d'heures du cycle. Au-dessus, la fiche précise s'il s'agit du planning type du contrat ou d'horaires personnalisés. Quand ce total s'écarte des heures attendues (35 h × quotité, ou la durée saisie pour un temps non complet), une pastille orange le signale : c'est une information, pas un blocage. La section **Sites d'intervention** liste les sites où la personne peut être affectée, le principal marqué d'une étoile.
 
@@ -175,7 +175,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 
    ![Horaires de travail d'une personne](captures/personnel-horaires.webp)
 
-   *Figure — les horaires de Nadia Benmoussa, personnalisés : l'aperçu de la semaine (du jeudi au dimanche, 28 h), où l'on dessine, et la grille de saisie repliée en dessous.*
+   *Figure — les horaires de Hermione Granger, personnalisés : l'aperçu de la semaine (du jeudi au dimanche, 28 h), où l'on dessine, et la grille de saisie repliée en dessous.*
 5. Cochez les **Sites où la personne peut être affectée** et choisissez son **Site principal**.
 6. Cliquez sur **Enregistrer**. Les affectations à venir qui ne tiennent plus (site retiré, horaire modifié) sont retirées et les créneaux repassent en affectation ; le message le dit.
 
@@ -189,7 +189,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 
 ![Plannings types](captures/personnel-plannings-types.webp)
 
-*Figure — les plannings types : celui des fonctionnaires titulaires, dessiné jour par jour (du lundi au vendredi en soirée, 35 h), est suivi par une personne ; les autres types de contrat n'imposent pas d'horaires.*
+*Figure — les plannings types : celui des fonctionnaires titulaires, dessiné jour par jour (du lundi au vendredi, de 9 h à 12 h et de 13 h à 17 h 30, soit 37,5 h), est suivi par une personne ; les autres types de contrat n'imposent pas d'horaires.*
 
 **Règles à connaître**
 

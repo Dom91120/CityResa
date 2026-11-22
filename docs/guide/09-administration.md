@@ -32,6 +32,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
   - **Adresse** : le code postal qu'elle contient sert à reconnaître les usagers « de la commune » (tarifs résidents, pré-remplissage à l'inscription) ;
   - **Courriel de contact**, **Téléphone**, **Site web** ;
   - **Signataire des conventions** et **Qualité du signataire** (par exemple « Le Maire ») ;
+  - **Subventions : service à contacter**, son **courriel** et son **téléphone** : rappelés aux associations sur la campagne, le dossier de demande et son PDF (vides, le courriel et le téléphone de la collectivité sont repris) ;
   - **Logo ou blason** : l'aperçu actuel, le bouton **Choisir un fichier** et la case **Retirer le logo actuel**. Le logo est affiché dans la barre latérale, sur le portail, sur les pages de connexion et en en-tête des conventions et factures.
 - Le bouton **Enregistrer** en bas à droite.
 
@@ -493,7 +494,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
   - l'interrupteur **Modèle actif (le courriel est envoyé)** et l'étiquette **Texte d'origine** ou **Personnalisé** ;
   - le **Sujet** ;
   - le **Corps**, rédigé directement dans le courriel habillé aux couleurs de la collectivité : une barre d'outils avec la mise en forme (gras, italique, lien, liste à puces, citation, paragraphe simple) puis les variables du modèle ; dans le texte, les variables sont des pastilles bleues `{{prenom}}`, `{{numero}}`… que l'on déplace ou supprime d'un bloc ;
-  - l'interrupteur **Voir avec des valeurs d'exemple**, qui remplace les pastilles par « Camille », « RES-2026-0042 », « Salle des fêtes »… pour relire le résultat ;
+  - l'interrupteur **Voir avec des valeurs d'exemple**, qui remplace les pastilles par « Camille », « R260042 », « Salle des fêtes »… pour relire le résultat ;
   - le lien **Afficher le HTML**, qui montre le code du corps pour les cas particuliers (et le ramène aux balises admises à l'enregistrement).
 - En haut à droite, **Annuler** et **Enregistrer** ; en bas du formulaire, **M'envoyer un test** (le modèle enregistré, à votre adresse, avec les valeurs d'exemple) et **Rétablir le texte d'origine**.
 

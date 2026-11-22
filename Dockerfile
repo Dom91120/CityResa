@@ -41,7 +41,8 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Chromium système + polices : génération PDF des conventions et factures (Puppeteer).
-RUN apk add --no-cache chromium nss freetype harfbuzz ca-certificates ttf-freefont font-noto
+RUN apk add --no-cache chromium nss freetype harfbuzz ca-certificates ttf-freefont font-noto \
+    font-liberation font-carlito font-montserrat
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 

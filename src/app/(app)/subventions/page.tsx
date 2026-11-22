@@ -200,8 +200,8 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
             <thead>
               <tr>
                 {th("numero", "Numéro")}
-                {th("organisation", "Association")}
-                {th("objet", "Objet")}
+                {th("organisation", "Association", "col-souple")}
+                {th("objet", "Objet", "col-souple col-souple--large")}
                 {th("demande", "Demandé", "text-end")}
                 {th("accorde", "Accordé", "text-end")}
                 {th("statut", "Statut")}
@@ -227,19 +227,19 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
                           {s.status === "brouillon"
                             ? "en rédaction"
                             : `déposé le ${dateCourte(s.recuAt ?? s.createdAt)}`}
-                          {s.organisation.sportive ? " · sportive" : ""}
                         </small>
                       </span>
                     </td>
-                    <td>
-                      <span className="cell2" style={{ maxWidth: 200 }}>
+                    <td className="col-souple">
+                      <span className="cell2">
                         <a href={`/usagers/${s.organisation.id}`} title={s.organisation.name}>
                           {s.organisation.name}
                         </a>
+                        {s.organisation.sportive ? <small>Association sportive</small> : null}
                       </span>
                     </td>
-                    <td>
-                      <span className="cell2" style={{ maxWidth: 260 }}>
+                    <td className="col-souple col-souple--large">
+                      <span className="cell2">
                         <span title={s.objet}>{s.objet}</span>
                         <small className="d-flex align-items-center gap-1">
                           <TypeSubvention type={s.type} />

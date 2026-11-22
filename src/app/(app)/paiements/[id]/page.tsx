@@ -131,11 +131,11 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
       <div className="fiche-colonnes fiche-colonnes--50-50">
         <div className="data-card">
           <Section titre="Facture" icone="receipt">
-            <Lus>
+            <Lus intitule="65px">
               <Lu label="Numéro" valeur={f.numero} />
               <Lu label="Type" valeur={FACTURE_TYPES[f.type] ?? f.type} />
               <Lu label="Émise le" valeur={dateCourte(f.createdAt)} />
-              <Lu label="Échéance" valeur={<Echeance f={f} aujourdhui={auj} />} tiret />
+              <Lu label="Échéance" valeur={<Echeance f={f} aujourdhui={auj} enLigne />} tiret />
               <Lu
                 label="Débiteur"
                 valeur={
@@ -207,7 +207,7 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
           <Section titre="Dossier lié" icone="clipboard-list" ouverte={Boolean(r)}>
             {r ? (
               <>
-                <Lus>
+                <Lus intitule="60px">
                   <Lu
                     label="Dossier"
                     valeur={

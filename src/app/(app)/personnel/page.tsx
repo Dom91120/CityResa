@@ -28,7 +28,7 @@ import {
 } from "@/server/affectation";
 import { contexteModule } from "@/server/module";
 import { param } from "@/server/paging";
-import { etatService, personnes, sitesDuPerimetre } from "@/server/personnel";
+import { etatService, personnes, sitesDuPerimetre, vacationsEntre } from "@/server/personnel";
 
 export const metadata = { title: "Planning de service - CityRésa" };
 
@@ -78,6 +78,21 @@ export default async function PersonnelPage({
     affectationsEntre(fen.de, fen.a, siteIds),
     propositionsEnAttente(page.user),
   ]);
+  // Le total d'heures de chaque personne se compte sur tous les sites, pas sur les seuls sites
+  // affichés ou visibles par l'agent : sinon une personne occupée ailleurs paraîtrait libre.
+  const occupations =
+    vue === "semaine"
+      ? await Promise.all([vacationsEntre(fen.de, fen.a), affectationsEntre(fen.de, fen.a)]).then(
+          ([v, c]) => [
+            ...v.map((x) => ({ personnelId: x.personnelId, startAt: x.startAt, endAt: x.endAt })),
+            ...c.flatMap((x) =>
+              x.personnelId
+                ? [{ personnelId: x.personnelId, startAt: x.startAt, endAt: x.endAt }]
+                : [],
+            ),
+          ],
+        )
+      : undefined;
   const visibles = personnesChoisies.length
     ? toutes.filter((p) => personnesChoisies.includes(p.id))
     : toutes;
@@ -506,6 +521,7 @@ export default async function PersonnelPage({
           contexte={contexte}
           affectations={affectations}
           retour={retour}
+          occupations={occupations}
         />
       )}
 

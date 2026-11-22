@@ -180,7 +180,7 @@ Deux fournisseurs dans **Paramètres → SMS** :
   `Authorization: Bearer <SMS_API_KEY>` et le corps :
 
   ```json
-  { "to": "+33612345678", "from": "VilleChat", "text": "Ville de Châtillon : votre code de signature de la convention RES-2026-0012 est 482913 (valable 72 h)." }
+  { "to": "+33612345678", "from": "VilleChat", "text": "Ville de Châtillon : votre code de signature de la convention R260012 est 482913 (valable 72 h)." }
   ```
 
   Toute réponse HTTP 2xx vaut succès (délai 15 s). La plupart des opérateurs (Brevo, OVH SMS,

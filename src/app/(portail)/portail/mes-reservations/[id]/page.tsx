@@ -161,7 +161,7 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
 
       <div className="data-card">
         <Section titre="Événement" icone="calendar-days">
-          <Lus>
+          <Lus intitule="87px">
             <Lu label="Objet" valeur={r.title} />
             <Lu label="Type" valeur={r.nature?.label} />
             <Lu label="Espace" valeur={`${nomCourt(r.espace)} · ${r.espace.site.name}`} />
@@ -247,7 +247,7 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
 
         {r.caution > 0 && r.cautionStatus !== "aucune" ? (
           <Section titre="Caution & états des lieux" icone="piggy-bank" ouverte={false}>
-            <Lus>
+            <Lus intitule="84px">
               <Lu label="Caution" valeur={decrireCaution(r)} pleine />
               {r.cautionMotif && ["retenue", "retenue_a_valider"].includes(r.cautionStatus) ? (
                 <Lu label="Motif de la retenue" valeur={r.cautionMotif} pleine pre />

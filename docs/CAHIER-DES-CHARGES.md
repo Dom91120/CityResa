@@ -151,7 +151,7 @@ est confirmé directement.
 ### Étape 7 — Facturation et paiement
 
 Factures d'**acompte** (pourcentage paramétrable), de **solde** et de **caution**, numérotées
-(FAC-AAAA-0001), PDF, envoyées par courriel avec échéance. Enregistrement des règlements
+(F260001 : F, l'année sur deux chiffres, le rang sur quatre), PDF, envoyées par courriel avec échéance. Enregistrement des règlements
 (régie, chèque, virement, carte, mandat administratif, gratuité) ; l'acompte réglé confirme le
 dossier signé ; relances des factures échues ; avoirs. Les services de la ville et les
 mises à disposition gracieuses ne génèrent aucune facture.
@@ -182,7 +182,7 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 - Dossier complet : espace, demandeur, organisation, agent, objet, nature, participants, créneaux,
   options, matériel, montants, décision, convention, signature, factures, messages, pièces,
   historique.
-- Numérotation RES-AAAA-0001. Source (portail / back-office).
+- Numérotation R260001 (R, l'année sur deux chiffres, le rang sur quatre). Source (portail / back-office).
 - Statuts et transitions (voir § 5), motif de refus ou d'annulation, notes internes.
 - Création par un agent au nom d'un usager, avec dérogation au délai.
 - Listes filtrables (statut, espace, site, période, organisation), recherche globale,
@@ -371,14 +371,16 @@ disposition gracieuses accordées aux associations, top organisations ; export *
   réalisé, synthèse), pièces à joindre (liste conditionnelle : PV d'AG, comptes, RIB, compte
   rendu des actions, rapport du commissaire, statuts et composition du conseil pour une première
   demande ou un changement, pouvoir du mandataire, projet financier des actions), attestation
-  sur l'honneur et contrat d'engagement républicain.
+  sur l'honneur (avec le rappel des peines pour fausse déclaration) et contrat d'engagement
+  républicain. Le dossier rappelle aussi le délai de six mois pour retourner le bilan, porte la
+  notice sur les données personnelles et indique le service à contacter (réglable).
 - Dossier **pré-rempli** depuis la fiche de l'organisation, le dossier de l'exercice précédent
   (renouvellement) et les locaux municipaux mis à disposition l'an passé (valorisation) ; rempli
   fiche par fiche avec enregistrement et reprise ; contrôle de complétude (champs obligatoires par
   fiche, pièces attendues, signature) avant le dépôt.
 - **Signature électronique** de l'attestation par code à usage unique (SMS, à défaut courriel),
-  invalidée par toute modification ultérieure ; dépôt qui numérote (SUB-AAAA-0001), date la
-  réception, génère le **PDF du dossier** (fiches, cadre réservé, mentions de signature) et envoie
+  invalidée par toute modification ultérieure ; dépôt qui numérote (S270001 : S, l'exercice sur deux chiffres, le rang sur quatre), date la
+  réception, génère le **PDF du dossier** (présenté comme le formulaire papier de la Ville : page de garde, cadre réservé, fiches 1-1 à 8, contrat d'engagement républicain, mentions de signature) et envoie
   l'accusé de réception. Nature première demande / renouvellement.
 - **Instruction** : cadre réservé (numéro, réception, secteur d'instruction, campagne), lecture du
   dossier par fiches, état des pièces, **renvoi comme incomplet** (motif, retour en rédaction,

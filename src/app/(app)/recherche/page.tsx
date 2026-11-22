@@ -105,7 +105,7 @@ export default async function RecherchePage({
         <VideBloc
           icone="search"
           titre="Aucun résultat"
-          texte={`Rien ne correspond à « ${q} ». Essayez un numéro de dossier (RES-2026-0042), un nom d'organisation, un courriel ou un espace.`}
+          texte={`Rien ne correspond à « ${q} ». Essayez un numéro de dossier (R260042), un nom d'organisation, un courriel ou un espace.`}
         />
       )}
     </>

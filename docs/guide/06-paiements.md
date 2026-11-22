@@ -26,7 +26,7 @@ Ce chapitre décrit le suivi des factures émises pour les réservations (acompt
 
 **Règles à connaître**
 
-- Chaque facture porte un numéro unique de la forme FAC-ANNÉE-NNNN, attribué à l'émission.
+- Chaque facture porte un numéro unique de la forme F260001 (F pour facture, l'année sur deux chiffres, puis le rang sur quatre), attribué à l'émission.
 - Les services de la Ville et les mises à disposition gratuites ne génèrent aucune facture.
 
 ## 6.2 Les factures d'un dossier : acompte, solde, caution, frais d'annulation
@@ -64,7 +64,7 @@ Chaque facture est produite en PDF, jointe au dossier et envoyée par courriel �
 
 ![Fiche d'une facture](captures/facture.webp)
 
-*Figure — la facture de solde FAC-2026-0005 du Service Culturel, à payer, sans règlement enregistré.*
+*Figure — la facture de solde F260005 du Service Culturel, à payer, sans règlement enregistré.*
 
 **Ce que l'on voit**
 

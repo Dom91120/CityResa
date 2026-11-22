@@ -29,7 +29,7 @@ import { type Horaires, lireHoraires } from "@/lib/creneaux";
 import { ymdUtc } from "@/lib/date-utc";
 import { bornesFrise, minutesDuJour } from "@/lib/frise";
 import { heure, isoParis, nomCourt, plageHoraire } from "@/lib/libelles";
-import { parisMidnight, parisParts, toParisWall } from "@/lib/paris-time";
+import { ENTRE_HEURES, parisMidnight, parisParts, toParisWall } from "@/lib/paris-time";
 import {
   type CreneauCouvert,
   ETATS_COUVERTURE,
@@ -51,6 +51,14 @@ export function ChipCouverture({ etat, titre }: { etat: EtatCouverture; titre?: 
 }
 
 /** Les heures d'un élément restreintes au jour affiché. */
+/**
+ * Les heures telles qu'elles s'écrivent dans une case du planning, pour y tenir : sans espaces
+ * autour du tiret ni « 00 » aux heures rondes (« 8h30-13h », « 9h-12h · 13h-17h30 »).
+ */
+function serre(heures: string): string {
+  return heures.replaceAll(ENTRE_HEURES, "-").replaceAll("h00", "h");
+}
+
 function heuresDuJour(i: { startAt: Date; endAt: Date }, jour: string): string {
   const b = bornesJour(jour);
   const debutDedans = i.startAt >= b.startAt;
@@ -74,14 +82,31 @@ const TEINTE_VAR: Record<EtatCouverture, string> = {
   non_couvert: "var(--red-text)",
 };
 
-/** Une vacation dans une case du planning. */
-function Vac({ v, jour, peutEditer }: { v: VacationRow; jour: string; peutEditer: boolean }) {
-  const style = v.personnel.color ? { borderLeftColor: v.personnel.color } : undefined;
+/**
+ * Une vacation dans une case du planning. `neutre` : sans la couleur de la personne, là où la ligne
+ * dit déjà de qui il s'agit (grille de la semaine).
+ */
+function Vac({
+  v,
+  jour,
+  peutEditer,
+  neutre = false,
+}: {
+  v: VacationRow;
+  jour: string;
+  peutEditer: boolean;
+  neutre?: boolean;
+}) {
+  const style = neutre
+    ? { borderLeftColor: "var(--faint)" }
+    : v.personnel.color
+      ? { borderLeftColor: v.personnel.color }
+      : undefined;
   const contenu = (
     <>
       <span className="evt-titre">{v.site.name}</span>
       <span className="evt-heure evt-ligne">
-        {heuresDuJour(v, jour)}
+        {serre(heuresDuJour(v, jour))}
         {v.note ? ` · ${v.note}` : ""}
       </span>
     </>
@@ -121,7 +146,7 @@ function ACouvrir({
     >
       <span className="evt-titre">{e.creneau.titre}</span>
       <span className="evt-heure">
-        {heuresDuJour(e.creneau, jour)} · {e.creneau.espaceNom}
+        {serre(heuresDuJour(e.creneau, jour))} · {e.creneau.espaceNom}
       </span>
       <span className="evt-qui" style={{ color: TEINTE_VAR[e.couverture.etat] }}>
         {etat.label}
@@ -147,7 +172,7 @@ function Affectation({ c, jour, retour }: { c: AffectationRow; jour: string; ret
         <Icone nom={propose ? "hourglass" : "bookmark"} taille={10} /> {c.reservation.title}
       </span>
       <span className="evt-heure">
-        {heuresDuJour(c, jour)} · {nomCourt(c.espace)}
+        {serre(heuresDuJour(c, jour))} · {nomCourt(c.espace)}
       </span>
       {propose ? <span className="evt-qui">Proposé · à valider</span> : null}
     </a>
@@ -192,8 +217,8 @@ function JourTravail({
         ? "Hors contrat"
         : t.etat === "travail"
           ? t.plages.length
-            ? libellePlages(t.plages)
-            : "Absent toute la journée"
+            ? serre(libellePlages(t.plages))
+            : "Absent"
           : null;
   return (
     <>
@@ -227,6 +252,7 @@ export function GrilleService({
   contexte,
   affectations,
   retour,
+  occupations,
 }: {
   fen: Fenetre;
   personnes: PersonneRow[];
@@ -240,6 +266,12 @@ export function GrilleService({
   affectations: AffectationRow[];
   /** La page affichée : la fiche du dossier y ramène par sa flèche de retour. */
   retour?: string;
+  /**
+   * Tout ce qui occupe les personnes sur la fenêtre, sur TOUS les sites (vacations et créneaux
+   * affectés) : le total d'heures de la semaine ne doit pas dépendre des sites affichés ni du
+   * périmètre de l'agent. Absent : on compte ce qui est affiché.
+   */
+  occupations?: { personnelId: number; startAt: Date; endAt: Date }[];
 }) {
   // Un seul jour affiché : la largeur sert à dérouler ses heures.
   if (fen.vue === "jour")
@@ -260,9 +292,12 @@ export function GrilleService({
     if (!noms.has(v.personnelId)) noms.set(v.personnelId, nomPersonne(v.personnel));
   const affectables = new Map(contexte.personnes.map((p) => [p.id, p]));
   const suite = retour ? `?next=${encodeURIComponent(retour)}` : "";
-  /** « 31 h / 35 h » : ce qui est planifié dans la semaine face à la durée de référence. */
+  /**
+   * Les heures planifiées de la semaine face à la durée hebdomadaire du contrat. `ailleurs` :
+   * la part qui n'apparaît pas dans la grille (sites non affichés ou hors du périmètre de l'agent).
+   */
   const heuresSemaine = (p: PersonneRow) => {
-    const planifiees = heuresPlanifiees(
+    const affichees = heuresPlanifiees(
       [
         ...vacations.filter((v) => v.personnelId === p.id),
         ...affectations.filter((c) => c.personnelId === p.id),
@@ -270,12 +305,26 @@ export function GrilleService({
       fen.de,
       fen.a,
     );
+    const planifiees = occupations
+      ? heuresPlanifiees(
+          occupations.filter((o) => o.personnelId === p.id),
+          fen.de,
+          fen.a,
+        )
+      : affichees;
     const attendues = heuresAttendues({
       quotite: p.quotite,
       heuresHebdo: p.heuresHebdo === null ? null : Number(p.heuresHebdo),
     });
     const fr = (n: number) => String(n).replace(".", ",");
-    return { planifiees, attendues, texte: `${fr(planifiees)} h / ${fr(attendues)} h` };
+    const ailleurs = Math.round((planifiees - affichees) * 10) / 10;
+    return {
+      planifiees,
+      attendues,
+      texte: `${fr(planifiees)} h sur ${fr(attendues)} h`,
+      ailleurs: ailleurs > 0 ? `dont ${fr(ailleurs)} h hors des sites affichés` : null,
+      part: attendues > 0 ? Math.min(100, Math.round((planifiees / attendues) * 100)) : 0,
+    };
   };
   return (
     <>
@@ -327,10 +376,21 @@ export function GrilleService({
               <tr key={p.id}>
                 <td className="col-espace">
                   <div className="espace-cell">
-                    <span
-                      className="pastille-espace"
-                      style={{ background: p.color ?? "var(--faint)" }}
-                    />
+                    {/* L'horloge des horaires de travail tient la place du repère de ligne. */}
+                    {peutEditer ? (
+                      <a
+                        href={`/personnel/personnes/${p.id}/horaires${suite}`}
+                        className="pastille-icone pastille-action"
+                        title={`Horaires de travail de ${nomPersonne(p)}`}
+                        aria-label={`Modifier les horaires de travail de ${nomPersonne(p)}`}
+                      >
+                        <Icone nom="clock" taille={13} />
+                      </a>
+                    ) : (
+                      <span className="pastille-icone">
+                        <Icone nom="user" taille={13} />
+                      </span>
+                    )}
                     <span className="cell2">
                       <a href={avecRetour(`/personnel/personnes/${p.id}`, retour)} className="nom">
                         {nomPersonne(p)}
@@ -339,29 +399,23 @@ export function GrilleService({
                       {(() => {
                         const h = heuresSemaine(p);
                         return (
-                          <small
+                          <span
                             className={
                               h.planifiees > h.attendues
                                 ? "heures-semaine depasse"
                                 : "heures-semaine"
                             }
-                            title="Heures planifiées cette semaine (vacations et créneaux affectés) / durée hebdomadaire de référence"
+                            title="Heures planifiées cette semaine, tous sites confondus (vacations et créneaux affectés), sur la durée hebdomadaire du contrat"
                           >
-                            {h.texte}
-                          </small>
+                            <small>{h.texte}</small>
+                            <span className="jauge-heures" aria-hidden="true">
+                              <span style={{ width: `${h.part}%` }} />
+                            </span>
+                            {h.ailleurs ? <small className="ailleurs">{h.ailleurs}</small> : null}
+                          </span>
                         );
                       })()}
                     </span>
-                    {peutEditer ? (
-                      <a
-                        href={`/personnel/personnes/${p.id}/horaires${suite}`}
-                        className="btn btn-ghost btn-icone btn-sm ms-auto"
-                        title={`Horaires de travail de ${nomPersonne(p)}`}
-                        aria-label={`Modifier les horaires de travail de ${nomPersonne(p)}`}
-                      >
-                        <Icone nom="clock" taille={13} />
-                      </a>
-                    ) : null}
                   </div>
                 </td>
                 {fen.jours.map((j) => {
@@ -392,21 +446,37 @@ export function GrilleService({
                           }
                         />
                       ) : null}
-                      {duJour(
-                        vacations.filter((v) => v.personnelId === p.id),
-                        j,
-                      ).map((v) => (
-                        <Vac key={v.id} v={v} jour={j} peutEditer={peutEditer} />
-                      ))}
-                      {duJour(
-                        affectations.filter(
-                          (c) =>
-                            (c.personnelId ?? (c.proposeAt ? c.personnelProposeId : null)) === p.id,
-                        ),
-                        j,
-                      ).map((c) => (
-                        <Affectation key={`c${c.id}`} c={c} jour={j} retour={retour} />
-                      ))}
+                      {/* Vacations et créneaux de la journée, mêlés dans l'ordre des heures. */}
+                      {[
+                        ...duJour(
+                          vacations.filter((v) => v.personnelId === p.id),
+                          j,
+                        ).map((v) => ({
+                          debut: v.startAt,
+                          fin: v.endAt,
+                          vignette: (
+                            <Vac key={`v${v.id}`} v={v} jour={j} peutEditer={peutEditer} neutre />
+                          ),
+                        })),
+                        ...duJour(
+                          affectations.filter(
+                            (c) =>
+                              (c.personnelId ?? (c.proposeAt ? c.personnelProposeId : null)) ===
+                              p.id,
+                          ),
+                          j,
+                        ).map((c) => ({
+                          debut: c.startAt,
+                          fin: c.endAt,
+                          vignette: <Affectation key={`c${c.id}`} c={c} jour={j} retour={retour} />,
+                        })),
+                      ]
+                        .sort(
+                          (x, y) =>
+                            x.debut.getTime() - y.debut.getTime() ||
+                            x.fin.getTime() - y.fin.getTime(),
+                        )
+                        .map((x) => x.vignette)}
                     </td>
                   );
                 })}
@@ -416,6 +486,14 @@ export function GrilleService({
         </table>
       </div>
       <LegendeService />
+      <p className="small text-muted mt-1 mb-0">
+        <span className="jauge-heures legende-jauge" aria-hidden="true">
+          <span style={{ width: "60%" }} />
+        </span>{" "}
+        Sous chaque nom, « X h sur Y h » : les heures planifiées dans la semaine (vacations et
+        créneaux affectés, tous sites confondus) sur la durée hebdomadaire du contrat ; en orange si
+        elle est dépassée.
+      </p>
       <ul className="list-inline small text-muted mt-1 mb-0" aria-label="Légende des fonds de case">
         <li className="list-inline-item me-3">
           <span className="legende-fond jour-travail" aria-hidden="true" /> Jour travaillé
@@ -424,7 +502,7 @@ export function GrilleService({
           <span className="legende-fond jour-repos" aria-hidden="true" /> Repos ou hors contrat
         </li>
         <li className="list-inline-item">
-          <span className="legende-fond jour-absent" aria-hidden="true" /> Absent toute la journée
+          <span className="legende-fond jour-absent" aria-hidden="true" /> Absent
         </li>
       </ul>
     </>
@@ -466,7 +544,11 @@ function LegendeService({ frise = false }: { frise?: boolean }) {
       </ul>
       <span className="legende-titre fw-semibold">
         <span className="legende-repere">
-          <span className="pastille-espace" style={{ background: "#8b5cf6" }} />
+          {frise ? (
+            <span className="pastille-espace" style={{ background: "#8b5cf6" }} />
+          ) : (
+            <Icone nom="user" taille={13} />
+          )}
         </span>
         Personnes
       </span>
@@ -481,7 +563,15 @@ function LegendeService({ frise = false }: { frise?: boolean }) {
           </li>
         ) : null}
         <li className="list-inline-item">
-          <Echantillon couleur="#8b5cf6" /> Vacation (liseré à la couleur de la personne)
+          {frise ? (
+            <>
+              <Echantillon couleur="#8b5cf6" /> Vacation (liseré à la couleur de la personne)
+            </>
+          ) : (
+            <>
+              <Echantillon couleur="var(--faint)" /> Vacation
+            </>
+          )}
         </li>
         <li className="list-inline-item">
           <Echantillon couleur="var(--emerald-text)" /> <Icone nom="bookmark" taille={10} /> Créneau
@@ -1120,7 +1210,7 @@ function Absence({ a }: { a: PlageMinutes & { motif: string | null } }) {
         <Icone nom="calendar-x" taille={10} /> {a.motif ?? "Absence"}
       </span>
       <span className="evt-heure">
-        {a.debutMin === 0 && a.finMin === 1440 ? "Toute la journée" : libellePlages([a])}
+        {a.debutMin === 0 && a.finMin === 1440 ? "Toute la journée" : serre(libellePlages([a]))}
       </span>
     </span>
   );

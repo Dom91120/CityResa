@@ -26,7 +26,12 @@ async function obtenirNavigateur(): Promise<Browser> {
 
 export type MargesPdf = { top: string; right: string; bottom: string; left: string };
 
-export type OptionsPdf = { format?: "A4" | "A3"; paysage?: boolean };
+export type OptionsPdf = {
+  format?: "A4" | "A3";
+  paysage?: boolean;
+  /** Le numéro de page, centré en pied (dossiers de plusieurs pages). */
+  numeroPages?: boolean;
+};
 
 /** Un document HTML complet → les octets du PDF (A4 portrait par défaut ; A3 et paysage pour les plannings). */
 export async function htmlVersPdf(
@@ -44,6 +49,10 @@ export async function htmlVersPdf(
       printBackground: true,
       margin: marges,
       preferCSSPageSize: false,
+      displayHeaderFooter: opts.numeroPages ?? false,
+      headerTemplate: "<span></span>",
+      footerTemplate:
+        '<div style="width:100%;text-align:center;font-family:Calibri,Carlito,Arial,sans-serif;font-size:11pt;color:#000"><span class="pageNumber"></span></div>',
     });
     return Buffer.from(pdf);
   } finally {

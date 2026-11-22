@@ -60,6 +60,27 @@ export function VoletCollectivite({ cfg }: { cfg: AppSettings }) {
         valeur={cfg.COLLECTIVITE_SIGNATAIRE_QUALITE}
         placeholder="Le Maire"
       />
+      <Champ
+        label="Subventions : service à contacter"
+        name="SUBVENTIONS_SERVICE_NOM"
+        valeur={cfg.SUBVENTIONS_SERVICE_NOM}
+        placeholder="Service de la vie associative"
+        aide="Affiché aux associations sur la campagne, le dossier de demande et son PDF."
+      />
+      <Champ
+        label="Subventions : courriel du service"
+        name="SUBVENTIONS_SERVICE_EMAIL"
+        type="email"
+        valeur={cfg.SUBVENTIONS_SERVICE_EMAIL}
+        aide="Vide : le courriel de contact de la collectivité."
+      />
+      <Champ
+        label="Subventions : téléphone du service"
+        name="SUBVENTIONS_SERVICE_TELEPHONE"
+        type="tel"
+        valeur={cfg.SUBVENTIONS_SERVICE_TELEPHONE}
+        aide="Vide : le téléphone de la collectivité."
+      />
       <div style={{ gridColumn: "1 / -1" }}>
         <label className="form-label" htmlFor="f-logo">
           Logo ou blason

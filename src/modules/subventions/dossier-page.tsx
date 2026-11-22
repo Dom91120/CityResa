@@ -15,9 +15,11 @@ import {
   fichesIncompletes,
 } from "@/lib/dossier-subvention";
 import { dateHeure } from "@/lib/libelles";
+import { contactService, noticeDonnees } from "@/lib/mentions-subvention";
 import { piecesRequises } from "@/lib/pieces-subvention";
 import { planDe } from "@/lib/plan-budget";
 import {
+  AideService,
   EtatPiecesListe,
   FormFiche,
   LectureFiche,
@@ -25,6 +27,7 @@ import {
   NavFiches,
 } from "@/modules/subventions/dossier-vues";
 import type { SubventionComplete } from "@/modules/subventions/server";
+import { getSettings } from "@/server/config-store";
 import { forParent } from "@/server/documents";
 import type { Page } from "@/server/page";
 import { dossierDe, enRedaction, manquesDe, pourManques } from "@/server/subventions-dossier";
@@ -49,9 +52,10 @@ export async function CorpsFiche({
   const sportive = s.organisation.sportive;
   const ctx = { s, d, sportive, plan: planDe(sportive) };
   const redaction = enRedaction(s) && peutEditer;
-  const [manques, documents] = await Promise.all([
+  const [manques, documents, cfg] = await Promise.all([
     manquesDe(s, !portail),
     forParent("subvention", s.id),
+    getSettings(),
   ]);
   const incompletes = fichesIncompletes(manques);
   const kinds = documents.map((x) => x.kind).filter((k) => k !== "dossier");
@@ -68,6 +72,7 @@ export async function CorpsFiche({
         <h2 className="h5 mb-0">{fiche.titre}</h2>
         <span className="text-muted small">{fiche.aide}</span>
       </div>
+      {portail && redaction ? <AideService contact={contactService(cfg)} classes="mb-3" /> : null}
 
       {cle === "pieces" ? (
         <div className="data-card p-4">
@@ -136,6 +141,29 @@ export async function CorpsFiche({
           </div>
         </div>
       )}
+
+      {cle === "attestation" ? (
+        <details className="data-card p-3 mt-3 notice-donnees">
+          <summary className="fw-medium">
+            <Icone nom="shield-check" taille={16} classes="text-muted" /> Vos données personnelles
+          </summary>
+          <dl className="small mb-0 mt-2">
+            {noticeDonnees(cfg).map((n) => (
+              <div key={n.titre} className="mb-2">
+                <dt>{n.titre}</dt>
+                <dd className="mb-0 text-muted">{n.texte}</dd>
+              </div>
+            ))}
+          </dl>
+          {portail ? (
+            <p className="small mb-0">
+              <a href="/portail/donnees-personnelles">
+                En savoir plus sur vos données personnelles
+              </a>
+            </p>
+          ) : null}
+        </details>
+      ) : null}
 
       {cle === "attestation" && redaction ? (
         <div className="mt-3">

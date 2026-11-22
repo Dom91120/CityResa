@@ -163,7 +163,7 @@ Les agents municipaux y trouveront aussi de quoi accompagner un usager au télé
 **Ce que l'on voit**
 - Le menu de l'espace usager : **Espaces**, **Mes réservations**, **Mes vœux**, **Mes messages**, **Mon organisation**, **Mon compte**, **Déconnexion**. Le chiffre à côté de **Mes réservations** compte les conventions à signer ; celui de **Mes messages**, les messages non lus.
 - Le bouton **Nouvelle demande** et les onglets **En cours** et **Passées et archivées**, avec leur nombre de dossiers.
-- Une ligne par dossier : photo, objet, statut (Confirmée, Acceptée, À traiter…), espace, date et horaires, numéro (N° RES-2026-0025) et bouton **Voir le dossier**.
+- Une ligne par dossier : photo, objet, statut (Confirmée, Acceptée, À traiter…), espace, date et horaires, numéro (N° R260025) et bouton **Voir le dossier**.
 - Sous chaque dossier, la phrase « prochaine étape » et une frise en quatre étapes : Demande, Signature, Confirmée, Terminée.
 
 **Comment faire**
@@ -457,7 +457,7 @@ Pendant le dépôt (la figure montre la page après sa clôture) :
 **Qui** — Les membres d'une association, si la Ville a activé le module des subventions.
 
 ![Mes subventions](captures/asso-mes-subventions.webp)
-*Figure — « Mes subventions » d'Around dance : la campagne 2027 ouverte et le dossier SUB-2027-0001 au stade « Avis des élus ».*
+*Figure — « Mes subventions » d'Around dance : la campagne 2027 ouverte et le dossier S270001 au stade « Avis des élus ».*
 
 **Ce que l'on voit**
 - La carte de la **campagne** : son intitulé, la pastille « Dépôt ouvert », « Ouvre bientôt » ou « Dépôt clos », les dates de dépôt, les consignes de la Ville et, selon le cas, le bouton **Commencer mon dossier**, **Reprendre mon dossier** ou **Voir mon dossier**.
@@ -483,7 +483,8 @@ Pendant le dépôt (la figure montre la page après sa clôture) :
 
 **Ce que l'on voit**
 - En haut, le bandeau des dix fiches numérotées, chacune avec une coche verte (complète) ou un point orange (il manque quelque chose) : **Présentation**, **Bureau**, **Effectifs**, **Rayonnement**, **Budget prévisionnel**, **Demande et actions**, **Trésorerie**, **Bilan N-1**, **Pièces**, **Attestation**.
-- Le bouton **Aperçu PDF** qui montre le dossier tel qu'il sera remis.
+- Sous le titre de la fiche, une ligne **« Une question sur votre dossier ? »** rappelle le service à contacter, son courriel et son téléphone ; elle figure aussi sur le bandeau de la campagne dans « Mes subventions ». La fiche **Bilan N-1** rappelle que le bilan des actions se retourne dans les six mois qui suivent la fin de l'exercice subventionné.
+- Le bouton **Aperçu PDF** qui montre le dossier tel qu'il sera remis : il reprend la présentation du formulaire papier de la Ville (page de garde, fiches numérotées, cases cochées, contrat d'engagement républicain en annexe), vos réponses y figurant en bleu.
 - Pour chaque fiche, ses champs regroupés par section et, en bas, **Retour au dossier**, **Enregistrer** et **Enregistrer et continuer**.
 
 **Comment faire**
@@ -498,7 +499,7 @@ Pendant le dépôt (la figure montre la page après sa clôture) :
 5. Dans **Pièces**, déposez chaque document attendu en choisissant sa **Nature** (procès-verbal d'assemblée générale, comptes approuvés, RIB, compte rendu des actions subventionnées, statuts…). La liste s'adapte à votre situation : première demande, commissaire aux comptes, changement de statuts, signature par mandataire, actions spécifiques.
 
 ![Fiche Attestation](captures/asso-subvention-attestation.webp)
-*Figure — la fiche « Attestation » : les engagements à cocher, le signataire, la signature par code et le bloc « Déposer le dossier » qui liste ce qui manque.*
+*Figure — la fiche « Attestation » : les engagements à cocher et le rappel des peines encourues en cas de fausse déclaration, le signataire, l'encart repliable « Vos données personnelles », la signature par code et le bloc « Déposer le dossier » qui liste ce qui manque.*
 
 6. Dans **Attestation**, cochez les engagements de l'attestation sur l'honneur, indiquez votre situation au regard des aides publiques, acceptez le **contrat d'engagement républicain**, nommez le signataire et enregistrez.
 7. Cliquez sur **Recevoir mon code** : un code à six chiffres arrive par SMS (ou par courriel). Saisissez-le, cochez la case et cliquez sur **Signer**.
@@ -517,7 +518,7 @@ Pendant le dépôt (la figure montre la page après sa clôture) :
 **Qui** — Les membres de l'association.
 
 ![Dossier de subvention](captures/asso-subvention.webp)
-*Figure — le dossier SUB-2027-0001 au statut « Avis des élus » : bandeau d'étape, fiches en lecture, pièces et historique.*
+*Figure — le dossier S270001 au statut « Avis des élus » : bandeau d'étape, fiches en lecture, pièces et historique.*
 
 **Ce que l'on voit**
 - En tête : numéro, statut, exercice, nature, objet, montant demandé, campagne, et le bouton **Dossier PDF**.

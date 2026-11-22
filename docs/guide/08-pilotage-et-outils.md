@@ -192,7 +192,7 @@ Les alertes liées à un module (pièces jointes, matériel, paiements, signatur
 - Le titre **Notifications**, le nombre total et la mention du nombre de non lues (« Tout est lu. » sinon).
 - Le bouton **Tout marquer lu** en haut à droite.
 - Deux filtres : **Toutes** et **Non lues** (avec leur nombre).
-- Une ligne par notification : une icône selon le type (demande, message, signature, usager…), un titre en vert (par exemple « Nouvelle demande RES-2026-0009 »), le détail (espace, date, horaires, demandeur ou extrait du message) et l'ancienneté (« il y a 2 j »).
+- Une ligne par notification : une icône selon le type (demande, message, signature, usager…), un titre en vert (par exemple « Nouvelle demande R260009 »), le détail (espace, date, horaires, demandeur ou extrait du message) et l'ancienneté (« il y a 2 j »).
 - Pour une notification non lue : un fond vert pâle, l'étiquette **Nouveau** et une coche pour la marquer lue. La flèche à droite ouvre l'élément concerné.
 
 **Comment faire**
@@ -228,7 +228,7 @@ Les alertes liées à un module (pièces jointes, matériel, paiements, signatur
 **Comment faire**
 
 1. Appuyez sur **Ctrl K** depuis n'importe quelle page : le curseur se place dans **Rechercher partout**.
-2. Tapez au moins deux caractères : un nom, un numéro de dossier (par exemple RES-2026-0004), le nom d'une salle, une adresse de courriel.
+2. Tapez au moins deux caractères : un nom, un numéro de dossier (par exemple R260004), le nom d'une salle, une adresse de courriel.
 3. Appuyez sur **Entrée**.
 4. Cliquez sur un résultat ou sur sa flèche pour l'ouvrir.
 

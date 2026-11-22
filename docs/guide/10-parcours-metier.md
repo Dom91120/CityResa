@@ -45,7 +45,7 @@ reçoit aucune facture (étape 7 sans objet).
 ## 10.2 Particulier : réserver une salle pour une fête familiale
 
 *Exemple : Martine Dupont, habitante de Châtillon, organise une fête de départ en retraite salle
-Gabriel Péri (dossier RES-2026-0017).*
+Gabriel Péri (dossier R260017).*
 
 | # | Ce que fait l'usager | Écran | Voir |
 | --- | --- | --- | --- |
@@ -100,7 +100,7 @@ l'un attribué (et son dossier), l'autre refusé (et son motif).*
 ## 10.4 Entreprise : séminaire ou formation payante
 
 *Exemple : Médéric Formation (Boulogne), convention annuelle à l'Espace Maison Blanche
-(dossier RES-2026-0019, statut « Signée »).*
+(dossier R260019, statut « Signée »).*
 
 1. **Inscription** avec raison sociale, SIRET et dirigeant ; le profil « entreprise » applique
    la grille tarifaire entreprise (chapitre 1).

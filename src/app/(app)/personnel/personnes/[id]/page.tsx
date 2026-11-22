@@ -188,7 +188,7 @@ export default async function PersonnePage({ params }: { params: Promise<{ id: s
               </Lus>
             </Section>
             <Section titre="Contrat et temps de travail" icone="briefcase">
-              <Lus intitule="68px">
+              <Lus intitule="54px">
                 <Lu label="Contrat" valeur={p.contratType?.label} tiret />
                 <Lu
                   label="Quotité"

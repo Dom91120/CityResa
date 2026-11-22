@@ -99,7 +99,7 @@ export default async function SubventionPortailPage({
       <div className="data-card">
         {decidee ? (
           <Section titre="Décision" icone="gavel">
-            <Lus>
+            <Lus intitule="59px">
               <Lu label="Décision" valeur={<StatutSubvention status={s.status} />} />
               <Lu
                 label="Montant accordé"

@@ -22,12 +22,29 @@ export function TypeFacture({ type }: { type: string }) {
 export function Echeance({
   f,
   aujourdhui,
+  enLigne = false,
 }: {
   f: { status: string; dueAt: Date | null };
   aujourdhui: Date;
+  /** Sur une fiche : le délai entre parenthèses à la suite de la date, sur une seule ligne. */
+  enLigne?: boolean;
 }) {
   if (!f.dueAt) return <span className="text-faint">—</span>;
   const retard = enRetard(f, aujourdhui);
+  if (enLigne) {
+    return (
+      <span className={retard ? "text-danger" : undefined}>
+        <span className={retard ? "fw-medium" : undefined}>{dateCourte(f.dueAt)}</span>
+        {f.status === "a_payer" ? (
+          <small className="text-muted fw-normal">
+            {" "}
+            ({retard ? "dépassée · " : ""}
+            {delai(f.dueAt)})
+          </small>
+        ) : null}
+      </span>
+    );
+  }
   return (
     <span className={`cell2${retard ? " text-danger" : ""}`}>
       <span className={retard ? "fw-medium" : undefined}>{dateCourte(f.dueAt)}</span>

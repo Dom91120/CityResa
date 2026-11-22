@@ -1071,7 +1071,7 @@ export function SectionEvenement({
   const depart = new Date(r.endAt.getTime() + r.teardownMin * 60_000);
   return (
     <Section titre="Événement" icone="calendar-days">
-      <Lus intitule="88px">
+      <Lus intitule="77px">
         <Lu
           label="Créée le"
           valeur={`${dateHeure(r.createdAt)} · ${RESERVATION_SOURCES[r.source] ?? r.source}`}
@@ -1327,7 +1327,7 @@ export function SectionEvenement({
       </div>
 
       {/* « Agent assigné » et « Notes internes » sont les intitulés les plus longs de la fiche. */}
-      <Lus intitule="94px">
+      <Lus intitule="92px">
         <div className="lu lu--pleine">
           <span className="lu-label">Agent assigné</span>
           <span className="lu-valeur">
@@ -1378,7 +1378,7 @@ export function SectionDemandeur({ r }: { r: ReservationComplete }) {
   const contact = saisiParAgent ? null : r.user;
   return (
     <Section titre="Demandeur" icone="users">
-      <Lus intitule="88px">
+      <Lus intitule="85px">
         <Lu
           label="Organisation"
           valeur={
@@ -1727,7 +1727,7 @@ export function SectionCaution({
       id="caution"
       ouverte={ouverte && acquis}
     >
-      <Lus intitule="88px">
+      <Lus intitule="79px">
         <Lu
           label="Caution"
           valeur={
@@ -1954,7 +1954,7 @@ export function SectionConvention({
           La convention est générée à l'acceptation de la demande.
         </p>
       ) : (
-        <Lus intitule="88px">
+        <Lus intitule="85px">
           <Lu
             label="Convention"
             valeur={

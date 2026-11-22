@@ -195,7 +195,7 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
           <div className="fiche-colonnes fiche-colonnes--6-5">
             <div className="data-card overflow-visible">
               <Section titre="Identité" icone="door-open">
-                <Lus>
+                <Lus intitule="92px">
                   <Lu label="Site" valeur={<a href={`/sites/${e.siteId}`}>{e.site.name}</a>} />
                   <Lu label="Nature" valeur={e.nature?.label} />
                   <Lu label="Secteur" valeur={ESPACE_SECTEURS[e.secteur]?.label ?? e.secteur} />
@@ -271,7 +271,7 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
                 </Lus>
               </Section>
               <Section titre="Règlement et consignes" icone="scroll-text">
-                <Lus colonnes={1}>
+                <Lus intitule="83px" colonnes={1}>
                   <Lu label="Règlement et conditions" valeur={e.rules} pre tiret />
                   <Lu label="Consignes pratiques" valeur={e.instructions} pre tiret />
                 </Lus>
