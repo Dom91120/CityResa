@@ -1031,6 +1031,15 @@ L'écart **E7** est ainsi traité pour les subventions.
 - deux modèles de courriel, modifiables et désactivables : « Étape de circuit demandée » et
   « Étape de circuit en retard ».
 
+**Lot 14, livré** — relance des avis de subvention :
+
+- l'avis demandé à un élu a une **échéance** (délai de l'étape, compté de la soumission aux
+  élus), affichée dans « Mes étapes » et comptée dans l'alerte du tableau de bord ;
+- la tâche de relance des étapes relance aussi, une fois par soumission, les élus dont l'avis
+  est en retard (cloche et courriel), prévient le responsable du service instructeur et
+  l'inscrit à l'historique du dossier ;
+- rien n'est décidé d'office : un avis ne retient pas le vote.
+
 **Reste à faire**
 
 | Sujet | Écart |
@@ -1039,7 +1048,7 @@ L'écart **E7** est ainsi traité pour les subventions.
 | Étapes de circuit (visa, avis) sur la retenue sur caution ; simulation d'une campagne | E3 |
 | Subventions : étapes avant le versement | E5 |
 | Autres **moments** d'insertion : avant l'émission d'une facture, une retenue sur caution, une fermeture exceptionnelle | E3 |
-| **Échéance** : passage d'office à l'étape suivante ou transmission au suppléant (aujourd'hui : une relance, l'alerte au responsable, et l'échéance en rouge) ; relance des avis sur les subventions | — |
+| **Échéance** : passage d'office à l'étape suivante ou transmission au suppléant (aujourd'hui : une relance, l'alerte au responsable, et l'échéance en rouge) | — |
 | **Effets** paramétrables d'une étape (modèle de courriel propre à l'étape, mise en copie, document) | E2 |
 | Service sur les factures | E7 |
 | **Bascule** d'un dossier en cours sur une nouvelle version ; **export / import** d'un circuit | — |

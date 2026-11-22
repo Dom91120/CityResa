@@ -10,12 +10,13 @@
  */
 import {
   aiguiller,
+  echeanceDe,
   etapesApplicables,
   type Faits,
   libelleIntervenant,
   lireDefinition,
 } from "@/lib/circuits";
-import { montant } from "@/lib/libelles";
+import { dateCourte, montant } from "@/lib/libelles";
 import {
   circuitsEnService,
   type Personne,
@@ -198,49 +199,141 @@ export type AvisAttendu = {
   intervenant: string;
   service: string | null;
   depuis: Date;
+  /** L'échéance indicative de l'avis ; null sans délai. */
+  echeanceAt: Date | null;
   /** L'utilisateur est consulté et n'a pas encore donné son avis. */
   pourMoi: boolean;
 };
 
-/** Les dossiers soumis aux élus dont un avis nommé par le circuit manque encore. */
-export async function avisAttendus(user: CurrentUser, tous = false): Promise<AvisAttendu[]> {
-  if (!user.isAgent || !(await processusActif())) return [];
+const ACTION_RELANCE = "Avis en retard relancé";
+
+/** Les avis nommés par un circuit qui manquent encore, dossier par dossier. */
+async function avisManquants() {
   const dossiers = await prisma.subvention.findMany({
     where: { status: "avis", circuitVersionId: { not: null } },
     include: {
       organisation: { select: { name: true, sportive: true, conventionnee: true } },
       avis: { select: { authorId: true } },
-      service: { select: { name: true } },
-      histories: { where: { action: "Avis des élus" }, orderBy: { performedAt: "desc" }, take: 1 },
+      service: { select: { name: true, responsableId: true } },
+      histories: {
+        where: { action: { in: ["Avis des élus", ACTION_RELANCE] } },
+        orderBy: { performedAt: "desc" },
+      },
     },
     orderBy: { updatedAt: "asc" },
   });
-  const out: AvisAttendu[] = [];
+  const out: {
+    s: (typeof dossiers)[number];
+    e: Consultation["etapes"][number];
+    depuis: Date;
+    echeanceAt: Date | null;
+    relance: boolean;
+  }[] = [];
   for (const s of dossiers) {
     const c = await consultation(s);
     if (!c?.restreinte) continue;
     const donnes = new Set(s.avis.map((a) => a.authorId));
+    const depuis =
+      s.histories.find((h) => h.action === "Avis des élus")?.performedAt ?? s.updatedAt;
     for (const e of c.etapes) {
       // Une étape est satisfaite dès qu'une des personnes attendues a donné son avis.
       if (e.attendus.some((p) => donnes.has(p.id))) continue;
-      const pourMoi = e.attendus.some((p) => p.id === user.id);
-      if (!pourMoi && !tous) continue;
       out.push({
-        id: s.id,
-        numero: s.numero,
-        objet: s.objet,
-        association: s.organisation.name,
-        montantDemande: s.montantDemande,
-        exercice: s.exercice,
-        libelle: e.libelle,
-        intervenant: e.libelleIntervenant,
-        service: s.service?.name ?? null,
-        depuis: s.histories[0]?.performedAt ?? s.updatedAt,
-        pourMoi,
+        s,
+        e,
+        depuis,
+        echeanceAt: echeanceDe(depuis, e.delaiJours),
+        // Une seule relance par soumission aux élus.
+        relance: s.histories.some(
+          (h) =>
+            h.action === ACTION_RELANCE &&
+            h.performedAt >= depuis &&
+            (h.comment ?? "").startsWith(e.libelle),
+        ),
       });
     }
   }
   return out;
+}
+
+/** Les dossiers soumis aux élus dont un avis nommé par le circuit manque encore. */
+export async function avisAttendus(user: CurrentUser, tous = false): Promise<AvisAttendu[]> {
+  if (!user.isAgent || !(await processusActif())) return [];
+  const out: AvisAttendu[] = [];
+  for (const { s, e, depuis, echeanceAt } of await avisManquants()) {
+    const pourMoi = e.attendus.some((p) => p.id === user.id);
+    if (!pourMoi && !tous) continue;
+    out.push({
+      id: s.id,
+      numero: s.numero,
+      objet: s.objet,
+      association: s.organisation.name,
+      montantDemande: s.montantDemande,
+      exercice: s.exercice,
+      libelle: e.libelle,
+      intervenant: e.libelleIntervenant,
+      service: s.service?.name ?? null,
+      depuis,
+      echeanceAt,
+      pourMoi,
+    });
+  }
+  return out;
+}
+
+/**
+ * Relance, une fois par soumission, chaque avis dont l'échéance indicative est dépassée : les
+ * élus attendus sont prévenus de nouveau (cloche et courriel), le responsable du service
+ * instructeur aussi. Rien n'est décidé d'office : un avis ne retient pas le vote.
+ */
+export async function relancerAvisEnRetard(now = new Date()): Promise<number> {
+  if (!(await processusActif())) return 0;
+  const { courrielEtape } = await import("@/server/circuits");
+  let relances = 0;
+  for (const { s, e, echeanceAt, relance } of await avisManquants()) {
+    if (relance || !echeanceAt || echeanceAt >= now || !e.attendus.length) continue;
+    const lien = `/subventions/${s.id}#avis`;
+    const quand = dateCourte(echeanceAt);
+    await Promise.all(
+      e.attendus.map((p) =>
+        notifier(
+          p.id,
+          "subvention",
+          `En retard · ${e.libelle} · ${s.numero}`,
+          `${s.organisation.name} · ${s.objet} · attendu le ${quand}`,
+          lien,
+        ),
+      ),
+    );
+    await courrielEtape("etape_relance", e.attendus, {
+      nature: "Avis",
+      etape: e.libelle,
+      numero: s.numero,
+      titre: s.objet,
+      detail: `${s.organisation.name} · ${montant(s.montantDemande)} demandés`,
+      lien,
+      echeance: echeanceAt,
+    });
+    const responsable = s.service?.responsableId;
+    if (responsable && !e.attendus.some((p) => p.id === responsable))
+      await notifier(
+        responsable,
+        "subvention",
+        `Avis en retard · ${s.numero}`,
+        `${e.libelle} · attendu le ${quand} · ${e.attendus.map((p) => p.name).join(", ")}`,
+        lien,
+      );
+    await prisma.subventionHistory.create({
+      data: {
+        subventionId: s.id,
+        action: ACTION_RELANCE,
+        comment: `${e.libelle} · attendu le ${quand}`,
+        performedBy: "automatique",
+      },
+    });
+    relances += 1;
+  }
+  return relances;
 }
 
 // ── Étapes du moteur (visa, relecture avant le vote) ──

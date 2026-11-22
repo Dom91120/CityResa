@@ -746,6 +746,15 @@ d'Hélène pour voir ce que chaque service peut faire, et ce que l'usager en per
 | 9 | Pierre | Tableau de bord, cloche, **Mes étapes**. | Alerte « 1 étape de circuit en retard », notification « En retard · Visa de l'élu… », échéance en rouge. Dans la console de l'étape 8, le courriel « En retard : Visa de l'élu sur la gratuité · R260008 » lui est adressé. |
 | 10 | Sophie | Cloche, puis historique de R260008. | « Étape en retard · R260008 » (elle est responsable du service) ; l'historique porte « Étape en retard relancée ». |
 
+**Variante — un avis de subvention en retard** (dossier S270002 du TTMC)
+
+| # | Qui | Action | Constat |
+| --- | --- | --- | --- |
+| a | Karim | Sur S270002 : **Prendre en instruction**, puis **Soumettre aux élus**. | Pierre reçoit la cloche et le courriel « Votre réponse est attendue ». Dans ses **Mes étapes**, l'avis porte « Attendu le », quinze jours plus tard. |
+| b | Vous | Laissez passer l'échéance, ou reculez en base la ligne « Avis des élus » de l'historique, puis lancez `pnpm tsx scripts/executer-tache.ts relances_etapes`. | « 1 avis de subvention relancé(s) » ; relancée une seconde fois : rien de plus. |
+| c | Pierre | Tableau de bord, cloche, **Mes étapes**. | Alerte « 1 étape de circuit en retard », notification « En retard · Avis de l'élu délégué · S270002 », échéance en rouge. |
+| d | Karim | Cloche, puis historique de S270002. | « Avis en retard · S270002 » (il est responsable du service) ; l'historique porte « Avis en retard relancé ». Le vote reste possible : un avis ne retient rien. |
+
 **Règles illustrées** — la file de travail suit les services de l'agent ; un agent sans service
 garde la vue d'ensemble, encaisse, mais ne décide pas ; l'usager connaît le service qui suit son
 dossier ; une échéance dépassée relance sans rien décider.

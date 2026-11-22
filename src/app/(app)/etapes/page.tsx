@@ -254,7 +254,17 @@ export default async function EtapesPage({
                         </span>
                       </td>
                       <td className="text-end tabular">{montant(a.montantDemande)}</td>
-                      <td>{depuis(a.depuis)}</td>
+                      <td>
+                        <span className="cell2">
+                          <span>{depuis(a.depuis)}</span>
+                          {a.echeanceAt ? (
+                            <Chip teinte={a.echeanceAt.getTime() < maintenant ? "red" : "slate"}>
+                              {a.echeanceAt.getTime() < maintenant ? "En retard · " : "Attendu le "}
+                              {dateCourte(a.echeanceAt)}
+                            </Chip>
+                          ) : null}
+                        </span>
+                      </td>
                       <td className="text-end text-nowrap">
                         <a
                           href={`/subventions/${a.id}#avis`}

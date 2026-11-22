@@ -268,9 +268,14 @@ export async function alertes(
   if (features.processus) {
     const { etapesEnAttente } = await import("@/server/circuits");
     const maintenant = Date.now();
-    const n = (await etapesEnAttente(user).catch(() => [])).filter(
-      (e) => e.echeanceAt && e.echeanceAt.getTime() < maintenant,
-    ).length;
+    const { avisAttendus } = await import("@/server/circuits-subvention");
+    const enRetard = (e: { echeanceAt: Date | null }) =>
+      Boolean(e.echeanceAt && e.echeanceAt.getTime() < maintenant);
+    const n =
+      (await etapesEnAttente(user).catch(() => [])).filter(enRetard).length +
+      (features.subventions
+        ? (await avisAttendus(user).catch(() => [])).filter(enRetard).length
+        : 0);
     if (n)
       out.push({
         cle: "etapes_en_retard",

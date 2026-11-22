@@ -435,6 +435,11 @@ export function issueReunion(
   return refus * 2 >= n ? "refusee" : null;
 }
 
+/** L'échéance indicative d'une étape demandée à `depuis` ; null sans délai. */
+export function echeanceDe(depuis: Date, delaiJours: number): Date | null {
+  return delaiJours > 0 ? new Date(depuis.getTime() + delaiJours * 86_400_000) : null;
+}
+
 /** Ceux dont la réponse est encore attendue. */
 export function restantARepondre<T extends { id: string }>(
   attendus: readonly T[],

@@ -373,8 +373,13 @@ async function affectationPersonnel(): Promise<Resultat> {
 
 async function relancesEtapes(): Promise<Resultat> {
   const { relancerEtapesEnRetard } = await import("@/server/circuits");
+  const { relancerAvisEnRetard } = await import("@/server/circuits-subvention");
   const n = await relancerEtapesEnRetard();
-  return { ok: true, message: `${n} étape(s) en retard relancée(s)` };
+  const avis = await relancerAvisEnRetard();
+  return {
+    ok: true,
+    message: `${n} étape(s) en retard relancée(s)${avis ? `, ${avis} avis de subvention relancé(s)` : ""}`,
+  };
 }
 
 async function sauvegarde(): Promise<Resultat> {

@@ -11,6 +11,7 @@ import {
   type Definition,
   decrireCondition,
   type Etape,
+  echeanceDe,
   etapesApplicables,
   etapesRetenant,
   etatEtape,
@@ -356,6 +357,12 @@ describe("règle de réunion", () => {
     expect(issueReunion("majorite", ["a", "b"], [oui("a")])).toBeNull();
     expect(issueReunion("majorite", ["a", "b"], [non("a")])).toBe("refusee");
     expect(issueReunion("majorite", ["a"], [oui("a")])).toBe("validee");
+  });
+
+  it("date l'échéance d'une étape, sauf sans délai", () => {
+    const d = new Date("2026-11-01T10:00:00Z");
+    expect(echeanceDe(d, 15)?.toISOString()).toBe("2026-11-16T10:00:00.000Z");
+    expect(echeanceDe(d, 0)).toBeNull();
   });
 
   it("sait qui n'a pas encore répondu", () => {
