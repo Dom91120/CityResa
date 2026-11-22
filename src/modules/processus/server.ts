@@ -13,6 +13,7 @@ import {
   lireDefinition,
   lireMoment,
   lireObjet,
+  lireReunion,
   NATURES,
   type Nature,
   type Objet,
@@ -90,6 +91,7 @@ export function etapeDuFormulaire(
     intervenant: intervenantDuFormulaire(form),
     condition: conditionDuFormulaire(form),
     delaiJours: Math.max(0, Math.min(365, parseInt_(form.get("delai_jours"), 0) ?? 0)),
+    reunion: lireReunion(champ(form, "reunion")),
   };
 }
 

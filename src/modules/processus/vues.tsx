@@ -21,6 +21,7 @@ import {
   type Nature,
   type Objet,
   RETENU,
+  REUNIONS,
   type Referentiel,
 } from "@/lib/circuits";
 
@@ -208,6 +209,9 @@ export function Logigramme({
           </strong>
           <span>
             {libelleIntervenant(e.intervenant, referentiel)}
+            {e.reunion !== "un" && e.moment !== "avis_elus"
+              ? ` · ${REUNIONS[e.reunion].court}`
+              : ""}
             {e.delaiJours ? ` · sous ${e.delaiJours} j` : ""}
             {e.moment === "avis_elus"
               ? " · consulté à la soumission aux élus"

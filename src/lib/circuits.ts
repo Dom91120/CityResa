@@ -39,6 +39,8 @@ export type Critere = {
   /** Pour un nombre : unité affichée. */
   unite?: string;
   aide?: string;
+  /** Une aide propre à un type de dossier : elle remplace `aide` pour ce type. */
+  aides?: Partial<Record<Objet, string>>;
 };
 
 export const CRITERES: readonly Critere[] = [
@@ -48,7 +50,7 @@ export const CRITERES: readonly Critere[] = [
     type: "liste",
     groupe: "Espace",
     objets: ["reservation", "campagne"],
-    aide: "Pour une campagne : le secteur de ses espaces, s'ils sont tous du même.",
+    aides: { campagne: "Le secteur des espaces de la campagne, s'ils sont tous du même." },
     options: [
       ["salle", "Salles"],
       ["sport", "Sports"],
@@ -186,7 +188,9 @@ const PAR_CLE = new Map(CRITERES.map((c) => [c.cle, c]));
 
 /** Les critères proposés pour un type de dossier. */
 export function criteresDe(objet: Objet): Critere[] {
-  return CRITERES.filter((c) => (c.objets ?? ["reservation"]).includes(objet));
+  return CRITERES.filter((c) => (c.objets ?? ["reservation"]).includes(objet)).map((c) =>
+    c.aides?.[objet] ? { ...c, aide: c.aides[objet] } : c,
+  );
 }
 
 export function critere(cle: string): Critere | undefined {
@@ -384,6 +388,61 @@ export const TYPES_INTERVENANT: Record<Intervenant["type"], string> = {
   role: "Les comptes d'un rôle",
 };
 
+// ── Règle de réunion : quand plusieurs personnes sont attendues ──
+
+export const REUNIONS = {
+  un: {
+    label: "Une réponse suffit",
+    court: "une réponse suffit",
+    aide: "La première personne qui répond clôt l'étape.",
+  },
+  tous: {
+    label: "Tous doivent répondre",
+    court: "accord de tous",
+    aide: "L'étape est validée quand chacun a donné son accord ; un seul refus la refuse.",
+  },
+  majorite: {
+    label: "La majorité",
+    court: "à la majorité",
+    aide: "L'étape est validée dès que plus de la moitié a donné son accord ; elle est refusée quand cette majorité n'est plus atteignable.",
+  },
+} as const;
+export type Reunion = keyof typeof REUNIONS;
+
+export function lireReunion(v: unknown): Reunion {
+  return v === "tous" || v === "majorite" ? v : "un";
+}
+
+/**
+ * L'issue d'une étape d'après les réponses reçues : validée, refusée, ou `null` tant qu'il en
+ * manque. Une personne qui a répondu compte, même si elle n'est plus attendue depuis.
+ */
+export function issueReunion(
+  regle: Reunion,
+  attendus: readonly string[],
+  reponses: readonly { userId: string; accord: boolean }[],
+): "validee" | "refusee" | null {
+  if (!reponses.length) return null;
+  if (regle === "un") return reponses[0].accord ? "validee" : "refusee";
+  const accords = new Set(reponses.filter((r) => r.accord).map((r) => r.userId));
+  const refus = reponses.filter((r) => !r.accord).length;
+  if (regle === "tous") {
+    if (refus) return "refusee";
+    return attendus.length && attendus.every((id) => accords.has(id)) ? "validee" : null;
+  }
+  const n = new Set([...attendus, ...reponses.map((r) => r.userId)]).size;
+  if (accords.size * 2 > n) return "validee";
+  return refus * 2 >= n ? "refusee" : null;
+}
+
+/** Ceux dont la réponse est encore attendue. */
+export function restantARepondre<T extends { id: string }>(
+  attendus: readonly T[],
+  reponses: readonly { userId: string }[],
+): T[] {
+  return attendus.filter((a) => !reponses.some((r) => r.userId === a.id));
+}
+
 export type Etape = {
   cle: string;
   libelle: string;
@@ -395,6 +454,8 @@ export type Etape = {
   condition: Condition | null;
   /** Délai indicatif, en jours ; 0 = sans échéance. */
   delaiJours: number;
+  /** Combien de réponses closent l'étape quand elle s'adresse à plusieurs personnes. */
+  reunion: Reunion;
 };
 
 export type Definition = {
@@ -466,6 +527,7 @@ export function lireDefinition(brut: unknown): Definition {
       intervenant,
       condition: lireCondition(x.condition),
       delaiJours: Math.max(0, Math.min(365, Math.trunc(Number(x.delaiJours) || 0))),
+      reunion: lireReunion(x.reunion),
     });
   }
   const serviceId = Number(b.serviceId);

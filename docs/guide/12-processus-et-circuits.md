@@ -56,7 +56,7 @@ Une étape précède l'un de quatre gestes sur une réservation :
 
 **Règles à connaître**
 
-- Une seule réponse suffit : la première personne attendue qui répond clôt l'étape.
+- Quand une étape s'adresse à plusieurs personnes (un service, un rôle), sa **règle de réunion** dit combien doivent répondre : **Une réponse suffit** (la première clôt l'étape, réglage par défaut), **Tous doivent répondre** (chacun accorde, un seul refus refuse) ou **La majorité** (plus de la moitié des personnes désignées ; à égalité, l'étape est refusée). Tant qu'il manque des réponses, l'étape reste en attente et la carte Circuit liste celles reçues. Chacun ne répond qu'une fois ; l'étape quitte alors ses **Mes étapes**.
 - Vous êtes prévenu par la cloche quand une étape vous est demandée ; l'agent qui l'a demandée l'est quand vous répondez.
 - Une étape ne s'attend plus sur un dossier refusé ou annulé.
 - **En retard** : quand le délai indicatif d'une étape est dépassé, vous êtes relancé une fois par la cloche, le responsable du service du dossier et l'agent assigné sont prévenus, et le tableau de bord vous signale « N étapes de circuit en retard ». L'échéance reste indicative : rien n'est décidé à votre place. La relance part chaque matin (tâche **Processus : relance des étapes de circuit en retard**, chapitre 9.20).
@@ -182,7 +182,7 @@ Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écrit
 
 1. Cliquez sur **Nouveau circuit**, ou ouvrez un circuit existant. Toute modification s'écrit dans un **brouillon** ; rien ne change pour les dossiers tant qu'il n'est pas publié.
 2. Section **Aiguillage** › **Modifier** : choisissez le **service** et réglez la **règle**. Chaque critère est « Indifférent » par défaut ; ne renseignez que ceux qui comptent, et choisissez s'ils doivent tous être vrais ou si un seul suffit.
-3. Section **Étapes du circuit** › **Ajouter** : le **Libellé**, la **Nature**, **Qui répond**, le **Moment** (avant l'acceptation, le refus, une annulation ou une réquisition), un **Délai indicatif**, ce que lit l'usager, et les critères de **Quand l'étape s'applique**.
+3. Section **Étapes du circuit** › **Ajouter** : le **Libellé**, la **Nature**, **Qui répond**, les **Réponses attendues** (une suffit, tous, la majorité), le **Moment** (avant l'acceptation, le refus, une annulation ou une réquisition), un **Délai indicatif**, ce que lit l'usager, et les critères de **Quand l'étape s'applique**.
 4. Ordonnez les étapes avec les flèches ; la corbeille en retire une.
 5. Vérifiez le **logigramme**, puis cliquez sur **Publier** et saisissez une note de version.
 

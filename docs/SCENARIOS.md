@@ -99,6 +99,10 @@ instruites par le Service des sports (Karim), les **autres** par la Vie associat
 dans les deux cas l'avis est demandé à l'élu de la délégation. Pour les « autres associations »,
 la Communication relit en plus, avant le vote, toute demande d'au moins 2 500 €.
 
+Un circuit « Campagnes de créneaux » demande le visa de l'élu avant que les demandeurs d'une
+campagne soient prévenus (scénario 5). Toutes les étapes du jeu se closent à la première
+réponse ; le scénario 14 montre les règles « tous » et « majorité ».
+
 ### Comment lire un scénario
 
 - **Qui** : la personne dont vous prenez le compte à cette étape. Un changement de personne
@@ -658,10 +662,22 @@ le décrit, on le simule, on le publie, on le vérifie.
 | 13 | Administrateur | Ajoutez une étape « Visa de l'élu » sur le critère « Demande hors du délai de l'espace », publiez ; avec Sophie, saisissez une réservation en **passant outre le délai**, statut initial « Acceptée ». | Le dossier naît « À traiter » et attend le visa. |
 | 14 | Administrateur | **Paramètres › Modules** : désactivez **Processus et circuits**. | « Mes étapes » et la carte Circuit disparaissent ; une demande s'accepte sans étape. Réactivez. |
 
+**Variante — une étape à plusieurs voix** (Service des fêtes : Sophie et Nadia)
+
+| # | Qui | Action | Constat |
+| --- | --- | --- | --- |
+| a | Administrateur | Circuit **Salles · particuliers et entreprises** › crayon de l'étape « Visa du responsable sur le refus » : **Qui répond** : le service Service des fêtes ; **Réponses attendues** : **Tous doivent répondre**. **Publier**. | Le logigramme porte « accord de tous » sur l'étape. |
+| b | Sophie | Portail (Martine) ou back-office : une nouvelle demande de salle d'un particulier, puis **Décliner** avec un motif. | Refus **retenu** : le visa est demandé d'office. La carte Circuit indique « Service des fêtes : Sophie Martin, Nadia Lefèvre · accord de tous ». |
+| c | Sophie | Carte **Circuit** › **Visa accordé**. | « Visa accordé · accord de tous : 1 réponse encore attendue ». L'étape reste **En attente**, la carte liste « Réponses (1 sur 2) », les boutons de Sophie ont disparu et l'étape a quitté ses **Mes étapes**. **Décliner** est toujours retenu. |
+| d | Nadia | **Mes étapes** › **Visa accordé**. | L'étape est validée ; Sophie est prévenue par la cloche. L'historique porte les deux réponses puis « Visa accordé (accord de tous) ». |
+| e | Sophie | **Décliner** de nouveau. | **Refusée**. |
+| f | Administrateur | Passez la même étape à **La majorité**, publiez ; refaites b avec une autre demande, puis Sophie répond **Visa refusé** avec un motif. | À deux, un refus suffit : la majorité n'est plus atteignable, l'étape est refusée sans attendre Nadia. Avec trois membres, il faudrait deux accords ou deux refus. |
+
 **Règles illustrées** — un circuit se modifie en brouillon et ne s'applique qu'une fois publié ;
 la publication contrôle que chaque étape a quelqu'un pour y répondre ; une relecture ou un visa
 retient l'acceptation, un avis non ; un dossier garde la version de son circuit ; la suppléance
-est datée.
+est datée ; la règle de réunion d'une étape dit combien de réponses la closent (une, toutes, la
+majorité), chacun ne répondant qu'une fois.
 
 ---
 

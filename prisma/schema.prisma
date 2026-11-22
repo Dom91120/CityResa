@@ -1548,33 +1548,50 @@ model CircuitVersion {
 
 /// Une étape de circuit ouverte sur un dossier : qui est attendu, et ce qu'il a répondu.
 model DossierEtape {
-  id               Int            @id @default(autoincrement())
+  id               Int                   @id @default(autoincrement())
   /// reservation
-  objet            String         @db.VarChar(20)
-  objetId          Int            @map("objet_id")
-  circuitVersionId Int            @map("circuit_version_id")
-  circuitVersion   CircuitVersion @relation(fields: [circuitVersionId], references: [id], onDelete: Cascade)
+  objet            String                @db.VarChar(20)
+  objetId          Int                   @map("objet_id")
+  circuitVersionId Int                   @map("circuit_version_id")
+  circuitVersion   CircuitVersion        @relation(fields: [circuitVersionId], references: [id], onDelete: Cascade)
   /// Clé de l'étape dans la définition du circuit.
-  cle              String         @db.VarChar(40)
-  libelle          String         @db.VarChar(120)
+  cle              String                @db.VarChar(40)
+  libelle          String                @db.VarChar(120)
   /// relecture | avis | visa
-  nature           String         @db.VarChar(12)
+  nature           String                @db.VarChar(12)
   /// Intervenant attendu, figé à l'ouverture : {"libelle": …, "userIds": […]}.
   intervenant      Json
   /// ouverte | validee | refusee | annulee
-  status           String         @default("ouverte") @db.VarChar(10)
+  status           String                @default("ouverte") @db.VarChar(10)
   /// Ce que l'agent soumet (décision envisagée, précisions).
   contexte         String?
-  ouvertAt         DateTime       @default(now()) @map("ouvert_at") @db.Timestamptz
-  ouvertPar        String?        @map("ouvert_par") @db.VarChar(160)
-  echeanceAt       DateTime?      @map("echeance_at") @db.Timestamptz
+  ouvertAt         DateTime              @default(now()) @map("ouvert_at") @db.Timestamptz
+  ouvertPar        String?               @map("ouvert_par") @db.VarChar(160)
+  echeanceAt       DateTime?             @map("echeance_at") @db.Timestamptz
   /// Relance envoyée une fois l'échéance dépassée (une seule par ouverture).
-  relanceAt        DateTime?      @map("relance_at") @db.Timestamptz
-  closAt           DateTime?      @map("clos_at") @db.Timestamptz
-  closPar          String?        @map("clos_par") @db.VarChar(160)
+  relanceAt        DateTime?             @map("relance_at") @db.Timestamptz
+  closAt           DateTime?             @map("clos_at") @db.Timestamptz
+  closPar          String?               @map("clos_par") @db.VarChar(160)
   commentaire      String?
+  reponses         DossierEtapeReponse[]
 
   @@index([objet, objetId])
   @@index([status])
   @@map("dossier_etape")
+}
+
+/// La réponse d'une personne à une étape : la règle de réunion de l'étape (une réponse, toutes,
+/// la majorité) dit quand ces réponses la closent.
+model DossierEtapeReponse {
+  id          Int          @id @default(autoincrement())
+  etapeId     Int          @map("etape_id")
+  etape       DossierEtape @relation(fields: [etapeId], references: [id], onDelete: Cascade)
+  userId      String       @map("user_id")
+  userName    String       @map("user_name") @db.VarChar(160)
+  accord      Boolean
+  commentaire String?
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([etapeId, userId])
+  @@map("dossier_etape_reponse")
 }

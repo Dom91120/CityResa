@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { Champ, EnteteForm, Grille, PiedForm, SectionForm, Select } from "@/components/formulaire";
-import { INSERTION, MOMENTS, NATURES } from "@/lib/circuits";
+import { INSERTION, MOMENTS, NATURES, REUNIONS } from "@/lib/circuits";
 import { contexteAdmin } from "@/modules/admin/server";
 import { chargerCircuit, choixIntervenants, valeurIntervenant } from "@/modules/processus/server";
 import { ChampsCondition } from "@/modules/processus/vues";
@@ -84,10 +84,18 @@ export default async function EtapePage({
                   ))}
                 </select>
                 <div className="form-text">
-                  Une seule réponse suffit : la première personne du service ou de la délégation qui
-                  répond clôt l'étape.
+                  Un service ou un rôle désigne plusieurs personnes : la règle ci-contre dit combien
+                  doivent répondre.
                 </div>
               </div>
+              <Select
+                label="Réponses attendues"
+                name="reunion"
+                requis
+                options={Object.entries(REUNIONS).map(([k, r]) => [k, r.label])}
+                valeur={e?.reunion ?? "un"}
+                aide="Tous : chacun doit accorder, un refus suffit à refuser. Majorité : plus de la moitié des personnes désignées. Sans effet sur l'avis des élus d'une subvention, donné par chacun."
+              />
               <Select
                 label="Moment"
                 name="moment"

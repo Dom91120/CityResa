@@ -16,11 +16,14 @@ import {
   etatEtape,
   type Faits,
   INSERTION,
+  issueReunion,
   lireCondition,
   lireDefinition,
   lireMoment,
   lireObjet,
+  lireReunion,
   type Referentiel,
+  restantARepondre,
   STATUTS_DU_MOMENT,
   type Test,
 } from "@/lib/circuits";
@@ -56,6 +59,7 @@ const etape = (plus: Partial<Etape> = {}): Etape => ({
   intervenant: { type: "delegation", id: 1 },
   condition: null,
   delaiJours: 0,
+  reunion: "un",
   ...plus,
 });
 
@@ -284,6 +288,9 @@ describe("types de dossier", () => {
     expect(STATUTS_DU_MOMENT.avant_notification).toEqual(["instruction"]);
     expect(lireMoment("avant_acceptation", "campagne")).toBe("avant_notification");
     expect(criteresDe("campagne").map((c) => c.cle)).toEqual(["secteur"]);
+    // L'aide du secteur ne parle de campagne que sur un circuit de campagne.
+    expect(criteresDe("campagne")[0].aide).toMatch(/campagne/);
+    expect(criteresDe("reservation").find((c) => c.cle === "secteur")?.aide).toBeUndefined();
     const d = lireDefinition({
       etapes: [{ ...etape({ cle: "v", nature: "visa" }), moment: "avant_notification" }],
     });
@@ -308,6 +315,52 @@ describe("types de dossier", () => {
     const autres: CircuitPublie = { ...sportives, id: 2, parDefaut: true, definition: def() };
     expect(aiguiller([autres, sportives], { sportive: true }).retenu?.id).toBe(1);
     expect(aiguiller([autres, sportives], { sportive: false }).retenu?.id).toBe(2);
+  });
+});
+
+describe("règle de réunion", () => {
+  const oui = (userId: string) => ({ userId, accord: true });
+  const non = (userId: string) => ({ userId, accord: false });
+  const trois = ["a", "b", "c"];
+
+  it("se lit, et vaut « une réponse suffit » par défaut", () => {
+    expect(lireReunion("tous")).toBe("tous");
+    expect(lireReunion("majorite")).toBe("majorite");
+    expect(lireReunion(undefined)).toBe("un");
+    expect(lireDefinition({ etapes: [etape()] }).etapes[0].reunion).toBe("un");
+    expect(lireDefinition({ etapes: [{ ...etape(), reunion: "tous" }] }).etapes[0].reunion).toBe(
+      "tous",
+    );
+  });
+
+  it("une réponse suffit : la première décide", () => {
+    expect(issueReunion("un", trois, [])).toBeNull();
+    expect(issueReunion("un", trois, [oui("b")])).toBe("validee");
+    expect(issueReunion("un", trois, [non("b")])).toBe("refusee");
+  });
+
+  it("tous : chacun doit accorder, un refus suffit à refuser", () => {
+    expect(issueReunion("tous", trois, [oui("a"), oui("b")])).toBeNull();
+    expect(issueReunion("tous", trois, [oui("a"), oui("b"), oui("c")])).toBe("validee");
+    expect(issueReunion("tous", trois, [oui("a"), non("b")])).toBe("refusee");
+    // Une personne qui a quitté le service depuis ne remplace pas celle qui manque.
+    expect(issueReunion("tous", trois, [oui("a"), oui("b"), oui("z")])).toBeNull();
+  });
+
+  it("majorité : plus de la moitié, refus dès qu'elle n'est plus atteignable", () => {
+    expect(issueReunion("majorite", trois, [oui("a")])).toBeNull();
+    expect(issueReunion("majorite", trois, [oui("a"), oui("b")])).toBe("validee");
+    expect(issueReunion("majorite", trois, [non("a"), oui("b")])).toBeNull();
+    expect(issueReunion("majorite", trois, [non("a"), non("b")])).toBe("refusee");
+    // À deux, l'égalité n'est pas une majorité.
+    expect(issueReunion("majorite", ["a", "b"], [oui("a")])).toBeNull();
+    expect(issueReunion("majorite", ["a", "b"], [non("a")])).toBe("refusee");
+    expect(issueReunion("majorite", ["a"], [oui("a")])).toBe("validee");
+  });
+
+  it("sait qui n'a pas encore répondu", () => {
+    const gens = trois.map((id) => ({ id }));
+    expect(restantARepondre(gens, [oui("b")]).map((g) => g.id)).toEqual(["a", "c"]);
   });
 });
 

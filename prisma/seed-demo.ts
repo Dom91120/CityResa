@@ -326,7 +326,7 @@ async function remettreAZero(): Promise<void> {
   // TRUNCATE sans CASCADE : la table `user` référence `organisation`, un CASCADE la viderait
   // (administrateur compris). Toutes les tables qui se référencent entre elles sont listées.
   await prisma.$executeRawUnsafe(
-    `TRUNCATE TABLE dossier_etape, service_membre, delegation, circuit_version, circuit, service, paiement, facture, subvention_history, subvention_avis, subvention, campagne_subvention, message, reservation_history,
+    `TRUNCATE TABLE dossier_etape_reponse, dossier_etape, service_membre, delegation, circuit_version, circuit, service, paiement, facture, subvention_history, subvention_avis, subvention, campagne_subvention, message, reservation_history,
      reservation_option, reservation_materiel, mouvement_materiel, avenant, etat_des_lieux, voeu,
      campagne_espace, campagne, liste_attente, brouillon_demande, valorisation, creneau,
      document_content, document, reservation, notification, mail_log, action_log, scheduler_run,

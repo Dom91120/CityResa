@@ -5,7 +5,7 @@
 import { ModalAction } from "@/components/fiche";
 import { Zone } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
-import { MOMENTS, type Moment, NATURES, RETENU, STATUTS_DU_MOMENT } from "@/lib/circuits";
+import { MOMENTS, type Moment, NATURES, RETENU, REUNIONS, STATUTS_DU_MOMENT } from "@/lib/circuits";
 import { dateCourte, dateHeure } from "@/lib/libelles";
 import { PastilleEtat, PastilleNature } from "@/modules/processus/vues";
 import type { EtatCircuit } from "@/server/circuits";
@@ -83,7 +83,9 @@ export function CarteCircuit({
         <ul className="circuit-etapes">
           {etapes.map((e) => {
             const d = e.derniere;
-            const attendu = e.attendus.some((p) => p.id === userId);
+            const reponses = d?.reponses ?? [];
+            const attendu =
+              e.attendus.some((p) => p.id === userId) && !reponses.some((r) => r.userId === userId);
             const retard =
               e.etat === "ouverte" && d?.echeanceAt && d.echeanceAt.getTime() < maintenant;
             return (
@@ -97,6 +99,9 @@ export function CarteCircuit({
                   {e.moment === "avant_acceptation" || sansEntete ? "" : `${MOMENTS[e.moment]} · `}
                   {e.libelleIntervenant}
                   {e.attendus.length ? ` : ${e.attendus.map((p) => p.name).join(", ")}` : ""}
+                  {e.reunion !== "un" && e.attendus.length > 1
+                    ? ` · ${REUNIONS[e.reunion].court}`
+                    : ""}
                   {e.bloquante ? "" : " · ne retient rien"}
                 </div>
                 {d && e.etat !== "a_demander" ? (
@@ -108,6 +113,24 @@ export function CarteCircuit({
                         {" "}
                         · {retard ? "en retard depuis le" : "attendu le"} {dateCourte(d.echeanceAt)}
                       </span>
+                    ) : null}
+                    {e.reunion !== "un" && reponses.length ? (
+                      <div>
+                        Réponses ({reponses.length} sur{" "}
+                        {
+                          new Set([
+                            ...e.attendus.map((p) => p.id),
+                            ...reponses.map((r) => r.userId),
+                          ]).size
+                        }
+                        ) :{" "}
+                        {reponses
+                          .map(
+                            (r) =>
+                              `${r.userName} (${r.accord ? "accord" : "refus"}${r.commentaire ? ` : ${r.commentaire}` : ""})`,
+                          )
+                          .join(", ")}
+                      </div>
                     ) : null}
                     {d.closAt && e.etat !== "ouverte" ? (
                       <div>
@@ -163,7 +186,9 @@ export function CarteCircuit({
 
       {etapes.map((e) => {
         const d = e.derniere;
-        const attendu = e.attendus.some((p) => p.id === userId);
+        const attendu =
+          e.attendus.some((p) => p.id === userId) &&
+          !(d?.reponses ?? []).some((r) => r.userId === userId);
         return (
           <div key={e.cle}>
             {vivante(e) && peutDecider && (e.etat === "a_demander" || e.etat === "refusee") ? (

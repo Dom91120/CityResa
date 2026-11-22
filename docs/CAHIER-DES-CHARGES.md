@@ -983,6 +983,15 @@ refus, l'annulation et la réquisition ; l'attribution des créneaux d'une campa
 
 L'écart **E3** est ainsi traité aussi pour les campagnes de créneaux.
 
+**Lot 9, livré** — règle de réunion d'une étape :
+
+- chaque étape porte une règle : **une réponse suffit** (défaut), **tous**, ou **la majorité**
+  des personnes désignées ; les réponses sont enregistrées une à une ;
+- l'étape reste ouverte tant que la règle n'est pas satisfaite ; un refus suffit sous « tous »,
+  l'égalité vaut refus sous « majorité » ; chacun ne répond qu'une fois ;
+- la carte Circuit liste les réponses reçues ; la relance des retards ne vise que ceux qui
+  n'ont pas répondu ; sans effet sur l'avis des élus d'une subvention, donné par chacun.
+
 **Reste à faire**
 
 | Sujet | Écart |
@@ -991,7 +1000,6 @@ L'écart **E3** est ainsi traité aussi pour les campagnes de créneaux.
 | Étapes de circuit (visa, avis) sur la retenue sur caution ; simulation d'une campagne | E3 |
 | Subventions : filtre par service de la liste, contact du service instructeur dans les courriels et le PDF du dossier ; étapes avant le versement | E5, E7 |
 | Autres **moments** d'insertion : avant l'émission d'une facture, une retenue sur caution, une fermeture exceptionnelle | E3 |
-| Règle de réunion **tous / majorité** (aujourd'hui : une seule réponse suffit) | — |
 | **Échéance** : passage d'office à l'étape suivante ou transmission au suppléant (aujourd'hui : une relance, l'alerte au responsable, et l'échéance en rouge) ; relance des avis sur les subventions | — |
 | **Effets** paramétrables d'une étape (modèle de courriel, mise en copie, document) ; courriel en plus de la cloche | E2 |
 | Filtre « service » des listes de subventions et du planning ; service sur les factures | E7 |

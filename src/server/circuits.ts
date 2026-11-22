@@ -21,16 +21,19 @@ import {
   etatEtape,
   type Faits,
   type Intervenant,
+  issueReunion,
   type Libelles,
   libelleIntervenant,
   lireDefinition,
   type Moment,
   NATURES,
   type Objet,
+  REUNIONS,
   type Referentiel,
+  restantARepondre,
   STATUTS_DU_MOMENT,
 } from "@/lib/circuits";
-import { dateCourte, plage } from "@/lib/libelles";
+import { dateCourte, plage, pluriel } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
 import { suppleanceEnCours } from "@/lib/services";
 import { auditRecord } from "@/server/audit";
@@ -368,6 +371,14 @@ export type EtapeDossier = Etape & {
     closAt: Date | null;
     closPar: string | null;
     commentaire: string | null;
+    /** Les réponses reçues, dans l'ordre. */
+    reponses: {
+      userId: string;
+      userName: string;
+      accord: boolean;
+      commentaire: string | null;
+      createdAt: Date;
+    }[];
   } | null;
 };
 
@@ -464,6 +475,7 @@ export async function etatCircuit(d: Dossier): Promise<EtatCircuit | null> {
       : null,
     prisma.dossierEtape.findMany({
       where: { objet: p.objet, objetId: p.id },
+      include: { reponses: { orderBy: { id: "asc" } } },
       orderBy: { id: "desc" },
     }),
     referentiel(),
@@ -693,23 +705,43 @@ export async function repondreEtape(
   const texte = commentaire?.trim() || null;
   if (!accord && !texte)
     throw new UserFacingError("Indiquez le motif : il est lu par le service qui instruit.");
-  await prisma.dossierEtape.update({
-    where: { id: etapeId },
-    data: {
-      status: accord ? "validee" : "refusee",
-      closAt: new Date(),
-      closPar: user.name,
-      commentaire: texte,
-    },
+  if (ouverture.reponses.some((r) => r.userId === user.id))
+    throw new UserFacingError("Vous avez déjà répondu à cette étape.");
+  await prisma.dossierEtapeReponse.create({
+    data: { etapeId, userId: user.id, userName: user.name, accord, commentaire: texte },
   });
-  const issue = NATURES[e.nature].issues[accord ? 0 : 1];
-  await p.historiser(issue, `${e.libelle}${texte ? ` · ${texte}` : ""}`, user.name);
+  // La règle de réunion de l'étape dit si cette réponse la clôt.
+  const reponses = [...ouverture.reponses, { userId: user.id, accord }];
+  const conclusion = issueReunion(
+    e.reunion,
+    e.attendus.map((a) => a.id),
+    reponses,
+  );
+  const maReponse = NATURES[e.nature].issues[accord ? 0 : 1];
+  const module = p.objet === "subvention" ? "subventions" : "reservations";
+  await p.historiser(maReponse, `${e.libelle}${texte ? ` · ${texte}` : ""}`, user.name);
   await auditRecord(
-    `etape ${accord ? "validee" : "refusee"}`,
+    `etape · reponse ${accord ? "accord" : "refus"}`,
     `${p.numero} · ${e.libelle}`,
-    p.objet === "subvention" ? "subventions" : "reservations",
+    module,
     user.email,
   );
+  if (!conclusion) {
+    const reste = restantARepondre(e.attendus, reponses).length;
+    return `${maReponse} · ${REUNIONS[e.reunion].court} : ${pluriel(reste, "réponse encore attendue", "réponses encore attendues")}`;
+  }
+  await prisma.dossierEtape.update({
+    where: { id: etapeId },
+    data: { status: conclusion, closAt: new Date(), closPar: user.name, commentaire: texte },
+  });
+  const issue = NATURES[e.nature].issues[conclusion === "validee" ? 0 : 1];
+  if (e.reunion !== "un")
+    await p.historiser(
+      `${issue} (${REUNIONS[e.reunion].court})`,
+      `${e.libelle} · ${reponses.filter((r) => r.accord).length} pour, ${reponses.filter((r) => !r.accord).length} contre`,
+      user.name,
+    );
+  await auditRecord(`etape ${conclusion}`, `${p.numero} · ${e.libelle}`, module, user.email);
   // Le demandeur de l'étape et ceux qui suivent le dossier sont prévenus de la réponse.
   const aPrevenir = new Set<string>(p.suiveurs);
   if (ouverture.ouvertPar) {
@@ -758,7 +790,7 @@ export async function relancerEtapesEnRetard(now = new Date()): Promise<number> 
   if (!(await processusActif())) return 0;
   const enRetard = await prisma.dossierEtape.findMany({
     where: { status: "ouverte", echeanceAt: { lt: now }, relanceAt: null },
-    include: { circuitVersion: true },
+    include: { circuitVersion: true, reponses: { select: { userId: true } } },
     orderBy: { echeanceAt: "asc" },
   });
   let relancees = 0;
@@ -767,7 +799,7 @@ export async function relancerEtapesEnRetard(now = new Date()): Promise<number> 
     if (!p) continue;
     const def = lireDefinition(o.circuitVersion.definition).etapes.find((e) => e.cle === o.cle);
     if (!def || !STATUTS_DU_MOMENT[def.moment].includes(p.status)) continue;
-    const attendus = await personnesDe(def.intervenant, p.serviceId);
+    const attendus = restantARepondre(await personnesDe(def.intervenant, p.serviceId), o.reponses);
     const lien = `${p.lien}#circuit`;
     const depuis = o.echeanceAt ? dateCourte(o.echeanceAt) : "";
     await Promise.all(
@@ -844,11 +876,13 @@ export type EtapeEnAttente = {
 export async function etapesEnAttente(
   user: CurrentUser,
   toutes = false,
+  /** Garde les étapes auxquelles l'utilisateur a déjà répondu (accès à la fiche). */
+  avecRepondues = false,
 ): Promise<EtapeEnAttente[]> {
   if (!user.isAgent || !(await processusActif())) return [];
   const ouvertes = await prisma.dossierEtape.findMany({
     where: { status: "ouverte" },
-    include: { circuitVersion: true },
+    include: { circuitVersion: true, reponses: { select: { userId: true } } },
     orderBy: { ouvertAt: "asc" },
   });
   if (!ouvertes.length) return [];
@@ -868,8 +902,9 @@ export async function etapesEnAttente(
     const def = lireDefinition(o.circuitVersion.definition).etapes.find((e) => e.cle === o.cle);
     // Une étape ne s'attend plus une fois passé le moment qu'elle précède.
     if (!def || !STATUTS_DU_MOMENT[def.moment].includes(p.status)) continue;
-    const pourMoi = (await personnesDe(def.intervenant, p.serviceId)).some((a) => a.id === user.id);
-    if (!pourMoi && !toutes) continue;
+    const attendu = (await personnesDe(def.intervenant, p.serviceId)).some((a) => a.id === user.id);
+    const pourMoi = attendu && !o.reponses.some((r) => r.userId === user.id);
+    if (!pourMoi && !toutes && !(attendu && avecRepondues)) continue;
     out.push({
       id: o.id,
       libelle: o.libelle,
@@ -901,7 +936,7 @@ export async function attenduSur(
   id: number,
   objet: Objet = "reservation",
 ): Promise<boolean> {
-  return (await etapesEnAttente(user)).some(
+  return (await etapesEnAttente(user, false, true)).some(
     (e) => e.dossier.objet === objet && e.dossier.id === id,
   );
 }

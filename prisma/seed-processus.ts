@@ -35,6 +35,7 @@ const visaGratuite = (delegationId: number): Etape => ({
   intervenant: { type: "delegation", id: delegationId },
   condition: { mode: "tous", tests: [{ champ: "gratuite_accordee", op: "est", valeur: true }] },
   delaiJours: 10,
+  reunion: "un",
 });
 
 const regle = (...tests: Condition["tests"]): Condition => ({ mode: "tous", tests });
@@ -136,6 +137,7 @@ async function creerCircuitsSubventionDemo(): Promise<number> {
     intervenant: { type: "delegation", id: delegation.id },
     condition: null,
     delaiJours: 15,
+    reunion: "un",
   };
   const circuit = (
     position: number,
@@ -199,6 +201,7 @@ async function creerCircuitsSubventionDemo(): Promise<number> {
                 tests: [{ champ: "montant_demande", op: "min", valeur: 2500 }],
               },
               delaiJours: 5,
+              reunion: "un",
             },
           ]
         : [avisElu],
@@ -242,6 +245,7 @@ async function creerCircuitCampagneDemo(): Promise<number> {
         intervenant: { type: "delegation", id: delegation.id },
         condition: null,
         delaiJours: 7,
+        reunion: "un",
       },
     ],
   };
@@ -493,6 +497,7 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
     intervenant: { type: "delegation", id: delegation.id },
     condition: null,
     delaiJours: 3,
+    reunion: "un",
   };
   // Refuser une location passe par le responsable du service.
   const visaRefus: Etape = {
@@ -504,6 +509,7 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
     intervenant: { type: "responsable_dossier" },
     condition: null,
     delaiJours: 2,
+    reunion: "un",
   };
   await circuit(
     10,
