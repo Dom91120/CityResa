@@ -74,7 +74,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           }
           case "etape": {
             const b = await brouillonDe(id, admin.name);
-            const e = etapeDuFormulaire(form, b.definition.etapes);
+            const e = etapeDuFormulaire(form, b.definition.etapes, c.objet);
             const existe = b.definition.etapes.some((x) => x.cle === e.cle);
             await enregistrerBrouillon(id, admin.name, (d) => ({
               ...d,
@@ -160,9 +160,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             return ok(`Version ${v.numero} reprise en brouillon.`);
           }
           case "supprimer": {
-            const nb = await prisma.reservation.count({
-              where: { circuitVersion: { circuitId: id } },
-            });
+            const nb =
+              (await prisma.reservation.count({ where: { circuitVersion: { circuitId: id } } })) +
+              (await prisma.subvention.count({ where: { circuitVersion: { circuitId: id } } }));
             if (nb)
               throw new UserFacingError(
                 "Des dossiers ont suivi ce circuit : désactivez-le plutôt que de le supprimer.",

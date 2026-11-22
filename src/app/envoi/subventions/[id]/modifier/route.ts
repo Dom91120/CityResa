@@ -1,6 +1,6 @@
 import { modifier } from "@/modules/subventions/routes";
 import { require as exigerModule } from "@/server/features";
-import { requireEdit } from "@/server/guards";
+import { requireView } from "@/server/guards";
 import { idDe, pasTrouve, traiterFormulaire } from "@/server/http";
 
 /** POST /subventions/[id]/modifier */
@@ -10,7 +10,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!id) return pasTrouve();
   return traiterFormulaire(
     req,
-    async (form) => modifier(await requireEdit("subventions"), id, form),
+    async (form) => modifier(await requireView("subventions"), id, form),
     `/subventions/${id}/modifier`,
   );
 }

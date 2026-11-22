@@ -13,7 +13,9 @@ import {
   lireTransition,
   modifierSubvention,
   peutDecider,
+  peutInstruire,
   REFUS_ELU,
+  refusInstruction,
   supprimerSubvention,
 } from "@/modules/subventions/server";
 import {
@@ -39,6 +41,13 @@ import {
   signerDossier,
 } from "@/server/subventions-dossier";
 
+/** Vérifie que l'utilisateur peut instruire ce dossier (rôle, puis service instructeur). */
+async function exigerInstruction(user: CurrentUser, id: number): Promise<void> {
+  const s = await prisma.subvention.findUnique({ where: { id }, select: { serviceId: true } });
+  if (!s) throw new UserFacingError("Demande introuvable.");
+  if (!peutInstruire(user, s)) throw new UserFacingError(refusInstruction(user, s));
+}
+
 function erreur(e: unknown, retour: string): Promise<Response> {
   if (e instanceof UserFacingError) return redirigerAvecMessage(retour, e.message, "danger");
   throw e;
@@ -47,7 +56,7 @@ function erreur(e: unknown, retour: string): Promise<Response> {
 /** POST /subventions/[id]/modifier */
 export async function modifier(user: CurrentUser, id: number, form: FormData): Promise<Response> {
   try {
-    if (!peutDecider(user)) throw new UserFacingError(REFUS_ELU);
+    await exigerInstruction(user, id);
     await modifierSubvention(id, lireSubvention(form), user);
     return redirigerAvecMessage(`/subventions/${id}`, "Demande modifiée.", "success");
   } catch (e) {
@@ -70,7 +79,7 @@ export async function avis(user: CurrentUser, id: number, form: FormData): Promi
 export async function statut(user: CurrentUser, id: number, form: FormData): Promise<Response> {
   const retour = suite(form, `/subventions/${id}`);
   try {
-    if (!peutDecider(user)) throw new UserFacingError(REFUS_ELU);
+    await exigerInstruction(user, id);
     const { statut: nouveau, opts } = lireTransition(form);
     const s = await changerStatutSubvention(id, nouveau, user, opts);
     const messages: Record<string, string> = {
@@ -137,6 +146,8 @@ export async function fiche(
 ): Promise<Response> {
   const retour = `${base}/${id}/dossier/${ficheRaw}`;
   try {
+    // Côté back-office, remplir une fiche au nom de l'association revient à instruire le dossier.
+    if (user.isAgent) await exigerInstruction(user, id);
     const cle = lireCleFiche(ficheRaw);
     await enregistrerFiche(id, cle, form, user);
     const suiteFiche = champ(form, "suite");
@@ -158,7 +169,7 @@ export async function deposerAgent(
   form: FormData,
 ): Promise<Response> {
   try {
-    if (!peutDecider(user)) throw new UserFacingError(REFUS_ELU);
+    await exigerInstruction(user, id);
     const s = await deposerDossier(id, user, {
       parAgent: true,
       derogation: champOuNull(form, "derogation"),
@@ -176,7 +187,7 @@ export async function deposerAgent(
 /** POST /subventions/[id]/incomplet : renvoi à l'association. */
 export async function incomplet(user: CurrentUser, id: number, form: FormData): Promise<Response> {
   try {
-    if (!peutDecider(user)) throw new UserFacingError(REFUS_ELU);
+    await exigerInstruction(user, id);
     const s = await renvoyerIncomplet(id, champ(form, "motif"), user);
     return redirigerAvecMessage(
       `/subventions/${id}`,
@@ -191,6 +202,7 @@ export async function incomplet(user: CurrentUser, id: number, form: FormData): 
 /** POST /subventions/[id]/secteur : cadre réservé. */
 export async function secteur(user: CurrentUser, id: number, form: FormData): Promise<Response> {
   try {
+    await exigerInstruction(user, id);
     await changerSecteur(id, form, user);
     return redirigerAvecMessage(`/subventions/${id}`, "Secteur enregistré.", "success");
   } catch (e) {

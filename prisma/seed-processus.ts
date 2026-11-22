@@ -19,6 +19,7 @@ import {
 } from "@/lib/circuits";
 import { seedCircuitStandard } from "@/server/amorcage";
 import { circuitsEnService, faitsReservation } from "@/server/circuits";
+import { faitsSubvention } from "@/server/circuits-subvention";
 import { prisma } from "@/server/db";
 
 const AUTEUR = "Jeu de démonstration";
@@ -111,10 +112,100 @@ async function creerEtapeDemo(): Promise<number> {
   return 1;
 }
 
+/**
+ * Les circuits des subventions : les associations sportives sont instruites par le Service des
+ * sports, les autres par la Vie associative ; l'avis est demandé à l'élu de la délégation.
+ * Les dossiers déjà déposés rejoignent leur circuit, sans trace dans leur historique.
+ */
+async function creerCircuitsSubventionDemo(): Promise<number> {
+  if ((await prisma.circuit.count({ where: { objet: "subvention" } })) > 0) return 0;
+  const [sports, vieAsso, delegation] = await Promise.all([
+    prisma.service.findUnique({ where: { name: "Service des sports" } }),
+    prisma.service.findUnique({ where: { name: "Vie associative" } }),
+    prisma.delegation.findFirst({ orderBy: { id: "asc" } }),
+  ]);
+  if (!sports || !vieAsso || !delegation) return 0;
+  const avisElu: Etape = {
+    cle: "avis-elu",
+    libelle: "Avis de l'élu délégué",
+    libelleUsager: "",
+    nature: "avis",
+    moment: "avis_elus",
+    intervenant: { type: "delegation", id: delegation.id },
+    condition: null,
+    delaiJours: 15,
+  };
+  const circuit = (
+    position: number,
+    name: string,
+    description: string,
+    parDefaut: boolean,
+    def: Definition,
+  ) =>
+    prisma.circuit.create({
+      data: {
+        objet: "subvention",
+        name,
+        description,
+        position,
+        parDefaut,
+        versions: {
+          create: {
+            numero: 1,
+            status: "publiee",
+            definition: def as unknown as Prisma.InputJsonValue,
+            createdBy: AUTEUR,
+            publiePar: AUTEUR,
+            publieAt: new Date(),
+            note: "Version initiale",
+          },
+        },
+      },
+    });
+  await circuit(
+    10,
+    "Subventions · associations sportives",
+    "Les demandes des associations sportives, instruites par le Service des sports",
+    false,
+    {
+      condition: regle({ champ: "sportive", op: "est", valeur: true }),
+      serviceId: sports.id,
+      etapes: [avisElu],
+    },
+  );
+  await circuit(
+    0,
+    "Subventions · autres associations",
+    "Toute autre demande de subvention, instruite par la Vie associative",
+    true,
+    { condition: null, serviceId: vieAsso.id, etapes: [avisElu] },
+  );
+  const circuits = await circuitsEnService("subvention");
+  const dossiers = await prisma.subvention.findMany({
+    where: { status: { not: "brouillon" } },
+    include: { organisation: { select: { sportive: true, conventionnee: true } } },
+    orderBy: { id: "asc" },
+  });
+  for (const s of dossiers) {
+    const retenu = aiguiller(circuits, faitsSubvention(s)).retenu;
+    if (retenu)
+      await prisma.subvention.update({
+        where: { id: s.id },
+        data: { circuitVersionId: retenu.versionId, serviceId: retenu.definition.serviceId },
+      });
+  }
+  return 2;
+}
+
 export async function creerProcessusDemo(): Promise<Record<string, number>> {
   await seedCircuitStandard();
   if ((await prisma.service.count()) > 0)
-    return { services: 0, circuits: 0, dossiers: 0, etapes: await creerEtapeDemo() };
+    return {
+      services: 0,
+      circuits: await creerCircuitsSubventionDemo(),
+      dossiers: 0,
+      etapes: await creerEtapeDemo(),
+    };
   const compte = async (email: string) =>
     (await prisma.user.findUnique({ where: { email }, select: { id: true } }))?.id ?? null;
   const [sophie, karim, pierre] = await Promise.all([
@@ -244,7 +335,12 @@ export async function creerProcessusDemo(): Promise<Record<string, number>> {
         data: { circuitVersionId: retenu.versionId, serviceId: retenu.definition.serviceId },
       });
   }
-  return { services: 4, circuits: 3, dossiers: dossiers.length, etapes: await creerEtapeDemo() };
+  return {
+    services: 4,
+    circuits: 3 + (await creerCircuitsSubventionDemo()),
+    dossiers: dossiers.length,
+    etapes: await creerEtapeDemo(),
+  };
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {

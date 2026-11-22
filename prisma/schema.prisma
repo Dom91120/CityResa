@@ -1289,6 +1289,14 @@ model Subvention {
   signatureExpiresAt DateTime?           @map("signature_expires_at") @db.Timestamptz
   signatureAttempts  Int                 @default(0) @map("signature_attempts")
 
+  // ── Processus et circuits ──
+  /// Service instructeur, désigné par le circuit au dépôt du dossier.
+  serviceId        Int?            @map("service_id")
+  service          Service?        @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  /// Version du circuit suivie par le dossier (élus consultés).
+  circuitVersionId Int?            @map("circuit_version_id")
+  circuitVersion   CircuitVersion? @relation(fields: [circuitVersionId], references: [id], onDelete: SetNull)
+
   avis      SubventionAvis[]
   documents Document[]
   histories SubventionHistory[]
@@ -1445,6 +1453,7 @@ model Service {
 
   membres      ServiceMembre[]
   reservations Reservation[]
+  subventions  Subvention[]
 
   @@map("service")
 }
@@ -1480,7 +1489,7 @@ model Delegation {
 /// d'aiguillage, service, étapes) vit dans ses versions.
 model Circuit {
   id          Int      @id @default(autoincrement())
-  /// reservation (les autres types de dossier viendront ensuite).
+  /// reservation | subvention
   objet       String   @default("reservation") @db.VarChar(20)
   name        String   @db.VarChar(120)
   description String?  @db.VarChar(400)
@@ -1516,6 +1525,7 @@ model CircuitVersion {
   updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   reservations Reservation[]
+  subventions  Subvention[]
   etapes       DossierEtape[]
 
   @@unique([circuitId, numero])

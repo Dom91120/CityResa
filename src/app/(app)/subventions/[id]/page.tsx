@@ -36,11 +36,12 @@ import {
   avisOuvert,
   chargerSubvention,
   compterAvis,
-  peutDecider,
+  peutInstruire,
   TRANSITION_LIBELLES,
   TRANSITIONS_SUBVENTION,
 } from "@/modules/subventions/server";
 import { ChipAvis, TypeSubvention } from "@/modules/subventions/vues";
+import { consultation } from "@/server/circuits-subvention";
 import { prisma } from "@/server/db";
 import { docCategories, forParent } from "@/server/documents";
 import { idDeRoute } from "@/server/guards";
@@ -114,7 +115,13 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
   ]);
   const { user } = page;
   const peutEditer = user.canEdit("subventions");
-  const decide = peutDecider(user);
+  const decide = peutInstruire(user, s);
+  const circuit = page.features.processus ? await consultation(s) : null;
+  // Donner un avis : les personnes que le circuit consulte ; à défaut, l'écriture sur les subventions.
+  const peutAvis = circuit?.restreinte
+    ? user.isAdmin || circuit.consultes.some((p) => p.id === user.id)
+    : peutEditer;
+  const donnes = new Set(s.avis.map((a) => a.authorId));
   const ici = `/subventions/${id}`;
   const org = s.organisation;
   const d = dossierDe(s);
@@ -275,7 +282,7 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
               <Lu label="Versée le" valeur={s.verseAt ? dateCourte(s.verseAt) : null} />
               <Lu label="Note de décision" valeur={s.decisionNote} pleine pre />
             </Lus>
-            {peutEditer ? (
+            {decide ? (
               <form
                 method="POST"
                 action={`${ici}/secteur`}
@@ -500,7 +507,12 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
                 <a href={`${ici}/dossier/attestation`} className="btn btn-outline-primary">
                   <Icone nom="send" taille={14} /> Vérifier et déposer
                 </a>
-              ) : !peutEditer ? (
+              ) : !decide && s.serviceId && user.role !== "elu" ? (
+                <p className="text-faint small mb-0">
+                  <Icone nom="lock" taille={13} /> Ce dossier est instruit par{" "}
+                  {s.service?.name ?? "un autre service"} : vous le consultez.
+                </p>
+              ) : !peutAvis ? (
                 <p className="text-faint small mb-0">Vous consultez ce dossier en lecture seule.</p>
               ) : !decide && !redaction ? (
                 <p className="text-faint small mb-0">
@@ -510,6 +522,63 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
             </Section>
           </div>
 
+          {circuit ? (
+            <div className="data-card circuit" id="circuit">
+              <h5>
+                <Icone nom="workflow" taille={16} /> Circuit
+                <small>
+                  {circuit.circuit
+                    ? `${circuit.circuit.name} · v${circuit.circuit.numero}`
+                    : "Aucun circuit"}
+                </small>
+              </h5>
+              {circuit.service ? (
+                <p className="circuit-service">
+                  Dossier instruit par <strong>{circuit.service.name}</strong>
+                  {circuit.service.email || circuit.service.phone
+                    ? ` (${[circuit.service.email, circuit.service.phone].filter(Boolean).join(" · ")})`
+                    : ""}
+                </p>
+              ) : null}
+              {circuit.etapes.length ? (
+                <ul className="circuit-etapes">
+                  {circuit.etapes.map((e) => {
+                    const recu = e.attendus.some((p) => donnes.has(p.id));
+                    return (
+                      <li key={e.cle}>
+                        <div className="circuit-etape-titre">
+                          <strong>{e.libelle}</strong>
+                          <Chip
+                            teinte={recu ? "emerald" : s.status === "avis" ? "amber" : "slate"}
+                            dot
+                          >
+                            {recu
+                              ? "Avis donné"
+                              : s.status === "avis"
+                                ? "Avis attendu"
+                                : avisOuvert(s)
+                                  ? "À la soumission aux élus"
+                                  : "Sans avis"}
+                          </Chip>
+                        </div>
+                        <div className="circuit-etape-qui">
+                          {e.libelleIntervenant}
+                          {e.attendus.length
+                            ? ` : ${e.attendus.map((p) => p.name).join(", ")}`
+                            : " : personne n'est désigné"}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <p className="text-muted small mb-0">
+                  Ce circuit ne nomme aucun élu : tout compte qui a l'écriture sur les subventions
+                  peut donner un avis.
+                </p>
+              )}
+            </div>
+          ) : null}
           <div className="data-card" id="avis">
             <Section
               titre="Avis"
@@ -570,7 +639,7 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
                     : "Aucun avis n'a été donné sur ce dossier."}
                 </p>
               )}
-              {peutEditer && avisOuvert(s) ? (
+              {peutAvis && avisOuvert(s) ? (
                 <form method="POST" action={`${ici}/avis`} className="mt-2" data-double-envoi>
                   <input type="hidden" name="csrf_token" value={page.csrf} />
                   <input type="hidden" name="next" value={`${ici}#avis`} />

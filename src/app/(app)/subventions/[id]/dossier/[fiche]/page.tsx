@@ -3,7 +3,7 @@ import { Entete } from "@/components/fiche";
 import { StatutSubvention } from "@/components/macros";
 import { estFiche } from "@/lib/dossier-subvention";
 import { CorpsFiche } from "@/modules/subventions/dossier-page";
-import { chargerSubvention, peutDecider } from "@/modules/subventions/server";
+import { chargerSubvention, peutInstruire } from "@/modules/subventions/server";
 import { idDeRoute } from "@/server/guards";
 import { contexteModule } from "@/server/module";
 
@@ -38,7 +38,7 @@ export default async function FicheDossierPage({
         cle={p.fiche}
         base="/subventions"
         portail={false}
-        peutEditer={peutDecider(page.user)}
+        peutEditer={peutInstruire(page.user, s)}
       />
     </>
   );

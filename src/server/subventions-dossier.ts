@@ -368,6 +368,9 @@ export async function deposerDossier(
       : null,
     acteur.name,
   );
+  // Processus : le dossier est confié à un circuit et à son service instructeur.
+  const { aiguillerSubvention } = await import("@/server/circuits-subvention");
+  await aiguillerSubvention(id, acteur.name).catch((e) => console.error("[circuit subvention]", e));
   const maj = (await chargerSubvention(id)) as SubventionComplete;
   await genererDossierPdf(maj, acteur.name).catch((e) => console.error("[dossier subvention]", e));
   invalidateNavCounts();
@@ -408,6 +411,7 @@ export async function deposerDossier(
       `Nouveau dossier de subvention ${numero}`,
       `${org.name} · ${maj.objet} · ${montant(maj.montantDemande)}`,
       `/subventions/${maj.id}`,
+      maj.serviceId,
     );
   return maj;
 }
@@ -462,6 +466,9 @@ export async function changerSecteur(id: number, form: FormData, acteur: Acteur)
   const secteurId = idOuNull(form, "secteur_id");
   await prisma.subvention.update({ where: { id }, data: { secteurId } });
   await auditRecord("secteur subvention", s.numero, "subventions", acteur.email);
+  // Le secteur d'instruction peut être un critère d'aiguillage : le circuit est revu.
+  const { aiguillerSubvention } = await import("@/server/circuits-subvention");
+  await aiguillerSubvention(id, acteur.name).catch((e) => console.error("[circuit subvention]", e));
 }
 
 // ── PDF ──

@@ -92,10 +92,23 @@ export async function navCounts(user: CurrentUser): Promise<Record<string, numbe
   if (user.canView("messages")) counts.messages = c.messages;
   if (user.canView("usagers")) counts.usagers_a_valider = c.usagers_a_valider;
   if (user.canView("paiements")) counts.factures_a_payer = c.factures_a_payer;
-  if (user.canView("subventions")) counts.subventions_a_traiter = c.subventions_a_traiter;
+  if (user.canView("subventions"))
+    counts.subventions_a_traiter = user.fileDeTravail
+      ? await prisma.subvention
+          .count({
+            where: {
+              status: { in: ["deposee", "instruction", "avis"] },
+              ...clauseServices(user.fileDeTravail),
+            },
+          })
+          .catch(() => c.subventions_a_traiter)
+      : c.subventions_a_traiter;
   if (enabledIn(user.settings, "processus")) {
     const { etapesEnAttente } = await import("@/server/circuits");
-    counts.etapes = (await etapesEnAttente(user).catch(() => [])).length;
+    const { avisAttendus } = await import("@/server/circuits-subvention");
+    counts.etapes =
+      (await etapesEnAttente(user).catch(() => [])).length +
+      (await avisAttendus(user).catch(() => [])).length;
   }
   if (user.canView("personnel")) {
     const { nbPropositions } = await import("@/server/affectation");

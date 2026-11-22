@@ -2,7 +2,7 @@
 
 Ce chapitre présente le module **Processus et circuits** : les services de la collectivité, la règle qui confie chaque demande de réservation à l'un d'eux, et les étapes de relecture, d'avis ou de visa que la Ville ajoute avant une acceptation. La Ville décrit elle-même cette organisation et la modifie quand elle change, sans intervention technique. Le module s'active dans Administration › Paramètres › Modules (chapitre 9).
 
-Le cycle d'un dossier (à traiter, acceptée, signée, confirmée, terminée) ne change pas : le module y **insère** des étapes, il ne le remplace pas. Il porte aujourd'hui sur les demandes de réservation.
+Le cycle d'un dossier ne change pas : le module y **insère** des étapes, il ne le remplace pas. Il porte sur les demandes de **réservation** (sections 12.2 à 12.4) et sur les demandes de **subvention** (section 12.7).
 
 ## 12.1 Les notions
 
@@ -189,7 +189,45 @@ Les trois natures d'étape :
 - Un circuit qu'un dossier a suivi ne se supprime pas : désactivez-le.
 - À l'installation, un seul circuit existe, le **Circuit standard**, sans service ni étape : les demandes se traitent comme avant le module.
 
-## 12.7 La simulation
+## 12.7 Les circuits des subventions
+
+**À quoi ça sert** — Dire quel service instruit une demande de subvention et à quels élus son avis est demandé. Le cycle du dossier (déposé, instruction, avis des élus, voté, versé) reste celui du chapitre 7.
+
+**Qui** — Administrateurs pour décrire les circuits ; le service instructeur et les élus consultés pour s'en servir.
+
+![Dossier de subvention instruit par le Service des sports](captures/subvention-circuit.webp)
+
+*Figure — la demande d'une association sportive vue par Karim Benali, du Service des sports : il l'instruit, et l'avis sera demandé à l'élu de la délégation.*
+
+**Ce que décrit un circuit de subvention**
+
+- son **aiguillage**, sur des critères propres aux subventions : association sportive, association conventionnée, type de subvention, première demande ou renouvellement, secteur d'instruction, montant demandé ;
+- le **service instructeur** ;
+- les **avis demandés aux élus** : une ou plusieurs étapes d'avis, chacune adressée à une délégation (ou à un service, à un rôle), sous condition ou toujours.
+
+**Ce qui change sur un dossier**
+
+- **Au dépôt**, le dossier rejoint son circuit et son service instructeur, qui est prévenu. Si l'agent renseigne ensuite le **secteur d'instruction**, le dossier est aiguillé de nouveau tant qu'il n'est pas soumis aux élus.
+- **Instruire** le dossier (le prendre en instruction, le renvoyer comme incomplet, le compléter, le soumettre aux élus, voter, refuser, marquer versée) revient aux personnes du service instructeur et aux administrateurs. Un membre du service instruit même si son rôle n'a que la **lecture** sur les subventions : c'est le circuit qui le désigne. Les autres agents lisent « Ce dossier est instruit par … ».
+- **À la soumission aux élus**, les élus que le circuit consulte sont prévenus par la cloche et retrouvent le dossier dans **Mes étapes**, jusqu'à ce qu'ils aient donné leur avis.
+- **Donner un avis** est alors réservé aux personnes consultées (et aux administrateurs). La carte **Circuit** du dossier indique pour chaque avis demandé s'il est attendu ou donné.
+
+**Comment faire**
+
+1. **Processus et circuits** › **Nouveau circuit**, type de dossier **Subventions**.
+2. Réglez l'aiguillage et le service instructeur, puis ajoutez un ou plusieurs **Avis demandés aux élus**.
+3. Simulez sur un dossier (numéro en S…), puis publiez.
+
+**Règles à connaître**
+
+- Sans circuit de subvention publié, rien ne change : l'instruction demande l'écriture sur les subventions et tout compte qui l'a peut donner un avis.
+- Un circuit sans avis nommé confie l'instruction à un service, mais laisse l'avis ouvert comme avant.
+- Un dossier garde le circuit de son dépôt ; il n'en change plus une fois soumis aux élus.
+- Les avis ne retiennent pas le vote : le service instructeur vote quand il l'estime utile, la carte Circuit lui montre les avis encore attendus.
+- Un élu donne un avis, il n'instruit jamais, même membre d'un service.
+- Le compteur **Subventions** du menu suit la file de travail de l'agent : les dossiers de ses services et ceux sans service.
+
+## 12.8 La simulation
 
 **À quoi ça sert** — Vérifier, avant de publier, ce qui arriverait à un dossier.
 
@@ -201,7 +239,7 @@ Les trois natures d'étape :
 
 **Comment faire**
 
-1. Cliquez sur **Simuler** et saisissez le numéro d'un dossier existant.
+1. Cliquez sur **Simuler** et saisissez le numéro d'un dossier existant : une réservation (R…) ou une demande de subvention (S…).
 2. Cochez **Avec les brouillons** pour tester ce que vous n'avez pas encore publié, et **Comme si la gratuité était accordée** pour éprouver une étape qui en dépend.
 3. Lisez le résultat : le circuit retenu et le service, chaque circuit examiné avec la raison de son sort, les étapes qui s'ouvriraient et les personnes sollicitées, et à droite tout ce que les règles lisent du dossier.
 

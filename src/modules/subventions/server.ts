@@ -44,6 +44,7 @@ export const INCLUDE_SUBVENTION = {
   },
   campagne: true,
   secteur: true,
+  service: { select: { id: true, name: true } },
   dossierDocument: { select: { id: true, filename: true, createdAt: true } },
   histories: { orderBy: { performedAt: "desc" as const } },
 } satisfies Prisma.SubventionInclude;
@@ -107,6 +108,37 @@ export function estModifiable(s: { status: string }): boolean {
  */
 export function peutDecider(user: Pick<CurrentUser, "canEdit" | "role">): boolean {
   return user.canEdit("subventions") && user.role !== "elu";
+}
+
+/**
+ * Instruire CE dossier (le prendre, le renvoyer, le soumettre, voter, verser, le modifier).
+ * Sans service instructeur : l'écriture sur les subventions, comme avant. Avec un service
+ * (module Processus) : les personnes qui agissent pour lui, même si leur rôle n'a que la
+ * lecture sur les subventions, et les administrateurs.
+ */
+export function peutInstruire(
+  user: Pick<CurrentUser, "canEdit" | "canView" | "role" | "agitPour" | "services">,
+  s: { serviceId: number | null },
+): boolean {
+  if (user.role === "elu" || !user.agitPour(s.serviceId)) return false;
+  if (user.canEdit("subventions")) return true;
+  return (
+    Boolean(s.serviceId) &&
+    user.canView("subventions") &&
+    user.services.includes(s.serviceId as number)
+  );
+}
+
+export const REFUS_SERVICE =
+  "Ce dossier est instruit par un autre service : vous pouvez le consulter, pas le faire avancer.";
+
+/** Le motif pour lequel l'utilisateur ne peut pas instruire ce dossier. */
+export function refusInstruction(
+  user: Pick<CurrentUser, "role">,
+  s: { serviceId: number | null },
+): string {
+  if (user.role === "elu") return REFUS_ELU;
+  return s.serviceId ? REFUS_SERVICE : "Modification non autorisée.";
 }
 
 export const REFUS_ELU =
@@ -453,10 +485,23 @@ export function lireAvis(form: FormData): AvisEntree {
 
 /** Pose (ou remplace) l'avis de l'agent connecté. */
 export async function donnerAvis(id: number, e: AvisEntree, acteur: CurrentUser): Promise<void> {
-  const s = await prisma.subvention.findUnique({ where: { id } });
+  const s = await prisma.subvention.findUnique({
+    where: { id },
+    include: { organisation: { select: { sportive: true, conventionnee: true } } },
+  });
   if (!s) throw new UserFacingError("Demande introuvable.");
   if (!avisOuvert(s))
     throw new UserFacingError("Les avis ne sont plus recueillis sur cette demande.");
+  // Quand le circuit nomme les élus consultés, l'avis leur est réservé.
+  const { consultation } = await import("@/server/circuits-subvention");
+  const c = await consultation(s);
+  if (c?.restreinte) {
+    if (!acteur.isAdmin && !c.consultes.some((p) => p.id === acteur.id))
+      throw new UserFacingError(
+        `L'avis sur ce dossier est demandé à : ${c.etapes.map((e) => e.libelleIntervenant).join(", ")}.`,
+      );
+  } else if (!acteur.canEdit("subventions"))
+    throw new UserFacingError("Vous n'avez pas le droit de donner un avis sur les subventions.");
   const existant = await prisma.subventionAvis.findFirst({
     where: { subventionId: id, authorId: acteur.id },
   });
@@ -559,6 +604,11 @@ export async function changerStatutSubvention(
   );
   const maj = (await chargerSubvention(id)) as SubventionComplete;
   const org = maj.organisation;
+  // Soumis aux élus : ceux que le circuit consulte sont prévenus.
+  if (nouveau === "avis") {
+    const { notifierConsultes } = await import("@/server/circuits-subvention");
+    await notifierConsultes(maj).catch((e) => console.error("[circuit subvention]", e));
+  }
   if (nouveau === "votee" || nouveau === "refusee") {
     const accordee = nouveau === "votee";
     const cfg = await getSettings();

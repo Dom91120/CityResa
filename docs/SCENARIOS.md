@@ -91,6 +91,10 @@ circuits, guide chapitre 12) :
 Le service Communication existe mais n'a aucun membre ; la délégation « Sports, vie associative
 et fêtes » est confiée à Pierre Durand. Le dossier R260008 attend déjà son visa.
 
+Deux circuits de subvention complètent le jeu : les demandes des **associations sportives** sont
+instruites par le Service des sports (Karim), les **autres** par la Vie associative (Sophie) ;
+dans les deux cas l'avis est demandé à l'élu de la délégation.
+
 ### Comment lire un scénario
 
 - **Qui** : la personne dont vous prenez le compte à cette étape. Un changement de personne
@@ -474,11 +478,19 @@ association** depuis le back-office (**Commencer un dossier**), hors période, a
 dérogation ; ouvrir le dossier d'une association **sportive** (ASCB) pour voir l'autre plan de
 budget.
 
-> **Écart E4** — À l'étape 11, Pierre n'est pas prévenu qu'un dossier attend son avis : il doit
-> aller voir l'onglet **Avis**. Et tout élu peut se prononcer, quelle que soit sa délégation.
->
-> **Écart E5** — Le dossier d'une association sportive devrait revenir au Service des sports.
-> Connectez-vous avec Karim : il ne peut qu'en lire le contenu.
+> **Écarts E4 et E5, traités** — Le dossier d'Espace Yoga est instruit par la Vie associative
+> (carte **Circuit** du dossier) ; à l'étape 11, Pierre est prévenu par la cloche et retrouve le
+> dossier dans **Mes étapes**. La variante ci-dessous montre le Service des sports.
+
+**Variante — une association sportive** (dossier S270002 du TTMC, déjà déposé)
+
+| # | Qui | Action | Constat |
+| --- | --- | --- | --- |
+| a | Sophie | Ouvrez S270002. | Elle le lit, sans bouton : « Ce dossier est instruit par Service des sports ». |
+| b | Karim | Ouvrez S270002 : **Prendre en instruction**, puis **Soumettre aux élus**. | Il instruit bien que son rôle n'ait que la lecture sur les subventions : le circuit le désigne. |
+| c | Sophie | Tentez de donner un avis. | Refus : l'avis est demandé à la délégation. |
+| d | Pierre | **Mes étapes** › **Donner mon avis**. | Le dossier quitte ses étapes ; la carte Circuit affiche « Avis donné ». |
+| e | Karim | **Voter la subvention**. | Votée ; l'association est prévenue. |
 
 ---
 

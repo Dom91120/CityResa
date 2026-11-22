@@ -143,7 +143,7 @@ export async function referentiel(): Promise<Referentiel> {
 
 /** Les listes proposées par les critères « espace », « site » et « profil ». */
 export async function optionsCriteres(): Promise<Record<string, [string, string][]>> {
-  const [espaces, sites, profils] = await Promise.all([
+  const [espaces, sites, profils, secteurs] = await Promise.all([
     prisma.espace.findMany({
       where: { isActive: true },
       select: { id: true, name: true },
@@ -155,8 +155,14 @@ export async function optionsCriteres(): Promise<Record<string, [string, string]
       select: { id: true, label: true },
       orderBy: { position: "asc" },
     }),
+    prisma.referential.findMany({
+      where: { kind: "subvention_secteur", isActive: true },
+      select: { id: true, label: true },
+      orderBy: { position: "asc" },
+    }),
   ]);
   return {
+    secteur_instruction: secteurs.map((s) => [String(s.id), s.label]),
     espace: espaces.map((e) => [String(e.id), e.name]),
     site: sites.map((s) => [String(s.id), s.name]),
     profil: profils.map((p) => [String(p.id), p.label]),

@@ -4,7 +4,7 @@ import { Champ, Coches, Grille, Interrupteur, Select } from "@/components/formul
 import { Icone } from "@/components/icones";
 import { SegTabs, VideBloc } from "@/components/liste";
 import { Chip } from "@/components/macros";
-import { decrireCondition, lireDefinition } from "@/lib/circuits";
+import { decrireCondition, lireDefinition, lireObjet, OBJETS } from "@/lib/circuits";
 import { isoDate } from "@/lib/forms-util";
 import { dateCourte } from "@/lib/libelles";
 import { contexteAdmin } from "@/modules/admin/server";
@@ -27,14 +27,14 @@ export default async function ProcessusPage({
   const [circuits, services, delegations, agents, ref, options] = await Promise.all([
     prisma.circuit.findMany({
       include: { versions: { orderBy: { numero: "desc" } } },
-      orderBy: [{ parDefaut: "asc" }, { position: "asc" }, { id: "asc" }],
+      orderBy: [{ objet: "asc" }, { parDefaut: "asc" }, { position: "asc" }, { id: "asc" }],
     }),
     prisma.service.findMany({
       include: {
         responsable: true,
         suppleant: true,
         membres: { include: { user: true } },
-        _count: { select: { reservations: true } },
+        _count: { select: { reservations: true, subventions: true } },
       },
       orderBy: [{ position: "asc" }, { name: "asc" }],
     }),
@@ -163,7 +163,9 @@ export default async function ProcessusPage({
                             <span className="text-faint">—</span>
                           )}
                         </td>
-                        <td className="text-end tabular">{s._count.reservations}</td>
+                        <td className="text-end tabular">
+                          {s._count.reservations + s._count.subventions}
+                        </td>
                         <td className="text-end">
                           <BoutonOuvrir
                             cible={`modal-service-${s.id}`}
@@ -410,7 +412,10 @@ export default async function ProcessusPage({
                             <a href={`/processus/circuits/${c.id}`} className="fw-semibold">
                               {c.name}
                             </a>
-                            <small>{c.description ?? ""}</small>
+                            <small>
+                              {OBJETS[lireObjet(c.objet)]}
+                              {c.description ? ` · ${c.description}` : ""}
+                            </small>
                           </span>
                         </td>
                         <td className="col-souple">
@@ -467,6 +472,14 @@ export default async function ProcessusPage({
             aide="Le circuit est créé en brouillon : vous réglez ensuite sa règle d'aiguillage, son service et ses étapes, puis vous le publiez."
           >
             <Grille colonnes={2}>
+              <Select
+                label="Type de dossier"
+                name="objet"
+                id="c-objet"
+                pleine
+                options={Object.entries(OBJETS)}
+                valeur="reservation"
+              />
               <Champ
                 label="Nom"
                 name="name"

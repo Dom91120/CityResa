@@ -12,7 +12,14 @@ import {
 import { Champ, Grille, Interrupteur } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
 import { Chip } from "@/components/macros";
-import { comparer, controler, decrireCondition, libelleIntervenant } from "@/lib/circuits";
+import {
+  comparer,
+  controler,
+  decrireCondition,
+  INSERTION,
+  libelleIntervenant,
+  OBJETS,
+} from "@/lib/circuits";
 import { dateHeure } from "@/lib/libelles";
 import { contexteAdmin } from "@/modules/admin/server";
 import { chargerCircuit } from "@/modules/processus/server";
@@ -42,7 +49,9 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
       where: { objet: c.objet, id: { not: c.id }, isActive: true },
       select: { name: true, parDefaut: true },
     }),
-    prisma.reservation.count({ where: { circuitVersion: { circuitId: c.id } } }),
+    c.objet === "subvention"
+      ? prisma.subvention.count({ where: { circuitVersion: { circuitId: c.id } } })
+      : prisma.reservation.count({ where: { circuitVersion: { circuitId: c.id } } }),
   ]);
   const libelles = libellesDe(options);
   const def = c.definition;
@@ -75,6 +84,7 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
         titre={c.name}
         badges={
           <>
+            <Chip teinte={c.objet === "subvention" ? "lime" : "sky"}>{OBJETS[c.objet]}</Chip>
             {c.parDefaut ? <Chip teinte="slate">Par défaut</Chip> : null}
             {c.publiee ? (
               <Chip teinte="emerald">v{c.publiee.numero} en service</Chip>
@@ -85,7 +95,12 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
             {c.isActive ? null : <Chip teinte="slate">Inactif</Chip>}
           </>
         }
-        sousTitre={c.description ?? "Circuit des demandes de réservation"}
+        sousTitre={
+          c.description ??
+          (c.objet === "subvention"
+            ? "Circuit des demandes de subvention"
+            : "Circuit des demandes de réservation")
+        }
         actions={
           <>
             <BoutonOuvrir
@@ -185,14 +200,20 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
               {c.parDefaut ? null : <Lu label="Ordre d'examen" valeur={String(c.position)} />}
               <Lu
                 label="Confié à"
-                valeur={service ? service.name : "Aucun service : les agents chargés de l'espace"}
+                valeur={
+                  service
+                    ? service.name
+                    : c.objet === "subvention"
+                      ? "Aucun service : les agents qui ont l'écriture sur les subventions"
+                      : "Aucun service : les agents chargés de l'espace"
+                }
               />
               <Lu label="Dossiers" valeur={`${nbDossiers} dossier(s) ont suivi ce circuit`} />
             </Lus>
           </Section>
 
           <Section
-            titre="Étapes avant l'acceptation"
+            titre={INSERTION[c.objet].titre}
             icone="list-checks"
             nb={def.etapes.length}
             droite={
@@ -238,8 +259,9 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
               </ul>
             ) : (
               <p className="text-muted small mb-0">
-                Aucune étape : une demande s'accepte comme aujourd'hui, sans relecture, avis ni
-                visa.
+                {c.objet === "subvention"
+                  ? "Aucun élu nommé : tout compte qui a l'écriture sur les subventions peut donner un avis."
+                  : "Aucune étape : une demande s'accepte comme aujourd'hui, sans relecture, avis ni visa."}
               </p>
             )}
           </Section>
@@ -288,6 +310,7 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
               referentiel={ref}
               libelles={libelles}
               parDefaut={c.parDefaut}
+              objet={c.objet}
             />
           </Section>
         </div>

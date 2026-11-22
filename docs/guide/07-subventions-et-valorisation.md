@@ -55,7 +55,7 @@ L'association remplit normalement son dossier elle-même depuis « Mes subventio
 
 **À quoi ça sert** — Lire le dossier reçu fiche par fiche, vérifier ses pièces, le renvoyer s'il est incomplet, puis le faire avancer étape par étape en gardant la trace de chaque décision.
 
-**Qui** — Les utilisateurs qui ont le droit d'écriture sur « Subventions » (gestionnaires et élus par défaut).
+**Qui** — Les utilisateurs qui ont le droit d'écriture sur « Subventions » (gestionnaires et élus par défaut). Si la Ville a décrit des circuits de subvention (chapitre 12.7), l'instruction revient au **service instructeur** du dossier, indiqué dans la carte **Circuit**.
 
 ![Fiche d'un dossier en cours d'instruction](captures/subvention-instruction.webp)
 
@@ -105,7 +105,7 @@ L'association remplit normalement son dossier elle-même depuis « Mes subventio
 
 **À quoi ça sert** — Permettre aux élus de se prononcer sur une demande et de proposer un montant avant le vote.
 
-**Qui** — Les élus, et plus généralement tout utilisateur qui a le droit d'écriture sur « Subventions ».
+**Qui** — Les élus, et plus généralement tout utilisateur qui a le droit d'écriture sur « Subventions ». Quand le circuit du dossier nomme les élus consultés (chapitre 12.7), l'avis leur est réservé : ils sont prévenus à la soumission et retrouvent le dossier dans **Mes étapes**.
 
 ![Fiche d'une demande vue par un élu](captures/subvention-elu.webp)
 

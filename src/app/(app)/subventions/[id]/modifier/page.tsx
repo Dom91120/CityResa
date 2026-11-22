@@ -4,8 +4,8 @@ import {
   chargerSubvention,
   estModifiable,
   organisationsDemandeuses,
-  peutDecider,
-  REFUS_ELU,
+  peutInstruire,
+  refusInstruction,
 } from "@/modules/subventions/server";
 import { ChampsSubvention } from "@/modules/subventions/vues";
 import { redirigerAvecFlashDepuisRendu } from "@/server/flash";
@@ -23,10 +23,8 @@ export default async function ModifierSubventionPage({
   const id = idDeRoute((await params).id);
   const s = await chargerSubvention(id);
   if (!s) notFound();
-  if (!page.user.canEdit("subventions"))
-    redirigerAvecFlashDepuisRendu(`/subventions/${id}`, "Modification non autorisée.", "danger");
-  if (!peutDecider(page.user))
-    redirigerAvecFlashDepuisRendu(`/subventions/${id}`, REFUS_ELU, "warning");
+  if (!peutInstruire(page.user, s))
+    redirigerAvecFlashDepuisRendu(`/subventions/${id}`, refusInstruction(page.user, s), "warning");
   if (!estModifiable(s))
     redirigerAvecFlashDepuisRendu(
       `/subventions/${id}`,

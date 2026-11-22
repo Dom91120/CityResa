@@ -6,6 +6,7 @@ import {
   comparer,
   conditionVraie,
   controler,
+  criteresDe,
   type Definition,
   decrireCondition,
   type Etape,
@@ -13,6 +14,7 @@ import {
   etapesRetenant,
   etatEtape,
   type Faits,
+  INSERTION,
   lireCondition,
   lireDefinition,
   type Referentiel,
@@ -194,6 +196,54 @@ describe("définition", () => {
       "visa",
       "relecture",
     ]);
+  });
+});
+
+describe("types de dossier", () => {
+  it("propose à chaque type de dossier ses critères", () => {
+    const resa = criteresDe("reservation").map((c) => c.cle);
+    const subv = criteresDe("subvention").map((c) => c.cle);
+    expect(resa).toContain("secteur");
+    expect(resa).not.toContain("montant_demande");
+    expect(subv).toEqual([
+      "sportive",
+      "conventionnee",
+      "type_subvention",
+      "nature_demande",
+      "secteur_instruction",
+      "montant_demande",
+    ]);
+  });
+
+  it("l'avis des élus n'admet que des avis", () => {
+    const d = lireDefinition({
+      etapes: [
+        { ...etape({ cle: "a", nature: "avis" }), moment: "avis_elus" },
+        { ...etape({ cle: "b", nature: "visa" }), moment: "avis_elus" },
+        { ...etape({ cle: "c", nature: "visa" }), moment: "inconnu" },
+      ],
+    });
+    expect(d.etapes.map((e) => [e.cle, e.moment])).toEqual([
+      ["a", "avis_elus"],
+      ["c", "avant_acceptation"],
+    ]);
+    expect(INSERTION.subvention.natures).toEqual(["avis"]);
+  });
+
+  it("aiguille une subvention sur ses propres critères", () => {
+    const sportives: CircuitPublie = {
+      id: 1,
+      versionId: 1,
+      name: "Sportives",
+      position: 1,
+      parDefaut: false,
+      definition: def({
+        condition: { mode: "tous", tests: [{ champ: "sportive", op: "est", valeur: true }] },
+      }),
+    };
+    const autres: CircuitPublie = { ...sportives, id: 2, parDefaut: true, definition: def() };
+    expect(aiguiller([autres, sportives], { sportive: true }).retenu?.id).toBe(1);
+    expect(aiguiller([autres, sportives], { sportive: false }).retenu?.id).toBe(2);
   });
 });
 

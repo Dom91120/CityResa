@@ -6,8 +6,8 @@ import { Icone } from "@/components/icones";
 import { Chip } from "@/components/macros";
 import {
   type Condition,
-  CRITERES,
   type Critere,
+  criteresDe,
   type Definition,
   decrireCondition,
   type EtatEtape,
@@ -15,6 +15,7 @@ import {
   libelleIntervenant,
   NATURES,
   type Nature,
+  type Objet,
   type Referentiel,
 } from "@/lib/circuits";
 
@@ -28,11 +29,15 @@ export function ChampsCondition({
   condition,
   options,
   prefixe = "",
+  objet = "reservation",
 }: {
   condition: Condition | null;
   options: Record<string, [string, string][]>;
   prefixe?: string;
+  /** Le type de dossier : il fixe les critères proposés. */
+  objet?: Objet;
 }) {
+  const criteres = criteresDe(objet);
   const test = (cle: string) => condition?.tests.find((t) => t.champ === cle);
   return (
     <div className="condition">
@@ -56,75 +61,80 @@ export function ChampsCondition({
           Un seul suffit
         </label>
       </div>
-      {GROUPES.map((g) => (
+      {GROUPES.filter((g) => criteres.some((c) => c.groupe === g)).map((g) => (
         <fieldset key={g} className="condition-groupe">
           <legend>{g}</legend>
-          {CRITERES.filter((c) => c.groupe === g).map((c) => {
-            const t = test(c.cle);
-            const nom = `${prefixe}c_${c.cle}`;
-            const ident = `${prefixe}crit-${c.cle}`;
-            return (
-              <div key={c.cle} className="condition-ligne">
-                <label className="condition-label" htmlFor={c.type === "liste" ? undefined : ident}>
-                  {c.label}
-                  {c.aide ? <small>{c.aide}</small> : null}
-                </label>
-                {c.type === "bool" ? (
-                  <select
-                    name={nom}
-                    id={ident}
-                    className="form-select form-select-sm"
-                    defaultValue={t?.op === "est" ? (t.valeur ? "1" : "0") : ""}
+          {criteres
+            .filter((c) => c.groupe === g)
+            .map((c) => {
+              const t = test(c.cle);
+              const nom = `${prefixe}c_${c.cle}`;
+              const ident = `${prefixe}crit-${c.cle}`;
+              return (
+                <div key={c.cle} className="condition-ligne">
+                  <label
+                    className="condition-label"
+                    htmlFor={c.type === "liste" ? undefined : ident}
                   >
-                    <option value="">Indifférent</option>
-                    <option value="1">Oui</option>
-                    <option value="0">Non</option>
-                  </select>
-                ) : c.type === "nombre" ? (
-                  <span className="condition-nombre">
+                    {c.label}
+                    {c.aide ? <small>{c.aide}</small> : null}
+                  </label>
+                  {c.type === "bool" ? (
                     <select
-                      name={`${prefixe}o_${c.cle}`}
-                      className="form-select form-select-sm"
-                      defaultValue={t && t.op !== "est" && t.op !== "parmi" ? t.op : ""}
-                      aria-label={`${c.label} : comparaison`}
-                    >
-                      <option value="">Indifférent</option>
-                      <option value="min">au moins</option>
-                      <option value="max">au plus</option>
-                    </select>
-                    <input
-                      type="number"
                       name={nom}
                       id={ident}
-                      className="form-control form-control-sm"
-                      defaultValue={t && typeof t.valeur === "number" ? t.valeur : ""}
-                      step="any"
-                    />
-                    {c.unite ? <span className="text-muted small">{c.unite}</span> : null}
-                  </span>
-                ) : (
-                  <details className="condition-liste" open={Boolean(t) || undefined}>
-                    <summary>
-                      {t?.op === "parmi" ? `${t.valeur.length} retenu(s)` : "Indifférent"}
-                    </summary>
-                    <div className="coches">
-                      {(c.options ?? options[c.cle] ?? []).map(([v, l]) => (
-                        <label key={v}>
-                          <input
-                            type="checkbox"
-                            name={nom}
-                            value={v}
-                            defaultChecked={t?.op === "parmi" && t.valeur.includes(v)}
-                          />
-                          {l}
-                        </label>
-                      ))}
-                    </div>
-                  </details>
-                )}
-              </div>
-            );
-          })}
+                      className="form-select form-select-sm"
+                      defaultValue={t?.op === "est" ? (t.valeur ? "1" : "0") : ""}
+                    >
+                      <option value="">Indifférent</option>
+                      <option value="1">Oui</option>
+                      <option value="0">Non</option>
+                    </select>
+                  ) : c.type === "nombre" ? (
+                    <span className="condition-nombre">
+                      <select
+                        name={`${prefixe}o_${c.cle}`}
+                        className="form-select form-select-sm"
+                        defaultValue={t && t.op !== "est" && t.op !== "parmi" ? t.op : ""}
+                        aria-label={`${c.label} : comparaison`}
+                      >
+                        <option value="">Indifférent</option>
+                        <option value="min">au moins</option>
+                        <option value="max">au plus</option>
+                      </select>
+                      <input
+                        type="number"
+                        name={nom}
+                        id={ident}
+                        className="form-control form-control-sm"
+                        defaultValue={t && typeof t.valeur === "number" ? t.valeur : ""}
+                        step="any"
+                      />
+                      {c.unite ? <span className="text-muted small">{c.unite}</span> : null}
+                    </span>
+                  ) : (
+                    <details className="condition-liste" open={Boolean(t) || undefined}>
+                      <summary>
+                        {t?.op === "parmi" ? `${t.valeur.length} retenu(s)` : "Indifférent"}
+                      </summary>
+                      <div className="coches">
+                        {(c.options ?? options[c.cle] ?? []).map(([v, l]) => (
+                          <label key={v}>
+                            <input
+                              type="checkbox"
+                              name={nom}
+                              value={v}
+                              defaultChecked={t?.op === "parmi" && t.valeur.includes(v)}
+                            />
+                            {l}
+                          </label>
+                        ))}
+                      </div>
+                    </details>
+                  )}
+                </div>
+              );
+            })}
         </fieldset>
       ))}
     </div>
@@ -168,13 +178,16 @@ export function Logigramme({
   referentiel,
   libelles,
   parDefaut,
+  objet = "reservation",
 }: {
   definition: Definition;
   referentiel: Referentiel;
   libelles: Libelles;
   parDefaut: boolean;
+  objet?: Objet;
 }) {
   const service = definition.serviceId ? referentiel.services.get(definition.serviceId) : null;
+  const subvention = objet === "subvention";
   return (
     <ol className="logigramme">
       <li className="logi-noeud logi-entree">
@@ -191,10 +204,13 @@ export function Logigramme({
       <li className="logi-noeud logi-socle">
         <Icone nom="inbox" taille={15} />
         <div>
-          <strong>Demande reçue · À traiter</strong>
+          <strong>
+            {subvention ? "Dossier déposé · Instruction" : "Demande reçue · À traiter"}
+          </strong>
           <span>
-            Instruction par {service ? service.name : "les agents chargés de l'espace"} : échanges
-            avec l'usager, demande d'informations
+            {subvention
+              ? `Instruction par ${service ? service.name : "les agents qui ont l'écriture sur les subventions"} : pièces, renvoi comme incomplet, soumission aux élus`
+              : `Instruction par ${service ? service.name : "les agents chargés de l'espace"} : échanges avec l'usager, demande d'informations`}
           </span>
         </div>
       </li>
@@ -213,7 +229,11 @@ export function Logigramme({
               <span>
                 {libelleIntervenant(e.intervenant, referentiel)}
                 {e.delaiJours ? ` · sous ${e.delaiJours} j` : ""}
-                {n.bloquante ? " · retient l'acceptation" : " · ne retient rien"}
+                {subvention
+                  ? " · consulté à la soumission aux élus"
+                  : n.bloquante
+                    ? " · retient l'acceptation"
+                    : " · ne retient rien"}
               </span>
               <span className="logi-condition">
                 <Icone nom="filter" taille={12} /> {decrireCondition(e.condition, libelles)}
@@ -225,15 +245,23 @@ export function Logigramme({
       <li className="logi-noeud logi-socle">
         <Icone nom="circle-check" taille={15} />
         <div>
-          <strong>Acceptée</strong>
-          <span>Disponibilité revérifiée, convention générée, usager prévenu</span>
+          <strong>{subvention ? "Votée ou refusée" : "Acceptée"}</strong>
+          <span>
+            {subvention
+              ? "Décision enregistrée par le service instructeur, association prévenue"
+              : "Disponibilité revérifiée, convention générée, usager prévenu"}
+          </span>
         </div>
       </li>
       <li className="logi-noeud logi-socle">
         <Icone nom="pen-line" taille={15} />
         <div>
-          <strong>Signée · Confirmée · Terminée</strong>
-          <span>Signature, acompte, événement, clôture : cycle de fond, non paramétrable</span>
+          <strong>{subvention ? "Versée" : "Signée · Confirmée · Terminée"}</strong>
+          <span>
+            {subvention
+              ? "Versement daté : cycle de fond, non paramétrable"
+              : "Signature, acompte, événement, clôture : cycle de fond, non paramétrable"}
+          </span>
         </div>
       </li>
     </ol>

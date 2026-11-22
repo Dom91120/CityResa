@@ -7,11 +7,14 @@ import {
   cleEtape,
   type Definition,
   type Etape,
+  INSERTION,
   type Intervenant,
   lireCondition,
   lireDefinition,
+  lireObjet,
   NATURES,
   type Nature,
+  type Objet,
   type Test,
 } from "@/lib/circuits";
 import { champ, parseFloat_, parseInt_ } from "@/lib/forms-util";
@@ -56,11 +59,16 @@ export function valeurIntervenant(i: Intervenant): string {
 }
 
 /** Lit une étape saisie ; `existantes` sert à lui donner une clé unique si elle est nouvelle. */
-export function etapeDuFormulaire(form: FormData, existantes: readonly Etape[]): Etape {
+export function etapeDuFormulaire(
+  form: FormData,
+  existantes: readonly Etape[],
+  objet: Objet = "reservation",
+): Etape {
   const libelle = champ(form, "libelle").slice(0, 120);
   if (!libelle) throw new UserFacingError("Donnez un libellé à l'étape.");
   const nature = champ(form, "nature") as Nature;
-  if (!(nature in NATURES)) throw new UserFacingError("Choisissez la nature de l'étape.");
+  if (!(nature in NATURES) || !INSERTION[objet].natures.includes(nature))
+    throw new UserFacingError("Choisissez la nature de l'étape.");
   const cleSaisie = champ(form, "cle");
   const connue = existantes.find((e) => e.cle === cleSaisie);
   return {
@@ -73,7 +81,7 @@ export function etapeDuFormulaire(form: FormData, existantes: readonly Etape[]):
     libelle,
     libelleUsager: champ(form, "libelle_usager").slice(0, 160),
     nature,
-    moment: "avant_acceptation",
+    moment: INSERTION[objet].moment,
     intervenant: intervenantDuFormulaire(form),
     condition: conditionDuFormulaire(form),
     delaiJours: Math.max(0, Math.min(365, parseInt_(form.get("delai_jours"), 0) ?? 0)),
@@ -87,11 +95,13 @@ export async function chargerCircuit(id: number) {
     include: { versions: { orderBy: { numero: "desc" } } },
   });
   if (!c) return null;
+  const objet = lireObjet(c.objet);
   const publiee = c.versions.find((v) => v.status === "publiee") ?? null;
   const brouillon = c.versions.find((v) => v.status === "brouillon") ?? null;
   const courante = brouillon ?? publiee ?? c.versions[0] ?? null;
   return {
     ...c,
+    objet,
     publiee,
     brouillon,
     courante,

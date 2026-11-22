@@ -14,6 +14,17 @@
 
 export type TypeCritere = "bool" | "liste" | "nombre";
 
+/** Les types de dossier qui suivent un circuit. */
+export const OBJETS = {
+  reservation: "Réservations",
+  subvention: "Subventions",
+} as const;
+export type Objet = keyof typeof OBJETS;
+
+export function lireObjet(v: unknown): Objet {
+  return v === "subvention" ? "subvention" : "reservation";
+}
+
 export type Critere = {
   cle: string;
   label: string;
@@ -21,7 +32,9 @@ export type Critere = {
   groupe: "Espace" | "Demandeur" | "Dossier";
   /** Pour une liste : ses valeurs fixes, ou la source à charger (espaces, sites, profils). */
   options?: readonly (readonly [string, string])[];
-  source?: "espaces" | "sites" | "profils";
+  source?: "espaces" | "sites" | "profils" | "secteurs";
+  /** Les types de dossier auxquels le critère s'applique ; absent = les réservations. */
+  objets?: readonly Objet[];
   /** Pour un nombre : unité affichée. */
   unite?: string;
   aide?: string;
@@ -61,8 +74,61 @@ export const CRITERES: readonly Critere[] = [
     groupe: "Demandeur",
     source: "profils",
   },
-  { cle: "sportive", label: "Association sportive", type: "bool", groupe: "Demandeur" },
-  { cle: "conventionnee", label: "Association conventionnée", type: "bool", groupe: "Demandeur" },
+  {
+    cle: "sportive",
+    label: "Association sportive",
+    type: "bool",
+    groupe: "Demandeur",
+    objets: ["reservation", "subvention"],
+  },
+  {
+    cle: "conventionnee",
+    label: "Association conventionnée",
+    type: "bool",
+    groupe: "Demandeur",
+    objets: ["reservation", "subvention"],
+  },
+  {
+    cle: "type_subvention",
+    label: "Type de subvention",
+    type: "liste",
+    groupe: "Dossier",
+    objets: ["subvention"],
+    options: [
+      ["fonctionnement", "Fonctionnement"],
+      ["projet", "Projet"],
+      ["exceptionnelle", "Exceptionnelle"],
+      ["investissement", "Investissement"],
+    ],
+  },
+  {
+    cle: "nature_demande",
+    label: "Nature de la demande",
+    type: "liste",
+    groupe: "Dossier",
+    objets: ["subvention"],
+    options: [
+      ["premiere", "Première demande"],
+      ["renouvellement", "Renouvellement"],
+    ],
+  },
+  {
+    cle: "secteur_instruction",
+    label: "Secteur d'instruction",
+    type: "liste",
+    groupe: "Dossier",
+    source: "secteurs",
+    objets: ["subvention"],
+    aide: "Renseigné par l'agent après le dépôt : le dossier est alors aiguillé de nouveau.",
+  },
+  {
+    cle: "montant_demande",
+    label: "Montant demandé",
+    type: "nombre",
+    groupe: "Dossier",
+    unite: "€",
+    objets: ["subvention"],
+  },
   {
     cle: "fiche_validee",
     label: "Fiche de l'usager validée",
@@ -114,6 +180,11 @@ export const CRITERES: readonly Critere[] = [
 ];
 
 const PAR_CLE = new Map(CRITERES.map((c) => [c.cle, c]));
+
+/** Les critères proposés pour un type de dossier. */
+export function criteresDe(objet: Objet): Critere[] {
+  return CRITERES.filter((c) => (c.objets ?? ["reservation"]).includes(objet));
+}
 
 export function critere(cle: string): Critere | undefined {
   return PAR_CLE.get(cle);
@@ -232,8 +303,22 @@ export type Nature = keyof typeof NATURES;
 /** Le moment du cycle de fond où l'étape s'insère. */
 export const MOMENTS = {
   avant_acceptation: "Avant l'acceptation de la demande",
+  avis_elus: "À l'avis des élus",
 } as const;
 export type Moment = keyof typeof MOMENTS;
+
+/** Le moment où s'insèrent les étapes d'un type de dossier, et les natures qu'il admet. */
+export const INSERTION: Record<
+  Objet,
+  { moment: Moment; natures: readonly Nature[]; titre: string }
+> = {
+  reservation: {
+    moment: "avant_acceptation",
+    natures: ["relecture", "avis", "visa"],
+    titre: "Étapes avant l'acceptation",
+  },
+  subvention: { moment: "avis_elus", natures: ["avis"], titre: "Avis demandés aux élus" },
+};
 
 export type Intervenant =
   | { type: "service"; id: number }
@@ -317,12 +402,15 @@ export function lireDefinition(brut: unknown): Definition {
     const cle = String(x?.cle ?? "");
     if (!intervenant || !(nature in NATURES) || !/^[a-z0-9-]{1,40}$/.test(cle)) continue;
     if (etapes.some((e) => e.cle === cle)) continue;
+    // L'avis des élus sur une subvention est un avis, quoi que dise la donnée.
+    const moment: Moment = x.moment === "avis_elus" ? "avis_elus" : "avant_acceptation";
+    if (moment === "avis_elus" && nature !== "avis") continue;
     etapes.push({
       cle,
       libelle: String(x.libelle ?? "").slice(0, 120),
       libelleUsager: String(x.libelleUsager ?? "").slice(0, 160),
       nature: nature as Nature,
-      moment: "avant_acceptation",
+      moment,
       intervenant,
       condition: lireCondition(x.condition),
       delaiJours: Math.max(0, Math.min(365, Math.trunc(Number(x.delaiJours) || 0))),

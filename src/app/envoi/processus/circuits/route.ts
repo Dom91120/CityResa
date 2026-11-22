@@ -1,5 +1,5 @@
 import type { Prisma } from "@/generated/prisma/client";
-import { DEFINITION_VIDE } from "@/lib/circuits";
+import { DEFINITION_VIDE, lireObjet } from "@/lib/circuits";
 import { champ, champOuNull } from "@/lib/forms-util";
 import { auditRecord } from "@/server/audit";
 import { prisma } from "@/server/db";
@@ -16,13 +16,14 @@ export async function POST(req: Request) {
       await features.require("processus");
       const name = champ(form, "name").slice(0, 120);
       if (!name) return redirigerAvecMessage("/processus", "Indiquez le nom du circuit.", "danger");
+      const objet = lireObjet(champ(form, "objet"));
       const dernier = await prisma.circuit.aggregate({
-        where: { objet: "reservation" },
+        where: { objet },
         _max: { position: true },
       });
       const c = await prisma.circuit.create({
         data: {
-          objet: "reservation",
+          objet,
           name,
           description: champOuNull(form, "description")?.slice(0, 400) ?? null,
           position: (dernier._max.position ?? 0) + 10,

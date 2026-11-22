@@ -4,8 +4,8 @@ import { Zone } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
 import { SegTabs, VideBloc } from "@/components/liste";
 import { Chip } from "@/components/macros";
-import { NATURES } from "@/lib/circuits";
-import { dateCourte, depuis, plage } from "@/lib/libelles";
+import { NATURES, OBJETS } from "@/lib/circuits";
+import { dateCourte, depuis, montant, plage } from "@/lib/libelles";
 import { Logigramme, PastilleNature } from "@/modules/processus/vues";
 import {
   circuitsEnService,
@@ -14,6 +14,7 @@ import {
   optionsCriteres,
   referentiel,
 } from "@/server/circuits";
+import { avisAttendus } from "@/server/circuits-subvention";
 import { contextePage } from "@/server/page";
 
 export const metadata = { title: "Mes étapes - CityRésa" };
@@ -29,7 +30,24 @@ export default async function EtapesPage({
   const toutes = await etapesEnAttente(page.user, true);
   const miennes = toutes.filter((e) => e.pourMoi);
   const liste = vue === "toutes" ? toutes : miennes;
-  const circuits = vue === "circuits" ? await circuitsEnService("reservation") : [];
+  // Les avis que les circuits des subventions demandent aux élus.
+  const tousAvis = page.features.subventions ? await avisAttendus(page.user, true) : [];
+  const mesAvis = tousAvis.filter((a) => a.pourMoi);
+  const avis = vue === "toutes" ? tousAvis : mesAvis;
+  const nbPourMoi = miennes.length + mesAvis.length;
+  const circuits =
+    vue === "circuits"
+      ? [
+          ...(await circuitsEnService("reservation")).map((c) => ({
+            ...c,
+            objet: "reservation" as const,
+          })),
+          ...(await circuitsEnService("subvention")).map((c) => ({
+            ...c,
+            objet: "subvention" as const,
+          })),
+        ]
+      : [];
   const [ref, options] =
     vue === "circuits" ? await Promise.all([referentiel(), optionsCriteres()]) : [null, null];
   const maintenant = Date.now();
@@ -39,7 +57,7 @@ export default async function EtapesPage({
       <div className="page-header">
         <div>
           <h1 className="page-title">
-            Mes étapes <span className="page-count">{miennes.length}</span>
+            Mes étapes <span className="page-count">{nbPourMoi}</span>
           </h1>
           <p className="page-subtitle">
             Les relectures, avis et visas que les circuits vous demandent avant qu'une demande soit
@@ -50,11 +68,11 @@ export default async function EtapesPage({
 
       <SegTabs
         tabs={[
-          { href: "/etapes", label: "Pour moi", count: miennes.length, active: vue === "miennes" },
+          { href: "/etapes", label: "Pour moi", count: nbPourMoi, active: vue === "miennes" },
           {
             href: "/etapes?vue=toutes",
             label: "Toutes les étapes en attente",
-            count: toutes.length,
+            count: toutes.length + tousAvis.length,
             active: vue === "toutes",
             teinte: "muted",
           },
@@ -69,14 +87,25 @@ export default async function EtapesPage({
       {vue === "circuits" && ref && options ? (
         <div className="data-card">
           {[...circuits]
-            .sort((a, b) => Number(a.parDefaut) - Number(b.parDefaut) || a.position - b.position)
+            .sort(
+              (a, b) =>
+                a.objet.localeCompare(b.objet) ||
+                Number(a.parDefaut) - Number(b.parDefaut) ||
+                a.position - b.position,
+            )
             .map((c) => (
-              <Section key={c.id} titre={c.name} icone="workflow" ouverte={circuits.length <= 3}>
+              <Section
+                key={c.id}
+                titre={`${OBJETS[c.objet]} · ${c.name}`}
+                icone="workflow"
+                ouverte={circuits.length <= 3}
+              >
                 <Logigramme
                   definition={c.definition}
                   referentiel={ref}
                   libelles={libellesDe(options)}
                   parDefaut={c.parDefaut}
+                  objet={c.objet}
                 />
               </Section>
             ))}
@@ -175,13 +204,63 @@ export default async function EtapesPage({
                 </tbody>
               </table>
             </div>
-          ) : (
+          ) : avis.length ? null : (
             <VideBloc
               icone="list-checks"
               titre={vue === "toutes" ? "Aucune étape en attente" : "Rien ne vous attend"}
               texte="Quand le circuit d'une demande prévoit une relecture, un avis ou un visa qui vous revient, il apparaît ici et vous êtes prévenu par la cloche."
             />
           )}
+          {avis.length ? (
+            <div className="table-responsive">
+              <table className="table table-hover align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Avis sur une subvention</th>
+                    <th>Dossier</th>
+                    <th className="text-end">Demandé</th>
+                    <th>Soumis aux élus</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {avis.map((a) => (
+                    <tr key={`${a.id}-${a.libelle}`}>
+                      <td>
+                        <span className="cell2">
+                          <span>
+                            <strong>{a.libelle}</strong> <PastilleNature nature="avis" />
+                          </span>
+                          <small>{a.intervenant}</small>
+                        </span>
+                      </td>
+                      <td className="col-souple col-souple--large">
+                        <span className="cell2" style={{ whiteSpace: "normal" }}>
+                          <a href={`/subventions/${a.id}#avis`} className="fw-semibold">
+                            {a.numero} · {a.objet}
+                          </a>
+                          <small>
+                            {a.association} · exercice {a.exercice}
+                            {a.service ? ` · instruit par ${a.service}` : ""}
+                          </small>
+                        </span>
+                      </td>
+                      <td className="text-end tabular">{montant(a.montantDemande)}</td>
+                      <td>{depuis(a.depuis)}</td>
+                      <td className="text-end text-nowrap">
+                        <a
+                          href={`/subventions/${a.id}#avis`}
+                          className={`btn btn-sm ${a.pourMoi ? "btn-primary" : "btn-outline-secondary"}`}
+                        >
+                          {a.pourMoi ? "Donner mon avis" : "Voir"}
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
         </div>
       )}
 

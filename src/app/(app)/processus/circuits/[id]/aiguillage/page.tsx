@@ -43,7 +43,11 @@ export default async function AiguillagePage({ params }: { params: Promise<{ id:
               name="service_id"
               options={services.map((s) => [String(s.id), s.name])}
               valeur={c.definition.serviceId}
-              blank="— aucun service : les agents chargés de l'espace —"
+              blank={
+                c.objet === "subvention"
+                  ? "— aucun service : l'écriture sur les subventions —"
+                  : "— aucun service : les agents chargés de l'espace —"
+              }
             />
           </SectionForm>
           {c.parDefaut ? (
@@ -59,7 +63,11 @@ export default async function AiguillagePage({ params }: { params: Promise<{ id:
               icone="git-fork"
               aide="Ne renseignez que les critères qui comptent ; les autres restent « Indifférent »."
             >
-              <ChampsCondition condition={c.definition.condition} options={options} />
+              <ChampsCondition
+                condition={c.definition.condition}
+                options={options}
+                objet={c.objet}
+              />
             </SectionForm>
           )}
         </div>

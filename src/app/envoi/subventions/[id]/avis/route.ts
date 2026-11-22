@@ -1,6 +1,6 @@
 import { avis } from "@/modules/subventions/routes";
 import { require as exigerModule } from "@/server/features";
-import { requireEdit } from "@/server/guards";
+import { requireView } from "@/server/guards";
 import { idDe, pasTrouve, traiterFormulaire } from "@/server/http";
 
 /** POST /subventions/[id]/avis : l'avis de l'agent ou de l'élu connecté. */
@@ -10,7 +10,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!id) return pasTrouve();
   return traiterFormulaire(
     req,
-    async (form) => avis(await requireEdit("subventions"), id, form),
+    async (form) => avis(await requireView("subventions"), id, form),
     `/subventions/${id}`,
   );
 }

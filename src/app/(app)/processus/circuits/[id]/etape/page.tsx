@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { Champ, EnteteForm, Grille, PiedForm, SectionForm, Select } from "@/components/formulaire";
-import { MOMENTS, NATURES } from "@/lib/circuits";
+import { INSERTION, MOMENTS, NATURES } from "@/lib/circuits";
 import { contexteAdmin } from "@/modules/admin/server";
 import { chargerCircuit, choixIntervenants, valeurIntervenant } from "@/modules/processus/server";
 import { ChampsCondition } from "@/modules/processus/vues";
@@ -31,7 +31,7 @@ export default async function EtapePage({
       <EnteteForm
         titre={e ? `Étape · ${e.libelle}` : "Nouvelle étape"}
         retour={retour}
-        sousTitre={`${c.name} · ${MOMENTS.avant_acceptation.toLowerCase()}`}
+        sousTitre={`${c.name} · ${MOMENTS[INSERTION[c.objet].moment].toLowerCase()}`}
       />
       <form method="POST" action={retour} id="form-principal" data-double-envoi>
         <input type="hidden" name="csrf_token" value={page.csrf} />
@@ -52,11 +52,13 @@ export default async function EtapePage({
                 label="Nature"
                 name="nature"
                 requis
-                options={Object.entries(NATURES).map(([k, n]) => [
-                  k,
-                  `${n.label} — ${n.bloquante ? "retient l'acceptation" : "ne retient rien"}`,
-                ])}
-                valeur={e?.nature ?? "visa"}
+                options={INSERTION[c.objet].natures
+                  .map((k) => [k, NATURES[k]] as const)
+                  .map(([k, n]) => [
+                    k,
+                    `${n.label} — ${n.bloquante ? "retient l'acceptation" : "ne retient rien"}`,
+                  ])}
+                valeur={e?.nature ?? (c.objet === "subvention" ? "avis" : "visa")}
                 aide="Relecture et visa retiennent l'acceptation tant qu'ils ne sont pas accordés ; un avis éclaire sans retenir."
               />
               <div>
@@ -110,7 +112,7 @@ export default async function EtapePage({
             icone="filter"
             aide="Sans aucun critère, l'étape s'applique à tous les dossiers du circuit."
           >
-            <ChampsCondition condition={e?.condition ?? null} options={options} />
+            <ChampsCondition condition={e?.condition ?? null} options={options} objet={c.objet} />
           </SectionForm>
         </div>
         <PiedForm retour={retour} libelle={e ? "Enregistrer" : "Ajouter l'étape"} />

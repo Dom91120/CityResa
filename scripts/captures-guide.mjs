@@ -332,6 +332,7 @@ const CAPTURES = [
   },
   { nom: "subvention-instruction", compte: "gestionnaire", url: "/subventions/3", hauteur: 3200 },
   { nom: "subvention-elu", compte: "elu", url: "/subventions/3", hauteur: 2600 },
+  { nom: "subvention-circuit", compte: "agent", url: "/subventions/4", hauteur: 2200 },
   { nom: "valorisation", compte: "gestionnaire", url: "/valorisation", hauteur: 1600 },
 
   // Statistiques et tableaux de bord
