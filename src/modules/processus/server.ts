@@ -9,6 +9,7 @@ import {
   type Etape,
   INSERTION,
   type Intervenant,
+  lireAEcheance,
   lireCondition,
   lireDefinition,
   lireMoment,
@@ -92,6 +93,7 @@ export function etapeDuFormulaire(
     condition: conditionDuFormulaire(form),
     delaiJours: Math.max(0, Math.min(365, parseInt_(form.get("delai_jours"), 0) ?? 0)),
     reunion: lireReunion(champ(form, "reunion")),
+    aEcheance: lireAEcheance(champ(form, "a_echeance")),
   };
 }
 

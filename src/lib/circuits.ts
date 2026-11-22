@@ -448,6 +448,25 @@ export function issueReunion(
   return refus * 2 >= n ? "refusee" : null;
 }
 
+/** Ce qui se passe quand personne n'a répondu à l'échéance d'une étape. */
+export const A_ECHEANCE = {
+  relance: {
+    label: "Relancer",
+    court: "",
+    aide: "Les personnes attendues sont relancées une fois ; l'étape continue d'attendre.",
+  },
+  accord: {
+    label: "Tenir l'étape pour accordée",
+    court: "accord d'office à l'échéance",
+    aide: "Sans réponse dans le délai, l'étape est validée d'office : le silence vaut accord.",
+  },
+} as const;
+export type AEcheance = keyof typeof A_ECHEANCE;
+
+export function lireAEcheance(v: unknown): AEcheance {
+  return v === "accord" ? "accord" : "relance";
+}
+
 /** L'échéance indicative d'une étape demandée à `depuis` ; null sans délai. */
 export function echeanceDe(depuis: Date, delaiJours: number): Date | null {
   return delaiJours > 0 ? new Date(depuis.getTime() + delaiJours * 86_400_000) : null;
@@ -474,6 +493,8 @@ export type Etape = {
   delaiJours: number;
   /** Combien de réponses closent l'étape quand elle s'adresse à plusieurs personnes. */
   reunion: Reunion;
+  /** À l'échéance sans réponse : une relance, ou l'étape tenue pour accordée. */
+  aEcheance: AEcheance;
 };
 
 export type Definition = {
@@ -546,6 +567,7 @@ export function lireDefinition(brut: unknown): Definition {
       condition: lireCondition(x.condition),
       delaiJours: Math.max(0, Math.min(365, Math.trunc(Number(x.delaiJours) || 0))),
       reunion: lireReunion(x.reunion),
+      aEcheance: lireAEcheance(x.aEcheance),
     });
   }
   const serviceId = Number(b.serviceId);
@@ -689,6 +711,10 @@ export function controler(
   for (const e of def.etapes) {
     const nom = `Étape « ${e.libelle || e.cle} »`;
     if (!e.libelle.trim()) erreurs.push(`${nom} : donnez-lui un libellé.`);
+    if (e.aEcheance === "accord" && !e.delaiJours)
+      erreurs.push(`${nom} : pour la tenir pour accordée à l'échéance, donnez-lui un délai.`);
+    if (e.aEcheance === "accord" && e.moment === "avis_elus")
+      erreurs.push(`${nom} : l'avis des élus d'une subvention ne se donne pas d'office.`);
     const i = e.intervenant;
     if (i.type === "service") {
       const s = ref.services.get(i.id);

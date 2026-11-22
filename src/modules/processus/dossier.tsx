@@ -151,7 +151,8 @@ export function CarteCircuit({
                     {d.closAt && e.etat !== "ouverte" ? (
                       <div>
                         <strong>{NATURES[e.nature].issues[e.etat === "validee" ? 0 : 1]}</strong> le{" "}
-                        {dateHeure(d.closAt)} par {d.closPar ?? "—"}
+                        {dateHeure(d.closAt)}{" "}
+                        {d.closPar === "automatique" ? "d'office" : `par ${d.closPar ?? "—"}`}
                         {d.commentaire ? ` : ${d.commentaire}` : ""}
                       </div>
                     ) : null}

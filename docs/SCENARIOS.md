@@ -755,6 +755,15 @@ d'Hélène pour voir ce que chaque service peut faire, et ce que l'usager en per
 | 9 | Pierre | Tableau de bord, cloche, **Mes étapes**. | Alerte « 1 étape de circuit en retard », notification « En retard · Visa de l'élu… », échéance en rouge. Dans la console de l'étape 8, le courriel « En retard : Visa de l'élu sur la gratuité · R260008 » lui est adressé. |
 | 10 | Sophie | Cloche, puis historique de R260008. | « Étape en retard · R260008 » (elle est responsable du service) ; l'historique porte « Étape en retard relancée ». |
 
+**Variante — le silence vaut accord** (dossier R260008)
+
+| # | Qui | Action | Constat |
+| --- | --- | --- | --- |
+| a | Administrateur | Circuit **Salles · associations** › étape « Visa de l'élu sur la gratuité » : **À l'échéance, sans réponse** : **Tenir l'étape pour accordée**. **Publier**. | Le logigramme porte « accord d'office à l'échéance ». Sans délai sur l'étape, la publication serait refusée. |
+| b | Sophie | Sur R260008 : **Passer à la version 2**. | Le visa en attente suit le dossier. |
+| c | Vous | Laissez passer l'échéance, ou avancez-la en base, puis lancez `pnpm tsx scripts/executer-tache.ts relances_etapes`. | « 1 tenue(s) pour accordée(s) ». |
+| d | Sophie | Cloche, puis R260008. | « Visa accordé d'office · R260008 » ; la carte Circuit indique « Visa accordé … d'office : sans réponse à l'échéance » ; **Approuver** aboutit. |
+
 **Variante — un avis de subvention en retard** (dossier S270002 du TTMC)
 
 | # | Qui | Action | Constat |

@@ -917,14 +917,17 @@ export async function libelleUsagerEnCours(reservationId: number): Promise<strin
  * prévenues de nouveau, ainsi que le responsable du service du dossier et ceux qui le
  * suivent. L'échéance reste indicative : rien n'est décidé d'office.
  */
-export async function relancerEtapesEnRetard(now = new Date()): Promise<number> {
-  if (!(await processusActif())) return 0;
+export async function relancerEtapesEnRetard(
+  now = new Date(),
+): Promise<{ relancees: number; accordees: number }> {
+  if (!(await processusActif())) return { relancees: 0, accordees: 0 };
   const enRetard = await prisma.dossierEtape.findMany({
     where: { status: "ouverte", echeanceAt: { lt: now }, relanceAt: null },
     include: { circuitVersion: true, reponses: { select: { userId: true } } },
     orderBy: { echeanceAt: "asc" },
   });
   let relancees = 0;
+  let accordees = 0;
   for (const o of enRetard) {
     const p = await chargerPorteur(o.objet, o.objetId);
     if (!p) continue;
@@ -933,6 +936,45 @@ export async function relancerEtapesEnRetard(now = new Date()): Promise<number> 
     const attendus = restantARepondre(await personnesDe(def.intervenant, p.serviceId), o.reponses);
     const lien = `${p.lien}#circuit`;
     const depuis = o.echeanceAt ? dateCourte(o.echeanceAt) : "";
+    // Le circuit tient l'étape pour accordée quand personne n'a répondu dans le délai.
+    if (def.aEcheance === "accord") {
+      const issue = NATURES[def.nature].issues[0];
+      await prisma.dossierEtape.update({
+        where: { id: o.id },
+        data: {
+          status: "validee",
+          closAt: now,
+          closPar: "automatique",
+          commentaire: `Sans réponse à l'échéance du ${depuis} : étape tenue pour accordée.`,
+        },
+      });
+      await p.historiser(
+        `${issue} d'office`,
+        `${o.libelle} · sans réponse à l'échéance du ${depuis}`,
+        "automatique",
+      );
+      const aPrevenir = new Set<string>([...p.suiveurs, ...attendus.map((a) => a.id)]);
+      if (o.ouvertPar) {
+        const u = await prisma.user.findFirst({
+          where: { ...AGENT_ACTIF, name: o.ouvertPar },
+          select: { id: true },
+        });
+        if (u) aPrevenir.add(u.id);
+      }
+      await Promise.all(
+        [...aPrevenir].map((id) =>
+          notifier(
+            id,
+            typeNotif(p),
+            `${issue} d'office · ${p.numero}`,
+            `${o.libelle} · sans réponse à l'échéance du ${depuis}`,
+            lien,
+          ),
+        ),
+      );
+      accordees += 1;
+      continue;
+    }
     await Promise.all(
       attendus.map((a) =>
         notifier(
@@ -983,7 +1025,7 @@ export async function relancerEtapesEnRetard(now = new Date()): Promise<number> 
     );
     relancees += 1;
   }
-  return relancees;
+  return { relancees, accordees };
 }
 
 // ── Mes étapes en attente ──

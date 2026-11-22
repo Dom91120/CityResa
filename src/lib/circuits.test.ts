@@ -20,6 +20,7 @@ import {
   FORMAT_EXPORT,
   INSERTION,
   issueReunion,
+  lireAEcheance,
   lireCondition,
   lireDefinition,
   lireImportCircuit,
@@ -65,6 +66,7 @@ const etape = (plus: Partial<Etape> = {}): Etape => ({
   condition: null,
   delaiJours: 0,
   reunion: "un",
+  aEcheance: "relance",
   ...plus,
 });
 
@@ -368,6 +370,15 @@ describe("règle de réunion", () => {
     expect(issueReunion("majorite", ["a"], [oui("a")])).toBe("validee");
   });
 
+  it("lit ce qui se passe à l'échéance, la relance par défaut", () => {
+    expect(lireAEcheance("accord")).toBe("accord");
+    expect(lireAEcheance(undefined)).toBe("relance");
+    expect(lireDefinition({ etapes: [etape()] }).etapes[0].aEcheance).toBe("relance");
+    expect(
+      lireDefinition({ etapes: [{ ...etape(), aEcheance: "accord" }] }).etapes[0].aEcheance,
+    ).toBe("accord");
+  });
+
   it("date l'échéance d'une étape, sauf sans délai", () => {
     const d = new Date("2026-11-01T10:00:00Z");
     expect(echeanceDe(d, 15)?.toISOString()).toBe("2026-11-16T10:00:00.000Z");
@@ -478,6 +489,28 @@ describe("contrôles avant publication", () => {
     expect(controler({ name: "A", parDefaut: true }, { ...d, serviceId: 2 }, ref)[0]).toContain(
       "pas de responsable",
     );
+  });
+});
+
+describe("étape tenue pour accordée à l'échéance", () => {
+  const ref: Referentiel = {
+    services: new Map(),
+    delegations: new Map([[1, { label: "Sports", personnes: 1 }]]),
+    roles: new Map(),
+  };
+  const circuit = { parDefaut: true, name: "C" };
+
+  it("exige un délai, et ne s'applique pas à l'avis des élus", () => {
+    const sansDelai = def({ etapes: [etape({ aEcheance: "accord", delaiJours: 0 })] });
+    expect(controler(circuit, sansDelai, ref).join(" ")).toMatch(/donnez-lui un délai/);
+    const avecDelai = def({ etapes: [etape({ aEcheance: "accord", delaiJours: 5 })] });
+    expect(controler(circuit, avecDelai, ref).join(" ")).not.toMatch(/délai/);
+    const avis = def({
+      etapes: [
+        { ...etape({ aEcheance: "accord", delaiJours: 5, nature: "avis" }), moment: "avis_elus" },
+      ],
+    });
+    expect(controler(circuit, avis, ref).join(" ")).toMatch(/ne se donne pas d'office/);
   });
 });
 

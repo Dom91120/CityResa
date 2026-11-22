@@ -1091,13 +1091,24 @@ L'écart **E7** est ainsi traité pour les subventions.
 - sans l'écriture, les pages se consultent : aucun bouton ni fenêtre de saisie, les routes
   refusent ; l'entrée du menu suit le droit.
 
+**Lot 21, livré** — accord d'office à l'échéance :
+
+- chaque étape dit ce qui se passe **à l'échéance, sans réponse** : une relance (défaut), ou
+  l'étape **tenue pour accordée** (« le silence vaut accord ») ;
+- l'accord d'office est donné par la tâche de relance : étape validée, historique, agent
+  demandeur et personnes attendues prévenus ; le geste retenu peut se refaire ;
+- garde-fous à la publication : un délai est exigé, et l'avis des élus d'une subvention ne se
+  donne pas d'office.
+
+La transmission au suppléant existe déjà : une délégation sollicite son titulaire et son
+suppléant, un service suppléé sollicite aussi les membres du service qui le supplée.
+
 **Reste à faire**
 
 | Sujet | Écart |
 | --- | --- |
 | Droits par service sur ce qui reste réglé **par espace** : présences, personnel de service, fermetures | E1 |
 | Autres **moments** d'insertion : avant l'émission d'une facture, une fermeture exceptionnelle | E3 |
-| **Échéance** : passage d'office à l'étape suivante ou transmission au suppléant (aujourd'hui : une relance, l'alerte au responsable, et l'échéance en rouge) | — |
 | **Effets** paramétrables d'une étape (modèle de courriel propre à l'étape, mise en copie, document) | E2 |
 | Service sur les factures | E7 |
 

@@ -38,6 +38,7 @@ const visaGratuite = (delegationId: number): Etape => ({
   condition: { mode: "tous", tests: [{ champ: "gratuite_accordee", op: "est", valeur: true }] },
   delaiJours: 10,
   reunion: "un",
+  aEcheance: "relance",
 });
 
 const regle = (...tests: Condition["tests"]): Condition => ({ mode: "tous", tests });
@@ -245,6 +246,7 @@ async function creerCircuitsSubventionDemo(): Promise<number> {
     condition: null,
     delaiJours: 15,
     reunion: "un",
+    aEcheance: "relance",
   };
   // Avant de verser, la régie vise : le rôle Financier (Hélène Petit dans le jeu).
   const visaVersement: Etape = {
@@ -257,6 +259,7 @@ async function creerCircuitsSubventionDemo(): Promise<number> {
     condition: null,
     delaiJours: 5,
     reunion: "un",
+    aEcheance: "relance",
   };
   const circuit = (
     position: number,
@@ -321,6 +324,7 @@ async function creerCircuitsSubventionDemo(): Promise<number> {
               },
               delaiJours: 5,
               reunion: "un",
+              aEcheance: "relance",
             },
             visaVersement,
           ]
@@ -366,6 +370,7 @@ async function creerCircuitCampagneDemo(): Promise<number> {
         condition: null,
         delaiJours: 7,
         reunion: "un",
+        aEcheance: "relance",
       },
     ],
   };
@@ -618,6 +623,7 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
     condition: null,
     delaiJours: 3,
     reunion: "un",
+    aEcheance: "relance",
   };
   // Refuser une location passe par le responsable du service.
   const visaRefus: Etape = {
@@ -630,6 +636,7 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
     condition: null,
     delaiJours: 2,
     reunion: "un",
+    aEcheance: "relance",
   };
   await circuit(
     10,
@@ -678,6 +685,7 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
           condition: null,
           delaiJours: 5,
           reunion: "un",
+          aEcheance: "relance",
         },
       ],
     },

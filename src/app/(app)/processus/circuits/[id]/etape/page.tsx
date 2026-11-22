@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { Champ, EnteteForm, Grille, PiedForm, SectionForm, Select } from "@/components/formulaire";
-import { INSERTION, MOMENTS, NATURES, REUNIONS } from "@/lib/circuits";
+import { A_ECHEANCE, INSERTION, MOMENTS, NATURES, REUNIONS } from "@/lib/circuits";
 import { chargerCircuit, choixIntervenants, valeurIntervenant } from "@/modules/processus/server";
 import { ChampsCondition } from "@/modules/processus/vues";
 import { optionsCriteres } from "@/server/circuits";
@@ -123,6 +123,14 @@ export default async function EtapePage({
                 max={365}
                 valeur={e?.delaiJours ?? 0}
                 aide="0 = sans échéance. Passé le délai, l'étape est signalée en retard."
+              />
+              <Select
+                label="À l'échéance, sans réponse"
+                name="a_echeance"
+                requis
+                options={Object.entries(A_ECHEANCE).map(([k, v]) => [k, v.label])}
+                valeur={e?.aEcheance ?? "relance"}
+                aide="Relancer : l'étape continue d'attendre. Tenir pour accordée : le silence vaut accord, l'étape est validée d'office et le demandeur est prévenu ; demande un délai."
               />
               <Champ
                 label="Ce que lit l'usager pendant l'étape"

@@ -5,6 +5,7 @@
 import { Icone } from "@/components/icones";
 import { Chip } from "@/components/macros";
 import {
+  A_ECHEANCE,
   type Condition,
   type Critere,
   CYCLES,
@@ -218,6 +219,7 @@ export function Logigramme({
               ? ` · ${REUNIONS[e.reunion].court}`
               : ""}
             {e.delaiJours ? ` · sous ${e.delaiJours} j` : ""}
+            {e.aEcheance === "accord" ? ` · ${A_ECHEANCE.accord.court}` : ""}
             {e.moment === "avis_elus"
               ? " · consulté à la soumission aux élus"
               : n.bloquante
