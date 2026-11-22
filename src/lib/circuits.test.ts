@@ -17,7 +17,9 @@ import {
   INSERTION,
   lireCondition,
   lireDefinition,
+  lireMoment,
   type Referentiel,
+  STATUTS_DU_MOMENT,
   type Test,
 } from "@/lib/circuits";
 
@@ -228,6 +230,32 @@ describe("types de dossier", () => {
       ["c", "avant_acceptation"],
     ]);
     expect(INSERTION.subvention.natures).toEqual(["avis"]);
+  });
+
+  it("une réservation admet quatre moments, que la lecture conserve", () => {
+    expect(INSERTION.reservation.moments).toEqual([
+      "avant_acceptation",
+      "avant_refus",
+      "avant_annulation",
+      "avant_requisition",
+    ]);
+    const d = lireDefinition({
+      etapes: [
+        { ...etape({ cle: "a" }), moment: "avant_refus" },
+        { ...etape({ cle: "b" }), moment: "avant_requisition" },
+      ],
+    });
+    expect(d.etapes.map((e) => e.moment)).toEqual(["avant_refus", "avant_requisition"]);
+    expect(etapesApplicables(d, asso, "avant_refus").map((e) => e.cle)).toEqual(["a"]);
+    expect(lireMoment("avant_annulation")).toBe("avant_annulation");
+    expect(lireMoment("avis_elus")).toBe("avant_acceptation");
+    expect(lireMoment("n'importe quoi", "subvention")).toBe("avis_elus");
+  });
+
+  it("un visa de refus ne s'attend plus sur un dossier accepté", () => {
+    expect(STATUTS_DU_MOMENT.avant_refus).not.toContain("acceptee");
+    expect(STATUTS_DU_MOMENT.avant_requisition).toEqual(["acceptee", "signee", "confirmee"]);
+    expect(STATUTS_DU_MOMENT.avant_annulation).toContain("a_traiter");
   });
 
   it("aiguille une subvention sur ses propres critères", () => {

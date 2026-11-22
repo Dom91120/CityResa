@@ -4,6 +4,7 @@
  * papier, factures, montants, suppression. Chaque geste vérifie le périmètre de l'agent
  * (`user.gereEspace`) et transforme toute UserFacingError en message flash.
  */
+import { STATUTS_DU_MOMENT } from "@/lib/circuits";
 import { RESERVATION_STATUS, type ReservationStatus } from "@/lib/constantes";
 import { reglesAuCreneau, verifierRegles } from "@/lib/creneaux";
 import { champ, champOuNull, coche, idOuNull, parseFloat_, parseInt_ } from "@/lib/forms-util";
@@ -272,6 +273,22 @@ async function statut({ user, r, fiche }: Contexte, form: FormData): Promise<Res
       throw e;
     }
   }
+  // Un refus ou une annulation peuvent aussi attendre une étape du circuit (visa, relecture).
+  if (nouveau === "refusee" || nouveau === "annulee") {
+    const { verifierAvant } = await import("@/server/circuits");
+    try {
+      await verifierAvant(
+        r,
+        nouveau === "refusee" ? "avant_refus" : "avant_annulation",
+        user,
+        `${nouveau === "refusee" ? "Refus envisagé" : "Annulation envisagée"} : ${motif ?? ""}`,
+      );
+    } catch (e) {
+      if (e instanceof UserFacingError)
+        return redirigerAvecMessage(`${fiche}#circuit`, e.message, "warning");
+      throw e;
+    }
+  }
   const maj = await changerStatut(r.id, nouveau, user, {
     motif: motif ?? undefined,
     message: message ?? undefined,
@@ -445,6 +462,15 @@ async function requisitionCreneau(
     });
     if (typeof choix === "string") throw new UserFacingError(choix);
     const evenement = champ(form, "evenement").trim();
+    // Réquisitionner le créneau d'un usager peut attendre un visa du circuit.
+    const { verifierAvant } = await import("@/server/circuits");
+    try {
+      await verifierAvant(r, "avant_requisition", user, `Réquisition envisagée : ${evenement}`);
+    } catch (e) {
+      if (e instanceof UserFacingError)
+        return redirigerAvecMessage(`${fiche}#circuit`, e.message, "warning");
+      throw e;
+    }
     const b = await requisitionner({
       r,
       creneauId: cid,
@@ -602,8 +628,8 @@ async function demanderEtape({ user, r, fiche }: Contexte, form: FormData): Prom
   const e = etat?.etapes.find((x) => x.cle === champ(form, "cle"));
   if (!e) throw new UserFacingError("Cette étape ne s'applique pas à ce dossier.");
   if (e.etat === "ouverte") throw new UserFacingError("Cette étape attend déjà une réponse.");
-  if (!["a_traiter", "en_traitement"].includes(r.status))
-    throw new UserFacingError("Le dossier n'est plus à l'étude : l'étape ne se demande plus.");
+  if (!STATUTS_DU_MOMENT[e.moment].includes(r.status))
+    throw new UserFacingError("Le moment de cette étape est passé : elle ne se demande plus.");
   await ouvrirEtape(r, e, user.name, champOuNull(form, "contexte"));
   return redirigerAvecMessage(
     `${fiche}#circuit`,

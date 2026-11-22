@@ -12,7 +12,7 @@ Le cycle d'un dossier ne change pas : le module y **insère** des étapes, il ne
 | **Délégation** | Le domaine d'un élu. Une étape s'adresse à une délégation, pas à une personne : l'élu peut changer sans toucher aux circuits. |
 | **Circuit** | Pour un type de demandes : le service auquel elles sont confiées et les étapes qui précèdent leur acceptation. |
 | **Règle d'aiguillage** | La condition qui fait qu'un circuit reçoit une demande (« une salle demandée par une association »). |
-| **Étape** | Une relecture, un avis ou un visa, demandé à un service, à un élu ou à un rôle, sous condition ou toujours. |
+| **Étape** | Une relecture, un avis ou un visa, demandé à un service, à un élu ou à un rôle, sous condition ou toujours, à un **moment** du dossier. |
 | **Version** | Un circuit se modifie en brouillon, puis se publie. Un dossier garde la version avec laquelle il a commencé. |
 
 Les trois natures d'étape :
@@ -22,6 +22,15 @@ Les trois natures d'étape :
 | **Relecture** | Un second regard avant que la décision parte à l'usager. Retient l'acceptation. |
 | **Visa** | Un accord préalable. Retient l'acceptation. |
 | **Avis** | Un avis consultatif. Ne retient rien. |
+
+Une étape précède l'un de quatre gestes sur une réservation :
+
+| Moment | Le geste retenu |
+| --- | --- |
+| **Avant l'acceptation de la demande** | Approuver (ou créer directement le dossier accepté) |
+| **Avant le refus de la demande** | Décliner |
+| **Avant une annulation par la collectivité** | Annuler la réservation (l'annulation par l'usager n'est pas concernée) |
+| **Avant une réquisition pour la Ville** | Réquisitionner un créneau |
 
 ## 12.2 Mes étapes
 
@@ -79,6 +88,8 @@ Les trois natures d'étape :
 
 - Une étape ne s'applique que si sa condition est vraie. Exemple du jeu de démonstration : le visa de l'élu n'est demandé que si l'agent accorde la gratuité ; approuver sans gratuité ne déclenche rien.
 - Un avis part avec la première approbation mais ne la retient pas.
+- Il en va de même des autres gestes : **Décliner**, **Annuler** ou **Réquisitionner** est retenu si le circuit prévoit une relecture ou un visa à ce moment-là. L'étape est demandée d'office, avec le motif que vous avez saisi, et le geste se refait une fois l'accord donné. Le jeu de démonstration en a deux exemples : le visa du responsable avant le refus d'une location, et le visa de l'élu avant la réquisition du créneau d'une association.
+- La carte n'affiche que les étapes du moment présent : un visa de refus ne s'attend plus sur un dossier accepté, un visa de réquisition n'apparaît que sur un dossier acquis.
 - Une réservation saisie directement « Acceptée » ou « Confirmée » par un agent, sur un espace sans validation ou par une campagne, naît « À traiter » si son circuit lui impose une relecture ou un visa.
 - L'usager ne voit une étape que si elle porte un libellé qui lui est destiné (« Votre demande est en cours de validation »).
 - Chaque demande et chaque réponse sont inscrites à l'historique du dossier.
@@ -171,7 +182,7 @@ Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écrit
 
 1. Cliquez sur **Nouveau circuit**, ou ouvrez un circuit existant. Toute modification s'écrit dans un **brouillon** ; rien ne change pour les dossiers tant qu'il n'est pas publié.
 2. Section **Aiguillage** › **Modifier** : choisissez le **service** et réglez la **règle**. Chaque critère est « Indifférent » par défaut ; ne renseignez que ceux qui comptent, et choisissez s'ils doivent tous être vrais ou si un seul suffit.
-3. Section **Étapes avant l'acceptation** › **Ajouter** : le **Libellé**, la **Nature**, **Qui répond**, un **Délai indicatif**, ce que lit l'usager, et les critères de **Quand l'étape s'applique**.
+3. Section **Étapes du circuit** › **Ajouter** : le **Libellé**, la **Nature**, **Qui répond**, le **Moment** (avant l'acceptation, le refus, une annulation ou une réquisition), un **Délai indicatif**, ce que lit l'usager, et les critères de **Quand l'étape s'applique**.
 4. Ordonnez les étapes avec les flèches ; la corbeille en retire une.
 5. Vérifiez le **logigramme**, puis cliquez sur **Publier** et saisissez une note de version.
 

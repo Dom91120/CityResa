@@ -408,6 +408,28 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
       },
     });
   const etapes = [visaGratuite(delegation.id)];
+  // Réquisitionner le créneau d'une association pour la Ville demande le visa de l'élu.
+  const visaRequisition: Etape = {
+    cle: "visa-requisition",
+    libelle: "Visa de l'élu sur la réquisition",
+    libelleUsager: "",
+    nature: "visa",
+    moment: "avant_requisition",
+    intervenant: { type: "delegation", id: delegation.id },
+    condition: null,
+    delaiJours: 3,
+  };
+  // Refuser une location passe par le responsable du service.
+  const visaRefus: Etape = {
+    cle: "visa-refus",
+    libelle: "Visa du responsable sur le refus",
+    libelleUsager: "",
+    nature: "visa",
+    moment: "avant_refus",
+    intervenant: { type: "responsable_dossier" },
+    condition: null,
+    delaiJours: 2,
+  };
   await circuit(
     10,
     "Équipements sportifs",
@@ -428,7 +450,7 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
         { champ: "type_demandeur", op: "parmi", valeur: ["association"] },
       ),
       serviceId: vieAsso.id,
-      etapes,
+      etapes: [...etapes, visaRequisition],
     },
   );
   await circuit(
@@ -441,7 +463,7 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
         { champ: "type_demandeur", op: "parmi", valeur: ["particulier", "entreprise"] },
       ),
       serviceId: fetes.id,
-      etapes,
+      etapes: [...etapes, visaRefus],
     },
   );
 

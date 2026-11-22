@@ -13,9 +13,11 @@ import {
   type EtatEtape,
   type Libelles,
   libelleIntervenant,
+  MOMENTS,
   NATURES,
   type Nature,
   type Objet,
+  RETENU,
   type Referentiel,
 } from "@/lib/circuits";
 
@@ -232,9 +234,10 @@ export function Logigramme({
                 {subvention
                   ? " · consulté à la soumission aux élus"
                   : n.bloquante
-                    ? " · retient l'acceptation"
+                    ? ` · retient ${RETENU[e.moment]}`
                     : " · ne retient rien"}
               </span>
+              {subvention ? null : <span>{MOMENTS[e.moment]}</span>}
               <span className="logi-condition">
                 <Icone nom="filter" taille={12} /> {decrireCondition(e.condition, libelles)}
               </span>

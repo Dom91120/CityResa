@@ -24,8 +24,10 @@ import {
   type Libelles,
   libelleIntervenant,
   lireDefinition,
+  type Moment,
   NATURES,
   type Referentiel,
+  STATUTS_DU_MOMENT,
 } from "@/lib/circuits";
 import { dateCourte, plage } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
@@ -479,10 +481,9 @@ export async function ouvrirEtapesPrealables(
   etat: EtatCircuit,
   acteur: string,
   contexte: string | null = null,
+  moment: Moment = "avant_acceptation",
 ): Promise<EtapeDossier[]> {
-  const aOuvrir = etat.etapes.filter(
-    (e) => e.etat === "a_demander" && e.moment === "avant_acceptation",
-  );
+  const aOuvrir = etat.etapes.filter((e) => e.etat === "a_demander" && e.moment === moment);
   for (const e of aOuvrir) await ouvrirEtape(r, e, acteur, contexte);
   return aOuvrir;
 }
@@ -505,26 +506,72 @@ export async function verifierAvantAcceptation(
   acteur: CurrentUser,
   contexte: string | null = null,
 ): Promise<void> {
+  return verifierAvant(r, "avant_acceptation", acteur, contexte);
+}
+
+/** Ce que disent les verrous, moment par moment. */
+const VERROUS: Record<Moment, { fait: string; impossible: string; reste: string; sinon: string }> =
+  {
+    avant_acceptation: {
+      fait: "Le dossier n'est pas encore accepté",
+      impossible: "Acceptation impossible",
+      reste: "il restera à approuver",
+      sinon: "Modifiez le dossier puis redemandez l'étape, ou déclinez la demande.",
+    },
+    avant_refus: {
+      fait: "La demande n'est pas encore refusée",
+      impossible: "Refus impossible",
+      reste: "il restera à décliner",
+      sinon: "Revoyez votre décision, ou redemandez l'étape.",
+    },
+    avant_annulation: {
+      fait: "La réservation n'est pas encore annulée",
+      impossible: "Annulation impossible",
+      reste: "il restera à annuler",
+      sinon: "Revoyez votre décision, ou redemandez l'étape.",
+    },
+    avant_requisition: {
+      fait: "Le créneau n'est pas encore réquisitionné",
+      impossible: "Réquisition impossible",
+      reste: "il restera à réquisitionner",
+      sinon: "Revoyez votre décision, ou redemandez l'étape.",
+    },
+    avis_elus: { fait: "", impossible: "", reste: "", sinon: "" },
+  };
+
+/**
+ * Le verrou d'un moment du cycle (acceptation, refus, annulation, réquisition) : tant qu'une
+ * étape bloquante applicable à ce moment n'est pas validée, le geste est retenu. Les étapes
+ * pas encore demandées sont ouvertes au passage.
+ */
+export async function verifierAvant(
+  r: ReservationComplete,
+  moment: Moment,
+  acteur: CurrentUser,
+  contexte: string | null = null,
+): Promise<void> {
   const etat = await etatCircuit(r);
   if (!etat) return;
   // Les avis applicables partent avec la première tentative, sans rien retenir.
-  const aOuvrir = await ouvrirEtapesPrealables(r, etat, acteur.name, contexte);
-  if (!etat.retenues.length) return;
-  const refusees = etat.retenues.filter((e) => e.etat === "refusee");
+  const aOuvrir = await ouvrirEtapesPrealables(r, etat, acteur.name, contexte, moment);
+  const retenues = etat.retenues.filter((e) => e.moment === moment);
+  if (!retenues.length) return;
+  const v = VERROUS[moment];
+  const refusees = retenues.filter((e) => e.etat === "refusee");
   if (refusees.length)
     throw new UserFacingError(
-      `Acceptation impossible : ${refusees.map((e) => `« ${e.libelle} » a été refusé${e.nature === "relecture" ? "e" : ""}`).join(" ; ")}. Modifiez le dossier puis redemandez l'étape, ou déclinez la demande.`,
+      `${v.impossible} : ${refusees.map((e) => `« ${e.libelle} » a été refusé${e.nature === "relecture" ? "e" : ""}`).join(" ; ")}. ${v.sinon}`,
     );
-  const nouvelles = etat.retenues.filter((e) => aOuvrir.some((o) => o.cle === e.cle));
-  const enCours = etat.retenues.filter((e) => !nouvelles.includes(e));
+  const nouvelles = retenues.filter((e) => aOuvrir.some((o) => o.cle === e.cle));
+  const enCours = retenues.filter((e) => !nouvelles.includes(e));
   const dire = (es: EtapeDossier[]) =>
     es.map((e) => `« ${e.libelle} » (${e.libelleIntervenant})`).join(", ");
   throw new UserFacingError(
     [
-      "Le dossier n'est pas encore accepté : son circuit demande une étape préalable.",
+      `${v.fait} : son circuit demande une étape préalable.`,
       nouvelles.length ? `Demandé à l'instant : ${dire(nouvelles)}.` : "",
       enCours.length ? `En attente de réponse : ${dire(enCours)}.` : "",
-      "Vous serez prévenu de la réponse ; il restera à approuver.",
+      `Vous serez prévenu de la réponse ; ${v.reste}.`,
     ]
       .filter(Boolean)
       .join(" "),
@@ -642,9 +689,9 @@ export async function relancerEtapesEnRetard(now = new Date()): Promise<number> 
         service: { select: { responsableId: true } },
       },
     });
-    if (!r || !["a_traiter", "en_traitement"].includes(r.status)) continue;
+    if (!r) continue;
     const def = lireDefinition(o.circuitVersion.definition).etapes.find((e) => e.cle === o.cle);
-    if (!def) continue;
+    if (!def || !STATUTS_DU_MOMENT[def.moment].includes(r.status)) continue;
     const attendus = await personnesDe(def.intervenant, r.serviceId);
     const lien = `/reservations/${r.id}#circuit`;
     const depuis = o.echeanceAt ? dateCourte(o.echeanceAt) : "";
@@ -743,10 +790,10 @@ export async function etapesEnAttente(
   const out: EtapeEnAttente[] = [];
   for (const o of ouvertes) {
     const d = parId.get(o.objetId);
-    // Une étape ne s'attend plus sur un dossier déjà décidé ou clos.
-    if (!d || !["a_traiter", "en_traitement"].includes(d.status)) continue;
+    if (!d) continue;
     const def = lireDefinition(o.circuitVersion.definition).etapes.find((e) => e.cle === o.cle);
-    if (!def) continue;
+    // Une étape ne s'attend plus une fois passé le moment qu'elle précède.
+    if (!def || !STATUTS_DU_MOMENT[def.moment].includes(d.status)) continue;
     const pourMoi = (await personnesDe(def.intervenant, d.serviceId)).some((p) => p.id === user.id);
     if (!pourMoi && !toutes) continue;
     out.push({

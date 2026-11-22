@@ -11,8 +11,10 @@ import {
   type Faits,
   INSERTION,
   libelleIntervenant,
+  MOMENTS,
   NATURES,
   type Objet,
+  RETENU,
 } from "@/lib/circuits";
 import { montant, plage } from "@/lib/libelles";
 import { contexteAdmin } from "@/modules/admin/server";
@@ -110,7 +112,11 @@ export default async function SimulationPage({
     : null;
   const retenu = resultat?.retenu ?? null;
   const etapes =
-    retenu && d ? etapesApplicables(retenu.definition, d.faits, INSERTION[d.objet].moment) : [];
+    retenu && d
+      ? etapesApplicables(retenu.definition, d.faits).filter((e) =>
+          INSERTION[d.objet].moments.includes(e.moment),
+        )
+      : [];
   const ecartees = retenu ? retenu.definition.etapes.filter((e) => !etapes.includes(e)) : [];
   const service = retenu?.definition.serviceId
     ? ref.services.get(retenu.definition.serviceId)
@@ -245,7 +251,7 @@ export default async function SimulationPage({
             </Section>
 
             <Section
-              titre={subvention ? "Élus qui seraient consultés" : "Étapes qui s'ouvriraient"}
+              titre={subvention ? "Élus qui seraient consultés" : "Étapes que prévoit le circuit"}
               icone="list-checks"
               nb={etapes.length}
             >
@@ -266,9 +272,11 @@ export default async function SimulationPage({
                         <small>
                           {subvention
                             ? "Prévenu à la soumission aux élus ; l'avis lui est réservé."
-                            : NATURES[e.nature].bloquante
-                              ? "Retient l'acceptation jusqu'à la réponse."
-                              : "Ne retient pas l'acceptation."}
+                            : `${MOMENTS[e.moment]} · ${
+                                NATURES[e.nature].bloquante
+                                  ? `retient ${RETENU[e.moment]} jusqu'à la réponse.`
+                                  : "ne retient rien."
+                              }`}
                         </small>
                       </span>
                     </li>
@@ -278,7 +286,7 @@ export default async function SimulationPage({
                 <p className="text-muted small mb-0">
                   {subvention
                     ? "Aucun élu nommé : tout compte qui a l'écriture sur les subventions pourrait donner un avis."
-                    : "Aucune : la demande s'accepterait sans étape préalable."}
+                    : "Aucune : la demande se traiterait sans étape préalable."}
                 </p>
               )}
               {ecartees.length ? (

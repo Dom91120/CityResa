@@ -303,21 +303,51 @@ export type Nature = keyof typeof NATURES;
 /** Le moment du cycle de fond où l'étape s'insère. */
 export const MOMENTS = {
   avant_acceptation: "Avant l'acceptation de la demande",
+  avant_refus: "Avant le refus de la demande",
+  avant_annulation: "Avant une annulation par la collectivité",
+  avant_requisition: "Avant une réquisition pour la Ville",
   avis_elus: "À l'avis des élus",
 } as const;
 export type Moment = keyof typeof MOMENTS;
 
+/** Ce qu'une étape bloquante retient, selon son moment (« retient l'acceptation »). */
+export const RETENU: Record<Moment, string> = {
+  avant_acceptation: "l'acceptation",
+  avant_refus: "le refus",
+  avant_annulation: "l'annulation",
+  avant_requisition: "la réquisition",
+  avis_elus: "le vote",
+};
+
+/**
+ * Les statuts d'une réservation pendant lesquels une étape de ce moment a un sens : on
+ * n'attend plus un visa de refus sur un dossier accepté, ni un visa d'annulation sur un
+ * dossier clos.
+ */
+export const STATUTS_DU_MOMENT: Record<Moment, readonly string[]> = {
+  avant_acceptation: ["a_traiter", "en_traitement"],
+  avant_refus: ["a_traiter", "en_traitement"],
+  avant_annulation: ["a_traiter", "en_traitement", "acceptee", "signee", "confirmee"],
+  avant_requisition: ["acceptee", "signee", "confirmee"],
+  avis_elus: [],
+};
+
+export function lireMoment(v: unknown, objet: Objet = "reservation"): Moment {
+  const moments = INSERTION[objet].moments;
+  return moments.includes(v as Moment) ? (v as Moment) : moments[0];
+}
+
 /** Le moment où s'insèrent les étapes d'un type de dossier, et les natures qu'il admet. */
 export const INSERTION: Record<
   Objet,
-  { moment: Moment; natures: readonly Nature[]; titre: string }
+  { moments: readonly Moment[]; natures: readonly Nature[]; titre: string }
 > = {
   reservation: {
-    moment: "avant_acceptation",
+    moments: ["avant_acceptation", "avant_refus", "avant_annulation", "avant_requisition"],
     natures: ["relecture", "avis", "visa"],
-    titre: "Étapes avant l'acceptation",
+    titre: "Étapes du circuit",
   },
-  subvention: { moment: "avis_elus", natures: ["avis"], titre: "Avis demandés aux élus" },
+  subvention: { moments: ["avis_elus"], natures: ["avis"], titre: "Avis demandés aux élus" },
 };
 
 export type Intervenant =
@@ -403,7 +433,10 @@ export function lireDefinition(brut: unknown): Definition {
     if (!intervenant || !(nature in NATURES) || !/^[a-z0-9-]{1,40}$/.test(cle)) continue;
     if (etapes.some((e) => e.cle === cle)) continue;
     // L'avis des élus sur une subvention est un avis, quoi que dise la donnée.
-    const moment: Moment = x.moment === "avis_elus" ? "avis_elus" : "avant_acceptation";
+    const moment: Moment =
+      typeof x.moment === "string" && x.moment in MOMENTS
+        ? (x.moment as Moment)
+        : "avant_acceptation";
     if (moment === "avis_elus" && nature !== "avis") continue;
     etapes.push({
       cle,

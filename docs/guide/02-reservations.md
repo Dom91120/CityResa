@@ -167,6 +167,7 @@ La carte de décision propose, selon le statut :
 
 - L'approbation passe outre le délai minimal et l'horizon de réservation de l'espace : c'est l'agent qui décide.
 - Un dossier refusé peut être rouvert avec **Rouvrir** : il repasse « À traiter ».
+- Si le circuit du dossier prévoit une relecture ou un visa avant l'acceptation ou avant le refus (chapitre 12), votre décision est retenue : l'étape est demandée d'office et un message jaune vous le dit. Refaites le geste une fois l'accord donné. Il en va de même d'une annulation et d'une réquisition.
 
 ## 2.6 Convention, signature, caution et factures
 

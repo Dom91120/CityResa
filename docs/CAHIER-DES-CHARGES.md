@@ -669,7 +669,7 @@ rencontre.
 | --- | --- | --- | --- |
 | E1 *(traité, § 9 lot 2)* | **Séparer Vie associative et Service des fêtes**, qui partagent les mêmes salles et se distinguent par le type de demandeur. | Un seul secteur **Salles** : tout agent du secteur voit et traite toutes les demandes des salles, associations comme particuliers et entreprises. Le périmètre d'un agent se règle par espace, jamais par type d'usager. Seuls le filtre « type d'usager » des listes et du planning et l'« agent assigné », choisi à la main, permettent à chacun de retrouver ses dossiers. | Notion de **service** portée par l'agent (au-delà du secteur) ; aiguillage d'une demande vers un service selon l'espace **et** le type de demandeur ; notifications, tableau de bord, compteurs et droits de décision limités au service. |
 | E2 | **Communication** : suivre, relire, remplacer. | Aucun compte ni rôle prévu. Le suivi et le remplacement s'obtiennent en donnant à ses agents un compte du secteur Salles (Lecteur, Agent ou Gestionnaire). La **relecture** n'existe pas : aucune étape ne soumet un dossier, une convention ou un message à un second regard avant envoi. | Préciser avec la Ville ce qui est relu (réponse à l'usager, convention, événement ouvert au public, facture) et à quel moment ; selon la réponse, étape « à relire » dans le circuit ou simple mise en copie. Suppléance déclarée (dates, service remplacé) plutôt qu'un compte permanent. |
-| E3 | **Élus dans les circuits** de réservation. | L'élu n'agit que sur les subventions. Sur les réservations, les campagnes de créneaux, la gratuité, les dérogations et les réquisitions, il lit sans pouvoir donner d'avis ni valider. | Arrêter la liste des décisions soumises à un élu ; **avis ou visa d'un élu** sur un dossier de réservation (comme l'avis de subvention), demandé par l'agent, tracé dans l'historique, bloquant ou non selon le cas. |
+| E3 *(traité, § 9 lots 1 et 6, hors campagnes)* | **Élus dans les circuits** de réservation. | L'élu n'agit que sur les subventions. Sur les réservations, les campagnes de créneaux, la gratuité, les dérogations et les réquisitions, il lit sans pouvoir donner d'avis ni valider. | Arrêter la liste des décisions soumises à un élu ; **avis ou visa d'un élu** sur un dossier de réservation (comme l'avis de subvention), demandé par l'agent, tracé dans l'historique, bloquant ou non selon le cas. |
 | E4 *(traité, § 9 lots 1 et 3)* | **Élu de délégation** (sports, vie associative, fêtes…). | Un élu est transversal : il voit tout et peut donner un avis sur toute demande de subvention. Le « secteur d'instruction » d'un dossier de subvention (Sport, Culture, Solidarité…) est une étiquette, sans effet sur qui est sollicité ; l'élu n'est pas notifié quand un dossier attend son avis. | Délégation portée par le compte de l'élu ; avis demandé aux seuls élus concernés ; notification à l'élu. |
 | E5 *(traité, § 9 lot 3)* | **Subventions : quel service instruit ?** Les associations sportives relèvent du Service des sports, les autres de la Vie associative. | Les droits sur les subventions tiennent au **rôle** (Gestionnaire : tout ; Agent : lecture), pas au service. Un seul service de contact se règle dans les paramètres (« Service de la vie associative »). | Répartition de l'instruction par service selon la case « association sportive » ou le secteur d'instruction ; contact du service instructeur sur le dossier. |
 | E6 *(traité, § 9 lot 4)* | **Usagers : service de référence.** | Le fichier des usagers est commun à tous les agents : tout agent en écriture valide une fiche, vérifie des pièces ou modifie une organisation, quel que soit son secteur. | Service de référence déduit du type (et de la case « sportive ») ; fiches à valider et pièces à vérifier présentées au bon service. |
@@ -945,6 +945,19 @@ délégation, notification de l'avis attendu), pour les réservations comme pour
 de démonstration par service). Reste **E8**, qui est une règle tarifaire à confirmer par la
 Ville, pas un manque de l'application.
 
+**Lot 6, livré** — autres moments d'insertion sur une réservation :
+
+- une étape précède désormais l'un de quatre gestes : l'**acceptation**, le **refus**,
+  l'**annulation** par la collectivité, la **réquisition** d'un créneau pour la Ville ;
+- une relecture ou un visa retient le geste, l'étape est demandée d'office avec le motif saisi,
+  et le geste se refait une fois l'accord donné ; un avis ne retient rien ;
+- une étape ne s'attend que pendant les statuts où son moment a un sens ; « Mes étapes », la
+  relance des retards et la carte Circuit du dossier en tiennent compte ;
+- l'annulation par l'usager et les annulations automatiques (option échue) ne sont pas retenues.
+
+L'écart **E3** (élus dans les circuits de réservation) est ainsi traité pour l'acceptation, le
+refus, l'annulation et la réquisition ; il reste l'attribution des créneaux d'une campagne.
+
 **Reste à faire**
 
 | Sujet | Écart |
@@ -952,7 +965,7 @@ Ville, pas un manque de l'application.
 | Droits par service sur ce qui reste réglé **par espace** : présences, personnel de service, fermetures, planning (filtre par service) | E1 |
 | Étapes de circuit (visa, avis) sur l'**attribution des créneaux** d'une campagne, la retenue sur caution et l'annulation | E3 |
 | Subventions : étapes **bloquantes avant le vote** (visa, relecture), filtre par service de la liste, contact du service instructeur dans les courriels et le PDF du dossier | E5, E7 |
-| Autres **moments** d'insertion : avant un refus, une annulation, une réquisition, l'émission d'une facture | E3, E9 |
+| Autres **moments** d'insertion : avant l'émission d'une facture, une retenue sur caution, une fermeture exceptionnelle ; subventions : avant le vote | E3 |
 | Règle de réunion **tous / majorité** (aujourd'hui : une seule réponse suffit) | — |
 | **Échéance** : passage d'office à l'étape suivante ou transmission au suppléant (aujourd'hui : une relance, l'alerte au responsable, et l'échéance en rouge) ; relance des avis sur les subventions | — |
 | **Effets** paramétrables d'une étape (modèle de courriel, mise en copie, document) ; courriel en plus de la cloche | E2 |

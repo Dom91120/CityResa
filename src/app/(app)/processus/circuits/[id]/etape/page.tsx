@@ -31,7 +31,7 @@ export default async function EtapePage({
       <EnteteForm
         titre={e ? `Étape · ${e.libelle}` : "Nouvelle étape"}
         retour={retour}
-        sousTitre={`${c.name} · ${MOMENTS[INSERTION[c.objet].moment].toLowerCase()}`}
+        sousTitre={c.name}
       />
       <form method="POST" action={retour} id="form-principal" data-double-envoi>
         <input type="hidden" name="csrf_token" value={page.csrf} />
@@ -56,10 +56,10 @@ export default async function EtapePage({
                   .map((k) => [k, NATURES[k]] as const)
                   .map(([k, n]) => [
                     k,
-                    `${n.label} — ${n.bloquante ? "retient l'acceptation" : "ne retient rien"}`,
+                    `${n.label} — ${n.bloquante ? "retient le geste" : "ne retient rien"}`,
                   ])}
                 valeur={e?.nature ?? (c.objet === "subvention" ? "avis" : "visa")}
-                aide="Relecture et visa retiennent l'acceptation tant qu'ils ne sont pas accordés ; un avis éclaire sans retenir."
+                aide="Relecture et visa retiennent le geste tant qu'ils ne sont pas accordés ; un avis éclaire sans retenir."
               />
               <div>
                 <label className="form-label" htmlFor="f-intervenant">
@@ -88,6 +88,18 @@ export default async function EtapePage({
                   répond clôt l'étape.
                 </div>
               </div>
+              <Select
+                label="Moment"
+                name="moment"
+                requis
+                options={INSERTION[c.objet].moments.map((m) => [m, MOMENTS[m]])}
+                valeur={e?.moment ?? INSERTION[c.objet].moments[0]}
+                aide={
+                  c.objet === "subvention"
+                    ? "Les élus nommés sont consultés quand le dossier leur est soumis."
+                    : "Le geste que l'étape précède : une relecture ou un visa le retient tant qu'il n'est pas accordé."
+                }
+              />
               <Champ
                 label="Délai indicatif (jours)"
                 name="delai_jours"

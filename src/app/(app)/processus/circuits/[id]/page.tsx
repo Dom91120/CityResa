@@ -18,6 +18,7 @@ import {
   decrireCondition,
   INSERTION,
   libelleIntervenant,
+  MOMENTS,
   OBJETS,
 } from "@/lib/circuits";
 import { dateHeure } from "@/lib/libelles";
@@ -234,7 +235,7 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
                         <PastilleNature nature={e.nature} />
                       </span>
                       <small>
-                        {libelleIntervenant(e.intervenant, ref)} · si :{" "}
+                        {MOMENTS[e.moment]} · {libelleIntervenant(e.intervenant, ref)} · si :{" "}
                         {decrireCondition(e.condition, libelles, "toujours").toLowerCase()}
                         {e.delaiJours ? ` · sous ${e.delaiJours} j` : ""}
                       </small>
@@ -261,7 +262,7 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
               <p className="text-muted small mb-0">
                 {c.objet === "subvention"
                   ? "Aucun élu nommé : tout compte qui a l'écriture sur les subventions peut donner un avis."
-                  : "Aucune étape : une demande s'accepte comme aujourd'hui, sans relecture, avis ni visa."}
+                  : "Aucune étape : une demande se traite sans relecture, avis ni visa."}
               </p>
             )}
           </Section>

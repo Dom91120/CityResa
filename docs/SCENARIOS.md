@@ -87,8 +87,8 @@ circuits, guide chapitre 12) :
 | Circuit | Reçoit | Service | Étape |
 | --- | --- | --- | --- |
 | Équipements sportifs | Tout espace du secteur Sports | Service des sports (Karim) | Visa de l'élu si la gratuité est accordée à la main |
-| Salles · associations | Une salle demandée par une association | Vie associative (Sophie) | Idem |
-| Salles · particuliers et entreprises | Une salle demandée par un particulier ou une entreprise | Service des fêtes (Sophie) | Idem |
+| Salles · associations | Une salle demandée par une association | Vie associative (Sophie) | Idem, et visa de l'élu **avant une réquisition** |
+| Salles · particuliers et entreprises | Une salle demandée par un particulier ou une entreprise | Service des fêtes (Sophie, Nadia) | Idem, et visa du responsable **avant un refus** |
 | Circuit standard | Tout le reste (services de la Ville…) | — | Aucune |
 
 Le service Communication existe mais n'a aucun membre ; la délégation « Sports, vie associative
@@ -225,7 +225,9 @@ les manquants ne sont pas facturés d'office.
 
 - Avec **Antoine Garcia** (particulier extérieur), même salle : le devis applique le tarif
   « extérieur » (400 € la journée).
-- **Décliner** une demande avec un motif, puis **Rouvrir** : elle repasse « À traiter ».
+- Avec **Nadia**, **Décliner** une demande avec un motif : le refus est retenu, le circuit
+  demande le visa du responsable du service (Sophie, dans **Mes étapes**). Une fois accordé,
+  déclinez de nouveau, puis **Rouvrir** : la demande repasse « À traiter ».
 - Sur un dossier accepté, **Marquer signée (papier)** au lieu de la signature en ligne.
 - Demandez un créneau **déjà pris** : le portail propose la liste d'attente et des créneaux
   équivalents.
@@ -416,7 +418,9 @@ association y a son créneau. Puis des travaux ferment un gymnase une semaine.
 | 1 | Léa | Portail : demandez la Salle Gabriel Péri pour une réunion, dans deux semaines. | Profil « Service de la collectivité » : devis **gratuit**. |
 | 2 | Sophie | Approuvez ; laissez Léa signer. | Confirmée, sans facture. |
 | 3 | Sophie | Ouvrez un dossier **récurrent confirmé** d'une association à la Folie Desmares (R260003, l'entraînement de twirling du mardi et du mercredi). Sur une séance à venir, icône de bâtiment public : **Réquisitionner ce créneau pour la Ville** (ch. 2.14). | Page « Priorité municipale ». |
-| 4 | Sophie | Événement « Conseil municipal » ; **Déplacer** sur l'un des créneaux libres proposés ; laissez **Prévenir l'usager** et **Enchaîner sur la saisie** ; **Réquisitionner**. | Le créneau de l'association est déplacé, un avenant est édité (convention signée), le courriel « Priorité municipale » est dans la console ; la page de saisie s'ouvre pré-remplie sur le créneau libéré. |
+| 4 | Sophie | Événement « Conseil municipal » ; **Déplacer** sur l'un des créneaux libres proposés ; laissez **Prévenir l'usager** et **Enchaîner sur la saisie** ; **Réquisitionner**. | La réquisition est **retenue** : le circuit des associations demande le visa de l'élu. Message jaune ; carte **Circuit** : « La réquisition attend : Visa de l'élu sur la réquisition ». Rien n'a bougé. |
+| 4 bis | Pierre | **Mes étapes** : le visa demandé, avec « Réquisition envisagée : Conseil municipal ». **Visa accordé**. | Sophie est prévenue par la cloche. |
+| 4 ter | Sophie | Refaites la réquisition. | Le créneau de l'association est déplacé, un avenant est édité (convention signée), le courriel « Priorité municipale » est dans la console ; la page de saisie s'ouvre pré-remplie sur le créneau libéré. |
 | 5 | Sophie | Terminez la saisie au nom du **Service Culturel**, statut « Confirmée ». | La Ville occupe le créneau ; l'historique du dossier de l'association porte « Réquisition municipale » et son motif. |
 | 6 | Association | Connectez-vous avec son compte : dossier, puis signature de l'avenant. | Le déplacement et son motif sont visibles. |
 | 7 | Karim | **Planning** › **Bloquer un créneau** (ch. 3.7) : Gymnase les Sablons, du lundi au vendredi d'une semaine où il est réservé, motif « Travaux ». | La page **Fermeture exceptionnelle** liste les dossiers et créneaux touchés, avec des créneaux de remplacement. |
@@ -428,8 +432,9 @@ réquisition porte sur un créneau à la fois, d'un dossier accepté, signé ou 
 réservation de la Ville n'est pas créée d'office, on la saisit dans la foulée ; une fermeture
 traite en une fois tous les dossiers touchés.
 
-> **Écart E3** — Réquisitionner le créneau d'une association est une décision sensible : aucun
-> visa d'élu n'est demandé ni tracé.
+> **Écart E3, traité** — Réquisitionner le créneau d'une association demande maintenant le
+> visa de l'élu, tracé dans l'historique du dossier. Le circuit des équipements sportifs n'a
+> pas cette étape : ajoutez-la au scénario 14 si la Ville la veut aussi pour les gymnases.
 
 ---
 
@@ -515,11 +520,11 @@ budget.
 | 6 | Pierre | **Mes étapes** : le dossier R260008 attend son visa. Ouvrez-le, puis **Visa refusé** avec un motif. | Il lit tout le dossier sans bouton de décision ; le refus exige un motif ; côté Sophie, l'approbation reste retenue et l'étape se **redemande**. |
 
 > **Écart E3, traité en partie** — Le module Processus et circuits permet de soumettre une
-> acceptation à un avis ou à un visa d'élu ; le jeu de démonstration le fait pour la gratuité
-> accordée à la main (scénario 4). Notez les autres décisions où vous attendriez un élu :
-> dérogation au délai (un critère existe : ajoutez l'étape vous-même au scénario 14),
-> attribution des créneaux (scénario 5), réquisition (scénario 7), refus d'une demande : ces
-> trois dernières ne sont pas encore couvertes.
+> acceptation, un refus, une annulation ou une réquisition à un avis ou à un visa d'élu. Le jeu
+> de démonstration le fait pour la gratuité accordée à la main (scénario 4) et pour la
+> réquisition du créneau d'une association (scénario 7). Notez les autres décisions où vous
+> attendriez un élu : dérogation au délai, refus, annulation (ajoutez l'étape vous-même au
+> scénario 14). Seule l'attribution des créneaux d'une campagne (scénario 5) n'est pas couverte.
 
 ---
 

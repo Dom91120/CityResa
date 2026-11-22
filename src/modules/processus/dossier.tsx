@@ -5,7 +5,7 @@
 import { ModalAction } from "@/components/fiche";
 import { Zone } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
-import { NATURES } from "@/lib/circuits";
+import { MOMENTS, type Moment, NATURES, RETENU, STATUTS_DU_MOMENT } from "@/lib/circuits";
 import { dateCourte, dateHeure } from "@/lib/libelles";
 import { PastilleEtat, PastilleNature } from "@/modules/processus/vues";
 import type { EtatCircuit } from "@/server/circuits";
@@ -24,11 +24,19 @@ export function CarteCircuit({
   peutDecider: boolean;
   userId: string;
 }) {
-  const aLEtude = dossier.status === "a_traiter" || dossier.status === "en_traitement";
   const fiche = `/reservations/${dossier.id}`;
   const maintenant = Date.now();
+  /** L'étape a-t-elle encore un sens au statut actuel du dossier ? */
+  const vivante = (e: { moment: Moment }) => STATUTS_DU_MOMENT[e.moment].includes(dossier.status);
+  // On montre les étapes du moment présent, et celles qui ont déjà été demandées.
+  const etapes = etat.etapes.filter((e) => vivante(e) || e.etat !== "a_demander");
+  // Le bandeau annonce ce qui retient l'acceptation, et tout autre geste déjà tenté : un visa
+  // de refus jamais demandé ne « retient » rien tant que personne ne veut refuser.
+  const retenues = etat.retenues.filter(
+    (e) => vivante(e) && (e.moment === "avant_acceptation" || e.etat !== "a_demander"),
+  );
   // Un dossier sans service ni étape n'a rien à montrer.
-  if (!etat.service && !etat.etapes.length) return null;
+  if (!etat.service && !etapes.length) return null;
   return (
     <div className="data-card circuit" id="circuit">
       <h5>
@@ -46,15 +54,23 @@ export function CarteCircuit({
             : ""}
         </p>
       ) : null}
-      {aLEtude && etat.retenues.length ? (
+      {retenues.length ? (
         <p className="circuit-verrou">
-          <Icone nom="lock" taille={14} /> L'acceptation attend :{" "}
-          {etat.retenues.map((e) => e.libelle).join(", ")}.
+          <Icone nom="lock" taille={14} />{" "}
+          {[...new Set(retenues.map((e) => e.moment))]
+            .map(
+              (m) =>
+                `${RETENU[m].charAt(0).toUpperCase()}${RETENU[m].slice(1)} attend : ${retenues
+                  .filter((e) => e.moment === m)
+                  .map((e) => e.libelle)
+                  .join(", ")}.`,
+            )
+            .join(" ")}
         </p>
       ) : null}
-      {etat.etapes.length ? (
+      {etapes.length ? (
         <ul className="circuit-etapes">
-          {etat.etapes.map((e) => {
+          {etapes.map((e) => {
             const d = e.derniere;
             const attendu = e.attendus.some((p) => p.id === userId);
             const retard =
@@ -67,9 +83,10 @@ export function CarteCircuit({
                   <PastilleEtat etat={e.etat} nature={e.nature} />
                 </div>
                 <div className="circuit-etape-qui">
+                  {e.moment === "avant_acceptation" ? "" : `${MOMENTS[e.moment]} · `}
                   {e.libelleIntervenant}
                   {e.attendus.length ? ` : ${e.attendus.map((p) => p.name).join(", ")}` : ""}
-                  {e.bloquante ? "" : " · ne retient pas l'acceptation"}
+                  {e.bloquante ? "" : " · ne retient rien"}
                 </div>
                 {d && e.etat !== "a_demander" ? (
                   <div className="circuit-etape-suivi">
@@ -111,7 +128,9 @@ export function CarteCircuit({
                       </button>
                     </>
                   ) : null}
-                  {aLEtude && peutDecider && (e.etat === "a_demander" || e.etat === "refusee") ? (
+                  {vivante(e) &&
+                  peutDecider &&
+                  (e.etat === "a_demander" || e.etat === "refusee") ? (
                     <button
                       type="button"
                       className="btn btn-sm btn-outline-secondary"
@@ -131,12 +150,12 @@ export function CarteCircuit({
         <p className="text-muted small mb-0">Ce circuit n'impose aucune étape à ce dossier.</p>
       )}
 
-      {etat.etapes.map((e) => {
+      {etapes.map((e) => {
         const d = e.derniere;
         const attendu = e.attendus.some((p) => p.id === userId);
         return (
           <div key={e.cle}>
-            {aLEtude && peutDecider && (e.etat === "a_demander" || e.etat === "refusee") ? (
+            {vivante(e) && peutDecider && (e.etat === "a_demander" || e.etat === "refusee") ? (
               <ModalAction
                 id={`modal-etape-demander-${e.cle}`}
                 titre={`Demander : ${e.libelle}`}
