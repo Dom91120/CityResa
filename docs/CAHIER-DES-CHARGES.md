@@ -106,7 +106,8 @@ qu'elle n'en couvre pas encore, figure au § 8.
 leur avis sur les demandes de subvention avant le vote, et sont associés aux décisions qui
 engagent la Ville au-delà de la gestion courante (attribution des créneaux de la saison, gratuité
 accordée hors grille, dérogation, refus ou réquisition sensibles). Le détail de ces interventions,
-circuit par circuit, reste à arrêter avec la Ville (§ 8).
+circuit par circuit, n'est pas arrêté et pourra changer : il ne sera pas figé dans le code mais
+décrit par la Ville dans le module Processus et circuits (§ 8 et § 9).
 
 **Les usagers** se répartissent en trois populations (associations, entreprises, particuliers),
 les associations sportives formant un cas à part ; chacune a son service de référence :
@@ -627,8 +628,9 @@ disposition gracieuses accordées aux associations, top organisations ; export *
   plusieurs dossiers.
 - **États des lieux** dématérialisés (entrée / sortie, photos, restitution de caution) : non
   couverts, la caution est suivie comme une facture.
-- **Logigrammes libres** : le circuit de statuts est fixe ; ses étapes sont débrayables par
-  module et par espace.
+- **Logigrammes libres** : le circuit de statuts est aujourd'hui fixe ; ses étapes sont
+  débrayables par module et par espace. Le module **Processus et circuits** (§ 9), à
+  construire, doit permettre à la Ville de décrire et de modifier elle-même ses circuits.
 - **Application mobile élus** : le rôle Élu utilise l'application web responsive.
 - **Emailing de masse**, **éditeur de mise en page** des PDF : hors périmètre.
 - **Hébergement et conformité** : auto-hébergement Docker (voir `docs/DEPLOY.md`), données en
@@ -680,3 +682,171 @@ rencontre.
 Tant que ces écarts ne sont pas traités, la séparation entre Vie associative, Service des fêtes
 et Communication repose sur l'organisation du travail (filtres, agent assigné, vues
 enregistrées du planning), pas sur les droits.
+
+### Principe retenu pour traiter ces écarts
+
+La colonne « Évolution à étudier » donne des pistes, pas des décisions : la Ville n'a pas encore
+toutes les réponses (qui relit quoi, quel élu vise quelle décision, quel service instruit quel
+dossier), et ces réponses changeront avec l'organisation. Les écarts ne seront donc **pas
+traités un par un par du code propre à chaque règle**. Ils le seront par un module unique,
+**Processus et circuits** (§ 9), dans lequel la Ville décrit ses services, ses intervenants et
+ses circuits, et les modifie sans intervention technique.
+
+| Écart | Ce que le module apporte |
+| --- | --- |
+| E1, E6, E7, E11 | Les **services** deviennent des objets de l'application (nom, coordonnées, membres) ; des **règles d'aiguillage** confient chaque dossier, fiche d'usager ou campagne à un service selon l'espace, le type de demandeur et les autres critères du § 9. |
+| E2 | Une étape de **relecture** s'ajoute à un circuit, à l'endroit et aux conditions que la Ville choisit ; la **suppléance** d'un service par un autre se déclare avec ses dates. |
+| E3, E4 | Une étape d'**avis** ou de **visa** confiée à un élu s'ajoute à n'importe quel circuit, bloquante ou non, sous condition (gratuité hors grille, dérogation, réquisition…) ; l'élu sollicité est celui de la **délégation** concernée et il est notifié. |
+| E5 | Le circuit des subventions désigne le **service instructeur** par une règle (association sportive ou non, secteur d'instruction). |
+| E8 | Hors module : c'est une règle tarifaire, à confirmer par la Ville. Le module peut en revanche soumettre une gratuité accordée à la main à un visa. |
+| E9 | Le droit d'émettre une facture devient une **action d'étape**, réservée au service désigné par le circuit. |
+| E10 | Hors module : jeu de démonstration à compléter une fois les services créés. |
+
+---
+
+## 9. Module « Processus et circuits » (à construire)
+
+### Objet
+
+Permettre à la Ville de **décrire, consulter et modifier elle-même** la façon dont un dossier
+circule : quels services existent, qui intervient, dans quel ordre, à quelles conditions, avec
+quels délais et quels effets. Les règles d'organisation sortent du code : elles deviennent des
+données, saisies dans un écran d'administration, versionnées et tracées.
+
+Le module répond à deux contraintes : la Ville **ne connaît pas encore** toutes ses règles, et
+celles qu'elle connaît **évolueront** (réorganisation de services, nouvelle délégation, nouvelle
+exigence de contrôle).
+
+### Ce que l'on décrit
+
+| Objet | Contenu |
+| --- | --- |
+| **Service** | Nom, courriel, téléphone, responsable, membres (comptes du back-office), service suppléant. Un agent peut appartenir à plusieurs services. Remplace à terme le secteur (Salles / Sports), qui en devient un cas particulier. |
+| **Intervenant** | La qualité au titre de laquelle on agit dans un circuit : service instructeur, service relecteur, responsable de service, élu de délégation, régie ou finances, administrateur, usager demandeur. Un intervenant se résout en personnes au moment où l'étape s'ouvre. |
+| **Délégation** | Le domaine d'un élu (sports, vie associative, fêtes et cérémonies, culture…), avec ses dates et son suppléant. |
+| **Circuit** | La suite d'étapes que suit un type d'objet : réservation, vœu de campagne, demande de subvention, fiche d'usager à valider, retenue sur caution, annulation. Plusieurs circuits peuvent exister pour un même type d'objet. |
+| **Étape** | Voir ci-dessous. |
+| **Règle d'aiguillage** | La condition qui choisit le circuit et le service d'un dossier à sa création. |
+
+### Une étape
+
+Chaque étape d'un circuit porte :
+
+- un **libellé pour les agents** et un **libellé pour l'usager** (ou « invisible de l'usager ») ;
+- une **nature**, prise dans une liste fermée : instruction, demande d'informations, relecture,
+  avis (consultatif), visa (bloquant), décision, signature de l'usager, paiement, information ;
+- l'**intervenant** attendu, et la règle de réunion quand ils sont plusieurs : un seul suffit,
+  tous, ou majorité ;
+- les **issues** possibles (valider, refuser, renvoyer à une étape précédente, demander un
+  complément) et, pour chacune, l'étape suivante et les mentions exigées (motif, fondement,
+  montant) ;
+- une **condition d'application** : l'étape ne s'ouvre que si elle est vraie (voir les critères) ;
+- un **délai** indicatif, une relance, et ce qui se passe à l'échéance : rien, alerte au
+  responsable, passage d'office à l'étape suivante, ou transmission au suppléant ;
+- les **effets** déclenchés à l'entrée et à la sortie : notification, courriel (modèle au choix),
+  document généré, mise en copie d'un service, action ouverte (émettre une facture, épingler du
+  personnel de service).
+
+### Critères d'aiguillage et de condition
+
+Les règles s'écrivent à partir d'une liste fermée de critères, combinés par « et » / « ou »,
+sans programmation :
+
+- l'**espace**, son site, sa nature, son secteur ;
+- le **demandeur** : type (association, entreprise, particulier, service interne, autre
+  collectivité), profil tarifaire, commune ou extérieur, association sportive, conventionnée,
+  fiche validée ou non ;
+- le **dossier** : montant, gratuité de grille ou accordée à la main, dérogation au délai ou à
+  l'horizon, récurrence, nombre de participants, événement ouvert au public, origine (portail ou
+  back-office), matériel demandé, caution ;
+- pour une **subvention** : type, montant demandé, première demande ou renouvellement, secteur
+  d'instruction ;
+- le **calendrier** : délai restant avant l'événement, période de campagne.
+
+Les règles d'aiguillage sont ordonnées : la première qui s'applique l'emporte, et un circuit par
+défaut reçoit ce qu'aucune règle ne prend.
+
+### Exemples à savoir exprimer
+
+Ces exemples ne sont pas des décisions : ils servent à vérifier que le module sait dire ce que
+la Ville pourra vouloir.
+
+- Une demande de salle déposée par une **association** va à la Vie associative ; par un
+  **particulier** ou une **entreprise**, au Service des fêtes ; une demande d'équipement sportif,
+  au Service des sports.
+- Avant l'envoi de l'acceptation, une étape de **relecture** par la Communication si l'événement
+  est ouvert au public.
+- Un **visa de l'élu** de la délégation si la gratuité est accordée hors grille, ou si l'agent
+  passe outre le délai de réservation.
+- L'**avis des élus** sur une subvention demandé aux seuls élus de la délégation du secteur
+  d'instruction, avec relance au bout de dix jours.
+- Du 1er au 15 août, la Communication **supplée** le Service des fêtes : ses agents reçoivent
+  les étapes et les notifications du service remplacé.
+- Une demande de subvention d'une **association sportive** est instruite par le Service des
+  sports, les autres par la Vie associative.
+
+### Écran et cycle de vie d'un circuit
+
+- **Éditeur** : la liste des étapes d'un circuit, dans l'ordre, chacune ouvrant sa fiche ; ajout,
+  suppression, déplacement, duplication d'un circuit entier.
+- **Logigramme** : chaque circuit est aussi présenté en diagramme (étapes, issues, conditions,
+  intervenants), consultable par tous les agents et imprimable. C'est la référence commune de
+  « qui fait quoi » ; le guide utilisateur y renvoie.
+- **Brouillon, simulation, publication** : un circuit se modifie en brouillon ; la **simulation**
+  prend un dossier existant ou fictif et montre le circuit retenu, les étapes qui s'ouvriraient,
+  les personnes sollicitées et les courriels envoyés, sans rien enregistrer ; la **publication**
+  le met en service à une date donnée.
+- **Versions** : chaque publication crée une version. Un dossier en cours termine son parcours
+  sur la version avec laquelle il a commencé, sauf bascule décidée par l'administrateur, tracée
+  dans l'historique du dossier.
+- **Contrôles avant publication** : pas d'étape sans intervenant, pas d'intervenant sans
+  personne, pas d'impasse ni de boucle sans sortie, un circuit par défaut par type d'objet, un
+  modèle de courriel existant pour chaque envoi.
+- **Traçabilité** : auteur et date de chaque modification (journal d'audit), comparaison de deux
+  versions, export et import d'un circuit (fichier), retour à une version antérieure.
+- **Droits** : une catégorie de permission « Processus » (lecture pour consulter les logigrammes,
+  écriture pour modifier, réservée par défaut à l'administrateur).
+
+### Ce que le module change dans le reste de l'application
+
+- **Fiche d'un dossier** : la carte de décision, la frise et les boutons viennent de l'étape en
+  cours du circuit, plus d'une liste fixe ; seul l'intervenant attendu voit les boutons.
+- **Tableau de bord, compteurs, notifications** : « mes étapes en attente », par personne et par
+  service, avec les étapes en retard.
+- **Portail** : l'usager voit les étapes que le circuit lui rend visibles, avec leur libellé.
+- **Historique** : chaque étape ouverte, chaque issue, son auteur, son motif et le temps passé.
+- **Statistiques** : délai de traitement par étape et par service.
+
+### Ce qui reste fixe (socle)
+
+Le module règle l'**organisation**, pas les règles qui garantissent la cohérence des données.
+Restent dans le code, hors de portée du paramétrage :
+
+- les **états de fond** d'un dossier, auxquels chaque étape d'un circuit se rattache : en cours
+  d'étude, acquis, clos (terminé, refusé, annulé, archivé). C'est ce rattachement qui dit si le
+  créneau est occupé, à couvrir par le personnel de service, facturable, pris en compte dans la
+  valorisation ;
+- la vérification de la disponibilité, des horaires et des conflits ;
+- le calcul des montants, l'absence de facture sur une mise à disposition gratuite, la
+  numérotation ;
+- la signature électronique et ses preuves, la protection des données, le journal d'audit.
+
+### Mise en place
+
+1. À la livraison, le module contient des circuits qui **reproduisent exactement le
+   fonctionnement actuel** (réservation, campagne de créneaux, subvention, validation d'une
+   fiche) et deux services issus des secteurs Salles et Sports : rien ne change pour les
+   utilisateurs tant que la Ville ne modifie rien.
+2. La Ville crée ses services, ses délégations, puis fait évoluer les circuits à son rythme, en
+   s'appuyant sur les constats des scénarios (`docs/SCENARIOS.md`).
+3. Les règles encore inconnues (ce que relit la Communication, les décisions soumises aux élus)
+   se saisissent quand elles sont arrêtées, et se corrigent ensuite sans développement.
+
+### Limites voulues
+
+- Pas de langage de script ni de formule libre : critères, natures d'étape et effets sont des
+  listes fermées, que l'on étend par développement quand un besoin nouveau apparaît.
+- Pas de formulaire libre par étape dans un premier temps : une étape demande au plus un motif,
+  un montant et un commentaire.
+- Le module ne remplace pas les réglages existants (règles d'un espace, grilles tarifaires,
+  modules actifs, rôles et permissions) : il s'y ajoute.
