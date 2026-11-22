@@ -49,6 +49,7 @@ Chaque facture est produite en PDF, jointe au dossier et envoyée par courriel �
 
 - **Acompte** : un pourcentage du montant TTC du dossier, réglé dans les paramètres.
 - **Solde** : le montant TTC du dossier moins les acomptes déjà facturés.
+- Si le circuit du dossier prévoit un visa avant l'émission d'une facture (chapitre 12), l'émission est retenue : l'étape est demandée d'office, et vous émettez la facture une fois l'accord donné. Le visa accordé vaut pour les factures suivantes du même dossier. Dans le jeu de démonstration, la régie vise la facturation d'une location d'au moins 1 000 €.
 - **Caution** : le montant de caution de l'espace, facturé à part, sans TVA. Une fois réglée, elle est marquée encaissée sur le dossier ; elle est ensuite restituée (la facture passe alors à « Remboursée ») ou retenue en tout ou partie après l'état des lieux de sortie.
 - **Frais d'annulation** : lorsqu'un dossier accepté, signé ou confirmé est annulé, les factures encore dues sont annulées et, si la Ville a défini un barème, une facture « Frais d'annulation » est émise selon le délai restant avant l'événement. L'agent voit le montant prévu avant de confirmer l'annulation et peut annuler sans frais.
 - L'échéance est fixée par défaut à 30 jours après l'émission.

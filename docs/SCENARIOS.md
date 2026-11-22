@@ -88,7 +88,7 @@ circuits, guide chapitre 12) :
 | --- | --- | --- | --- |
 | Équipements sportifs | Tout espace du secteur Sports | Service des sports (Karim) | Visa de l'élu si la gratuité est accordée à la main |
 | Salles · associations | Une salle demandée par une association | Vie associative (Sophie) | Idem, et visa de l'élu **avant une réquisition** |
-| Salles · particuliers et entreprises | Une salle demandée par un particulier ou une entreprise | Service des fêtes (Sophie, Nadia) | Idem, visa du responsable **avant un refus** et visa de l'élu **avant une retenue sur caution** |
+| Salles · particuliers et entreprises | Une salle demandée par un particulier ou une entreprise | Service des fêtes (Sophie, Nadia) | Idem, visa du responsable **avant un refus**, visa de l'élu **avant une retenue sur caution** et visa de la régie **avant de facturer** un dossier d'au moins 1 000 € |
 | Circuit standard | Tout le reste (services de la Ville…) | — | Aucune |
 
 Le service Communication existe mais n'a aucun membre ; la délégation « Sports, vie associative
@@ -745,6 +745,7 @@ d'Hélène pour voir ce que chaque service peut faire, et ce que l'usager en per
 | 3 | Nadia | Ouvrez une demande d'un particulier, **Approuver**. | Acceptée. Dans la console, le courriel à l'usager est signé « Service des fêtes, Ville de Châtillon », avec le courriel du service. |
 | 4 | Usager du dossier | Portail : le dossier, puis **Lire la convention (PDF)**. | « Votre interlocuteur : Service des fêtes » sur le dossier ; « Dossier suivi par : Service des fêtes » sur la convention. |
 | 5 | Camille | **Réservations**. | Aucun dossier ne lui est confié : la Communication n'a pas de dossiers en propre. Avec **Tous les services**, elle consulte ceux des salles et peut écrire dans leur fil. |
+| 5b | Sophie, puis Hélène | Sophie : sur R260015 (1 141 €), section Factures › **Facturer l'acompte**. Hélène : **Mes étapes** › **Visa accordé**. Sophie : **Facturer l'acompte** de nouveau. | Émission **retenue**, le « Visa de la régie avant de facturer » est demandé d'office ; après l'accord, la facture part. Sur R260016 (735 €), la facture part sans visa. |
 | 5a | Hélène | **Paiements** › onglet **Toutes** › filtre **Service des fêtes** ; ouvrez une facture, puis son PDF. | Seules les factures des dossiers de ce service ; chaque ligne nomme le service sous le dossier ; le PDF porte « Dossier suivi par : Service des fêtes ». |
 | 6 | Hélène | **Paiements** : enregistrez un règlement. Puis ouvrez le dossier correspondant. | Elle encaisse pour tous les services (elle n'en a aucun) ; sur le dossier, aucun bouton de décision. |
 | 6a | Sophie | **Planning** › bouton des filtres › **Service du dossier** : cochez **Vie associative**. | Seuls restent les créneaux des dossiers de ce service ; le résumé « Service : Vie associative » s'affiche sous la barre, et le PDF de la semaine le reprend. |

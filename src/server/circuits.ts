@@ -747,6 +747,12 @@ const VERROUS: Record<Moment, { fait: string; impossible: string; reste: string;
       reste: "il restera à enregistrer la retenue",
       sinon: "Revoyez le montant ou restituez la caution, puis redemandez l'étape au besoin.",
     },
+    avant_facture: {
+      fait: "La facture n'est pas encore émise",
+      impossible: "Émission impossible",
+      reste: "il restera à émettre la facture",
+      sinon: "Revoyez les montants du dossier, puis redemandez l'étape.",
+    },
     avis_elus: { fait: "", impossible: "", reste: "", sinon: "" },
     avant_notification: {
       fait: "Les décisions de la campagne ne sont pas encore envoyées",

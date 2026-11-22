@@ -1112,12 +1112,21 @@ suppléant, un service suppléé sollicite aussi les membres du service qui le s
 
 L'écart **E7** (le service nommé à l'usager) est ainsi traité de bout en bout.
 
+**Lot 23, livré** — étape avant l'émission d'une facture :
+
+- sixième moment d'un circuit de réservation, **avant l'émission d'une facture** : une
+  relecture ou un visa retient l'émission d'une facture d'acompte, de solde ou de caution
+  depuis le dossier ; le critère « Montant TTC » permet de ne viser qu'au-delà d'un seuil ;
+- le visa accordé vaut pour les factures suivantes du dossier ; les factures émises d'office
+  (frais d'annulation) ne sont pas retenues ;
+- démonstration : la régie vise la facturation d'une location d'au moins 1 000 €.
+
 **Reste à faire**
 
 | Sujet | Écart |
 | --- | --- |
 | Droits par service sur ce qui reste réglé **par espace** : présences, personnel de service, fermetures | E1 |
-| Autres **moments** d'insertion : avant l'émission d'une facture, une fermeture exceptionnelle | E3 |
+| Autres **moments** d'insertion : avant une fermeture exceptionnelle | E3 |
 | **Effets** paramétrables d'une étape (modèle de courriel propre à l'étape, mise en copie, document) | E2 |
 
 ### Limites voulues

@@ -687,6 +687,19 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
           reunion: "un",
           aEcheance: "relance",
         },
+        // Au-delà de 1 000 €, la régie vise avant qu'une facture parte à l'usager.
+        {
+          cle: "visa-facture",
+          libelle: "Visa de la régie avant de facturer",
+          libelleUsager: "",
+          nature: "visa",
+          moment: "avant_facture",
+          intervenant: { type: "role", role: "financier" },
+          condition: regle({ champ: "montant", op: "min", valeur: 1000 }),
+          delaiJours: 3,
+          reunion: "un",
+          aEcheance: "relance",
+        },
       ],
     },
   );

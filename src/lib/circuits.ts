@@ -314,6 +314,7 @@ export const MOMENTS = {
   avant_annulation: "Avant une annulation par la collectivité",
   avant_requisition: "Avant une réquisition pour la Ville",
   avant_retenue: "Avant une retenue sur caution",
+  avant_facture: "Avant l'émission d'une facture",
   avis_elus: "À l'avis des élus",
   avant_vote: "Avant le vote de la subvention",
   avant_versement: "Avant le versement de la subvention",
@@ -328,6 +329,7 @@ export const RETENU: Record<Moment, string> = {
   avant_annulation: "l'annulation",
   avant_requisition: "la réquisition",
   avant_retenue: "la retenue sur caution",
+  avant_facture: "l'émission de la facture",
   avis_elus: "le vote",
   avant_vote: "le vote",
   avant_versement: "le versement",
@@ -346,6 +348,8 @@ export const STATUTS_DU_MOMENT: Record<Moment, readonly string[]> = {
   avant_requisition: ["acceptee", "signee", "confirmee"],
   // La caution se retient après l'événement, tant que le dossier n'est pas archivé.
   avant_retenue: ["confirmee", "terminee"],
+  // Une facture s'émet d'un dossier accepté jusqu'à sa clôture.
+  avant_facture: ["acceptee", "signee", "confirmee", "terminee"],
   avis_elus: [],
   avant_vote: ["deposee", "instruction", "avis"],
   avant_versement: ["votee"],
@@ -370,6 +374,7 @@ export const INSERTION: Record<
       "avant_annulation",
       "avant_requisition",
       "avant_retenue",
+      "avant_facture",
     ],
     natures: ["relecture", "avis", "visa"],
     titre: "Étapes du circuit",

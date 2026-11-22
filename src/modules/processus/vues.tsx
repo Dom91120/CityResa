@@ -200,6 +200,7 @@ export function Logigramme({
     "avant_annulation",
     "avant_requisition",
     "avant_retenue",
+    "avant_facture",
     "avant_versement",
   ];
   const avant = definition.etapes.filter((e) => !tardifs.includes(e.moment));

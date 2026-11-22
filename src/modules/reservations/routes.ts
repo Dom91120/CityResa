@@ -5,7 +5,7 @@
  * (`user.gereEspace`) et transforme toute UserFacingError en message flash.
  */
 import { STATUTS_DU_MOMENT } from "@/lib/circuits";
-import { RESERVATION_STATUS, type ReservationStatus } from "@/lib/constantes";
+import { FACTURE_TYPES, RESERVATION_STATUS, type ReservationStatus } from "@/lib/constantes";
 import { reglesAuCreneau, verifierRegles } from "@/lib/creneaux";
 import { champ, champOuNull, coche, idOuNull, parseFloat_, parseInt_ } from "@/lib/forms-util";
 import { dateHeure, montant, plage } from "@/lib/libelles";
@@ -593,6 +593,20 @@ async function facturer({ user, r, fiche }: Contexte, form: FormData): Promise<R
   const type = champ(form, "type");
   if (type !== "acompte" && type !== "solde" && type !== "caution")
     throw new UserFacingError("Type de facture inconnu.");
+  // Le circuit du dossier peut soumettre l'émission d'une facture à un visa (régie, élu…).
+  const { verifierAvant } = await import("@/server/circuits");
+  try {
+    await verifierAvant(
+      r,
+      "avant_facture",
+      user,
+      `Facture envisagée : ${(FACTURE_TYPES[type] ?? type).toLowerCase()} · dossier de ${montant(r.montantTtc)} TTC`,
+    );
+  } catch (e) {
+    if (e instanceof UserFacingError)
+      return redirigerAvecMessage(`${fiche}#circuit`, e.message, "warning");
+    throw e;
+  }
   const f = await creerFacture(r, type, user.name);
   return redirigerAvecMessage(
     fiche,
