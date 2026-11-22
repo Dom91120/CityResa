@@ -263,6 +263,7 @@ Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écrit
 - Une étape **avant le vote** se comporte comme sur une réservation : si une relecture ou un visa s'applique, **Voter la subvention** est retenu, l'étape est demandée d'office avec le montant envisagé, et le vote se refait une fois l'accord donné. Elle se demande aussi à l'avance depuis la carte Circuit, se retrouve dans **Mes étapes** de la personne attendue et se relance en cas de retard. Un refus de la demande clôt les étapes encore ouvertes. Dans le jeu de démonstration, la Communication relit avant le vote toute demande d'au moins 2 500 €.
 - Un élu donne un avis, il n'instruit jamais, même membre d'un service.
 - Appartenir au service instructeur ne donne aucun droit que le rôle n'a pas. Le rôle Agent fourni n'a que la lecture sur les subventions : pour qu'un agent instruise, donnez-lui un rôle qui a l'écriture. Le jeu de démonstration le fait avec un rôle **Agent instructeur** (celui de l'agent, plus l'écriture sur les subventions), attribué à Karim Benali.
+- La liste des subventions se filtre par **service instructeur** (chapitre 7), le planning par **service du dossier** (chapitre 3.5).
 - Le compteur **Subventions** du menu suit la file de travail de l'agent : les dossiers de ses services et ceux sans service.
 
 ## 12.8 Les circuits des campagnes de créneaux

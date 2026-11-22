@@ -178,6 +178,22 @@ describe("filtres des créneaux", () => {
     expect(lireSecteur(undefined)).toBe("");
   });
 
+  it("filtre par service du dossier", () => {
+    expect(lireFiltresEvts({ service: ["2", "x", "0", "2"] }).services).toEqual([2]);
+    expect(lireFiltresEvts({ service: "x" }).services).toBeUndefined();
+    const evts = [
+      { status: "confirmee", typeUsager: null, qui: "A", titre: "", numero: "1", serviceId: 2 },
+      { status: "confirmee", typeUsager: null, qui: "B", titre: "", numero: "2", serviceId: 3 },
+      { status: "confirmee", typeUsager: null, qui: "C", titre: "", numero: "3", serviceId: null },
+    ];
+    expect(filtrerEvts(evts, { ...tout, services: [2] }).map((e) => e.qui)).toEqual(["A"]);
+    expect(filtrerEvts(evts, { ...tout, services: [] })).toHaveLength(3);
+    expect(nbFiltresEvts({ ...tout, services: [2, 3] })).toBe(1);
+    expect(resumeFiltres({ ...tout, services: [2, 9] }, "", [["2", "Vie associative"]])).toBe(
+      "Service : Vie associative, n° 9",
+    );
+  });
+
   it("compte les filtres actifs", () => {
     expect(nbFiltresEvts(tout)).toBe(0);
     expect(nbFiltresEvts({ statuts: ["confirmee", "signee"], types: ["autre"], q: "a" })).toBe(3);

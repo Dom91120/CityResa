@@ -1003,17 +1003,25 @@ L'écart **E3** est ainsi traité aussi pour les campagnes de créneaux.
 Limites : délais en jours calendaires ; l'avis des élus sur une subvention n'est pas compté ;
 pas d'export.
 
+**Lot 11, livré** — filtres par service :
+
+- liste des **subventions** : filtre par service instructeur, avec « Sans service » ; les
+  compteurs d'onglets et l'export CSV le suivent ;
+- **planning** : filtre « Service du dossier » (un ou plusieurs), repris par le PDF de la
+  semaine, l'export Excel et les vues enregistrées ; les fermetures restent affichées ;
+- les deux filtres n'apparaissent que si le module est actif et des services décrits.
+
 **Reste à faire**
 
 | Sujet | Écart |
 | --- | --- |
-| Droits par service sur ce qui reste réglé **par espace** : présences, personnel de service, fermetures, planning (filtre par service) | E1 |
+| Droits par service sur ce qui reste réglé **par espace** : présences, personnel de service, fermetures | E1 |
 | Étapes de circuit (visa, avis) sur la retenue sur caution ; simulation d'une campagne | E3 |
-| Subventions : filtre par service de la liste, contact du service instructeur dans les courriels et le PDF du dossier ; étapes avant le versement | E5, E7 |
+| Subventions : contact du service instructeur dans les courriels et le PDF du dossier ; étapes avant le versement | E5, E7 |
 | Autres **moments** d'insertion : avant l'émission d'une facture, une retenue sur caution, une fermeture exceptionnelle | E3 |
 | **Échéance** : passage d'office à l'étape suivante ou transmission au suppléant (aujourd'hui : une relance, l'alerte au responsable, et l'échéance en rouge) ; relance des avis sur les subventions | — |
 | **Effets** paramétrables d'une étape (modèle de courriel, mise en copie, document) ; courriel en plus de la cloche | E2 |
-| Filtre « service » des listes de subventions et du planning ; service sur les factures | E7 |
+| Service sur les factures | E7 |
 | **Bascule** d'un dossier en cours sur une nouvelle version ; **export / import** d'un circuit | — |
 | Catégorie de permission « **Processus** » (aujourd'hui : administrateur seul) | — |
 

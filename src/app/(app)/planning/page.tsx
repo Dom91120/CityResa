@@ -37,6 +37,7 @@ import {
 import { VueJour, VueMois, VueSemaine } from "@/modules/planning/vues";
 import { contexteModule } from "@/server/module";
 import { param } from "@/server/paging";
+import { optionsServices } from "@/server/services";
 
 export const metadata = { title: "Planning - CityRésa" };
 
@@ -63,9 +64,10 @@ export default async function PlanningPage({
   const seGroupe = fen.vue === "semaine" || fen.vue === "jour";
   const vuesEnregistrees = lireVuesEnregistrees(page.user.listPrefs);
   const qsActuelle = qsVue(page.search);
-  const [espaces, tous] = await Promise.all([
+  const [espaces, tous, services] = await Promise.all([
     espacesPlanning(page.user, filtres),
     espacesDuPerimetre(page.user),
+    optionsServices(),
   ]);
   const occupations = await occupationsPlanning(
     espaces.map((e) => e.id),
@@ -75,7 +77,7 @@ export default async function PlanningPage({
   const creneaux = filtrerEvts(occupations.creneaux, filtresEvts);
   const masques = occupations.creneaux.length - creneaux.length;
   const secteur = filtres.secteur ?? "";
-  const resume = resumeFiltres(filtresEvts, secteur);
+  const resume = resumeFiltres(filtresEvts, secteur, services);
   const aujourdhui = todayParisISO();
   const peutEditer = page.user.canEdit("reservations");
   const retour = `${page.pathname}${page.search.toString() ? `?${page.search.toString()}` : ""}`;
@@ -92,6 +94,7 @@ export default async function PlanningPage({
   if (secteur) qsPdf.set("secteur", secteur);
   for (const s of filtresEvts.statuts) qsPdf.append("statut", s);
   for (const t of filtresEvts.types) qsPdf.append("type", t);
+  for (const s of filtresEvts.services ?? []) qsPdf.append("service", String(s));
   if (filtresEvts.q) qsPdf.set("q", filtresEvts.q);
   const filtresPdfQs = qsPdf.toString();
   // L'export Excel reprend la période affichée, quelle que soit la vue.
@@ -360,7 +363,8 @@ export default async function PlanningPage({
             filtres={filtresEvts}
             secteur={secteur}
             secteurs={secteurs}
-            hrefAucun={lien({ secteur: null, statut: null, type: null, q: null })}
+            services={services}
+            hrefAucun={lien({ secteur: null, statut: null, type: null, service: null, q: null })}
           />
           {!seGroupe && groupe ? <input type="hidden" name="groupe" value={groupe} /> : null}
           <FiltreCouleur choisie={couleur} groupe={seGroupe ? groupe : undefined} />
@@ -374,7 +378,7 @@ export default async function PlanningPage({
       {resume ? (
         <p className="small text-muted mb-2">
           <Icone nom="filter" taille={12} /> {resume} ·{" "}
-          <a href={lien({ secteur: null, statut: null, type: null, q: null })}>
+          <a href={lien({ secteur: null, statut: null, type: null, service: null, q: null })}>
             Retirer ces filtres
           </a>
         </p>

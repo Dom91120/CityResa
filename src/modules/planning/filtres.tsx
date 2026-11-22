@@ -237,12 +237,15 @@ export function FiltreCreneaux({
   filtres,
   secteur,
   secteurs,
+  services = [],
   hrefAucun,
 }: {
   filtres: FiltresEvts;
   secteur: string;
   /** Les secteurs présents dans le périmètre ; le choix n'est proposé que s'il y en a plusieurs. */
   secteurs: string[];
+  /** Les services (module Processus) ; le choix n'est proposé que s'il y en a. */
+  services?: [string, string][];
   /** Le lien qui efface ces filtres. */
   hrefAucun: string;
 }) {
@@ -338,6 +341,12 @@ export function FiltreCreneaux({
         )}
         <div className="dropdown-header px-2">Type d'usager</div>
         {cases("type", Object.entries(ORGANISATION_TYPES), filtres.types)}
+        {services.length ? (
+          <>
+            <div className="dropdown-header px-2">Service du dossier</div>
+            {cases("service", services, (filtres.services ?? []).map(String))}
+          </>
+        ) : null}
         {nb ? (
           <a href={hrefAucun} className="dropdown-item text-muted small">
             <Icone nom="x" taille={12} /> Retirer ces filtres

@@ -14,6 +14,7 @@ import {
 } from "@/modules/planning/server";
 import { requireView } from "@/server/guards";
 import type { Params } from "@/server/paging";
+import { optionsServices } from "@/server/services";
 
 /**
  * GET /planning/export.xlsx?vue=&date=&etendue=&au=&site=…&espace=…&secteur=&statut=…&type=…&q=
@@ -39,7 +40,7 @@ export async function GET(req: Request) {
   );
   const octets = await classeurPlanning(lignes, {
     periode: fen.label,
-    filtres: resumeFiltres(filtresEvts, filtres.secteur),
+    filtres: resumeFiltres(filtresEvts, filtres.secteur, await optionsServices()),
   });
   const fin = fen.jours.at(-1) ?? fen.date;
   return new Response(new Uint8Array(octets), {

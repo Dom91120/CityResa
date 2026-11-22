@@ -107,6 +107,7 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 
 **Ce que l'on voit**
 
+- Quand des services sont décrits (chapitre 12), le bouton des filtres propose aussi **Service du dossier** : cochez un ou plusieurs services pour ne garder que les créneaux des dossiers qui leur sont confiés. Les fermetures restent affichées ; le filtre se retrouve dans le PDF de la semaine, l'export Excel et les vues enregistrées.
 - Le menu **Affichage**, le bouton à la palette en bout de barre, règle d'abord la **couleur des créneaux**, avec trois modes : **par espace** (par défaut), **par statut du dossier** ou **par type d'usager**. Une légende s'affiche sous les filtres quand le mode n'est pas « par espace ».
 - Le même menu propose, dans les vues Semaine et Jour, de **regrouper les espaces** : **sans regroupement** (par défaut), **par site** ou **par secteur** (salles, puis sports). Un bandeau ouvre alors chaque groupe, avec son nom et le nombre d'espaces. Le bouton passe en vert dès qu'un de ces deux réglages n'est pas celui par défaut.
 - Le menu **Mes vues** liste vos vues enregistrées, chacune avec une croix pour la supprimer, et un champ **Nom de la vue actuelle** avec le bouton **Enregistrer**.

@@ -22,6 +22,7 @@ import {
   lireFiltres,
   ONGLETS_SUBVENTIONS,
   organisationsDe,
+  SANS_SERVICE,
   syntheseExercice,
 } from "@/modules/subventions/server";
 import { CartesExercice, CompteurAvis, TypeSubvention } from "@/modules/subventions/vues";
@@ -32,6 +33,7 @@ import {
 } from "@/server/campagnes-subvention";
 import { contexteModule } from "@/server/module";
 import { type Params, paginate, resolvePerPage } from "@/server/paging";
+import { optionsServices } from "@/server/services";
 
 export const metadata = { title: "Subventions - CityRésa" };
 
@@ -39,10 +41,11 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
   const page = await contexteModule("subventions", "subventions");
   const params = await searchParams;
   const fl = lireFiltres(params);
-  const [toutes, campagne, campagnes] = await Promise.all([
+  const [toutes, campagne, campagnes, services] = await Promise.all([
     chargerSubventions(),
     campagneCourante(),
     chargerCampagnes(),
+    optionsServices(),
   ]);
   const exercices = exercicesDe(toutes);
   // Les cartes portent sur l'exercice choisi, sinon le plus récent qui a des dossiers.
@@ -154,6 +157,7 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
             campagne: fl.campagne ? String(fl.campagne) : null,
             type: fl.type,
             organisation: fl.organisation ? String(fl.organisation) : null,
+            service: fl.service,
           }}
           filtres={
             <>
@@ -186,6 +190,15 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
                 blank="Toutes les associations"
                 ariaLabel="Association"
               />
+              {services.length ? (
+                <Filtre
+                  name="service"
+                  value={fl.service}
+                  options={[...services, [SANS_SERVICE, "Sans service"]]}
+                  blank="Tous les services"
+                  ariaLabel="Service instructeur"
+                />
+              ) : null}
               <button type="submit" className="btn btn-outline-secondary btn-sm">
                 <Icone nom="filter" taille={14} /> Filtrer
               </button>

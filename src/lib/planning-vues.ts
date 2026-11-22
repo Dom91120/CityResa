@@ -127,7 +127,13 @@ export function grouperEspaces<
  * d'usager, recherche sur l'usager, le titre ou le numéro. Aucun choix = tout est affiché ;
  * les blocages restent toujours visibles.
  */
-export type FiltresEvts = { statuts: ReservationStatus[]; types: string[]; q: string };
+export type FiltresEvts = {
+  statuts: ReservationStatus[];
+  types: string[];
+  q: string;
+  /** Services des dossiers (module Processus) ; absent ou vide = tous. */
+  services?: number[];
+};
 
 function valeurs(brut: string | string[] | undefined): string[] {
   const liste = Array.isArray(brut) ? brut : brut ? [brut] : [];
@@ -143,8 +149,13 @@ export function lireFiltresEvts(params: {
   statut?: string | string[];
   type?: string | string[];
   q?: string | string[];
+  service?: string | string[];
 }): FiltresEvts {
+  const services = valeurs(params.service)
+    .filter((v) => /^[1-9]\d*$/.test(v))
+    .map(Number);
   return {
+    ...(services.length ? { services } : {}),
     statuts: STATUTS_OCCUPANTS.filter((s) => valeurs(params.statut).includes(s)),
     types: valeurs(params.type).filter((t) => t in ORGANISATION_TYPES),
     q: premiere(params.q).slice(0, 80),
@@ -158,7 +169,12 @@ export function lireSecteur(brut: string | string[] | undefined): string {
 }
 
 export function nbFiltresEvts(f: FiltresEvts): number {
-  return (f.statuts.length ? 1 : 0) + (f.types.length ? 1 : 0) + (f.q ? 1 : 0);
+  return (
+    (f.statuts.length ? 1 : 0) +
+    (f.types.length ? 1 : 0) +
+    (f.q ? 1 : 0) +
+    (f.services?.length ? 1 : 0)
+  );
 }
 
 const sansAccent = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
@@ -174,12 +190,14 @@ export function filtrerEvts<
     qui: string;
     titre: string;
     numero: string;
+    serviceId?: number | null;
   },
 >(evts: readonly T[], f: FiltresEvts): T[] {
   const mots = sansAccent(f.q).split(/\s+/).filter(Boolean);
   return evts.filter((e) => {
     if (f.statuts.length && !f.statuts.includes(e.status as ReservationStatus)) return false;
     if (f.types.length && !f.types.includes(e.typeUsager ?? "particulier")) return false;
+    if (f.services?.length && !(e.serviceId && f.services.includes(e.serviceId))) return false;
     if (mots.length) {
       const texte = sansAccent(`${e.qui} ${e.titre} ${e.numero}`);
       if (!mots.every((m) => texte.includes(m))) return false;
@@ -189,13 +207,24 @@ export function filtrerEvts<
 }
 
 /** Les filtres en clair, pour l'écran et le sous-titre du PDF ; « » sans filtre. */
-export function resumeFiltres(f: FiltresEvts, secteur = ""): string {
+export function resumeFiltres(
+  f: FiltresEvts,
+  secteur = "",
+  /** Les noms des services, pour dire le filtre en clair. */
+  services: readonly [string, string][] = [],
+): string {
   const parts: string[] = [];
   if (secteur && SECTEURS[secteur]) parts.push(`Secteur : ${SECTEURS[secteur].label}`);
   if (f.statuts.length)
     parts.push(`Statut : ${f.statuts.map((s) => RESERVATION_STATUS[s].label).join(", ")}`);
   if (f.types.length)
     parts.push(`Usagers : ${f.types.map((t) => ORGANISATION_TYPES[t] ?? t).join(", ")}`);
+  if (f.services?.length) {
+    const noms = new Map(services);
+    parts.push(
+      `Service : ${f.services.map((id) => noms.get(String(id)) ?? `n° ${id}`).join(", ")}`,
+    );
+  }
   if (f.q) parts.push(`Recherche : « ${f.q} »`);
   return parts.join(" · ");
 }

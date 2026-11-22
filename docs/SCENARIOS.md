@@ -738,6 +738,8 @@ d'Hélène pour voir ce que chaque service peut faire, et ce que l'usager en per
 | 4 | Usager du dossier | Portail : le dossier, puis **Lire la convention (PDF)**. | « Votre interlocuteur : Service des fêtes » sur le dossier ; « Dossier suivi par : Service des fêtes » sur la convention. |
 | 5 | Camille | **Réservations**. | Aucun dossier ne lui est confié : la Communication n'a pas de dossiers en propre. Avec **Tous les services**, elle consulte ceux des salles et peut écrire dans leur fil. |
 | 6 | Hélène | **Paiements** : enregistrez un règlement. Puis ouvrez le dossier correspondant. | Elle encaisse pour tous les services (elle n'en a aucun) ; sur le dossier, aucun bouton de décision. |
+| 6a | Sophie | **Planning** › bouton des filtres › **Service du dossier** : cochez **Vie associative**. | Seuls restent les créneaux des dossiers de ce service ; le résumé « Service : Vie associative » s'affiche sous la barre, et le PDF de la semaine le reprend. |
+| 6b | Sophie | **Subventions** › onglet **Toutes** › filtre **Service des sports**, puis **Sans service**. | Les dossiers des associations sportives ; puis le seul brouillon, qui n'a pas encore de service. |
 | 7 | Sophie | Sur R260008 : la carte **Circuit** indique l'échéance du visa attendu de l'élu. | — |
 | 8 | Vous | Laissez passer l'échéance, ou avancez-la en base, puis lancez `pnpm tsx scripts/executer-tache.ts relances_etapes`. | « 1 étape(s) en retard relancée(s) » ; relancée une seconde fois : 0. |
 | 9 | Pierre | Tableau de bord, cloche, **Mes étapes**. | Alerte « 1 étape de circuit en retard », notification « En retard · Visa de l'élu… », échéance en rouge. |

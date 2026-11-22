@@ -67,3 +67,17 @@ export async function referenceDe(org: {
   if (!enabledIn(await getSettings(), "processus")) return null;
   return serviceReference(org, await servicesUsagers());
 }
+
+/**
+ * Les services actifs, pour le filtre « service » d'une liste ou du planning ; aucun quand le
+ * module Processus est éteint (le filtre ne s'affiche alors pas).
+ */
+export async function optionsServices(): Promise<[string, string][]> {
+  if (!enabledIn(await getSettings(), "processus")) return [];
+  const services = await prisma.service.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true },
+    orderBy: [{ position: "asc" }, { name: "asc" }],
+  });
+  return services.map((s) => [String(s.id), s.name]);
+}

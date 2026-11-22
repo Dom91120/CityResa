@@ -14,6 +14,7 @@ import {
 import { requireView } from "@/server/guards";
 import { pasTrouve } from "@/server/http";
 import { reponsePdf } from "@/server/pdf";
+import { optionsServices } from "@/server/services";
 
 /**
  * GET /planning/semaine.pdf?date=&site=…&espace=…&secteur=&statut=…&type=…&q=&format=A4|A3
@@ -35,6 +36,7 @@ export async function GET(req: Request) {
     statut: url.searchParams.getAll("statut"),
     type: url.searchParams.getAll("type"),
     q: url.searchParams.get("q") ?? undefined,
+    service: url.searchParams.getAll("service"),
   });
   const espaces = await espacesPlanning(user, filtres);
   if (!espaces.length) return pasTrouve();
@@ -61,7 +63,7 @@ export async function GET(req: Request) {
     const lundi = lundiDe(lireDate(url.searchParams.get("date") ?? undefined));
     evts = await occupationsSemaine(ids, lundi, filtresEvts);
     jours = libellesJours(lundi);
-    const resume = resumeFiltres(filtresEvts);
+    const resume = resumeFiltres(filtresEvts, "", await optionsServices());
     sousTitre = `Semaine du ${jours[0]} au ${jours[6]}${resume ? ` · ${resume}` : ""}`;
     fichier = `planning-${lundi}.pdf`;
   }

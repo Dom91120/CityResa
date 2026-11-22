@@ -168,8 +168,13 @@ export type FiltresSubventions = {
   campagne: number | null;
   type: string;
   organisation: number | null;
+  /** Service instructeur : son identifiant, « aucun » pour les dossiers sans service, « » = tous. */
+  service: string;
   q: string;
 };
+
+/** Le filtre « sans service » des listes. */
+export const SANS_SERVICE = "aucun";
 
 export const ONGLETS_SUBVENTIONS: [string, string][] = [
   ["brouillon", "Brouillons"],
@@ -186,12 +191,14 @@ export function lireFiltres(params: Params): FiltresSubventions {
   const ex = Number.parseInt(param(params, "exercice") ?? "", 10);
   const org = Number.parseInt(param(params, "organisation") ?? "", 10);
   const camp = Number.parseInt(param(params, "campagne") ?? "", 10);
+  const svc = (param(params, "service") ?? "").trim();
   return {
     statut: (param(params, "statut") ?? "").trim(),
     exercice: Number.isInteger(ex) && ex > 2000 ? ex : null,
     campagne: Number.isInteger(camp) && camp > 0 ? camp : null,
     type: (param(params, "type") ?? "").trim(),
     organisation: Number.isInteger(org) && org > 0 ? org : null,
+    service: /^([1-9]\d*|aucun)$/.test(svc) ? svc : "",
     q: (param(params, "q") ?? "").trim(),
   };
 }
@@ -207,6 +214,12 @@ export function filtrerSubventions(
     if (fl.campagne && s.campagneId !== fl.campagne) return false;
     if (fl.type && s.type !== fl.type) return false;
     if (fl.organisation && s.organisationId !== fl.organisation) return false;
+    if (
+      fl.service === SANS_SERVICE
+        ? s.serviceId !== null
+        : fl.service && String(s.serviceId) !== fl.service
+    )
+      return false;
     if (ql && !normaliser(`${s.numero} ${s.organisation.name} ${s.objet}`).includes(ql))
       return false;
     return true;

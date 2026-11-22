@@ -232,6 +232,7 @@ export type EvtResa = {
   qui: string;
   /** Type de l'organisation demandeuse ; null = particulier sans organisation. */
   typeUsager: string | null;
+  serviceId: number | null;
   espaceId: number;
   startAt: Date;
   endAt: Date;
@@ -296,6 +297,7 @@ export async function occupationsPlanning(
             numero: true,
             title: true,
             status: true,
+            serviceId: true,
             organisation: { select: { name: true, type: true } },
             user: { select: { firstName: true, lastName: true } },
           },
@@ -321,6 +323,7 @@ export async function occupationsPlanning(
           ? `${c.reservation.user.firstName} ${c.reservation.user.lastName}`.trim()
           : ""),
       typeUsager: c.reservation.organisation?.type ?? null,
+      serviceId: c.reservation.serviceId,
       espaceId: c.espaceId,
       startAt: c.startAt,
       endAt: c.endAt,

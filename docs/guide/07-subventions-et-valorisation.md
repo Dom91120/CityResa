@@ -18,7 +18,7 @@ Ce chapitre couvre le module destiné aux associations : le circuit des demandes
 - La carte de la **campagne en cours** : intitulé, pastille d'état (Dépôt ouvert, Ouvre bientôt, Dépôt clos), dates de dépôt, consignes affichées aux associations, nombre de dossiers déposés et en rédaction, bouton **Gérer les campagnes**.
 - Quatre cartes d'indicateurs (elles ne se cliquent pas : les onglets et le filtre d'exercice filtrent la liste) : **Demandé** pour l'exercice, **Accordé** (montant et nombre de subventions votées), **Versé** (montant et nombre de versements) et **En cours d'instruction**.
 - Les onglets **Brouillons**, **Déposées**, **En instruction**, **Avis**, **Votées**, **Refusées**, **Versées** et **Toutes**.
-- La recherche (numéro, association, objet) et les filtres **Tous les exercices**, **Toutes les campagnes**, **Tous les types**, **Toutes les associations**, puis **Filtrer**.
+- La recherche (numéro, association, objet) et les filtres **Tous les exercices**, **Toutes les campagnes**, **Tous les types**, **Toutes les associations**, puis **Filtrer**. Quand des services sont décrits (chapitre 12), un filtre **Tous les services** retient les dossiers d'un service instructeur, ou ceux **Sans service** ; l'export CSV le suit.
 - Pour chaque dossier : le **Numéro** (de la forme S270001 : S pour subvention, l'exercice sur deux chiffres, puis le rang sur quatre ; un dossier en rédaction porte un numéro provisoire, P270001, remplacé au dépôt) avec l'exercice et la date de dépôt, l'**Association** (avec la mention « Association sportive » le cas échéant), l'**Objet** avec le type et le nombre de bénéficiaires, les montants **Demandé** et **Accordé**, et le **Statut**.
 
 **Comment faire — commencer un dossier au nom d'une association**
