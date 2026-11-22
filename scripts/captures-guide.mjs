@@ -50,6 +50,38 @@ const COMPTES = {
  * `clic` (sélecteur cliqué avant la capture), `script` (code exécuté dans la page avant), `selecteur` (un élément seul), `fenetre`.
  */
 const CAPTURES = [
+  // Processus et circuits
+  { nom: "processus-circuits", compte: "admin", url: "/processus", hauteur: 1100 },
+  { nom: "processus-services", compte: "admin", url: "/processus?onglet=services", hauteur: 1000 },
+  {
+    nom: "processus-delegations",
+    compte: "admin",
+    url: "/processus?onglet=delegations",
+    hauteur: 800,
+  },
+  { nom: "processus-circuit", compte: "admin", url: "/processus/circuits/3", hauteur: 1300 },
+  {
+    nom: "processus-aiguillage",
+    compte: "admin",
+    url: "/processus/circuits/3/aiguillage",
+    hauteur: 1700,
+  },
+  {
+    nom: "processus-etape",
+    compte: "admin",
+    url: "/processus/circuits/3/etape?cle=visa-gratuite",
+    hauteur: 1900,
+  },
+  {
+    nom: "processus-simulation",
+    compte: "admin",
+    url: "/processus/simulation?numero=R260006&gratuit=1",
+    hauteur: 1400,
+  },
+  { nom: "etapes-elu", compte: "elu", url: "/etapes", hauteur: 900 },
+  { nom: "etapes-circuits", compte: "gestionnaire", url: "/etapes?vue=circuits", hauteur: 1500 },
+  { nom: "reservation-circuit", compte: "gestionnaire", url: "/reservations/8", hauteur: 1300 },
+
   // Accès
   { nom: "connexion", compte: null, url: "/connexion", hauteur: 900 },
   { nom: "inscription", compte: null, url: "/inscription", hauteur: 1500 },

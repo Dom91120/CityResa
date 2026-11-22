@@ -6,6 +6,7 @@ import { ScriptDiffere } from "@/components/scripts";
 import { fraisPrevus, lireBareme } from "@/lib/annulation";
 import { lienApercu } from "@/lib/apercu-pdf";
 import { isoParis, nomCourt, plage } from "@/lib/libelles";
+import { CarteCircuit } from "@/modules/processus/dossier";
 import {
   CarteDecision,
   FilDiscussion,
@@ -23,6 +24,7 @@ import {
 import { SectionMateriel } from "@/modules/reservations/materiel-fiche";
 import { voitEspace } from "@/modules/reservations/requetes";
 import { agentsActifs, materielsPour, optionsPour } from "@/modules/reservations/saisie";
+import { attenduSur, etatCircuit } from "@/server/circuits";
 import { prisma } from "@/server/db";
 import { docCategories, forParent } from "@/server/documents";
 import { redirigerAvecFlashDepuisRendu } from "@/server/flash";
@@ -42,7 +44,9 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
   const id = idDeRoute((await params).id);
   const r = await chargerReservation(id);
   if (!r) notFound();
-  if (!voitEspace(page.user, r.espaceId))
+  // Une personne attendue sur une étape du circuit (relecteur, élu) ouvre le dossier même
+  // hors de son périmètre d'espaces : elle le lit, sans pouvoir l'instruire.
+  if (!voitEspace(page.user, r.espaceId) && !(await attenduSur(page.user, r.id)))
     redirigerAvecFlashDepuisRendu(
       "/reservations",
       "Ce dossier ne relève pas des espaces dont vous avez la charge.",
@@ -103,6 +107,7 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
     ),
     features.personnel && user.canView("personnel") ? serviceDossier(r) : null,
   ]);
+  const circuit = features.processus ? await etatCircuit(r) : null;
 
   // Les messages de l'usager sont lus dès que l'agent ouvre le dossier.
   if (messages.some((m) => m.authorKind === "usager" && !m.readAt)) {
@@ -194,6 +199,15 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
       <div className="fiche-colonnes">
         <div className="d-flex flex-column gap-3">
           <CarteDecision r={r} csrf={csrf} peutDecider={peutDecider} features={features} />
+          {circuit ? (
+            <CarteCircuit
+              etat={circuit}
+              dossier={r}
+              csrf={csrf}
+              peutDecider={peutDecider}
+              userId={user.id}
+            />
+          ) : null}
           <FilDiscussion r={r} messages={messages} csrf={csrf} peutEcrire={peutEditer} />
         </div>
         <div className="data-card">

@@ -8,7 +8,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 
 **Qui** — Uniquement les comptes au rôle **Administrateur**. Les autres agents ne voient pas cette rubrique et ne peuvent pas ouvrir ces pages. Les figures de ce chapitre ont été prises avec le compte « Admin CityRésa », administrateur.
 
-**Ce que l'on voit** — Sous la rubrique GÉNÉRAL, la rubrique **ADMINISTRATION** contient : **Paramètres**, **Comptes**, **Rôles & permissions**, **Référentiels**, **Calendrier des saisons**, **Modèles de courriel**, **Journal d'audit**, **Tâches planifiées**, **Sauvegardes**.
+**Ce que l'on voit** — Sous la rubrique GÉNÉRAL, la rubrique **ADMINISTRATION** contient : **Paramètres**, **Comptes**, **Rôles & permissions**, **Processus et circuits** (chapitre 12), **Référentiels**, **Calendrier des saisons**, **Modèles de courriel**, **Journal d'audit**, **Tâches planifiées**, **Sauvegardes**.
 
 **Comment faire**
 
@@ -195,6 +195,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 - **Demandes de subvention (module ASSO)** : les associations déposent leurs demandes ; les élus donnent un avis.
 - **Campagnes annuelles de créneaux** : les usagers déposent leurs vœux de créneaux hebdomadaires sur une saison ; la Ville arbitre et attribue en lot.
 - **Planning du personnel de service** : gardiens, agents d'accueil et vacataires planifiés par vacations sur les sites ; créneaux réservés sans personne de service signalés (chapitre 11). Coupé, le menu **Personnel de service** disparaît et la colonne **Service** des fiches de réservation avec lui ; les personnes et vacations déjà saisies restent en base.
+- **Processus et circuits** : services, aiguillage des demandes et étapes de relecture, d'avis ou de visa décrites par la collectivité (chapitre 12). Coupé, les menus **Mes étapes** et **Processus et circuits** disparaissent, la carte **Circuit** des dossiers aussi, et plus aucune étape ne retient une acceptation ; services et circuits restent en base.
 
 **Comment faire**
 

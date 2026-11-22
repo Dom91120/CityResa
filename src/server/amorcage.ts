@@ -172,4 +172,33 @@ export async function amorcer(opts: { annoncer?: boolean } = {}): Promise<void> 
   await seedFromEnv();
   await seedLogo();
   await seedSaison();
+  await seedCircuitStandard();
+}
+
+/**
+ * Le circuit par défaut des réservations : aucune étape, aucun service. Tant que la
+ * collectivité ne décrit rien d'autre, les demandes se traitent comme avant le module.
+ */
+export async function seedCircuitStandard(): Promise<void> {
+  if ((await prisma.circuit.count({ where: { objet: "reservation" } })) > 0) return;
+  await prisma.circuit.create({
+    data: {
+      objet: "reservation",
+      name: "Circuit standard",
+      description: "Reçoit toute demande qu'aucun autre circuit ne prend ; aucune étape préalable.",
+      position: 0,
+      parDefaut: true,
+      versions: {
+        create: {
+          numero: 1,
+          status: "publiee",
+          definition: { condition: null, serviceId: null, etapes: [] },
+          createdBy: "Installation",
+          publiePar: "Installation",
+          publieAt: new Date(),
+          note: "Version initiale",
+        },
+      },
+    },
+  });
 }

@@ -60,6 +60,12 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
         action: "avenant",
       }
     : prochaineEtape(r, cfg);
+  // Une étape du circuit en cours (visa, relecture) peut dire à l'usager où en est sa demande.
+  if (r.status === "a_traiter" && features.processus) {
+    const { libelleUsagerEnCours } = await import("@/server/circuits");
+    const libelle = await libelleUsagerEnCours(r.id);
+    if (libelle) etape.texte = `${libelle.replace(/[.\s]+$/, "")}.`;
+  }
   const annulable = peutAnnuler(r, cfg);
   const frais = fraisPrevus(r, lireBareme(cfg.ANNULATION_BAREME));
   const aSigner = r.status === "acceptee" && features.signature;

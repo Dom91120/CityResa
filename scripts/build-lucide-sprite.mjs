@@ -14,6 +14,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ICONES = [
+  "workflow",
+  "list-checks",
+  "flask-conical",
+  "git-fork",
   "bold",
   "italic",
   "quote",

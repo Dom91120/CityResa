@@ -15,7 +15,8 @@ export type FeatureName =
   | "subventions"
   | "documents"
   | "campagnes"
-  | "personnel";
+  | "personnel"
+  | "processus";
 
 /** nom court → (clé de configuration, libellé, aide) */
 export const FEATURES: Record<FeatureName, [string, string, string]> = {
@@ -63,6 +64,11 @@ export const FEATURES: Record<FeatureName, [string, string, string]> = {
     "PERSONNEL_ENABLED",
     "Planning du personnel de service",
     "Gardiens, agents d'accueil et vacataires planifiés par vacations sur les sites ; créneaux réservés sans personne de service signalés.",
+  ],
+  processus: [
+    "PROCESSUS_ENABLED",
+    "Processus et circuits",
+    "Services, aiguillage des demandes et étapes de relecture, d'avis ou de visa décrites par la collectivité.",
   ],
 };
 

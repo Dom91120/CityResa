@@ -4,6 +4,7 @@
  * au plus une fois par minute (cache process), puis filtrés selon les droits.
  */
 import { prisma } from "@/server/db";
+import { enabledIn } from "@/server/features";
 import type { CurrentUser } from "@/server/guards";
 import { compterARepondre } from "@/server/messages-attente";
 
@@ -82,6 +83,10 @@ export async function navCounts(user: CurrentUser): Promise<Record<string, numbe
   if (user.canView("usagers")) counts.usagers_a_valider = c.usagers_a_valider;
   if (user.canView("paiements")) counts.factures_a_payer = c.factures_a_payer;
   if (user.canView("subventions")) counts.subventions_a_traiter = c.subventions_a_traiter;
+  if (enabledIn(user.settings, "processus")) {
+    const { etapesEnAttente } = await import("@/server/circuits");
+    counts.etapes = (await etapesEnAttente(user).catch(() => [])).length;
+  }
   if (user.canView("personnel")) {
     const { nbPropositions } = await import("@/server/affectation");
     counts.propositions_personnel = await nbPropositions(user).catch(() => 0);

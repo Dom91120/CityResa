@@ -19,6 +19,7 @@ pnpm build
 pnpm db:migrate          # migrations Prisma (dev)
 pnpm db:init             # rôles, référentiels, modèles de courriel, compte admin
 pnpm db:demo             # jeu de données de démonstration (sites, espaces, usagers, réservations)
+pnpm tsx prisma/seed-processus.ts   # services, délégation et circuits de démonstration sur une base déjà chargée
 node scripts/build-lucide-sprite.mjs   # régénère public/vendor/lucide.svg après ajout d'une icône
 pnpm illustration        # refait l'illustration de la connexion (captures du portail, serveur dev + démo)
 pnpm tsx scripts/regenerer-convention.ts <id>   # réédite la convention d'un dossier hors interface
@@ -40,6 +41,9 @@ Base locale : conteneur Docker `cityresa-pg` (PostgreSQL 18, port 5435) ; voir `
   puis `requireEdit` / `requireDelete` / `requireAdmin` / `requireUsager`.
 - Toute règle métier (créneaux, récurrences, tarifs, transitions de statut) vit dans `src/lib`
   (pure, testée) ou `src/server/reservations.ts` ; les pages n'en réimplémentent aucune.
+- Processus et circuits : règles pures dans `src/lib/circuits.ts` (critères, conditions,
+  aiguillage, contrôles), base dans `src/server/circuits.ts` ; le cycle de statuts reste fixe,
+  un circuit n'y insère que des étapes (relecture, avis, visa) avant l'acceptation.
 - Un module entier se déclare dans `src/server/features.ts` ; un réglage dans
   `src/server/config-store.ts` (clé `MANAGED`, repli `.env`).
 - Dates : instants `timestamptz` en base, saisie et affichage en heure de Paris (`src/lib/paris-time.ts`).

@@ -1312,3 +1312,48 @@ input[type="time"]::-webkit-datetime-edit-text { padding-top: 0; padding-bottom:
    la saisie se fait au clavier ou aux flèches). */
 .constat .constat-heures input[type="time"] { width: 4.3em; padding-inline: 7px; text-align: center; }
 .constat .constat-heures input[type="time"]::-webkit-calendar-picker-indicator { display: none; }
+
+/* ── Processus et circuits ── */
+.circuit { padding: 18px 20px; scroll-margin-top: 80px; }
+.circuit h5 { font-size: 1rem; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.circuit h5 small { font-size: 0.76rem; font-weight: 400; color: var(--muted); }
+.circuit-service { font-size: 0.84rem; margin-bottom: 10px; }
+.circuit-verrou { font-size: 0.82rem; background: var(--amber-dim); color: var(--amber-text); border-radius: 10px; padding: 8px 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.circuit-etapes { list-style: none; margin: 0; padding: 0; }
+.circuit-etapes li { padding: 10px 0; border-top: 1px solid var(--line); }
+.circuit-etapes li:first-child { border-top: 0; padding-top: 2px; }
+.circuit-etape-titre { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.88rem; }
+.circuit-etape-qui, .circuit-etape-suivi { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+.circuit-etape-suivi strong { color: var(--body); }
+.circuit-etape-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.circuit-etape-actions:empty { display: none; }
+
+.logigramme { list-style: none; margin: 0; padding: 0; }
+.logi-noeud { position: relative; display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-bottom: 22px; background: var(--surface); font-size: 0.84rem; }
+.logi-noeud:last-child { margin-bottom: 0; }
+.logi-noeud:not(:last-child)::after { content: ""; position: absolute; left: 22px; bottom: -22px; height: 22px; border-left: 2px solid var(--line); }
+.logi-noeud > .lucide { margin-top: 3px; flex-shrink: 0; color: var(--muted); }
+.logi-noeud > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.logi-noeud span { color: var(--muted); font-size: 0.78rem; }
+.logi-noeud strong { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.logi-entree { background: var(--primary-soft); border-color: transparent; }
+.logi-entree > .lucide { color: var(--primary); }
+.logi-etape { margin-left: 22px; border-style: dashed; }
+.logi-bloque { border-color: var(--amber-text); }
+.logi-condition { display: inline-flex; align-items: center; gap: 4px; }
+
+.condition-mode { display: flex; flex-wrap: wrap; gap: 18px; font-size: 0.84rem; margin-bottom: 12px; }
+.condition-groupe { border: 0; padding: 0; margin: 0 0 14px; }
+.condition-groupe legend { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 4px; float: none; width: auto; }
+.condition-ligne { display: grid; grid-template-columns: minmax(180px, 280px) minmax(0, 1fr); gap: 12px; align-items: start; padding: 6px 0; border-top: 1px solid var(--line); }
+.condition-label { font-size: 0.84rem; display: flex; flex-direction: column; }
+.condition-label small { color: var(--muted); font-size: 0.74rem; }
+.condition-ligne > select { max-width: 200px; }
+.condition-nombre { display: flex; align-items: center; gap: 8px; }
+.condition-nombre select { width: 140px; }
+.condition-nombre input { width: 120px; }
+.condition-liste summary { cursor: pointer; font-size: 0.84rem; color: var(--muted); }
+.condition-liste[open] summary { margin-bottom: 6px; }
+.astuce-alerte { background: var(--amber-dim); }
+.astuce-alerte .lucide { color: var(--amber-text); }
+@media (max-width: 640px) { .condition-ligne { grid-template-columns: 1fr; } }

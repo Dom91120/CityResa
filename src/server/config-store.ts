@@ -23,6 +23,7 @@ export const BOOL_KEYS = new Set([
   "DOCUMENTS_ENABLED",
   "CAMPAGNES_ENABLED",
   "PERSONNEL_ENABLED",
+  "PROCESSUS_ENABLED",
   "PLANNING_PERSONNEL_ENABLED",
   "RAPPEL_J7",
   "RAPPEL_J1",
@@ -143,6 +144,8 @@ export type AppSettings = EnvOnly & {
   DOCUMENTS_ENABLED: boolean;
   CAMPAGNES_ENABLED: boolean;
   PERSONNEL_ENABLED: boolean;
+  /** Module Processus et circuits : services, aiguillage et étapes de contrôle. */
+  PROCESSUS_ENABLED: boolean;
   /** Planning de service hebdomadaire envoyé par courriel à chaque personne de service (même jour que PLANNING_HEBDO_JOUR). */
   PLANNING_PERSONNEL_ENABLED: boolean;
   DOCUMENT_MAX_MB: number;
@@ -284,6 +287,7 @@ export function envDefaults(): AppSettings {
     CAMPAGNES_ENABLED: envBool("CAMPAGNES_ENABLED", true),
     DOCUMENTS_ENABLED: envBool("DOCUMENTS_ENABLED", true),
     PERSONNEL_ENABLED: envBool("PERSONNEL_ENABLED", true),
+    PROCESSUS_ENABLED: envBool("PROCESSUS_ENABLED", true),
     PLANNING_PERSONNEL_ENABLED: envBool("PLANNING_PERSONNEL_ENABLED", false),
     DOCUMENT_MAX_MB: envInt("DOCUMENT_MAX_MB", 10),
     TVA_TAUX: envFloat("TVA_TAUX", 0),

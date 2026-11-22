@@ -23,13 +23,17 @@ datasource db {
 // ============================================================
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique @db.VarChar(160)
-  emailVerified Boolean  @default(true) @map("email_verified")
-  name          String   @default("")
-  image         String?
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  id                   String          @id @default(cuid())
+  servicesMembre       ServiceMembre[]
+  servicesResponsable  Service[]       @relation("ServiceResponsable")
+  delegations          Delegation[]    @relation("DelegationElu")
+  delegationsSuppleant Delegation[]    @relation("DelegationSuppleant")
+  email                String          @unique @db.VarChar(160)
+  emailVerified        Boolean         @default(true) @map("email_verified")
+  name                 String          @default("")
+  image                String?
+  createdAt            DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   // ── Identité ──
   firstName String  @default("") @map("first_name") @db.VarChar(80)
@@ -39,22 +43,22 @@ model User {
 
   // ── Rôle et nature ──
   /// 'agent' (collectivité : back-office) ou 'usager' (portail : demandeur).
-  kind String @default("usager") @db.VarChar(10)
+  kind                String        @default("usager") @db.VarChar(10)
   /// Nom du rôle (table role) : admin, gestionnaire, lecteur, elu, usager.
-  role String @default("usager") @db.VarChar(30)
+  role                String        @default("usager") @db.VarChar(30)
   /// Secteur d'un agent (salle | sport) ; null = transversal. Un agent d'un secteur ne se
   /// rattache qu'aux espaces de ce secteur, et sans rattachement son périmètre est son secteur.
-  secteur String? @db.VarChar(8)
-  organisationId Int?          @map("organisation_id")
-  organisation   Organisation? @relation(fields: [organisationId], references: [id])
+  secteur             String?       @db.VarChar(8)
+  organisationId      Int?          @map("organisation_id")
+  organisation        Organisation? @relation(fields: [organisationId], references: [id])
   /// Un usager peut être désactivé (compte fermé) sans perdre son historique.
-  isActive      Boolean   @default(true) @map("is_active")
-  lastLoginAt   DateTime? @map("last_login_at") @db.Timestamptz
-  acceptedCguAt DateTime? @map("accepted_cgu_at") @db.Timestamptz
+  isActive            Boolean       @default(true) @map("is_active")
+  lastLoginAt         DateTime?     @map("last_login_at") @db.Timestamptz
+  acceptedCguAt       DateTime?     @map("accepted_cgu_at") @db.Timestamptz
   /// RGPD : courriel de préavis envoyé (compte inactif), remis à zéro à la connexion.
-  inactivitePreavisAt DateTime? @map("inactivite_preavis_at") @db.Timestamptz
+  inactivitePreavisAt DateTime?     @map("inactivite_preavis_at") @db.Timestamptz
   /// RGPD : identité effacée (compte inactif ou suppression demandée) ; le compte reste pour l’historique.
-  anonymiseAt DateTime? @map("anonymise_at") @db.Timestamptz
+  anonymiseAt         DateTime?     @map("anonymise_at") @db.Timestamptz
 
   // ── Second facteur (plugin twoFactor) ──
   twoFactorEnabled Boolean   @default(false) @map("two_factor_enabled")
@@ -67,7 +71,7 @@ model User {
   dashboardPrefs String? @map("dashboard_prefs")
   listPrefs      String? @map("list_prefs")
   /// Notifications par courriel (messages, décisions, rappels).
-  notifEmail Boolean @default(true) @map("notif_email")
+  notifEmail     Boolean @default(true) @map("notif_email")
 
   sessions      Session[]
   accounts      AuthAccount[]
@@ -214,17 +218,17 @@ model Referential {
   position Int     @default(0)
   isActive Boolean @default(true) @map("is_active")
 
-  espacesNature Espace[]           @relation("EspaceNature")
-  equipements   EspaceEquipement[]
-  tarifs        Tarif[]
-  organisations Organisation[]
-  reservations  Reservation[]      @relation("ReservationNature")
-  materiels     Materiel[]
-  documents     Document[]
-  personnelsContrat Personnel[] @relation("PersonnelContrat")
-  planningType      PlanningType?
-  absences          Absence[]   @relation("AbsenceMotif")
-  secteursSubvention Subvention[] @relation("SubventionSecteur")
+  espacesNature      Espace[]           @relation("EspaceNature")
+  equipements        EspaceEquipement[]
+  tarifs             Tarif[]
+  organisations      Organisation[]
+  reservations       Reservation[]      @relation("ReservationNature")
+  materiels          Materiel[]
+  documents          Document[]
+  personnelsContrat  Personnel[]        @relation("PersonnelContrat")
+  planningType       PlanningType?
+  absences           Absence[]          @relation("AbsenceMotif")
+  secteursSubvention Subvention[]       @relation("SubventionSecteur")
 
   @@unique([kind, label])
   @@index([kind, position])
@@ -283,63 +287,63 @@ model Site {
 /// Un espace réservable : salle, terrain, gymnase, bassin… Peut être un sous-espace
 /// (salle modulable) d'un espace parent : réserver le parent bloque les enfants.
 model Espace {
-  id          Int          @id @default(autoincrement())
-  siteId      Int          @map("site_id")
-  site        Site         @relation(fields: [siteId], references: [id])
-  parentId    Int?         @map("parent_id")
-  parent      Espace?      @relation("SousEspaces", fields: [parentId], references: [id])
-  enfants     Espace[]     @relation("SousEspaces")
-  name        String       @db.VarChar(120)
+  id               Int          @id @default(autoincrement())
+  siteId           Int          @map("site_id")
+  site             Site         @relation(fields: [siteId], references: [id])
+  parentId         Int?         @map("parent_id")
+  parent           Espace?      @relation("SousEspaces", fields: [parentId], references: [id])
+  enfants          Espace[]     @relation("SousEspaces")
+  name             String       @db.VarChar(120)
   /// Libellé court pour le planning et les zones étroites (affiché avec le site) ; null = le nom.
-  shortName   String?      @map("short_name") @db.VarChar(60)
-  slug        String       @unique @db.VarChar(140)
-  natureId    Int?         @map("nature_id")
-  nature      Referential? @relation("EspaceNature", fields: [natureId], references: [id])
+  shortName        String?      @map("short_name") @db.VarChar(60)
+  slug             String       @unique @db.VarChar(140)
+  natureId         Int?         @map("nature_id")
+  nature           Referential? @relation("EspaceNature", fields: [natureId], references: [id])
   /// salle | sport : sélections et statistiques, et périmètre des agents du même secteur.
-  secteur     String       @default("salle") @db.VarChar(8)
-  description String?
+  secteur          String       @default("salle") @db.VarChar(8)
+  description      String?
   /// Capacité debout / assis, surface en m², étage.
-  capacityStanding Int?    @map("capacity_standing")
-  capacitySeated   Int?    @map("capacity_seated")
+  capacityStanding Int?         @map("capacity_standing")
+  capacitySeated   Int?         @map("capacity_seated")
   surface          Float?
-  floor            String? @db.VarChar(40)
+  floor            String?      @db.VarChar(40)
   /// Couleur de l'espace dans le planning.
-  color String @default("#e8336d") @db.VarChar(16)
+  color            String       @default("#e8336d") @db.VarChar(16)
 
   // ── Règles de réservation ──
   /// Visible sur le portail public.
-  isPublic Boolean @default(true) @map("is_public")
+  isPublic            Boolean  @default(true) @map("is_public")
   /// Profils autorisés à demander (codes de profil tarifaire, vide = tous).
-  allowedProfiles String[] @default([]) @map("allowed_profiles")
+  allowedProfiles     String[] @default([]) @map("allowed_profiles")
   /// Une demande doit être validée par un agent (sinon confirmée d'office).
-  requiresValidation Boolean @default(true) @map("requires_validation")
+  requiresValidation  Boolean  @default(true) @map("requires_validation")
   /// Horaires d'ouverture par jour ISO (1 = lundi … 7 = dimanche) : {"1":[["08:00","22:00"]]}.
-  openHours      Json? @map("open_hours")
-  slotStepMin    Int   @default(30) @map("slot_step_min")
-  minDurationMin Int   @default(60) @map("min_duration_min")
-  maxDurationMin Int?  @map("max_duration_min")
+  openHours           Json?    @map("open_hours")
+  slotStepMin         Int      @default(30) @map("slot_step_min")
+  minDurationMin      Int      @default(60) @map("min_duration_min")
+  maxDurationMin      Int?     @map("max_duration_min")
   /// Délai minimal avant l'événement (jours) et horizon maximal (jours).
-  delayMinDays   Int   @default(7) @map("delay_min_days")
-  horizonMaxDays Int   @default(365) @map("horizon_max_days")
+  delayMinDays        Int      @default(7) @map("delay_min_days")
+  horizonMaxDays      Int      @default(365) @map("horizon_max_days")
   /// Temps de montage / démontage bloqués autour de chaque créneau (minutes).
-  bufferBeforeMin Int @default(0) @map("buffer_before_min")
-  bufferAfterMin  Int @default(0) @map("buffer_after_min")
+  bufferBeforeMin     Int      @default(0) @map("buffer_before_min")
+  bufferAfterMin      Int      @default(0) @map("buffer_after_min")
   /// Caution demandée (€), 0 = aucune.
-  cautionAmount Float   @default(0) @map("caution_amount")
+  cautionAmount       Float    @default(0) @map("caution_amount")
   /// Réservations admises en même temps (1 = exclusif ; > 1 = espace partageable : pistes, bassin…).
-  capaciteSimultanee Int @default(1) @map("capacite_simultanee")
+  capaciteSimultanee  Int      @default(1) @map("capacite_simultanee")
   /// Valeur de référence horaire (€/h) pour la valorisation des avantages en nature ; vide = grille « tous profils ».
-  valorisationHoraire Float? @map("valorisation_horaire")
-  rules         String?
-  instructions  String?
+  valorisationHoraire Float?   @map("valorisation_horaire")
+  rules               String?
+  instructions        String?
   /// actif | inactif | maintenance
-  status        String  @default("actif") @db.VarChar(16)
-  isActive      Boolean @default(true) @map("is_active")
-  position      Int     @default(0)
+  status              String   @default("actif") @db.VarChar(16)
+  isActive            Boolean  @default(true) @map("is_active")
+  position            Int      @default(0)
   /// Jeton du flux ICS public de l'espace (null = pas de flux).
-  icsToken  String?  @unique @map("ics_token") @db.VarChar(64)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  icsToken            String?  @unique @map("ics_token") @db.VarChar(64)
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   equipements      EspaceEquipement[]
   tarifs           Tarif[]
@@ -377,21 +381,21 @@ model EspaceEquipement {
 
 /// Grille tarifaire d'un espace : un montant par profil (null = tous) et par unité.
 model Tarif {
-  id       Int          @id @default(autoincrement())
-  espaceId Int          @map("espace_id")
-  espace   Espace       @relation(fields: [espaceId], references: [id], onDelete: Cascade)
-  profilId Int?         @map("profil_id")
-  profil   Referential? @relation(fields: [profilId], references: [id])
+  id           Int          @id @default(autoincrement())
+  espaceId     Int          @map("espace_id")
+  espace       Espace       @relation(fields: [espaceId], references: [id], onDelete: Cascade)
+  profilId     Int?         @map("profil_id")
+  profil       Referential? @relation(fields: [profilId], references: [id])
   /// heure | demi_journee | journee | soiree | weekend | forfait
-  unite    String       @db.VarChar(16)
-  montant  Float        @default(0)
-  label    String?      @db.VarChar(120)
-  position Int          @default(0)
+  unite        String       @db.VarChar(16)
+  montant      Float        @default(0)
+  label        String?      @db.VarChar(120)
+  position     Int          @default(0)
   /// Date d'effet (grille votée) ; vide = applicable depuis toujours. À la date d'occupation,
   /// la ligne en vigueur est la plus récente dont la date d'effet est atteinte.
-  validFrom DateTime? @map("valid_from") @db.Date
+  validFrom    DateTime?    @map("valid_from") @db.Date
   /// Référence de la délibération qui a voté ce tarif.
-  deliberation String? @db.VarChar(120)
+  deliberation String?      @db.VarChar(120)
 
   @@index([espaceId])
   @@map("tarif")
@@ -419,29 +423,29 @@ model Option {
 
 /// Matériel mobilisable avec une réservation (chaises, tables, sono, barnum…).
 model Materiel {
-  id          Int          @id @default(autoincrement())
-  name        String       @db.VarChar(120)
-  categorieId Int?         @map("categorie_id")
-  categorie   Referential? @relation(fields: [categorieId], references: [id])
-  description String?
+  id                Int          @id @default(autoincrement())
+  name              String       @db.VarChar(120)
+  categorieId       Int?         @map("categorie_id")
+  categorie         Referential? @relation(fields: [categorieId], references: [id])
+  description       String?
   /// Rattachement facultatif. Aucun : stock commun de la ville, proposé partout. Un site : proposé
   /// pour les seuls espaces de ce site. Un espace (son site est alors repris) : pour lui seul.
-  siteId      Int?         @map("site_id")
-  site        Site?        @relation(fields: [siteId], references: [id], onDelete: SetNull)
-  espaceId    Int?         @map("espace_id")
-  espace      Espace?      @relation(fields: [espaceId], references: [id], onDelete: SetNull)
-  stockTotal  Int          @default(0) @map("stock_total")
-  montant     Float        @default(0)
+  siteId            Int?         @map("site_id")
+  site              Site?        @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  espaceId          Int?         @map("espace_id")
+  espace            Espace?      @relation(fields: [espaceId], references: [id], onDelete: SetNull)
+  stockTotal        Int          @default(0) @map("stock_total")
+  montant           Float        @default(0)
   /// gratuit | forfait | unite | jour
-  unite       String       @default("gratuit") @db.VarChar(16)
-  isActive    Boolean      @default(true) @map("is_active")
+  unite             String       @default("gratuit") @db.VarChar(16)
+  isActive          Boolean      @default(true) @map("is_active")
   /// Unités indisponibles (en panne, perdues) : retirées du stock utilisable.
-  horsService Int          @default(0) @map("hors_service")
+  horsService       Int          @default(0) @map("hors_service")
   /// Périodicité du contrôle (mois) ; null = pas de contrôle périodique.
-  controleMois      Int?      @map("controle_mois")
-  dernierControleAt DateTime? @map("dernier_controle_at") @db.Timestamptz
-  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  controleMois      Int?         @map("controle_mois")
+  dernierControleAt DateTime?    @map("dernier_controle_at") @db.Timestamptz
+  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   reservations ReservationMateriel[]
   documents    Document[]
@@ -496,17 +500,17 @@ model Indisponibilite {
 
 /// Une personne de service (sans compte utilisateur) que l'on planifie sur les sites.
 model Personnel {
-  id        Int     @id @default(autoincrement())
-  firstName String  @map("first_name") @db.VarChar(80)
-  lastName  String  @map("last_name") @db.VarChar(80)
+  id        Int      @id @default(autoincrement())
+  firstName String   @map("first_name") @db.VarChar(80)
+  lastName  String   @map("last_name") @db.VarChar(80)
   /// Texte libre : Gardien, Agent d'accueil, Vacataire…
-  fonction  String? @db.VarChar(80)
-  phone     String? @db.VarChar(40)
-  email     String? @db.VarChar(160)
+  fonction  String?  @db.VarChar(80)
+  phone     String?  @db.VarChar(40)
+  email     String?  @db.VarChar(160)
   /// Couleur dans le planning (#rrggbb).
-  color     String? @db.VarChar(7)
-  note      String? @db.VarChar(400)
-  isActive  Boolean @default(true) @map("is_active")
+  color     String?  @db.VarChar(7)
+  note      String?  @db.VarChar(400)
+  isActive  Boolean  @default(true) @map("is_active")
   /// Jeton d'abonnement à son calendrier ICS (null = pas de lien actif).
   icsToken  String?  @unique @map("ics_token") @db.VarChar(64)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
@@ -515,16 +519,16 @@ model Personnel {
   contratTypeId Int?         @map("contrat_type_id")
   contratType   Referential? @relation("PersonnelContrat", fields: [contratTypeId], references: [id])
   /// Quotité de temps de travail en pourcentage (100, 90, 80, 50…).
-  quotite      Int       @default(100)
+  quotite       Int          @default(100)
   /// Durée hebdomadaire de référence en heures (35, 28…) ; null = non renseignée.
-  heuresHebdo  Decimal?  @map("heures_hebdo") @db.Decimal(4, 1)
-  contratDebut DateTime? @map("contrat_debut") @db.Date
-  contratFin   DateTime? @map("contrat_fin") @db.Date
+  heuresHebdo   Decimal?     @map("heures_hebdo") @db.Decimal(4, 1)
+  contratDebut  DateTime?    @map("contrat_debut") @db.Date
+  contratFin    DateTime?    @map("contrat_fin") @db.Date
   /// D'où viennent les horaires de travail : contrat (le planning type du type de contrat) |
   /// perso (le cycle `horaires` ci-dessous) | libre (pas d'horaires fixes).
-  horairesMode String @default("contrat") @map("horaires_mode") @db.VarChar(8)
+  horairesMode  String       @default("contrat") @map("horaires_mode") @db.VarChar(8)
   /// Cycle hebdomadaire personnalisé (jours ISO → plages « HH:MM »), suivi en mode « perso ».
-  horaires Json?
+  horaires      Json?
 
   vacations        Vacation[]
   creneaux         Creneau[]       @relation("CreneauService")
@@ -575,10 +579,10 @@ model Vacation {
   startAt     DateTime  @map("start_at") @db.Timestamptz
   endAt       DateTime  @map("end_at") @db.Timestamptz
   /// Les vacations nées d'une même répétition hebdomadaire partagent cet identifiant.
-  serieId   String?  @map("serie_id") @db.VarChar(32)
-  note      String?  @db.VarChar(200)
-  createdBy String?  @map("created_by") @db.VarChar(160)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  serieId     String?   @map("serie_id") @db.VarChar(32)
+  note        String?   @db.VarChar(200)
+  createdBy   String?   @map("created_by") @db.VarChar(160)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
 
   @@index([siteId, startAt])
   @@index([personnelId, startAt])
@@ -644,44 +648,44 @@ model PeriodeCalendrier {
 // ============================================================
 
 model Organisation {
-  id          Int          @id @default(autoincrement())
+  id               Int          @id @default(autoincrement())
   /// association | entreprise | particulier | service_interne | collectivite | autre
-  type        String       @default("association") @db.VarChar(20)
-  name        String       @db.VarChar(160)
-  siret       String?      @db.VarChar(20)
-  rna         String?      @db.VarChar(20)
-  address     String?      @db.VarChar(200)
-  postalCode  String?      @map("postal_code") @db.VarChar(10)
-  city        String?      @db.VarChar(80)
-  email       String?      @db.VarChar(160)
-  phone       String?      @db.VarChar(40)
-  website     String?      @db.VarChar(200)
+  type             String       @default("association") @db.VarChar(20)
+  name             String       @db.VarChar(160)
+  siret            String?      @db.VarChar(20)
+  rna              String?      @db.VarChar(20)
+  address          String?      @db.VarChar(200)
+  postalCode       String?      @map("postal_code") @db.VarChar(10)
+  city             String?      @db.VarChar(80)
+  email            String?      @db.VarChar(160)
+  phone            String?      @db.VarChar(40)
+  website          String?      @db.VarChar(200)
   /// Représentant légal : président(e) d'une association, dirigeant(e) d'une entreprise.
-  legalFirstName String?   @map("legal_first_name") @db.VarChar(80)
-  legalLastName  String?   @map("legal_last_name") @db.VarChar(80)
+  legalFirstName   String?      @map("legal_first_name") @db.VarChar(80)
+  legalLastName    String?      @map("legal_last_name") @db.VarChar(80)
   /// Associations : date de l'assemblée générale ayant nommé le représentant.
-  legalAppointedAt DateTime? @map("legal_appointed_at") @db.Date
-  profilId    Int?         @map("profil_id")
-  profil      Referential? @relation(fields: [profilId], references: [id])
-  notes       String?
+  legalAppointedAt DateTime?    @map("legal_appointed_at") @db.Date
+  profilId         Int?         @map("profil_id")
+  profil           Referential? @relation(fields: [profilId], references: [id])
+  notes            String?
   /// Compte validé par la collectivité (accès aux tarifs et espaces réservés).
-  validatedAt DateTime? @map("validated_at") @db.Timestamptz
-  isActive    Boolean   @default(true) @map("is_active")
+  validatedAt      DateTime?    @map("validated_at") @db.Timestamptz
+  isActive         Boolean      @default(true) @map("is_active")
   /// Association conventionnée avec la Ville : prioritaire dans les campagnes de créneaux.
-  conventionnee Boolean @default(false)
+  conventionnee    Boolean      @default(false)
   /// Association sportive : dossier de subvention et plan de budget sportifs.
-  sportive Boolean @default(false)
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  sportive         Boolean      @default(false)
+  createdAt        DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  users        User[]
-  reservations Reservation[]
-  documents    Document[]
-  factures     Facture[]
-  subventions  Subvention[]
-  voeux        Voeu[]
+  users         User[]
+  reservations  Reservation[]
+  documents     Document[]
+  factures      Facture[]
+  subventions   Subvention[]
+  voeux         Voeu[]
   valorisations Valorisation[]
-  listeAttente ListeAttente[]
+  listeAttente  ListeAttente[]
 
   @@index([type])
   @@map("organisation")
@@ -716,14 +720,14 @@ model Reservation {
 
   /// brouillon | a_traiter | en_traitement | acceptee | signee | confirmee | terminee |
   /// refusee | annulee | archivee
-  status  String   @default("a_traiter") @db.VarChar(16)
+  status      String   @default("a_traiter") @db.VarChar(16)
   /// Bornes du dossier (premier début, dernière fin des créneaux), dénormalisées.
-  startAt DateTime @map("start_at") @db.Timestamptz
-  endAt   DateTime @map("end_at") @db.Timestamptz
+  startAt     DateTime @map("start_at") @db.Timestamptz
+  endAt       DateTime @map("end_at") @db.Timestamptz
   /// Récurrence saisie : {"freq":"weekly","interval":1,"until":"2026-06-30"}.
   recurrence  Json?
-  setupMin    Int   @default(0) @map("setup_min")
-  teardownMin Int   @default(0) @map("teardown_min")
+  setupMin    Int      @default(0) @map("setup_min")
+  teardownMin Int      @default(0) @map("teardown_min")
 
   // ── Décision ──
   decisionAt    DateTime? @map("decision_at") @db.Timestamptz
@@ -737,12 +741,12 @@ model Reservation {
   internalNotes String?   @map("internal_notes")
 
   // ── Montants ──
-  montantHt  Float   @default(0) @map("montant_ht")
-  montantTtc Float   @default(0) @map("montant_ttc")
-  acompte    Float   @default(0)
-  caution    Float   @default(0)
+  montantHt    Float   @default(0) @map("montant_ht")
+  montantTtc   Float   @default(0) @map("montant_ttc")
+  acompte      Float   @default(0)
+  caution      Float   @default(0)
   /// Gratuité accordée (mise à disposition à titre gracieux).
-  gratuit    Boolean @default(false)
+  gratuit      Boolean @default(false)
   /// Fondement de la gratuité ou de la réduction (délibération, convention, intérêt général…).
   gratuitMotif String? @map("gratuit_motif") @db.VarChar(300)
 
@@ -775,6 +779,14 @@ model Reservation {
   signerName           String?   @map("signer_name") @db.VarChar(160)
   signerIp             String?   @map("signer_ip") @db.VarChar(64)
 
+  // ── Processus et circuits ──
+  /// Service auquel le dossier a été aiguillé à sa création (module Processus).
+  serviceId        Int?            @map("service_id")
+  service          Service?        @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  /// Version du circuit suivie par le dossier : il la garde jusqu'à sa clôture.
+  circuitVersionId Int?            @map("circuit_version_id")
+  circuitVersion   CircuitVersion? @relation(fields: [circuitVersionId], references: [id], onDelete: SetNull)
+
   /// portail | backoffice
   source     String    @default("backoffice") @db.VarChar(16)
   archivedAt DateTime? @map("archived_at") @db.Timestamptz
@@ -783,54 +795,55 @@ model Reservation {
   createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  creneaux  Creneau[]
-  options   ReservationOption[]
-  materiels ReservationMateriel[]
-  messages  Message[]
-  documents Document[]
-  factures  Facture[]
-  histories ReservationHistory[]
-  avenants  Avenant[]
+  creneaux           Creneau[]
+  options            ReservationOption[]
+  materiels          ReservationMateriel[]
+  messages           Message[]
+  documents          Document[]
+  factures           Facture[]
+  histories          ReservationHistory[]
+  avenants           Avenant[]
   mouvementsMateriel MouvementMateriel[]
-  voeu      Voeu?
-  etatsDesLieux EtatDesLieux[]
+  voeu               Voeu?
+  etatsDesLieux      EtatDesLieux[]
 
   @@index([espaceId, startAt])
   @@index([organisationId])
   @@index([userId])
   @@index([status])
   @@index([startAt])
+  @@index([serviceId])
   @@map("reservation")
 }
 
 /// Un créneau d'occupation (une occurrence) ; c'est lui que le planning affiche et
 /// que la détection de conflits compare.
 model Creneau {
-  id            Int         @id @default(autoincrement())
-  reservationId Int         @map("reservation_id")
-  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
-  espaceId      Int         @map("espace_id")
-  espace        Espace      @relation(fields: [espaceId], references: [id])
-  startAt       DateTime    @map("start_at") @db.Timestamptz
-  endAt         DateTime    @map("end_at") @db.Timestamptz
+  id                 Int         @id @default(autoincrement())
+  reservationId      Int         @map("reservation_id")
+  reservation        Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  espaceId           Int         @map("espace_id")
+  espace             Espace      @relation(fields: [espaceId], references: [id])
+  startAt            DateTime    @map("start_at") @db.Timestamptz
+  endAt              DateTime    @map("end_at") @db.Timestamptz
   /// prevu | annule
-  status        String      @default("prevu") @db.VarChar(10)
-  note          String?     @db.VarChar(200)
+  status             String      @default("prevu") @db.VarChar(10)
+  note               String?     @db.VarChar(200)
   /// Présence constatée après coup : presente | absente (absence non signalée) ; null = non renseignée.
-  presence     String?   @db.VarChar(10)
+  presence           String?     @db.VarChar(10)
   /// Heures réellement occupées, si elles diffèrent du créneau prévu.
-  realStartAt  DateTime? @map("real_start_at") @db.Timestamptz
-  realEndAt    DateTime? @map("real_end_at") @db.Timestamptz
-  presenceNote String?   @map("presence_note") @db.VarChar(200)
-  presenceBy   String?   @map("presence_by") @db.VarChar(160)
-  presenceAt   DateTime? @map("presence_at") @db.Timestamptz
+  realStartAt        DateTime?   @map("real_start_at") @db.Timestamptz
+  realEndAt          DateTime?   @map("real_end_at") @db.Timestamptz
+  presenceNote       String?     @map("presence_note") @db.VarChar(200)
+  presenceBy         String?     @map("presence_by") @db.VarChar(160)
+  presenceAt         DateTime?   @map("presence_at") @db.Timestamptz
   /// Personne de service épinglée sur ce créneau (module Personnel) ; null = déduite des vacations.
-  personnelId Int?       @map("personnel_id")
-  personnel   Personnel? @relation("CreneauService", fields: [personnelId], references: [id], onDelete: SetNull)
+  personnelId        Int?        @map("personnel_id")
+  personnel          Personnel?  @relation("CreneauService", fields: [personnelId], references: [id], onDelete: SetNull)
   /// Proposition d'affectation en attente de validation par le gestionnaire.
-  personnelProposeId Int?       @map("personnel_propose_id")
-  personnelPropose   Personnel? @relation("CreneauPropose", fields: [personnelProposeId], references: [id], onDelete: SetNull)
-  proposeAt          DateTime?  @map("propose_at") @db.Timestamptz
+  personnelProposeId Int?        @map("personnel_propose_id")
+  personnelPropose   Personnel?  @relation("CreneauPropose", fields: [personnelProposeId], references: [id], onDelete: SetNull)
+  proposeAt          DateTime?   @map("propose_at") @db.Timestamptz
 
   @@index([espaceId, startAt])
   @@index([reservationId])
@@ -988,22 +1001,22 @@ model ListeAttente {
 /// heures mises à disposition, valeur de référence, redevance perçue, avantage, subventions
 /// en numéraire et total (seuils de convention et de certification des comptes).
 model Valorisation {
-  id             Int          @id @default(autoincrement())
-  organisationId Int          @map("organisation_id")
-  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
-  exercice       Int
-  nbDossiers     Int          @default(0) @map("nb_dossiers")
-  heures         Float        @default(0)
-  valeurReference Float       @default(0) @map("valeur_reference")
-  redevance      Float        @default(0)
-  avantage       Float        @default(0)
-  subventions    Float        @default(0)
-  total          Float        @default(0)
-  figeeAt        DateTime     @default(now()) @map("figee_at") @db.Timestamptz
-  figeePar       String?      @map("figee_par") @db.VarChar(160)
+  id              Int          @id @default(autoincrement())
+  organisationId  Int          @map("organisation_id")
+  organisation    Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  exercice        Int
+  nbDossiers      Int          @default(0) @map("nb_dossiers")
+  heures          Float        @default(0)
+  valeurReference Float        @default(0) @map("valeur_reference")
+  redevance       Float        @default(0)
+  avantage        Float        @default(0)
+  subventions     Float        @default(0)
+  total           Float        @default(0)
+  figeeAt         DateTime     @default(now()) @map("figee_at") @db.Timestamptz
+  figeePar        String?      @map("figee_par") @db.VarChar(160)
   /// L'attestation annuelle déposée sur la fiche de l'organisation.
-  documentId     Int?         @map("document_id")
-  document       Document?    @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  documentId      Int?         @map("document_id")
+  document        Document?    @relation(fields: [documentId], references: [id], onDelete: SetNull)
 
   @@unique([organisationId, exercice])
   @@index([exercice])
@@ -1039,12 +1052,12 @@ model EtatDesLieux {
 /// Une campagne : les usagers déposent leurs vœux de créneaux hebdomadaires sur une saison, la
 /// Ville instruit, arbitre les conflits par priorité et attribue en lot (un dossier par vœu).
 model Campagne {
-  id       Int    @id @default(autoincrement())
-  saisonId Int    @map("saison_id")
-  saison   Saison @relation(fields: [saisonId], references: [id])
-  label    String @db.VarChar(120)
+  id        Int       @id @default(autoincrement())
+  saisonId  Int       @map("saison_id")
+  saison    Saison    @relation(fields: [saisonId], references: [id])
+  label     String    @db.VarChar(120)
   /// brouillon | ouverte | instruction | cloturee
-  status   String @default("brouillon") @db.VarChar(12)
+  status    String    @default("brouillon") @db.VarChar(12)
   /// Date limite de dépôt des vœux, affichée aux usagers (indicative).
   closeDate DateTime? @map("close_date") @db.Date
   consignes String?
@@ -1094,13 +1107,13 @@ model Voeu {
   horsVacances Boolean @default(true) @map("hors_vacances")
 
   /// en_attente | attribue | refuse
-  status       String    @default("en_attente") @db.VarChar(12)
-  decisionNote String?   @map("decision_note")
-  decidedAt    DateTime? @map("decided_at") @db.Timestamptz
-  decidedBy    String?   @map("decided_by") @db.VarChar(160)
+  status        String       @default("en_attente") @db.VarChar(12)
+  decisionNote  String?      @map("decision_note")
+  decidedAt     DateTime?    @map("decided_at") @db.Timestamptz
+  decidedBy     String?      @map("decided_by") @db.VarChar(160)
   /// Décision communiquée au demandeur (courriel groupé de la campagne).
-  notifiedAt   DateTime? @map("notified_at") @db.Timestamptz
-  reservationId Int?        @unique @map("reservation_id")
+  notifiedAt    DateTime?    @map("notified_at") @db.Timestamptz
+  reservationId Int?         @unique @map("reservation_id")
   reservation   Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
@@ -1150,10 +1163,10 @@ model Document {
   uploadedBy   User?    @relation(fields: [uploadedById], references: [id])
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  content       DocumentContent?
-  avenants      Avenant[]
-  valorisations Valorisation[]
-  dossiersSubvention Subvention[] @relation("SubventionDossier")
+  content            DocumentContent?
+  avenants           Avenant[]
+  valorisations      Valorisation[]
+  dossiersSubvention Subvention[]     @relation("SubventionDossier")
 
   @@index([espaceId])
   @@index([siteId])
@@ -1185,19 +1198,19 @@ model Facture {
   organisationId Int?          @map("organisation_id")
   organisation   Organisation? @relation(fields: [organisationId], references: [id])
   /// acompte | solde | caution | avoir
-  type          String    @default("solde") @db.VarChar(10)
-  libelle       String    @db.VarChar(200)
-  montantHt     Float     @default(0) @map("montant_ht")
-  tva           Float     @default(0)
-  montantTtc    Float     @default(0) @map("montant_ttc")
+  type           String        @default("solde") @db.VarChar(10)
+  libelle        String        @db.VarChar(200)
+  montantHt      Float         @default(0) @map("montant_ht")
+  tva            Float         @default(0)
+  montantTtc     Float         @default(0) @map("montant_ttc")
   /// a_payer | payee | annulee | remboursee
-  status        String    @default("a_payer") @db.VarChar(12)
-  dueAt         DateTime? @map("due_at") @db.Date
-  paidAt        DateTime? @map("paid_at") @db.Timestamptz
-  pdfDocumentId Int?      @map("pdf_document_id")
-  createdBy     String?   @map("created_by") @db.VarChar(160)
-  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  status         String        @default("a_payer") @db.VarChar(12)
+  dueAt          DateTime?     @map("due_at") @db.Date
+  paidAt         DateTime?     @map("paid_at") @db.Timestamptz
+  pdfDocumentId  Int?          @map("pdf_document_id")
+  createdBy      String?       @map("created_by") @db.VarChar(160)
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   paiements Paiement[]
 
@@ -1250,35 +1263,35 @@ model Subvention {
   updatedAt      DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   // ── Dossier de demande (formulaire de la Ville) ──
-  campagneId Int?                @map("campagne_id")
-  campagne   CampagneSubvention? @relation(fields: [campagneId], references: [id])
+  campagneId         Int?                @map("campagne_id")
+  campagne           CampagneSubvention? @relation(fields: [campagneId], references: [id])
   /// premiere | renouvellement
-  nature String @default("renouvellement") @db.VarChar(16)
+  nature             String              @default("renouvellement") @db.VarChar(16)
   /// Les fiches du dossier (src/lib/dossier-subvention.ts).
-  dossier Json?
+  dossier            Json?
   /// Le PDF du dossier généré au dépôt.
-  dossierDocumentId Int?      @map("dossier_document_id")
-  dossierDocument   Document? @relation("SubventionDossier", fields: [dossierDocumentId], references: [id], onDelete: SetNull)
+  dossierDocumentId  Int?                @map("dossier_document_id")
+  dossierDocument    Document?           @relation("SubventionDossier", fields: [dossierDocumentId], references: [id], onDelete: SetNull)
   /// Date de réception (dépôt effectif), cadre réservé.
-  recuAt DateTime? @map("recu_at") @db.Timestamptz
-  secteurId Int?         @map("secteur_id")
-  secteur   Referential? @relation("SubventionSecteur", fields: [secteurId], references: [id])
-  verseAt   DateTime?    @map("verse_at") @db.Date
+  recuAt             DateTime?           @map("recu_at") @db.Timestamptz
+  secteurId          Int?                @map("secteur_id")
+  secteur            Referential?        @relation("SubventionSecteur", fields: [secteurId], references: [id])
+  verseAt            DateTime?           @map("verse_at") @db.Date
   // ── Signature de l'attestation et du contrat d'engagement républicain ──
-  signeAt            DateTime? @map("signe_at") @db.Timestamptz
-  signeNom           String?   @map("signe_nom") @db.VarChar(160)
-  signeQualite       String?   @map("signe_qualite") @db.VarChar(80)
-  signeMandataire    Boolean   @default(false) @map("signe_mandataire")
-  signeIp            String?   @map("signe_ip") @db.VarChar(64)
-  signeChannel       String?   @map("signe_channel") @db.VarChar(8)
-  signatureCodeHash  String?   @map("signature_code_hash") @db.VarChar(120)
-  signatureSentAt    DateTime? @map("signature_sent_at") @db.Timestamptz
-  signatureExpiresAt DateTime? @map("signature_expires_at") @db.Timestamptz
-  signatureAttempts  Int       @default(0) @map("signature_attempts")
+  signeAt            DateTime?           @map("signe_at") @db.Timestamptz
+  signeNom           String?             @map("signe_nom") @db.VarChar(160)
+  signeQualite       String?             @map("signe_qualite") @db.VarChar(80)
+  signeMandataire    Boolean             @default(false) @map("signe_mandataire")
+  signeIp            String?             @map("signe_ip") @db.VarChar(64)
+  signeChannel       String?             @map("signe_channel") @db.VarChar(8)
+  signatureCodeHash  String?             @map("signature_code_hash") @db.VarChar(120)
+  signatureSentAt    DateTime?           @map("signature_sent_at") @db.Timestamptz
+  signatureExpiresAt DateTime?           @map("signature_expires_at") @db.Timestamptz
+  signatureAttempts  Int                 @default(0) @map("signature_attempts")
 
-  avis       SubventionAvis[]
-  documents  Document[]
-  histories  SubventionHistory[]
+  avis      SubventionAvis[]
+  documents Document[]
+  histories SubventionHistory[]
 
   @@index([organisationId])
   @@index([exercice, status])
@@ -1294,11 +1307,11 @@ model CampagneSubvention {
   ouvertureDate DateTime @map("ouverture_date") @db.Date
   clotureDate   DateTime @map("cloture_date") @db.Date
   /// brouillon | ouverte | cloturee
-  status    String  @default("brouillon") @db.VarChar(12)
-  consignes String?
-  createdBy String?  @map("created_by") @db.VarChar(160)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  status        String   @default("brouillon") @db.VarChar(12)
+  consignes     String?
+  createdBy     String?  @map("created_by") @db.VarChar(160)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   subventions Subvention[]
 
@@ -1404,4 +1417,139 @@ model Sequence {
   value Int    @default(0)
 
   @@map("sequence")
+}
+
+// ── Processus et circuits ────────────────────────────────────────────────────
+
+/// Un service de la collectivité (Service des sports, Vie associative…) : ses membres
+/// reçoivent les étapes qui lui sont confiées, et les dossiers qui lui sont aiguillés.
+model Service {
+  id            Int       @id @default(autoincrement())
+  name          String    @unique @db.VarChar(120)
+  description   String?   @db.VarChar(300)
+  email         String?   @db.VarChar(160)
+  phone         String?   @db.VarChar(40)
+  /// Responsable du service (compte du back-office).
+  responsableId String?   @map("responsable_id")
+  responsable   User?     @relation("ServiceResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
+  /// Suppléance datée : pendant la période, les membres du suppléant agissent aussi pour ce service.
+  suppleantId   Int?      @map("suppleant_id")
+  suppleant     Service?  @relation("ServiceSuppleant", fields: [suppleantId], references: [id], onDelete: SetNull)
+  supplees      Service[] @relation("ServiceSuppleant")
+  suppleanceDu  DateTime? @map("suppleance_du") @db.Date
+  suppleanceAu  DateTime? @map("suppleance_au") @db.Date
+  isActive      Boolean   @default(true) @map("is_active")
+  position      Int       @default(0)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  membres      ServiceMembre[]
+  reservations Reservation[]
+
+  @@map("service")
+}
+
+model ServiceMembre {
+  serviceId Int     @map("service_id")
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  userId    String  @map("user_id")
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([serviceId, userId])
+  @@index([userId])
+  @@map("service_membre")
+}
+
+/// La délégation d'un élu (sports, vie associative, fêtes…) : c'est elle qu'une étape
+/// d'avis ou de visa désigne, pas la personne.
+model Delegation {
+  id          Int      @id @default(autoincrement())
+  label       String   @unique @db.VarChar(120)
+  userId      String?  @map("user_id")
+  user        User?    @relation("DelegationElu", fields: [userId], references: [id], onDelete: SetNull)
+  /// Suppléant de l'élu, sollicité avec lui.
+  suppleantId String?  @map("suppleant_id")
+  suppleant   User?    @relation("DelegationSuppleant", fields: [suppleantId], references: [id], onDelete: SetNull)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("delegation")
+}
+
+/// Un circuit : la suite d'étapes que suit un type de dossier. Son contenu (règle
+/// d'aiguillage, service, étapes) vit dans ses versions.
+model Circuit {
+  id          Int      @id @default(autoincrement())
+  /// reservation (les autres types de dossier viendront ensuite).
+  objet       String   @default("reservation") @db.VarChar(20)
+  name        String   @db.VarChar(120)
+  description String?  @db.VarChar(400)
+  /// Ordre d'examen des règles d'aiguillage : la première qui s'applique l'emporte.
+  position    Int      @default(0)
+  /// Reçoit les dossiers qu'aucune règle ne prend ; un seul par type de dossier.
+  parDefaut   Boolean  @default(false) @map("par_defaut")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  versions CircuitVersion[]
+
+  @@index([objet, position])
+  @@map("circuit")
+}
+
+/// Une version d'un circuit : brouillon (modifiable), publiée (en service) ou archivée.
+model CircuitVersion {
+  id         Int       @id @default(autoincrement())
+  circuitId  Int       @map("circuit_id")
+  circuit    Circuit   @relation(fields: [circuitId], references: [id], onDelete: Cascade)
+  numero     Int
+  /// brouillon | publiee | archivee
+  status     String    @default("brouillon") @db.VarChar(12)
+  /// {"condition": …, "serviceId": …, "etapes": […]} — voir src/lib/circuits.ts.
+  definition Json
+  note       String?   @db.VarChar(300)
+  createdBy  String?   @map("created_by") @db.VarChar(160)
+  publieAt   DateTime? @map("publie_at") @db.Timestamptz
+  publiePar  String?   @map("publie_par") @db.VarChar(160)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  reservations Reservation[]
+  etapes       DossierEtape[]
+
+  @@unique([circuitId, numero])
+  @@index([circuitId, status])
+  @@map("circuit_version")
+}
+
+/// Une étape de circuit ouverte sur un dossier : qui est attendu, et ce qu'il a répondu.
+model DossierEtape {
+  id               Int            @id @default(autoincrement())
+  /// reservation
+  objet            String         @db.VarChar(20)
+  objetId          Int            @map("objet_id")
+  circuitVersionId Int            @map("circuit_version_id")
+  circuitVersion   CircuitVersion @relation(fields: [circuitVersionId], references: [id], onDelete: Cascade)
+  /// Clé de l'étape dans la définition du circuit.
+  cle              String         @db.VarChar(40)
+  libelle          String         @db.VarChar(120)
+  /// relecture | avis | visa
+  nature           String         @db.VarChar(12)
+  /// Intervenant attendu, figé à l'ouverture : {"libelle": …, "userIds": […]}.
+  intervenant      Json
+  /// ouverte | validee | refusee | annulee
+  status           String         @default("ouverte") @db.VarChar(10)
+  /// Ce que l'agent soumet (décision envisagée, précisions).
+  contexte         String?
+  ouvertAt         DateTime       @default(now()) @map("ouvert_at") @db.Timestamptz
+  ouvertPar        String?        @map("ouvert_par") @db.VarChar(160)
+  echeanceAt       DateTime?      @map("echeance_at") @db.Timestamptz
+  closAt           DateTime?      @map("clos_at") @db.Timestamptz
+  closPar          String?        @map("clos_par") @db.VarChar(160)
+  commentaire      String?
+
+  @@index([objet, objetId])
+  @@index([status])
+  @@map("dossier_etape")
 }

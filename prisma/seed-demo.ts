@@ -50,6 +50,7 @@ import { profilParDefaut } from "@/server/usagers";
 import { VACANCES_ZONE_C } from "./calendrier-zone-c";
 import { ASSOCIATIONS_SPORTIVES, type OrgSpec } from "./seed-associations";
 import { creerCampagneDemo } from "./seed-demo-campagne";
+import { creerProcessusDemo } from "./seed-processus";
 
 const MOT_DE_PASSE = "Demo-2026!!";
 /** Code de signature posé sur les dossiers « acceptée » : l'usager peut signer avec. */
@@ -324,7 +325,7 @@ async function remettreAZero(): Promise<void> {
   // TRUNCATE sans CASCADE : la table `user` référence `organisation`, un CASCADE la viderait
   // (administrateur compris). Toutes les tables qui se référencent entre elles sont listées.
   await prisma.$executeRawUnsafe(
-    `TRUNCATE TABLE paiement, facture, subvention_history, subvention_avis, subvention, campagne_subvention, message, reservation_history,
+    `TRUNCATE TABLE dossier_etape, service_membre, delegation, circuit_version, circuit, service, paiement, facture, subvention_history, subvention_avis, subvention, campagne_subvention, message, reservation_history,
      reservation_option, reservation_materiel, mouvement_materiel, avenant, etat_des_lieux, voeu,
      campagne_espace, campagne, liste_attente, brouillon_demande, valorisation, creneau,
      document_content, document, reservation, notification, mail_log, action_log, scheduler_run,
@@ -4455,6 +4456,11 @@ async function main(): Promise<void> {
   await creerPersonnel();
   await creerSubventions(ctx);
   await creerNotificationsEtJournal(ctx, parStatut);
+  // En dernier : services, circuits et aiguillage des dossiers (aucun tirage aléatoire).
+  console.log("→ Processus et circuits…");
+  const processus = await creerProcessusDemo();
+  compteurs.services = processus.services;
+  compteurs.circuits = processus.circuits;
 
   console.log(`\n${"=".repeat(64)}`);
   console.log(`  COMPTES DE DÉMONSTRATION   (mot de passe commun : ${MOT_DE_PASSE})`);

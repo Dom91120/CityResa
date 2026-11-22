@@ -251,6 +251,26 @@ async function statut({ user, r, fiche }: Contexte, form: FormData): Promise<Res
       champOuNull(form, "gratuit_motif"),
     );
   }
+  // Processus : une étape préalable du circuit (relecture, visa) retient l'acceptation.
+  if (
+    (nouveau === "acceptee" || nouveau === "confirmee") &&
+    (r.status === "a_traiter" || r.status === "en_traitement")
+  ) {
+    const { verifierAvantAcceptation } = await import("@/server/circuits");
+    const aJour = await chargerReservation(r.id);
+    try {
+      if (aJour)
+        await verifierAvantAcceptation(
+          aJour,
+          user,
+          aJour.gratuit ? `Gratuité demandée : ${aJour.gratuitMotif ?? ""}` : null,
+        );
+    } catch (e) {
+      if (e instanceof UserFacingError)
+        return redirigerAvecMessage(`${fiche}#circuit`, e.message, "warning");
+      throw e;
+    }
+  }
   const maj = await changerStatut(r.id, nouveau, user, {
     motif: motif ?? undefined,
     message: message ?? undefined,
@@ -570,6 +590,23 @@ async function supprimer({ user, r, fiche }: Contexte): Promise<Response> {
   return redirigerAvecMessage("/reservations", `Dossier ${r.numero} supprimé.`, "success");
 }
 
+/** Demande (ou redemande) une étape du circuit : relecture, avis ou visa. */
+async function demanderEtape({ user, r, fiche }: Contexte, form: FormData): Promise<Response> {
+  const { etatCircuit, ouvrirEtape } = await import("@/server/circuits");
+  const etat = await etatCircuit(r);
+  const e = etat?.etapes.find((x) => x.cle === champ(form, "cle"));
+  if (!e) throw new UserFacingError("Cette étape ne s'applique pas à ce dossier.");
+  if (e.etat === "ouverte") throw new UserFacingError("Cette étape attend déjà une réponse.");
+  if (!["a_traiter", "en_traitement"].includes(r.status))
+    throw new UserFacingError("Le dossier n'est plus à l'étude : l'étape ne se demande plus.");
+  await ouvrirEtape(r, e, user.name, champOuNull(form, "contexte"));
+  return redirigerAvecMessage(
+    `${fiche}#circuit`,
+    `« ${e.libelle} » demandé à : ${e.libelleIntervenant}.`,
+    "success",
+  );
+}
+
 /** Aiguille POST /reservations/<id>/<action…> vers le geste correspondant. */
 export async function actionReservation(
   id: number,
@@ -598,6 +635,8 @@ export async function actionReservation(
         return await message(ctx, form);
       case "assigner":
         return await assigner(ctx, form);
+      case "etapes/demander":
+        return await demanderEtape(ctx, form);
       case "creneaux/ajouter":
         return await ajouterCreneau(ctx, form);
       case "convention/regenerer":

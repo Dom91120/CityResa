@@ -76,6 +76,21 @@ l'administrateur est celui affiché par `pnpm db:init`.
 > Martin joue donc tour à tour la Vie associative et le Service des fêtes. Il n'y a ni compte
 > Communication (on le crée au scénario 10), ni compte Financier.
 
+### Les services et circuits de démonstration
+
+Le jeu de démonstration contient quatre services et quatre circuits (module Processus et
+circuits, guide chapitre 12) :
+
+| Circuit | Reçoit | Service | Étape |
+| --- | --- | --- | --- |
+| Équipements sportifs | Tout espace du secteur Sports | Service des sports (Karim) | Visa de l'élu si la gratuité est accordée à la main |
+| Salles · associations | Une salle demandée par une association | Vie associative (Sophie) | Idem |
+| Salles · particuliers et entreprises | Une salle demandée par un particulier ou une entreprise | Service des fêtes (Sophie) | Idem |
+| Circuit standard | Tout le reste (services de la Ville…) | — | Aucune |
+
+Le service Communication existe mais n'a aucun membre ; la délégation « Sports, vie associative
+et fêtes » est confiée à Pierre Durand. Le dossier R260008 attend déjà son visa.
+
 ### Comment lire un scénario
 
 - **Qui** : la personne dont vous prenez le compte à cette étape. Un changement de personne
@@ -102,6 +117,7 @@ l'administrateur est celui affiché par `pnpm db:init`.
 | 11 | Encaisser, relancer, corriger | Service des fêtes | 20 min | Paiements, avoirs, export |
 | 12 | La fin de l'année | Vie associative | 15 min | Valorisation, statistiques |
 | 13 | Faire vivre l'outil | Administrateur | 20 min | Paramètres, tâches planifiées, journal |
+| 14 | Décrire un circuit | Administrateur | 30 min | Services, aiguillage, étapes, simulation, versions |
 
 ---
 
@@ -269,7 +285,9 @@ s'inscrire : sa fiche est à valider et elle, elle paiera.
 | # | Qui | Action | Constat |
 | --- | --- | --- | --- |
 | 9 | Sophie | **+ Nouvelle réservation** pour **Martine Dupont** (particulier), Salle Gabriel Péri, dans trois semaines ; dans Décision, activez **Mise à disposition gratuite** sans fondement. | Refus : le fondement est obligatoire. |
-| 10 | Sophie | Saisissez le fondement (« Intérêt général – fête de quartier »), statut initial « Confirmée ». | Pastille **Gratuité** et son fondement dans Montants ; redevance et caution à zéro ; aucune facture. |
+| 10 | Sophie | Saisissez le fondement (« Intérêt général – fête de quartier »), statut initial « Confirmée ». | Le dossier naît **À traiter**, pas « Confirmée » : son circuit soumet la gratuité accordée à la main au **visa de l'élu**. Carte **Circuit** : « L'acceptation attend : Visa de l'élu sur la gratuité », étape « En attente » ; historique « Dossier retenu par son circuit ». |
+| 10 bis | Pierre | **Mes étapes** (compteur à 2 avec R260008) : ouvrez le dossier, puis **Visa accordé** avec un commentaire. | L'étape passe « Visa accordé » ; Sophie est prévenue par la cloche. |
+| 10 ter | Sophie | Rouvrez le dossier, **Approuver** en laissant la gratuité et son fondement. | **Acceptée** ; pastille **Gratuité** dans Montants ; redevance et caution à zéro ; aucune facture. Essayez avant le visa : l'approbation est retenue avec un message jaune. |
 
 ### C. L'association extérieure à valider
 
@@ -473,12 +491,15 @@ budget.
 | 2 | Pierre | **Statistiques** (ch. 8.5) : changez de période, exportez en Excel. | Volume de demandes, taux d'acceptation, taux d'occupation par espace, recettes, valeur des mises à disposition gratuites. |
 | 3 | Pierre | **Planning**, **Réservations**, **Usagers**, **Paiements**. | Tout se lit ; aucun bouton de création, de décision ou de modification. |
 | 4 | Pierre | **Valorisation**. | Le total des aides par association. Il a aussi le bouton **Figer l'exercice et déposer les attestations**, parce que le rôle Élu a l'écriture sur les subventions : à noter « À revoir », ce geste revient au service. |
-| 5 | Pierre | **Subventions** : donnez un avis (scénario 8). | Seule action possible de l'élu dans l'application. |
+| 5 | Pierre | **Subventions** : donnez un avis (scénario 8). | Avec le visa, la seule autre action de l'élu. |
+| 6 | Pierre | **Mes étapes** : le dossier R260008 attend son visa. Ouvrez-le, puis **Visa refusé** avec un motif. | Il lit tout le dossier sans bouton de décision ; le refus exige un motif ; côté Sophie, l'approbation reste retenue et l'étape se **redemande**. |
 
-> **Écart E3** — Tout ce que l'élu fait dans les circuits de réservation se passe aujourd'hui
-> hors de l'application. Pendant ce scénario, notez pour chaque décision où vous attendriez un
-> avis ou un visa d'élu : gratuité accordée (scénario 4), dérogation au délai (scénario 3),
-> attribution des créneaux (scénario 5), réquisition (scénario 7), refus d'une demande.
+> **Écart E3, traité en partie** — Le module Processus et circuits permet de soumettre une
+> acceptation à un avis ou à un visa d'élu ; le jeu de démonstration le fait pour la gratuité
+> accordée à la main (scénario 4). Notez les autres décisions où vous attendriez un élu :
+> dérogation au délai (un critère existe : ajoutez l'étape vous-même au scénario 14),
+> attribution des créneaux (scénario 5), réquisition (scénario 7), refus d'une demande : ces
+> trois dernières ne sont pas encore couvertes.
 
 ---
 
@@ -501,15 +522,16 @@ ce qui fait découvrir l'administration des comptes.
 | 7 | Sophie | **Mon équipe** › icône de porte du compte de suppléance : rattachez-le à deux salles seulement, rôle « Gestionnaire ». | Reconnectez-vous avec ce compte : il ne voit plus que ces deux salles. |
 | 8 | Administrateur | **Rôles & permissions** › **Nouveau rôle** « communication » : lecture partout, écriture sur Messages (ch. 9.14). Attribuez-le au compte de suivi. | Le compte peut répondre aux usagers sans décider. |
 
-> **Écart E2** — Trois limites apparaissent :
+> **Écart E2, traité en partie** — La relecture et la suppléance datée se décrivent
+> maintenant dans le module Processus et circuits : le scénario 14 les met en place. Deux
+> limites demeurent :
 >
-> - la **relecture** n'existe pas : à l'étape 5, la réponse part à l'usager sans second regard ;
-> - la **suppléance** est un compte permanent, pas un remplacement daté d'un service ;
+> - la relecture porte sur l'**acceptation** d'une demande, pas encore sur une réponse dans le
+>   fil, une facture ou un refus ;
 > - le compte de suivi voit **tout** le secteur Salles, sans distinguer Vie associative et
 >   Service des fêtes (écart E1).
 >
-> Notez ce que la Communication relit réellement (réponse, convention, événement public,
-> facture) : c'est la question à trancher avant de faire évoluer l'application.
+> Notez ce que la Communication relit réellement : c'est ce qui dira quelles étapes ajouter.
 
 ---
 
@@ -573,6 +595,38 @@ obligatoire, au-delà de 153 000 € les comptes doivent être certifiés.
 
 ---
 
+## Scénario 14 — Administrateur : décrire un circuit
+
+**Situation** — La Ville décide que la Communication relit l'acceptation de tout événement
+ouvert au public dans une salle, et qu'elle supplée le Service des fêtes pendant ses congés. On
+le décrit, on le simule, on le publie, on le vérifie.
+
+**Comptes** — Administrateur, les comptes Communication du scénario 10, Sophie, Sandra.
+
+| # | Qui | Action | Constat |
+| --- | --- | --- | --- |
+| 1 | Administrateur | **Processus et circuits** (ch. 12.5) : lisez les quatre circuits et leur ordre. | Trois circuits à règle, puis le Circuit standard « par défaut ». |
+| 2 | Administrateur | Onglet **Services** › crayon de **Communication** : cochez les deux comptes du scénario 10, choisissez un responsable. | Le service n'affiche plus « Aucun membre ». |
+| 3 | Administrateur | Circuit **Salles · associations** › **Étapes** › **Ajouter** : « Relecture par la Communication », nature Relecture, qui répond : le service Communication, délai 3 jours ; critère « Événement ouvert au public » : Oui. | Le circuit passe en **Brouillon v2** ; le bandeau dit « prêt à être publié » et ce qui a changé ; le logigramme montre la nouvelle étape. |
+| 4 | Administrateur | Avant l'étape 2, tentez la même étape avec un service sans membre, puis **Publier**. | Publication refusée : « le service n'a aucun membre ». |
+| 5 | Administrateur | **Simuler**, numéro d'un dossier d'association ouvert au public, case **Avec les brouillons**. | Circuit retenu, raison de l'écart des autres, étape « Relecture » qui s'ouvrirait et personnes sollicitées. Sans la case : l'étape n'apparaît pas. |
+| 6 | Administrateur | **Publier**, avec une note de version. | « v2 en service ». Section Versions : v1 archivée. |
+| 7 | Sandra | Portail : nouvelle demande de salle, **ouverte au public**. | Dossier « À traiter ». |
+| 8 | Sophie | Ouvrez le dossier : carte **Circuit** en v2, étape « Relecture » à demander. **Approuver**. | Acceptation retenue (message jaune), relecture demandée d'office. |
+| 9 | Communication | **Mes étapes** : ouvrez le dossier, **Relu, bon pour envoi**. | Le compte lit le dossier ; Sophie est prévenue. |
+| 10 | Sophie | **Approuver** de nouveau. | **Acceptée**. Historique : relecture demandée, relue, acceptée. |
+| 11 | Sophie | Ouvrez un dossier d'association **créé avant** la publication. | Sa carte Circuit affiche toujours **v1** : il garde sa version. |
+| 12 | Administrateur | Service **Service des fêtes** : **Suppléé par** Communication, du jour à dans une semaine. Ajoutez au circuit « Salles · particuliers et entreprises » une étape adressée au « service du dossier », publiez, provoquez-la. | Les comptes Communication reçoivent l'étape du Service des fêtes pendant la période, plus après. |
+| 13 | Administrateur | Ajoutez une étape « Visa de l'élu » sur le critère « Demande hors du délai de l'espace », publiez ; avec Sophie, saisissez une réservation en **passant outre le délai**, statut initial « Acceptée ». | Le dossier naît « À traiter » et attend le visa. |
+| 14 | Administrateur | **Paramètres › Modules** : désactivez **Processus et circuits**. | « Mes étapes » et la carte Circuit disparaissent ; une demande s'accepte sans étape. Réactivez. |
+
+**Règles illustrées** — un circuit se modifie en brouillon et ne s'applique qu'une fois publié ;
+la publication contrôle que chaque étape a quelqu'un pour y répondre ; une relecture ou un visa
+retient l'acceptation, un avis non ; un dossier garde la version de son circuit ; la suppléance
+est datée.
+
+---
+
 ## Grille de suivi
 
 À remplir au fil de l'eau : **OK**, **KO** (l'application ne fait pas ce qui est écrit) ou
@@ -594,6 +648,7 @@ obligatoire, au-delà de 153 000 € les comptes doivent être certifiés.
 | 11 | Paiements | | | | |
 | 12 | Fin d'année | | | | |
 | 13 | Administration | | | | |
+| 14 | Décrire un circuit | | | | |
 
 ### Les écarts rencontrés
 

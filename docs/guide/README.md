@@ -6,7 +6,7 @@ ville) et instruire les demandes de subvention des associations.
 
 Ce guide présente l'application **fonctionnalité par fonctionnalité** (chapitres 1 à 9), puis
 le **parcours métier** de chaque intervenant (chapitre 10) et le module **Personnel de
-service** (chapitre 11). Toutes les captures d'écran viennent
+service** (chapitre 11) et le module **Processus et circuits** (chapitre 12). Toutes les captures d'écran viennent
 du jeu de démonstration : les personnes, associations et dossiers cités sont fictifs.
 
 ## Deux portes d'entrée
@@ -33,6 +33,7 @@ espace.
 9. [Administration](09-administration.md)
 10. [Parcours métier par profil](10-parcours-metier.md)
 11. [Personnel de service](11-personnel-de-service.md)
+12. [Processus et circuits](12-processus-et-circuits.md)
 
 ## Lire ce guide
 

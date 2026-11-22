@@ -95,6 +95,7 @@ export const NOTIF_ICONES: Record<string, [string, string]> = {
 
 /** Libellés des catégories du journal d'audit. */
 export const CATEGORIES_AUDIT: Record<string, string> = {
+  processus: "Processus",
   reservations: "Réservations",
   planning: "Planning",
   espaces: "Sites et espaces",

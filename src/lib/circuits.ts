@@ -1,0 +1,540 @@
+/**
+ * Processus et circuits : la partie PURE.
+ *
+ * Un circuit décrit, pour un type de dossier, à quel service il revient (règle
+ * d'aiguillage) et quelles étapes de contrôle s'ajoutent au cycle de fond (relecture,
+ * avis, visa), à quelles conditions et par qui. Rien ici ne touche la base : les
+ * conditions s'évaluent sur des « faits » calculés ailleurs (src/server/circuits.ts).
+ *
+ * Tout est en listes fermées (critères, natures, intervenants) : la Ville compose, elle
+ * ne programme pas.
+ */
+
+// ── Critères ──
+
+export type TypeCritere = "bool" | "liste" | "nombre";
+
+export type Critere = {
+  cle: string;
+  label: string;
+  type: TypeCritere;
+  groupe: "Espace" | "Demandeur" | "Dossier";
+  /** Pour une liste : ses valeurs fixes, ou la source à charger (espaces, sites, profils). */
+  options?: readonly (readonly [string, string])[];
+  source?: "espaces" | "sites" | "profils";
+  /** Pour un nombre : unité affichée. */
+  unite?: string;
+  aide?: string;
+};
+
+export const CRITERES: readonly Critere[] = [
+  {
+    cle: "secteur",
+    label: "Secteur de l'espace",
+    type: "liste",
+    groupe: "Espace",
+    options: [
+      ["salle", "Salles"],
+      ["sport", "Sports"],
+    ],
+  },
+  { cle: "site", label: "Site", type: "liste", groupe: "Espace", source: "sites" },
+  { cle: "espace", label: "Espace", type: "liste", groupe: "Espace", source: "espaces" },
+  {
+    cle: "type_demandeur",
+    label: "Type de demandeur",
+    type: "liste",
+    groupe: "Demandeur",
+    options: [
+      ["association", "Association"],
+      ["entreprise", "Entreprise"],
+      ["particulier", "Particulier"],
+      ["service_interne", "Service de la Ville"],
+      ["collectivite", "Autre collectivité"],
+      ["autre", "Autre"],
+    ],
+  },
+  {
+    cle: "profil",
+    label: "Profil tarifaire",
+    type: "liste",
+    groupe: "Demandeur",
+    source: "profils",
+  },
+  { cle: "sportive", label: "Association sportive", type: "bool", groupe: "Demandeur" },
+  { cle: "conventionnee", label: "Association conventionnée", type: "bool", groupe: "Demandeur" },
+  {
+    cle: "fiche_validee",
+    label: "Fiche de l'usager validée",
+    type: "bool",
+    groupe: "Demandeur",
+  },
+  {
+    cle: "gratuite_accordee",
+    label: "Gratuité accordée à la main",
+    type: "bool",
+    groupe: "Dossier",
+    aide: "La gratuité décidée par un agent, avec son fondement ; pas le tarif nul de la grille.",
+  },
+  {
+    cle: "derogation_delai",
+    label: "Demande hors du délai de l'espace",
+    type: "bool",
+    groupe: "Dossier",
+    aide: "L'événement commence avant le délai minimal de réservation de l'espace.",
+  },
+  { cle: "public", label: "Événement ouvert au public", type: "bool", groupe: "Dossier" },
+  { cle: "recurrent", label: "Réservation récurrente", type: "bool", groupe: "Dossier" },
+  { cle: "materiel", label: "Matériel demandé", type: "bool", groupe: "Dossier" },
+  {
+    cle: "origine",
+    label: "Origine de la demande",
+    type: "liste",
+    groupe: "Dossier",
+    options: [
+      ["portail", "Portail"],
+      ["backoffice", "Back-office"],
+    ],
+  },
+  { cle: "montant", label: "Montant TTC", type: "nombre", groupe: "Dossier", unite: "€" },
+  {
+    cle: "participants",
+    label: "Participants",
+    type: "nombre",
+    groupe: "Dossier",
+    unite: "pers.",
+  },
+  {
+    cle: "jours_avant",
+    label: "Jours avant l'événement",
+    type: "nombre",
+    groupe: "Dossier",
+    unite: "j",
+  },
+];
+
+const PAR_CLE = new Map(CRITERES.map((c) => [c.cle, c]));
+
+export function critere(cle: string): Critere | undefined {
+  return PAR_CLE.get(cle);
+}
+
+/** Ce que l'on sait d'un dossier au moment d'évaluer une règle. */
+export type Faits = Record<string, string | number | boolean | null>;
+
+/** Un test : `valeur` est un booléen, une liste de valeurs admises, ou une borne. */
+export type Test =
+  | { champ: string; op: "est"; valeur: boolean }
+  | { champ: string; op: "parmi"; valeur: string[] }
+  | { champ: string; op: "min" | "max"; valeur: number };
+
+/** Des tests réunis par « et » (tous) ou par « ou » (au moins un). */
+export type Condition = { mode: "tous" | "un"; tests: Test[] };
+
+export function testVrai(t: Test, faits: Faits): boolean {
+  const v = faits[t.champ];
+  if (v === null || v === undefined) return false;
+  if (t.op === "est") return Boolean(v) === t.valeur;
+  if (t.op === "parmi") return t.valeur.includes(String(v));
+  const n = Number(v);
+  if (!Number.isFinite(n)) return false;
+  return t.op === "min" ? n >= t.valeur : n <= t.valeur;
+}
+
+/** Une condition absente ou vide est toujours vraie. */
+export function conditionVraie(c: Condition | null | undefined, faits: Faits): boolean {
+  if (!c?.tests.length) return true;
+  return c.mode === "un"
+    ? c.tests.some((t) => testVrai(t, faits))
+    : c.tests.every((t) => testVrai(t, faits));
+}
+
+/** Nettoie une condition lue d'un formulaire ou de la base : critères connus, valeurs typées. */
+export function lireCondition(brut: unknown): Condition | null {
+  if (!brut || typeof brut !== "object") return null;
+  const b = brut as { mode?: unknown; tests?: unknown };
+  if (!Array.isArray(b.tests)) return null;
+  const tests: Test[] = [];
+  for (const x of b.tests as { champ?: unknown; op?: unknown; valeur?: unknown }[]) {
+    const c = critere(String(x?.champ ?? ""));
+    if (!c) continue;
+    if (c.type === "bool" && x.op === "est" && typeof x.valeur === "boolean")
+      tests.push({ champ: c.cle, op: "est", valeur: x.valeur });
+    else if (c.type === "liste" && x.op === "parmi" && Array.isArray(x.valeur)) {
+      const valeur = [...new Set(x.valeur.map(String).filter(Boolean))];
+      if (valeur.length) tests.push({ champ: c.cle, op: "parmi", valeur });
+    } else if (c.type === "nombre" && (x.op === "min" || x.op === "max")) {
+      const n = Number(x.valeur);
+      if (Number.isFinite(n)) tests.push({ champ: c.cle, op: x.op, valeur: n });
+    }
+  }
+  return tests.length ? { mode: b.mode === "un" ? "un" : "tous", tests } : null;
+}
+
+/** Libellés des valeurs de liste chargées en base (espaces, sites, profils). */
+export type Libelles = Partial<Record<string, Record<string, string>>>;
+
+function libelleValeur(c: Critere, v: string, libelles: Libelles): string {
+  const fixe = c.options?.find(([k]) => k === v)?.[1];
+  return fixe ?? libelles[c.cle]?.[v] ?? `#${v}`;
+}
+
+export function decrireTest(t: Test, libelles: Libelles = {}): string {
+  const c = critere(t.champ);
+  if (!c) return t.champ;
+  if (t.op === "est") return t.valeur ? c.label : `${c.label} : non`;
+  if (t.op === "parmi")
+    return `${c.label} : ${t.valeur.map((v) => libelleValeur(c, v, libelles)).join(" ou ")}`;
+  return `${c.label} ${t.op === "min" ? "≥" : "≤"} ${t.valeur}${c.unite ? ` ${c.unite}` : ""}`;
+}
+
+/** « Type de demandeur : Association et Secteur de l'espace : Salles ». */
+export function decrireCondition(
+  c: Condition | null | undefined,
+  libelles: Libelles = {},
+  siVide = "Toujours",
+): string {
+  if (!c?.tests.length) return siVide;
+  return c.tests.map((t) => decrireTest(t, libelles)).join(c.mode === "un" ? " ou " : " et ");
+}
+
+// ── Étapes ──
+
+export const NATURES = {
+  relecture: {
+    label: "Relecture",
+    bloquante: true,
+    icone: "eye",
+    teinte: "sky",
+    aide: "Un second regard avant que la décision parte à l'usager.",
+    issues: ["Relu, bon pour envoi", "À revoir"],
+  },
+  avis: {
+    label: "Avis",
+    bloquante: false,
+    icone: "message-circle",
+    teinte: "violet",
+    aide: "Un avis consultatif : il éclaire la décision sans la retenir.",
+    issues: ["Avis favorable", "Avis défavorable"],
+  },
+  visa: {
+    label: "Visa",
+    bloquante: true,
+    icone: "stamp",
+    teinte: "amber",
+    aide: "Un accord préalable : sans lui, le dossier ne peut pas être accepté.",
+    issues: ["Visa accordé", "Visa refusé"],
+  },
+} as const;
+
+export type Nature = keyof typeof NATURES;
+
+/** Le moment du cycle de fond où l'étape s'insère. */
+export const MOMENTS = {
+  avant_acceptation: "Avant l'acceptation de la demande",
+} as const;
+export type Moment = keyof typeof MOMENTS;
+
+export type Intervenant =
+  | { type: "service"; id: number }
+  | { type: "service_dossier" }
+  | { type: "responsable_dossier" }
+  | { type: "delegation"; id: number }
+  | { type: "role"; role: string };
+
+export const TYPES_INTERVENANT: Record<Intervenant["type"], string> = {
+  service: "Un service",
+  service_dossier: "Le service du dossier",
+  responsable_dossier: "Le responsable du service du dossier",
+  delegation: "L'élu d'une délégation",
+  role: "Les comptes d'un rôle",
+};
+
+export type Etape = {
+  cle: string;
+  libelle: string;
+  /** Ce que l'usager lit pendant l'étape ; vide = étape invisible de l'usager. */
+  libelleUsager: string;
+  nature: Nature;
+  moment: Moment;
+  intervenant: Intervenant;
+  condition: Condition | null;
+  /** Délai indicatif, en jours ; 0 = sans échéance. */
+  delaiJours: number;
+};
+
+export type Definition = {
+  /** Règle d'aiguillage : le circuit prend les dossiers qui la vérifient. */
+  condition: Condition | null;
+  /** Service auquel le dossier est confié. */
+  serviceId: number | null;
+  etapes: Etape[];
+};
+
+export const DEFINITION_VIDE: Definition = { condition: null, serviceId: null, etapes: [] };
+
+function lireIntervenant(brut: unknown): Intervenant | null {
+  const b = (brut ?? {}) as { type?: unknown; id?: unknown; role?: unknown };
+  const id = Number(b.id);
+  switch (b.type) {
+    case "service":
+      return Number.isInteger(id) && id > 0 ? { type: "service", id } : null;
+    case "delegation":
+      return Number.isInteger(id) && id > 0 ? { type: "delegation", id } : null;
+    case "service_dossier":
+      return { type: "service_dossier" };
+    case "responsable_dossier":
+      return { type: "responsable_dossier" };
+    case "role":
+      return typeof b.role === "string" && b.role ? { type: "role", role: b.role } : null;
+    default:
+      return null;
+  }
+}
+
+/** Clé d'étape : minuscules, chiffres et tirets. */
+export function cleEtape(libelle: string, prises: readonly string[] = []): string {
+  const base =
+    libelle
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 32) || "etape";
+  let cle = base;
+  for (let i = 2; prises.includes(cle); i++) cle = `${base}-${i}`;
+  return cle;
+}
+
+/** Nettoie une définition lue de la base : ce qui est illisible est écarté, jamais deviné. */
+export function lireDefinition(brut: unknown): Definition {
+  const b = (brut ?? {}) as { condition?: unknown; serviceId?: unknown; etapes?: unknown };
+  const etapes: Etape[] = [];
+  for (const x of Array.isArray(b.etapes) ? (b.etapes as Record<string, unknown>[]) : []) {
+    const intervenant = lireIntervenant(x?.intervenant);
+    const nature = String(x?.nature ?? "");
+    const cle = String(x?.cle ?? "");
+    if (!intervenant || !(nature in NATURES) || !/^[a-z0-9-]{1,40}$/.test(cle)) continue;
+    if (etapes.some((e) => e.cle === cle)) continue;
+    etapes.push({
+      cle,
+      libelle: String(x.libelle ?? "").slice(0, 120),
+      libelleUsager: String(x.libelleUsager ?? "").slice(0, 160),
+      nature: nature as Nature,
+      moment: "avant_acceptation",
+      intervenant,
+      condition: lireCondition(x.condition),
+      delaiJours: Math.max(0, Math.min(365, Math.trunc(Number(x.delaiJours) || 0))),
+    });
+  }
+  const serviceId = Number(b.serviceId);
+  return {
+    condition: lireCondition(b.condition),
+    serviceId: Number.isInteger(serviceId) && serviceId > 0 ? serviceId : null,
+    etapes,
+  };
+}
+
+/** Les étapes d'un circuit qui s'appliquent à un dossier, dans l'ordre du circuit. */
+export function etapesApplicables(def: Definition, faits: Faits, moment?: Moment): Etape[] {
+  return def.etapes.filter(
+    (e) => (!moment || e.moment === moment) && conditionVraie(e.condition, faits),
+  );
+}
+
+// ── Aiguillage ──
+
+export type CircuitPublie = {
+  id: number;
+  versionId: number;
+  name: string;
+  position: number;
+  parDefaut: boolean;
+  definition: Definition;
+};
+
+export type Aiguillage = {
+  retenu: CircuitPublie | null;
+  /** Chaque circuit examiné, dans l'ordre, avec la raison de son sort. */
+  examen: { circuit: CircuitPublie; retenu: boolean; raison: string }[];
+};
+
+/**
+ * Choisit le circuit d'un dossier : les circuits à règle dans l'ordre de leur position, le
+ * premier dont la règle est vraie l'emporte ; à défaut, le circuit par défaut.
+ */
+export function aiguiller(
+  circuits: readonly CircuitPublie[],
+  faits: Faits,
+  libelles: Libelles = {},
+): Aiguillage {
+  const ordonnes = [...circuits].sort(
+    (a, b) => Number(a.parDefaut) - Number(b.parDefaut) || a.position - b.position || a.id - b.id,
+  );
+  const examen: Aiguillage["examen"] = [];
+  let retenu: CircuitPublie | null = null;
+  for (const c of ordonnes) {
+    if (retenu) {
+      examen.push({ circuit: c, retenu: false, raison: "Non examiné : un circuit précède." });
+      continue;
+    }
+    if (c.parDefaut) {
+      retenu = c;
+      examen.push({ circuit: c, retenu: true, raison: "Circuit par défaut." });
+      continue;
+    }
+    const regle = c.definition.condition;
+    if (!regle?.tests.length) {
+      examen.push({ circuit: c, retenu: false, raison: "Aucune règle d'aiguillage." });
+      continue;
+    }
+    if (conditionVraie(regle, faits)) {
+      retenu = c;
+      examen.push({ circuit: c, retenu: true, raison: decrireCondition(regle, libelles) });
+    } else {
+      const faux = regle.tests.filter((t) => !testVrai(t, faits));
+      examen.push({
+        circuit: c,
+        retenu: false,
+        raison: `Règle non vérifiée : ${faux.map((t) => decrireTest(t, libelles)).join(" ; ")}`,
+      });
+    }
+  }
+  return { retenu, examen };
+}
+
+// ── Contrôles avant publication ──
+
+export type Referentiel = {
+  /** Services actifs : identifiant → nombre de personnes qui peuvent agir pour lui. */
+  services: Map<number, { name: string; personnes: number; responsable: boolean }>;
+  /** Délégations actives : identifiant → nombre d'élus (titulaire et suppléant). */
+  delegations: Map<number, { label: string; personnes: number }>;
+  /** Rôles du back-office : nom → nombre de comptes actifs. */
+  roles: Map<string, { label: string; personnes: number }>;
+};
+
+/** « Vie associative », « Élu · Sports », « Rôle Gestionnaire »… */
+export function libelleIntervenant(i: Intervenant, ref: Referentiel): string {
+  switch (i.type) {
+    case "service":
+      return ref.services.get(i.id)?.name ?? "Service supprimé";
+    case "delegation": {
+      const d = ref.delegations.get(i.id);
+      return d ? `Élu · ${d.label}` : "Délégation supprimée";
+    }
+    case "service_dossier":
+      return "Service du dossier";
+    case "responsable_dossier":
+      return "Responsable du service du dossier";
+    case "role":
+      return `Rôle ${ref.roles.get(i.role)?.label ?? i.role}`;
+  }
+}
+
+/**
+ * Ce qui empêche de publier une version. `autres` : les autres circuits du même type de
+ * dossier (pour l'unicité du circuit par défaut).
+ */
+export function controler(
+  circuit: { parDefaut: boolean; name: string },
+  def: Definition,
+  ref: Referentiel,
+  autres: readonly { name: string; parDefaut: boolean }[] = [],
+): string[] {
+  const erreurs: string[] = [];
+  if (circuit.parDefaut) {
+    if (def.condition?.tests.length)
+      erreurs.push(
+        "Le circuit par défaut ne porte pas de règle d'aiguillage : il reçoit le reste.",
+      );
+    const autre = autres.find((a) => a.parDefaut);
+    if (autre) erreurs.push(`Un autre circuit est déjà le circuit par défaut : « ${autre.name} ».`);
+  } else if (!def.condition?.tests.length) {
+    erreurs.push(
+      "Indiquez la règle d'aiguillage : sans elle, ce circuit ne recevrait aucun dossier.",
+    );
+  }
+  if (def.serviceId && !ref.services.has(def.serviceId))
+    erreurs.push("Le service désigné n'existe plus ou n'est plus actif.");
+  const dependDuService = def.etapes.some(
+    (e) => e.intervenant.type === "service_dossier" || e.intervenant.type === "responsable_dossier",
+  );
+  if (dependDuService && !def.serviceId)
+    erreurs.push(
+      "Une étape s'adresse au service du dossier : désignez le service auquel ce circuit confie les dossiers.",
+    );
+  const service = def.serviceId ? ref.services.get(def.serviceId) : undefined;
+  for (const e of def.etapes) {
+    const nom = `Étape « ${e.libelle || e.cle} »`;
+    if (!e.libelle.trim()) erreurs.push(`${nom} : donnez-lui un libellé.`);
+    const i = e.intervenant;
+    if (i.type === "service") {
+      const s = ref.services.get(i.id);
+      if (!s) erreurs.push(`${nom} : le service attendu n'existe plus.`);
+      else if (!s.personnes) erreurs.push(`${nom} : le service « ${s.name} » n'a aucun membre.`);
+    } else if (i.type === "delegation") {
+      const d = ref.delegations.get(i.id);
+      if (!d) erreurs.push(`${nom} : la délégation attendue n'existe plus.`);
+      else if (!d.personnes)
+        erreurs.push(`${nom} : aucun élu n'est désigné pour la délégation « ${d.label} ».`);
+    } else if (i.type === "role") {
+      const r = ref.roles.get(i.role);
+      if (!r) erreurs.push(`${nom} : le rôle attendu n'existe plus.`);
+      else if (!r.personnes)
+        erreurs.push(`${nom} : aucun compte actif n'a le rôle « ${r.label} ».`);
+    } else if (service) {
+      if (i.type === "service_dossier" && !service.personnes)
+        erreurs.push(`${nom} : le service « ${service.name} » n'a aucun membre.`);
+      if (i.type === "responsable_dossier" && !service.responsable)
+        erreurs.push(`${nom} : le service « ${service.name} » n'a pas de responsable.`);
+    }
+  }
+  return erreurs;
+}
+
+// ── État des étapes d'un dossier ──
+
+export type EtatEtape = "a_demander" | "ouverte" | "validee" | "refusee";
+
+/** L'état d'une étape applicable, d'après sa dernière ouverture sur le dossier. */
+export function etatEtape(derniere: { status: string } | null | undefined): EtatEtape {
+  if (!derniere || derniere.status === "annulee") return "a_demander";
+  if (derniere.status === "validee") return "validee";
+  if (derniere.status === "refusee") return "refusee";
+  return "ouverte";
+}
+
+/**
+ * Les étapes qui retiennent encore la décision : bloquantes, applicables, et pas validées.
+ * Un avis ne retient jamais rien.
+ */
+export function etapesRetenant<T extends { nature: Nature }>(
+  etapes: readonly (T & { etat: EtatEtape })[],
+): (T & { etat: EtatEtape })[] {
+  return etapes.filter((e) => NATURES[e.nature].bloquante && e.etat !== "validee");
+}
+
+/** Deux versions d'un circuit : ce qui a changé, en clair. */
+export function comparer(avant: Definition, apres: Definition, ref: Referentiel): string[] {
+  const out: string[] = [];
+  if (decrireCondition(avant.condition) !== decrireCondition(apres.condition))
+    out.push("Règle d'aiguillage modifiée.");
+  if (avant.serviceId !== apres.serviceId) out.push("Service du circuit modifié.");
+  const cles = (d: Definition) => d.etapes.map((e) => e.cle);
+  for (const e of apres.etapes) {
+    const a = avant.etapes.find((x) => x.cle === e.cle);
+    if (!a) out.push(`Étape ajoutée : ${e.libelle} (${libelleIntervenant(e.intervenant, ref)}).`);
+    else if (JSON.stringify(a) !== JSON.stringify(e)) out.push(`Étape modifiée : ${e.libelle}.`);
+  }
+  for (const a of avant.etapes)
+    if (!apres.etapes.some((e) => e.cle === a.cle)) out.push(`Étape retirée : ${a.libelle}.`);
+  if (
+    !out.some((l) => l.startsWith("Étape")) &&
+    cles(avant).join() !== cles(apres).join() &&
+    cles(avant).length === cles(apres).length
+  )
+    out.push("Ordre des étapes modifié.");
+  return out;
+}

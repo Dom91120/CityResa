@@ -47,6 +47,7 @@ export const GENERAL: NavDomaine = {
   entries: [
     t("sky", e("/", "Tableau de bord", "layout-dashboard")),
     t("emerald", e("/reservations", "Réservations", "clipboard-list", "reservations", "a_traiter")),
+    t("amber", e("/etapes", "Mes étapes", "list-checks", null, "etapes", "processus")),
     t("violet", e("/planning", "Planning", "calendar-days", "planning")),
     t("rose", e("/campagnes", "Campagnes", "calendar-check", "reservations", null, "campagnes")),
     t("red", e("/sites", "Sites", "map-pin", "espaces")),
@@ -93,6 +94,11 @@ export const ADMINISTRATION: NavDomaine = {
     { ...e("/parametres", "Paramètres", "settings"), admin: true, teinte: "slate" },
     { ...e("/utilisateurs", "Comptes", "user-cog"), admin: true, teinte: "sky" },
     { ...e("/roles", "Rôles & permissions", "shield"), admin: true, teinte: "red" },
+    {
+      ...e("/processus", "Processus et circuits", "workflow", null, null, "processus"),
+      admin: true,
+      teinte: "sky",
+    },
     { ...e("/referentiels", "Référentiels", "list"), admin: true, teinte: "amber" },
     {
       ...e("/calendrier", "Calendrier des saisons", "calendar-range"),

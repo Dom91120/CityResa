@@ -629,8 +629,8 @@ disposition gracieuses accordées aux associations, top organisations ; export *
 - **États des lieux** dématérialisés (entrée / sortie, photos, restitution de caution) : non
   couverts, la caution est suivie comme une facture.
 - **Logigrammes libres** : le circuit de statuts est aujourd'hui fixe ; ses étapes sont
-  débrayables par module et par espace. Le module **Processus et circuits** (§ 9), à
-  construire, doit permettre à la Ville de décrire et de modifier elle-même ses circuits.
+  débrayables par module et par espace. Le module **Processus et circuits** (§ 9) permet à
+  la Ville d'y insérer ses propres étapes ; son premier lot porte sur les réservations.
 - **Application mobile élus** : le rôle Élu utilise l'application web responsive.
 - **Emailing de masse**, **éditeur de mise en page** des PDF : hors périmètre.
 - **Hébergement et conformité** : auto-hébergement Docker (voir `docs/DEPLOY.md`), données en
@@ -704,7 +704,7 @@ ses circuits, et les modifie sans intervention technique.
 
 ---
 
-## 9. Module « Processus et circuits » (à construire)
+## 9. Module « Processus et circuits »
 
 ### Objet
 
@@ -833,14 +833,57 @@ Restent dans le code, hors de portée du paramétrage :
 
 ### Mise en place
 
-1. À la livraison, le module contient des circuits qui **reproduisent exactement le
-   fonctionnement actuel** (réservation, campagne de créneaux, subvention, validation d'une
-   fiche) et deux services issus des secteurs Salles et Sports : rien ne change pour les
-   utilisateurs tant que la Ville ne modifie rien.
+1. À la livraison, le module contient un **Circuit standard** sans service ni étape, qui
+   reproduit le fonctionnement antérieur : rien ne change pour les utilisateurs tant que la
+   Ville ne modifie rien.
 2. La Ville crée ses services, ses délégations, puis fait évoluer les circuits à son rythme, en
    s'appuyant sur les constats des scénarios (`docs/SCENARIOS.md`).
 3. Les règles encore inconnues (ce que relit la Communication, les décisions soumises aux élus)
    se saisissent quand elles sont arrêtées, et se corrigent ensuite sans développement.
+
+### État d'avancement
+
+**Lot 1, livré** — sur les demandes de réservation :
+
+- **services** (membres, responsable, suppléance datée) et **délégations** des élus (titulaire,
+  suppléant) ;
+- **circuits** versionnés : brouillon, contrôles de cohérence, publication, reprise d'une
+  version archivée, comparaison avec la version en service ; les dossiers en cours gardent
+  leur version ;
+- **aiguillage** à la création d'une demande : circuits examinés dans l'ordre, circuit par
+  défaut, service inscrit sur le dossier ;
+- **étapes avant l'acceptation** : relecture, avis, visa ; intervenant (un service, le service
+  du dossier, son responsable, l'élu d'une délégation, un rôle) ; condition sur dix-sept
+  critères ; délai indicatif ; libellé destiné à l'usager ;
+- **verrou** : une relecture ou un visa applicable retient l'acceptation, y compris pour un
+  dossier créé directement accepté ; l'étape est demandée d'office et les personnes attendues
+  sont notifiées ;
+- **« Mes étapes »** pour tous les agents (compteur au menu, réponse sans droit d'écriture sur
+  les réservations, accès au dossier hors périmètre), carte **Circuit** sur la fiche d'un
+  dossier, historique de chaque demande et de chaque réponse ;
+- **logigramme** de chaque circuit, consultable par tous les agents ; **simulation** sur un
+  dossier, brouillons compris ;
+- à l'installation, un **Circuit standard** sans service ni étape : rien ne change tant que la
+  Ville ne décrit rien.
+
+Écarts du § 8 traités par ce lot : E2 (relecture, suppléance datée), E3 (visa ou avis d'un élu
+sur une réservation), E4 pour les réservations (délégation, notification de l'élu), E7 en
+partie (les services existent et figurent sur le dossier).
+
+**Reste à faire**
+
+| Sujet | Écart |
+| --- | --- |
+| Périmètre et droits **par service** : listes, tableau de bord, compteurs et décision limités aux dossiers du service ; notification de la nouvelle demande aux membres du service | E1, E9 |
+| Circuits des **subventions** (service instructeur, élus de la délégation), des **campagnes de créneaux**, de la **validation d'une fiche d'usager**, de la retenue sur caution et de l'annulation | E4, E5, E6, E11 |
+| Autres **moments** d'insertion : avant un refus, une annulation, une réquisition, l'émission d'une facture | E3, E9 |
+| Règle de réunion **tous / majorité** (aujourd'hui : une seule réponse suffit) | — |
+| **Échéance** : relance, alerte au responsable, passage d'office ou transmission au suppléant (aujourd'hui : l'échéance est affichée, en rouge une fois dépassée) | — |
+| **Effets** paramétrables d'une étape (modèle de courriel, mise en copie, document) ; courriel en plus de la cloche | E2 |
+| Service nommé sur la **convention** et les **courriels** ; filtre « service » des listes | E7 |
+| **Bascule** d'un dossier en cours sur une nouvelle version ; **export / import** d'un circuit | — |
+| Catégorie de permission « **Processus** » (aujourd'hui : administrateur seul) | — |
+| **Statistiques** de délai par étape et par service | — |
 
 ### Limites voulues
 

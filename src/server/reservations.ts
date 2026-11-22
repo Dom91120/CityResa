@@ -413,8 +413,27 @@ export async function creerReservation(
   }
   const cfg = await getSettings();
   const numero = await prochainNumero("RES");
-  const statut: ReservationStatus =
+  let statut: ReservationStatus =
     e.statutInitial ?? (espace.requiresValidation ? "a_traiter" : "confirmee");
+  // Processus : le dossier est confié à un circuit et à un service ; si ce circuit lui impose
+  // une étape préalable (relecture, visa), il ne naît pas acquis mais « à traiter ».
+  const { circuitPour } = await import("@/server/circuits");
+  const circuit = await circuitPour({
+    espaceId: espace.id,
+    espace,
+    organisation: org,
+    gratuit: devis.gratuit,
+    isPublicEvent: e.isPublicEvent,
+    recurrence: e.recurrence,
+    materiels: e.materiels,
+    source: e.source,
+    montantTtc: devis.ttc,
+    participants: e.participants,
+    startAt: creneaux[0].startAt,
+    createdAt: now,
+  });
+  const retenuParCircuit = Boolean(circuit?.bloquantes.length) && STATUTS_FERMES.includes(statut);
+  if (retenuParCircuit) statut = "a_traiter";
   // Un dossier acquis d'emblée (saisie d'un agent, espace sans validation) obéit à la règle des pièces.
   if (org && e.source === "backoffice" && STATUTS_FERMES.includes(statut))
     await verifierPieces(org, "acceptation", cfg);
@@ -454,6 +473,8 @@ export async function creerReservation(
           ? e.optionExpiresAt
           : null,
       source: e.source,
+      circuitVersionId: circuit?.versionId ?? null,
+      serviceId: circuit?.serviceId ?? null,
       decisionAt: statut === "confirmee" ? now : null,
       decisionBy: statut === "confirmee" ? "automatique" : null,
       creneaux: {
@@ -501,6 +522,23 @@ export async function creerReservation(
   if (STATUTS_FERMES.includes(statut) && enabledIn(cfg, "personnel")) {
     const { affecterDossier } = await import("@/server/affectation");
     await affecterDossier(r.id, acteur).catch((err) => console.error("[affectation]", err));
+  }
+  if (retenuParCircuit) {
+    const { etatCircuit, ouvrirEtapesPrealables } = await import("@/server/circuits");
+    const etat = await etatCircuit(r);
+    if (etat)
+      await ouvrirEtapesPrealables(
+        r,
+        etat,
+        acteur,
+        devis.gratuit ? `Gratuité demandée : ${e.gratuitMotif?.trim() ?? ""}` : null,
+      ).catch((err) => console.error("[circuit]", err));
+    await historiser(
+      r.id,
+      "Dossier retenu par son circuit",
+      `${circuit?.name} : ${circuit?.bloquantes.map((x) => x.libelle).join(", ")}`,
+      acteur,
+    );
   }
   if (e.sansCourriel) return r;
   const lienBo = `${cfg.APP_BASE_URL}/reservations/${r.id}`;
@@ -749,6 +787,8 @@ export async function changerStatut(
   await historiser(id, libelle, opts.motif ?? opts.message ?? null, acteur.name);
   // Les créneaux libérés intéressent la liste d'attente de l'espace.
   if (effectif === "annulee" || effectif === "refusee") {
+    const { cloreEtapesOuvertes } = await import("@/server/circuits");
+    await cloreEtapesOuvertes(id, acteur.name).catch((e) => console.error("[circuit]", e));
     const { notifierLiberation } = await import("@/server/liste-attente");
     await notifierLiberation(
       r.espaceId,
