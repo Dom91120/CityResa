@@ -77,12 +77,13 @@ export async function envoyerMail(c: Courriel): Promise<boolean> {
   const simule = !cfg.MAIL_ENABLED || !cfg.MAIL_SERVER || cfg.MAIL_SERVER === "localhost";
   if (simule) {
     journal.info("mailer", "courriel simulé", { to, sujet: c.subject, modele: c.templateKey });
+    const joints = (c.attachments ?? []).map((a) => `\n   [pièce jointe] ${a.filename}`).join("");
     if (process.env.NODE_ENV !== "production")
       console.log(
         `\n── Courriel (simulé) → ${to.join(", ")}\n   ${c.subject}\n${text
           .split("\n")
           .map((l) => `   ${l}`)
-          .join("\n")}\n`,
+          .join("\n")}${joints}\n`,
       );
     await tracer(c, "simule");
     return true;

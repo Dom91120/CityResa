@@ -350,6 +350,7 @@ type SubventionPorteur = {
   secteurId: number | null;
   serviceId: number | null;
   circuitVersionId: number | null;
+  dossierDocumentId?: number | null;
   organisation: { name: string; sportive: boolean; conventionnee: boolean };
 };
 
@@ -361,6 +362,7 @@ export function porteurSubvention(s: SubventionPorteur): Porteur {
     numero: s.numero,
     titre: s.objet,
     detail: `${s.organisation.name} · exercice ${s.exercice} · ${montant(s.montantDemande)} demandés`,
+    document: s.dossierDocumentId ?? null,
     lien: `/subventions/${s.id}`,
     demandeur: s.organisation.name,
     status: s.status,

@@ -502,7 +502,13 @@ export type Etape = {
   aEcheance: AEcheance;
   /** Mis en copie : prévenus de la demande et de la réponse, sans avoir à répondre. */
   copie?: Intervenant | null;
+  /** Consigne propre à l'étape, ajoutée au courriel de demande (ce qu'il faut regarder…). */
+  consigne?: string;
+  /** Joindre au courriel de demande le document du dossier (convention, dossier de subvention). */
+  joindre?: boolean;
 };
+
+export const CONSIGNE_MAX = 600;
 
 export type Definition = {
   /** Règle d'aiguillage : le circuit prend les dossiers qui la vérifient. */
@@ -576,6 +582,10 @@ export function lireDefinition(brut: unknown): Definition {
       reunion: lireReunion(x.reunion),
       aEcheance: lireAEcheance(x.aEcheance),
       copie: lireIntervenant(x.copie),
+      ...(String(x.consigne ?? "").trim()
+        ? { consigne: String(x.consigne).trim().slice(0, CONSIGNE_MAX) }
+        : {}),
+      ...(x.joindre === true ? { joindre: true } : {}),
     });
   }
   const serviceId = Number(b.serviceId);

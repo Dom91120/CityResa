@@ -2,6 +2,7 @@
  * Processus et circuits : lecture des formulaires d'administration et chargement des écrans.
  */
 import {
+  CONSIGNE_MAX,
   type Condition,
   CRITERES,
   cleEtape,
@@ -106,6 +107,10 @@ export function etapeDuFormulaire(
     reunion: lireReunion(champ(form, "reunion")),
     aEcheance: lireAEcheance(champ(form, "a_echeance")),
     copie: copieDuFormulaire(form),
+    ...(champ(form, "consigne")
+      ? { consigne: champ(form, "consigne").slice(0, CONSIGNE_MAX) }
+      : {}),
+    ...(champ(form, "joindre") === "1" ? { joindre: true } : {}),
   };
 }
 

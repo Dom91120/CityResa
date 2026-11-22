@@ -320,9 +320,9 @@ export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
     label: "Étape de circuit demandée (agents, élus)",
     subject: "Votre réponse est attendue : {{etape}} · {{numero}}",
     body:
-      '<p>Bonjour {{prenom}},</p><p>{{demande_par}} vous demande : <strong>{{etape}}</strong> ({{nature}}) sur le dossier <strong>{{numero}}</strong>.</p><p>{{titre}}<br>{{detail}}</p><p><em>{{contexte}}</em></p><p>{{echeance}}</p><p><a href="{{lien}}">Ouvrir le dossier et répondre</a></p>' +
+      '<p>Bonjour {{prenom}},</p><p>{{demande_par}} vous demande : <strong>{{etape}}</strong> ({{nature}}) sur le dossier <strong>{{numero}}</strong>.</p>{{{consigne}}}<p>{{titre}}<br>{{detail}}</p><p><em>{{contexte}}</em></p><p>{{echeance}}</p><p><a href="{{lien}}">Ouvrir le dossier et répondre</a></p>' +
       SIGNATURE,
-    aide: "Module Processus : envoyé, en plus de la cloche, à chaque personne attendue quand une relecture, un avis ou un visa lui est demandé (et aux élus consultés sur une subvention). {{contexte}} reprend ce que l'agent soumet, {{echeance}} la date attendue. Désactivez le modèle pour ne garder que la cloche.",
+    aide: "Module Processus : envoyé, en plus de la cloche, à chaque personne attendue quand une relecture, un avis ou un visa lui est demandé (et aux élus consultés sur une subvention). {{contexte}} reprend ce que l'agent soumet, {{echeance}} la date attendue, {{{consigne}}} la consigne propre à l'étape (vide sans consigne). Le circuit peut y joindre le document du dossier. Désactivez le modèle pour ne garder que la cloche.",
   },
   {
     key: "etape_relance",
@@ -418,6 +418,14 @@ export function versTexte(html: string): string {
  * modifié par la collectivité est laissé tel quel.
  */
 export const EMAIL_TEMPLATE_ANCIENS: Record<string, { subject: string; body: string }[]> = {
+  etape_demandee: [
+    {
+      subject: "Votre réponse est attendue : {{etape}} · {{numero}}",
+      body:
+        '<p>Bonjour {{prenom}},</p><p>{{demande_par}} vous demande : <strong>{{etape}}</strong> ({{nature}}) sur le dossier <strong>{{numero}}</strong>.</p><p>{{titre}}<br>{{detail}}</p><p><em>{{contexte}}</em></p><p>{{echeance}}</p><p><a href="{{lien}}">Ouvrir le dossier et répondre</a></p>' +
+        SIGNATURE,
+    },
+  ],
   digest_agents: [
     {
       subject: "CityRésa · {{date}} : {{nb_a_traiter}} demande(s) à traiter",

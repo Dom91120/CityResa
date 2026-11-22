@@ -618,6 +618,22 @@ describe("export et import d'un circuit", () => {
     expect(r).toEqual({ definition, avertissements: [] });
   });
 
+  it("lit la consigne et le document joint, absents par défaut", () => {
+    const d = lireDefinition({
+      etapes: [
+        { ...etape({ cle: "a" }), consigne: "  Vérifier le plan de sécurité.  ", joindre: true },
+        { ...etape({ cle: "b" }), consigne: "   ", joindre: "oui" },
+      ],
+    });
+    expect(d.etapes[0].consigne).toBe("Vérifier le plan de sécurité.");
+    expect(d.etapes[0].joindre).toBe(true);
+    expect(d.etapes[1].consigne).toBeUndefined();
+    expect(d.etapes[1].joindre).toBeUndefined();
+    expect(
+      lireDefinition({ etapes: [{ ...etape(), consigne: "x".repeat(900) }] }).etapes[0].consigne,
+    ).toHaveLength(600);
+  });
+
   it("lit, exporte et réimporte la mise en copie", () => {
     const avecCopie = lireDefinition({
       etapes: [

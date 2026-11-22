@@ -1,6 +1,15 @@
 import { notFound } from "next/navigation";
-import { Champ, EnteteForm, Grille, PiedForm, SectionForm, Select } from "@/components/formulaire";
-import { A_ECHEANCE, INSERTION, MOMENTS, NATURES, REUNIONS } from "@/lib/circuits";
+import {
+  Champ,
+  EnteteForm,
+  Grille,
+  Interrupteur,
+  PiedForm,
+  SectionForm,
+  Select,
+  Zone,
+} from "@/components/formulaire";
+import { A_ECHEANCE, CONSIGNE_MAX, INSERTION, MOMENTS, NATURES, REUNIONS } from "@/lib/circuits";
 import { chargerCircuit, choixIntervenants, valeurIntervenant } from "@/modules/processus/server";
 import { ChampsCondition } from "@/modules/processus/vues";
 import { optionsCriteres } from "@/server/circuits";
@@ -157,6 +166,22 @@ export default async function EtapePage({
                 options={Object.entries(A_ECHEANCE).map(([k, v]) => [k, v.label])}
                 valeur={e?.aEcheance ?? "relance"}
                 aide="Relancer : l'étape continue d'attendre. Tenir pour accordée : le silence vaut accord, l'étape est validée d'office et le demandeur est prévenu ; demande un délai."
+              />
+              <Zone
+                label="Consigne envoyée avec la demande"
+                name="consigne"
+                id="f-consigne"
+                rows={3}
+                maxLength={CONSIGNE_MAX}
+                valeur={e?.consigne ?? ""}
+                placeholder="Ce qu'il faut regarder, la pièce à vérifier, le texte de référence…"
+                aide="Ajoutée au courriel « Étape de circuit demandée », avant ce que soumet l'agent."
+              />
+              <Interrupteur
+                label="Joindre le document du dossier"
+                name="joindre"
+                coche={e?.joindre ?? false}
+                aide="La convention d'une réservation, le PDF du dossier d'une subvention, s'il existe. Rien pour une campagne."
               />
               <Champ
                 label="Ce que lit l'usager pendant l'étape"

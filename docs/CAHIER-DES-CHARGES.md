@@ -1155,11 +1155,24 @@ types restent réglés par espace ou par site, car ils ne touchent aucun dossier
   circuit de chaque dossier touché décide : une salle fermée par une gestionnaire ne contourne
   plus le visa qu'un dossier exige avant toute annulation.
 
+**Lot 27, livré** — effets propres à une étape :
+
+- une **consigne** propre à l'étape (600 caractères au plus) s'ajoute au courriel « Étape de
+  circuit demandée », avant ce que soumet l'agent ;
+- l'option **joindre le document du dossier** attache à ce courriel la convention d'une
+  réservation ou le PDF déposé d'un dossier de subvention, s'ils existent ;
+- le modèle de courriel de départ accueille la variable `{{{consigne}}}` ; un modèle resté tel
+  que livré est mis à jour à l'initialisation, un modèle modifié par la collectivité est laissé
+  tel quel ;
+- en développement, la trace d'un courriel simulé nomme ses pièces jointes.
+
+Un modèle de courriel entièrement propre à chaque étape n'a pas été retenu : la consigne couvre le
+besoin sans multiplier les modèles à tenir.
+
 **Reste à faire**
 
-| Sujet | Écart |
-| --- | --- |
-| **Effets** paramétrables d'une étape (modèle de courriel propre à l'étape, document joint) | E2 |
+Tout le périmètre du module décrit ci-dessus est livré. Les évolutions viendront de la prise en
+main par les services (scénarios de `docs/SCENARIOS.md`).
 
 ### Limites voulues
 

@@ -415,6 +415,8 @@ export type Porteur = {
   circuitVersionId: number | null;
   /** Les comptes à prévenir d'une réponse, en plus de celui qui a demandé l'étape. */
   suiveurs: string[];
+  /** Le document du dossier qu'une étape peut joindre à sa demande (convention…). */
+  document?: number | null;
   faits: Faits;
   historiser: (action: string, comment: string | null, acteur: string) => Promise<void>;
 };
@@ -432,6 +434,7 @@ export function porteurReservation(r: ReservationComplete): Porteur {
     serviceId: r.serviceId,
     circuitVersionId: r.circuitVersionId,
     suiveurs: r.agentId ? [r.agentId] : [],
+    document: r.conventionDocumentId,
     faits: faitsReservation(r),
     historiser: (action, comment, acteur) => historiser(r.id, action, comment, acteur),
   };
@@ -545,32 +548,61 @@ export async function courrielEtape(
     demandePar?: string | null;
     contexte?: string | null;
     echeance?: Date | null;
+    /** La consigne propre à l'étape. */
+    consigne?: string | null;
+    /** Le document du dossier à joindre. */
+    documentId?: number | null;
   },
 ): Promise<void> {
   if (!personnes.length) return;
   try {
     const { envoyerDepuisModele } = await import("@/server/mailer");
+    const { escapeHtml } = await import("@/server/email-templates");
+    const doc = v.documentId
+      ? await prisma.document.findUnique({
+          where: { id: v.documentId },
+          select: { filename: true, mimeType: true, content: { select: { data: true } } },
+        })
+      : null;
+    const attachments = doc?.content
+      ? [
+          {
+            filename: doc.filename,
+            content: Buffer.from(doc.content.data),
+            contentType: doc.mimeType,
+          },
+        ]
+      : undefined;
+    const consigne = v.consigne?.trim()
+      ? `<p style="white-space:pre-line">${escapeHtml(v.consigne.trim())}</p>`
+      : "";
     const cfg = await getSettings();
     const echeance = v.echeance ? dateCourte(v.echeance) : "";
     for (const a of personnes) {
       if (!a.email) continue;
-      await envoyerDepuisModele(modele, a.email, {
-        prenom: a.name,
-        nature: v.nature,
-        etape: v.etape,
-        numero: v.numero,
-        titre: v.titre,
-        detail: v.detail,
-        demande_par: v.demandePar?.trim() || "Le service instructeur",
-        contexte: v.contexte?.trim() ?? "",
-        echeance:
-          modele === "etape_relance"
-            ? echeance
-            : echeance
-              ? `Réponse attendue le ${echeance}.`
-              : "",
-        lien: `${cfg.APP_BASE_URL}${v.lien}`,
-      });
+      await envoyerDepuisModele(
+        modele,
+        a.email,
+        {
+          prenom: a.name,
+          nature: v.nature,
+          etape: v.etape,
+          numero: v.numero,
+          titre: v.titre,
+          detail: v.detail,
+          demande_par: v.demandePar?.trim() || "Le service instructeur",
+          contexte: v.contexte?.trim() ?? "",
+          echeance:
+            modele === "etape_relance"
+              ? echeance
+              : echeance
+                ? `Réponse attendue le ${echeance}.`
+                : "",
+          lien: `${cfg.APP_BASE_URL}${v.lien}`,
+          consigne,
+        },
+        { attachments },
+      );
     }
   } catch (e) {
     console.error("[circuit] courriel d'étape :", e);
@@ -646,6 +678,8 @@ export async function ouvrirEtape(
     demandePar: acteur,
     contexte,
     echeance: e.delaiJours ? new Date(Date.now() + e.delaiJours * JOUR) : null,
+    consigne: e.consigne,
+    documentId: e.joindre ? p.document : null,
   });
 }
 

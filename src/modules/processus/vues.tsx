@@ -222,6 +222,8 @@ export function Logigramme({
             {e.delaiJours ? ` · sous ${e.delaiJours} j` : ""}
             {e.aEcheance === "accord" ? ` · ${A_ECHEANCE.accord.court}` : ""}
             {e.copie ? ` · en copie : ${libelleIntervenant(e.copie, referentiel)}` : ""}
+            {e.consigne ? " · avec consigne" : ""}
+            {e.joindre ? " · document joint" : ""}
             {e.moment === "avis_elus"
               ? " · consulté à la soumission aux élus"
               : n.bloquante

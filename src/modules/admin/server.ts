@@ -74,6 +74,8 @@ export function exemplesVariables(baseUrl: string, collectivite: string): Record
     detail: "Salle des fêtes · Sam. 14 mars 2026 · 18h00 - 23h00",
     demande_par: "Sophie Martin",
     contexte: "Gratuité demandée : manifestation caritative.",
+    consigne:
+      '<p style="white-space:pre-line">Vérifier que le fondement figure dans la délibération.</p>',
     exercice: "2026",
     decision: "Votée",
     montant_accorde: "Montant accordé : 1 500 €.",
