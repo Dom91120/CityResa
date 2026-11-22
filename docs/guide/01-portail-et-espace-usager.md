@@ -457,7 +457,7 @@ Pendant le dépôt (la figure montre la page après sa clôture) :
 **Qui** — Les membres d'une association, si la Ville a activé le module des subventions.
 
 ![Mes subventions](captures/asso-mes-subventions.webp)
-*Figure — « Mes subventions » d'Around dance : la campagne 2027 ouverte et le dossier S270001 au stade « Avis des élus ».*
+*Figure — « Mes subventions » d'Around dance : la campagne 2027, le dossier S270001 au stade « Avis des élus » et, dessous, les dossiers versés des trois exercices précédents.*
 
 **Ce que l'on voit**
 - La carte de la **campagne** : son intitulé, la pastille « Dépôt ouvert », « Ouvre bientôt » ou « Dépôt clos », les dates de dépôt, les consignes de la Ville et, selon le cas, le bouton **Commencer mon dossier**, **Reprendre mon dossier** ou **Voir mon dossier**.

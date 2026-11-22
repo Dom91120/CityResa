@@ -139,9 +139,13 @@ export default async function MesSubventionsPage() {
                     <td className="text-end tabular">
                       {s.montantAccorde != null ? montant(s.montantAccorde) : "—"}
                     </td>
-                    <td>
-                      <StatutSubvention status={s.status} />
-                      {s.verseAt ? <Chip teinte="slate">le {dateCourte(s.verseAt)}</Chip> : null}
+                    <td className="text-nowrap">
+                      {/* Une subvention versée dit sa date dans la même pastille que son statut. */}
+                      {s.status === "versee" && s.verseAt ? (
+                        <Chip teinte="emerald">Versée le {dateCourte(s.verseAt)}</Chip>
+                      ) : (
+                        <StatutSubvention status={s.status} />
+                      )}
                     </td>
                     <td className="text-end">
                       <a

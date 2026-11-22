@@ -18,14 +18,44 @@ import { dossierDe, pourManques } from "@/server/subventions-dossier";
 
 export const metadata = { title: "Dossier de subvention - CityRésa" };
 
-const ETAPES_SUB: Record<string, string> = {
-  deposee: "Votre dossier est enregistré ; il sera instruit après la clôture de la campagne.",
-  instruction: "Votre dossier est en cours d'instruction.",
-  avis: "Votre dossier est soumis à l'avis des élus.",
-  votee: "La subvention a été votée.",
-  refusee: "La collectivité n'a pas retenu cette demande.",
-  versee: "La subvention a été versée.",
+type DossierBandeau = {
+  status: string;
+  montantAccorde: unknown;
+  signeAt: Date | null;
+  signeNom: string | null;
+  recuAt: Date | null;
+  decisionAt: Date | null;
+  verseAt: Date | null;
 };
+
+/**
+ * Le bandeau du dossier : d'abord où il en est aujourd'hui (avec le montant et la date quand il y
+ * en a), puis son parcours dans l'ordre des événements, sans répéter ce que dit la première ligne.
+ */
+function bandeau(s: DossierBandeau): { situation: string; parcours: string[] } {
+  const accorde = s.montantAccorde != null ? montant(Number(s.montantAccorde)) : null;
+  const le = (d: Date | null) => (d ? ` le ${dateCourte(d)}` : "");
+  const situations: Record<string, string> = {
+    deposee: "Dossier déposé : il sera instruit après la clôture de la campagne.",
+    instruction: "Dossier en cours d'instruction.",
+    avis: "Dossier soumis à l'avis des élus.",
+    votee: `Subvention votée${le(s.decisionAt)}${accorde ? ` : ${accorde} accordés` : ""}.`,
+    refusee: `Demande non retenue${le(s.decisionAt)}.`,
+    versee: `Subvention versée${le(s.verseAt)}${accorde ? ` : ${accorde}` : ""}.`,
+  };
+  const parcours = [
+    s.signeAt ? `attestation signée par ${s.signeNom} le ${dateHeure(s.signeAt)}` : null,
+    s.recuAt ? `dossier reçu le ${dateHeure(s.recuAt)}` : null,
+    // La décision n'est rappelée ici que si la première ligne parle déjà du versement.
+    s.status === "versee" && s.decisionAt
+      ? `subvention votée le ${dateCourte(s.decisionAt)}`
+      : null,
+  ].filter((x): x is string => Boolean(x));
+  return {
+    situation: situations[s.status] ?? SUBVENTION_STATUS[s.status]?.label ?? s.status,
+    parcours,
+  };
+}
 
 export default async function SubventionPortailPage({
   params,
@@ -45,6 +75,7 @@ export default async function SubventionPortailPage({
   const d = dossierDe(s);
   const ctx = { s, d, sportive: org.sportive, plan: planDe(org.sportive) };
   const ici = `/portail/mes-subventions/${s.id}`;
+  const etat = bandeau(s);
   const decidee = ["votee", "refusee", "versee"].includes(s.status);
   const pdfId = s.dossierDocumentId ?? documents.find((x) => x.kind === "dossier")?.id ?? null;
   return (
@@ -86,10 +117,10 @@ export default async function SubventionPortailPage({
       <div className="astuce mb-3">
         <Icone nom="info" taille={18} />
         <div>
-          <strong>{SUBVENTION_STATUS[s.status]?.label ?? s.status}.</strong>{" "}
-          {ETAPES_SUB[s.status] ?? ""}
-          {s.recuAt ? ` Reçu le ${dateHeure(s.recuAt)}.` : ""}
-          {s.signeAt ? ` Attestation signée par ${s.signeNom} le ${dateHeure(s.signeAt)}.` : ""}
+          <strong>{etat.situation}</strong>
+          {etat.parcours.length ? (
+            <div className="small text-muted">Parcours : {etat.parcours.join(" · ")}.</div>
+          ) : null}
         </div>
       </div>
 

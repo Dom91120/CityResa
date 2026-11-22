@@ -3392,11 +3392,14 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
     arounddance: "renouvellement",
     ttmc: "premiere",
   };
-  // Les campagnes : celle de l'exercice en cours (close) et celle de l'exercice suivant (ouverte).
+  // Les campagnes : celle de l'exercice en cours (close) et celle de l'exercice suivant (ouverte),
+  // puis celles des deux exercices précédents (closes), pour l'historique d'Around dance.
   const campagnes = new Map<number, number>();
   for (const [exercice, status] of [
     [annee, "cloturee"],
     [annee + 1, "ouverte"],
+    [annee - 1, "cloturee"],
+    [annee - 2, "cloturee"],
   ] as const) {
     const d = datesParDefaut(exercice);
     const c = await prisma.campagneSubvention.create({
@@ -3411,21 +3414,28 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
             ? "Un dossier incomplet ou déposé après la clôture n'est pas instruit. Pensez à joindre le procès-verbal de la dernière assemblée générale, les comptes approuvés et un RIB récent."
             : null,
         createdBy: sophie?.nom ?? null,
-        createdAt: ilYA(exercice === annee ? 400 : 60),
+        createdAt: ilYA(exercice > annee ? 60 : 400 + (annee - exercice) * 365),
       },
     });
     campagnes.set(exercice, c.id);
     compter("campagnes_subvention");
   }
-  for (const s of specs) {
+  /**
+   * Dépose un dossier de démonstration. `fixe` donne l'heure du dépôt, l'adresse de signature et
+   * la nature sans rien tirer au hasard : un dossier ajouté ainsi ne décale pas le reste du jeu.
+   */
+  const deposer = async (
+    s: SpecDepot,
+    fixe?: { heure: number; ip: string; nature: "premiere" | "renouvellement" },
+  ) => {
     const org = ctx.orgs.get(s.org);
-    if (!org) continue;
-    const createdAt = ilYA(s.depuis, entre(1, 10));
+    if (!org) return;
+    const createdAt = ilYA(s.depuis, fixe ? fixe.heure : entre(1, 10));
     const numero = await prochainNumero("SUB", s.exercice);
     const decision = ["votee", "versee", "refusee"].includes(s.status)
       ? plusTot(new Date(createdAt.getTime() + 60 * 86_400_000))
       : null;
-    const nature = NATURES[s.org] ?? "renouvellement";
+    const nature = fixe?.nature ?? NATURES[s.org] ?? "renouvellement";
     const dossier = dossierDemo(s, org, nature);
     const signeAt = new Date(createdAt.getTime() - 3_600_000);
     const sub = await prisma.subvention.create({
@@ -3455,7 +3465,7 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
         signeNom: org.user.nom,
         signeQualite: "Président(e)",
         signeChannel: "sms",
-        signeIp: `92.154.${entre(1, 250)}.${entre(1, 250)}`,
+        signeIp: fixe?.ip ?? `92.154.${entre(1, 250)}.${entre(1, 250)}`,
         createdAt: new Date(createdAt.getTime() - 5 * 86_400_000),
         updatedAt: decision ?? createdAt,
         histories: {
@@ -3541,7 +3551,8 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
       });
       compter("documents");
     }
-  }
+  };
+  for (const s of specs) await deposer(s);
   // Un dossier en cours de rédaction sur la campagne ouverte (association non sportive).
   const yoga = ctx.orgs.get("espace-yoga");
   if (yoga) {
@@ -3591,7 +3602,94 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
     });
     compter("subventions");
   }
+  // Trois exercices antérieurs pour Around dance, tous versés : « Mes subventions » montre ainsi
+  // plusieurs années. Déposés en dernier et sans tirage aléatoire, ils ne changent ni les
+  // identifiants ni les valeurs des dossiers qui précèdent.
+  const anterieurs: SpecDepot[] = [
+    {
+      org: "arounddance",
+      exercice: annee,
+      type: "fonctionnement",
+      objet: "Ateliers d'éveil à la danse",
+      montant: 2000,
+      accorde: 2000,
+      status: "versee",
+      budget: 8200,
+      beneficiaires: 55,
+      description:
+        "Rémunération de l'intervenante en éveil à la danse et achat de petit matériel pédagogique.",
+      note: "Versée par mandat administratif.",
+      avis: [
+        {
+          qui: "pierre",
+          avis: "favorable",
+          montant: 2000,
+          commentaire: "Activité suivie et bilan remis dans les délais.",
+        },
+      ],
+      depuis: 395,
+    },
+    {
+      org: "arounddance",
+      exercice: annee - 1,
+      type: "fonctionnement",
+      objet: "Ateliers d'éveil à la danse",
+      montant: 1800,
+      accorde: 1800,
+      status: "versee",
+      budget: 7600,
+      beneficiaires: 48,
+      description: "Rémunération de l'intervenante et location de la salle de répétition.",
+      note: "Versée par mandat administratif.",
+      avis: [
+        {
+          qui: "pierre",
+          avis: "favorable",
+          montant: 1800,
+          commentaire: "Reconduction de l'aide de l'an dernier.",
+        },
+      ],
+      depuis: 760,
+    },
+    {
+      org: "arounddance",
+      exercice: annee - 2,
+      type: "fonctionnement",
+      objet: "Lancement des ateliers d'éveil à la danse",
+      montant: 1800,
+      accorde: 1500,
+      status: "versee",
+      budget: 6900,
+      beneficiaires: 40,
+      description: "Première année d'activité : intervenante, tapis de danse et communication.",
+      note: "Première demande : 1 500 € accordés, à réexaminer au vu du premier bilan.",
+      avis: [
+        {
+          qui: "pierre",
+          avis: "reserve",
+          montant: 1500,
+          commentaire: "Association récente : accorder 1 500 € la première année.",
+        },
+      ],
+      depuis: 1125,
+    },
+  ];
+  for (const [i, s] of anterieurs.entries())
+    await deposer(s, {
+      heure: 9 + i,
+      ip: `92.154.20.${40 + i}`,
+      nature: i === anterieurs.length - 1 ? "premiere" : "renouvellement",
+    });
 }
+
+/** Un dossier déposé : la demande, sa décision, les avis et l'ancienneté du dépôt en jours. */
+type SpecDepot = SpecDossier & {
+  accorde: number | null;
+  status: string;
+  note: string | null;
+  avis: readonly { qui: string; avis: string; montant: number; commentaire: string }[];
+  depuis: number;
+};
 
 type SpecDossier = {
   org: string;
