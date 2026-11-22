@@ -207,6 +207,7 @@ La carte de décision propose, selon le statut :
 
 - La caution entre dans son cycle dès que le dossier est accepté : attendue, puis encaissée, puis restituée ou retenue.
 - La restitution n'est possible qu'après l'état des lieux de sortie. Une retenue doit être motivée.
+- Si le circuit du dossier prévoit un visa avant une retenue sur caution (chapitre 12), la retenue est suspendue : une fois le montant et le motif contrôlés, l'étape est demandée d'office avec la retenue envisagée, et vous l'enregistrez de nouveau après l'accord. L'usager n'est prévenu qu'à ce moment-là.
 - Au-delà du seuil fixé dans les paramètres, une retenue attend la validation d'un administrateur (bouton **Valider la retenue**) avant que l'usager soit prévenu.
 - Les photos des états des lieux sont visibles par l'usager depuis son dossier.
 - Les factures ne s'émettent que pour un dossier signé, confirmé ou terminé, et jamais pour une mise à disposition gratuite.

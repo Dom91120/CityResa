@@ -162,13 +162,15 @@ export async function restituerCaution(
  * Retient tout ou partie de la caution après l'état des lieux de sortie. Au-delà du seuil, la
  * retenue attend la validation d'un administrateur avant d'être notifiée à l'usager.
  */
-export async function retenirCaution(
+/**
+ * Vérifie qu'une retenue est recevable (caution encaissée, état des lieux de sortie, montant,
+ * motif) sans rien écrire : le circuit du dossier peut ensuite la soumettre à un visa.
+ */
+export async function controlerRetenue(
   r: ReservationComplete,
   montantRetenu: number,
   motif: string | null,
-  acteur: { name: string; email: string },
-  cfg: Pick<AppSettings, "CAUTION_SEUIL_VALIDATION">,
-): Promise<"retenue" | "retenue_a_valider"> {
+): Promise<void> {
   const sortie = await prisma.etatDesLieux.findFirst({
     where: { reservationId: r.id, kind: "sortie" },
     include: { _count: { select: { documents: true } } },
@@ -188,6 +190,16 @@ export async function retenirCaution(
       : null,
   );
   if (erreurs.length) throw new UserFacingError(erreurs.join(" "));
+}
+
+export async function retenirCaution(
+  r: ReservationComplete,
+  montantRetenu: number,
+  motif: string | null,
+  acteur: { name: string; email: string },
+  cfg: Pick<AppSettings, "CAUTION_SEUIL_VALIDATION">,
+): Promise<"retenue" | "retenue_a_valider"> {
+  await controlerRetenue(r, montantRetenu, motif);
   const statut = retenueAValider(montantRetenu, cfg.CAUTION_SEUIL_VALIDATION)
     ? "retenue_a_valider"
     : "retenue";

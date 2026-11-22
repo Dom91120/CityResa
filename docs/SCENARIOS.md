@@ -88,7 +88,7 @@ circuits, guide chapitre 12) :
 | --- | --- | --- | --- |
 | Équipements sportifs | Tout espace du secteur Sports | Service des sports (Karim) | Visa de l'élu si la gratuité est accordée à la main |
 | Salles · associations | Une salle demandée par une association | Vie associative (Sophie) | Idem, et visa de l'élu **avant une réquisition** |
-| Salles · particuliers et entreprises | Une salle demandée par un particulier ou une entreprise | Service des fêtes (Sophie, Nadia) | Idem, et visa du responsable **avant un refus** |
+| Salles · particuliers et entreprises | Une salle demandée par un particulier ou une entreprise | Service des fêtes (Sophie, Nadia) | Idem, visa du responsable **avant un refus** et visa de l'élu **avant une retenue sur caution** |
 | Circuit standard | Tout le reste (services de la Ville…) | — | Aucune |
 
 Le service Communication existe mais n'a aucun membre ; la délégation « Sports, vie associative
@@ -222,7 +222,9 @@ des variantes.
 | 20 | Sophie | **Faire l'état des lieux** d'entrée (observations, nom de l'usager). | L'état des lieux est daté ; Martine le voit dans son dossier. |
 | 21 | Sophie | Pour le test, sans attendre la date : **Terminer**. Puis état des lieux de **sortie**, **Retour** du matériel (rendez une chaise de moins). | Statut **Terminée** ; « Rendu avec manquants » ; le stock utilisable du matériel baisse d'une unité (fiche du matériel). |
 | 22 | Sophie | **Facturer le solde**, enregistrez son paiement. | Solde = total moins l'acompte. |
-| 23 | Sophie | **Retenir tout ou partie** de la caution : 20 €, motif « chaise manquante ». | Sous le seuil de 500 €, la retenue est immédiate ; Martine voit le motif. |
+| 23 | Sophie | **Retenir tout ou partie** de la caution : 20 €, motif « chaise manquante ». | Retenue **suspendue** : message jaune, le « Visa de l'élu sur la retenue de caution » est demandé d'office avec le montant et le motif. Martine n'est pas encore prévenue. |
+| 23a | Pierre | **Mes étapes** : ouvrez le dossier, puis **Visa accordé**. | Sophie est prévenue par la cloche. |
+| 23b | Sophie | **Retenir tout ou partie** de nouveau : 20 €, même motif. | Sous le seuil de 500 €, la retenue est enregistrée ; Martine voit le motif. |
 | 24 | Martine | Ouvrez le dossier, onglet **Passées et archivées**. | Frise complète, trois factures, caution retenue en partie, historique. |
 | 25 | Sophie | Section **Historique** du dossier. | Chaque étape ci-dessus, horodatée, avec son auteur. |
 

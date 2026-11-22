@@ -244,7 +244,9 @@ describe("types de dossier", () => {
       "avant_refus",
       "avant_annulation",
       "avant_requisition",
+      "avant_retenue",
     ]);
+    expect(STATUTS_DU_MOMENT.avant_retenue).toEqual(["confirmee", "terminee"]);
     const d = lireDefinition({
       etapes: [
         { ...etape({ cle: "a" }), moment: "avant_refus" },

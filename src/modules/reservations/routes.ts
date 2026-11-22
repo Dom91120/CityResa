@@ -21,6 +21,7 @@ import { epingler } from "@/server/affectation";
 import { auditRecord } from "@/server/audit";
 import { courrielAvenantASigner, libelleAvenant, signerAvenantPapier } from "@/server/avenant";
 import {
+  controlerRetenue,
   enregistrerEtatDesLieux,
   marquerCautionEncaissee,
   restituerCaution,
@@ -782,13 +783,24 @@ export async function actionReservation(
                 "success",
               );
             case "retenir": {
-              const statutCaution = await retenirCaution(
-                r,
-                parseFloat_(form.get("montant"), 0) ?? 0,
-                champOuNull(form, "motif"),
-                acteur,
-                user.settings,
-              );
+              const retenu = parseFloat_(form.get("montant"), 0) ?? 0;
+              const motif = champOuNull(form, "motif");
+              // Une retenue recevable peut attendre un visa du circuit avant d'être enregistrée.
+              await controlerRetenue(r, retenu, motif);
+              const { verifierAvant } = await import("@/server/circuits");
+              try {
+                await verifierAvant(
+                  r,
+                  "avant_retenue",
+                  user,
+                  `Retenue envisagée : ${montant(retenu)} sur ${montant(r.caution)} · ${motif ?? ""}`,
+                );
+              } catch (e) {
+                if (e instanceof UserFacingError)
+                  return redirigerAvecMessage(`${fiche}#circuit`, e.message, "warning");
+                throw e;
+              }
+              const statutCaution = await retenirCaution(r, retenu, motif, acteur, user.settings);
               return redirigerAvecMessage(
                 `${fiche}#caution`,
                 statutCaution === "retenue"

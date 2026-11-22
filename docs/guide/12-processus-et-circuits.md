@@ -23,7 +23,7 @@ Les trois natures d'étape :
 | **Visa** | Un accord préalable. Retient l'acceptation. |
 | **Avis** | Un avis consultatif. Ne retient rien. |
 
-Une étape précède l'un de quatre gestes sur une réservation :
+Une étape précède l'un de cinq gestes sur une réservation :
 
 | Moment | Le geste retenu |
 | --- | --- |
@@ -31,6 +31,7 @@ Une étape précède l'un de quatre gestes sur une réservation :
 | **Avant le refus de la demande** | Décliner |
 | **Avant une annulation par la collectivité** | Annuler la réservation (l'annulation par l'usager n'est pas concernée) |
 | **Avant une réquisition pour la Ville** | Réquisitionner un créneau |
+| **Avant une retenue sur caution** | Retenir tout ou partie de la caution, après l'état des lieux de sortie (la restitution n'est pas concernée) |
 
 ## 12.2 Mes étapes
 

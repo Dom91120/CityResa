@@ -313,6 +313,7 @@ export const MOMENTS = {
   avant_refus: "Avant le refus de la demande",
   avant_annulation: "Avant une annulation par la collectivité",
   avant_requisition: "Avant une réquisition pour la Ville",
+  avant_retenue: "Avant une retenue sur caution",
   avis_elus: "À l'avis des élus",
   avant_vote: "Avant le vote de la subvention",
   avant_versement: "Avant le versement de la subvention",
@@ -326,6 +327,7 @@ export const RETENU: Record<Moment, string> = {
   avant_refus: "le refus",
   avant_annulation: "l'annulation",
   avant_requisition: "la réquisition",
+  avant_retenue: "la retenue sur caution",
   avis_elus: "le vote",
   avant_vote: "le vote",
   avant_versement: "le versement",
@@ -342,6 +344,8 @@ export const STATUTS_DU_MOMENT: Record<Moment, readonly string[]> = {
   avant_refus: ["a_traiter", "en_traitement"],
   avant_annulation: ["a_traiter", "en_traitement", "acceptee", "signee", "confirmee"],
   avant_requisition: ["acceptee", "signee", "confirmee"],
+  // La caution se retient après l'événement, tant que le dossier n'est pas archivé.
+  avant_retenue: ["confirmee", "terminee"],
   avis_elus: [],
   avant_vote: ["deposee", "instruction", "avis"],
   avant_versement: ["votee"],
@@ -360,7 +364,13 @@ export const INSERTION: Record<
   { moments: readonly Moment[]; natures: readonly Nature[]; titre: string }
 > = {
   reservation: {
-    moments: ["avant_acceptation", "avant_refus", "avant_annulation", "avant_requisition"],
+    moments: [
+      "avant_acceptation",
+      "avant_refus",
+      "avant_annulation",
+      "avant_requisition",
+      "avant_retenue",
+    ],
     natures: ["relecture", "avis", "visa"],
     titre: "Étapes du circuit",
   },

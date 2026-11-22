@@ -1048,13 +1048,23 @@ L'écart **E7** est ainsi traité pour les subventions.
   dossier permet de la demander à l'avance ;
 - démonstration : la régie (rôle Financier) vise le versement des « autres associations ».
 
+**Lot 16, livré** — étape avant une retenue sur caution :
+
+- cinquième moment d'un circuit de réservation, **avant une retenue sur caution** : une
+  relecture ou un visa suspend la retenue, un avis non ; la restitution n'est pas concernée ;
+- la retenue est d'abord contrôlée (caution encaissée, état des lieux de sortie, montant,
+  motif), puis soumise avec le montant et le motif envisagés ; l'usager n'est prévenu qu'une
+  fois la retenue enregistrée ;
+- le seuil de validation par un administrateur reste en place, après le visa ;
+- démonstration : l'élu vise la retenue sur la caution d'un particulier ou d'une entreprise.
+
 **Reste à faire**
 
 | Sujet | Écart |
 | --- | --- |
 | Droits par service sur ce qui reste réglé **par espace** : présences, personnel de service, fermetures | E1 |
-| Étapes de circuit (visa, avis) sur la retenue sur caution ; simulation d'une campagne | E3 |
-| Autres **moments** d'insertion : avant l'émission d'une facture, une retenue sur caution, une fermeture exceptionnelle | E3 |
+| Simulation d'une campagne | E3 |
+| Autres **moments** d'insertion : avant l'émission d'une facture, une fermeture exceptionnelle | E3 |
 | **Échéance** : passage d'office à l'étape suivante ou transmission au suppléant (aujourd'hui : une relance, l'alerte au responsable, et l'échéance en rouge) | — |
 | **Effets** paramétrables d'une étape (modèle de courriel propre à l'étape, mise en copie, document) | E2 |
 | Service sur les factures | E7 |

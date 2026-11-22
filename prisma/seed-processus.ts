@@ -664,7 +664,22 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
         { champ: "type_demandeur", op: "parmi", valeur: ["particulier", "entreprise"] },
       ),
       serviceId: fetes.id,
-      etapes: [...etapes, visaRefus],
+      etapes: [
+        ...etapes,
+        visaRefus,
+        // Retenir la caution d'un particulier ou d'une entreprise demande le visa de l'élu.
+        {
+          cle: "visa-retenue",
+          libelle: "Visa de l'élu sur la retenue de caution",
+          libelleUsager: "",
+          nature: "visa",
+          moment: "avant_retenue",
+          intervenant: { type: "delegation", id: delegation.id },
+          condition: null,
+          delaiJours: 5,
+          reunion: "un",
+        },
+      ],
     },
   );
 
