@@ -88,6 +88,8 @@ describe("EMAIL_TEMPLATE_SEEDS", () => {
   it("contient les modèles attendus par les services", () => {
     const keys = new Set(EMAIL_TEMPLATE_SEEDS.map((s) => s.key));
     for (const k of [
+      "etape_demandee",
+      "etape_relance",
       "reservation_recue",
       "reservation_nouvelle_agent",
       "reservation_infos",

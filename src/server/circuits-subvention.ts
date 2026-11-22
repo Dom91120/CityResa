@@ -175,6 +175,15 @@ export async function notifierConsultes(s: {
       ),
     ),
   );
+  const { courrielEtape } = await import("@/server/circuits");
+  await courrielEtape("etape_demandee", c.consultes, {
+    nature: "Avis",
+    etape: "Avis sur la demande de subvention",
+    numero: s.numero,
+    titre: s.objet,
+    detail: `${s.organisation.name} · ${montant(s.montantDemande)} demandés`,
+    lien: `/subventions/${s.id}#avis`,
+  });
   return c.consultes.length;
 }
 

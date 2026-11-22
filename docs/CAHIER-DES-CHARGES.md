@@ -1022,6 +1022,15 @@ pas d'export.
 
 L'écart **E7** est ainsi traité pour les subventions.
 
+**Lot 13, livré** — courriel des étapes :
+
+- en plus de la cloche, un **courriel** part à chaque personne attendue quand une étape lui
+  est demandée (ce qui est soumis, échéance, lien vers le dossier), et aux élus consultés sur
+  une subvention ;
+- la relance d'une étape en retard part aussi par courriel, à ceux qui n'ont pas répondu ;
+- deux modèles de courriel, modifiables et désactivables : « Étape de circuit demandée » et
+  « Étape de circuit en retard ».
+
 **Reste à faire**
 
 | Sujet | Écart |
@@ -1031,7 +1040,7 @@ L'écart **E7** est ainsi traité pour les subventions.
 | Subventions : étapes avant le versement | E5 |
 | Autres **moments** d'insertion : avant l'émission d'une facture, une retenue sur caution, une fermeture exceptionnelle | E3 |
 | **Échéance** : passage d'office à l'étape suivante ou transmission au suppléant (aujourd'hui : une relance, l'alerte au responsable, et l'échéance en rouge) ; relance des avis sur les subventions | — |
-| **Effets** paramétrables d'une étape (modèle de courriel, mise en copie, document) ; courriel en plus de la cloche | E2 |
+| **Effets** paramétrables d'une étape (modèle de courriel propre à l'étape, mise en copie, document) | E2 |
 | Service sur les factures | E7 |
 | **Bascule** d'un dossier en cours sur une nouvelle version ; **export / import** d'un circuit | — |
 | Catégorie de permission « **Processus** » (aujourd'hui : administrateur seul) | — |

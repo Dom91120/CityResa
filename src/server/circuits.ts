@@ -508,6 +508,55 @@ export async function etatCircuit(d: Dossier): Promise<EtatCircuit | null> {
   };
 }
 
+/**
+ * Le courriel qui double la cloche d'une étape : une demande (`etape_demandee`) ou une relance
+ * (`etape_relance`). Un échec d'envoi ne retient rien ; un modèle désactivé n'envoie rien.
+ */
+export async function courrielEtape(
+  modele: "etape_demandee" | "etape_relance",
+  personnes: readonly Personne[],
+  v: {
+    nature: string;
+    etape: string;
+    numero: string;
+    titre: string;
+    detail: string;
+    lien: string;
+    demandePar?: string | null;
+    contexte?: string | null;
+    echeance?: Date | null;
+  },
+): Promise<void> {
+  if (!personnes.length) return;
+  try {
+    const { envoyerDepuisModele } = await import("@/server/mailer");
+    const cfg = await getSettings();
+    const echeance = v.echeance ? dateCourte(v.echeance) : "";
+    for (const a of personnes) {
+      if (!a.email) continue;
+      await envoyerDepuisModele(modele, a.email, {
+        prenom: a.name,
+        nature: v.nature,
+        etape: v.etape,
+        numero: v.numero,
+        titre: v.titre,
+        detail: v.detail,
+        demande_par: v.demandePar?.trim() || "Le service instructeur",
+        contexte: v.contexte?.trim() ?? "",
+        echeance:
+          modele === "etape_relance"
+            ? echeance
+            : echeance
+              ? `Réponse attendue le ${echeance}.`
+              : "",
+        lien: `${cfg.APP_BASE_URL}${v.lien}`,
+      });
+    }
+  } catch (e) {
+    console.error("[circuit] courriel d'étape :", e);
+  }
+}
+
 /** Ouvre une étape sur un dossier et prévient les personnes attendues. */
 export async function ouvrirEtape(
   d: Dossier,
@@ -555,6 +604,17 @@ export async function ouvrirEtape(
       ),
     ),
   );
+  await courrielEtape("etape_demandee", e.attendus, {
+    nature: NATURES[e.nature].label,
+    etape: e.libelle,
+    numero: p.numero,
+    titre: p.titre,
+    detail: p.detail,
+    lien: `${p.lien}#circuit`,
+    demandePar: acteur,
+    contexte,
+    echeance: e.delaiJours ? new Date(Date.now() + e.delaiJours * JOUR) : null,
+  });
 }
 
 /** Ouvre les étapes applicables pas encore demandées ; renvoie celles qui viennent de l'être. */
@@ -813,6 +873,15 @@ export async function relancerEtapesEnRetard(now = new Date()): Promise<number> 
         ),
       ),
     );
+    await courrielEtape("etape_relance", attendus, {
+      nature: NATURES[def.nature].label,
+      etape: o.libelle,
+      numero: p.numero,
+      titre: p.titre,
+      detail: p.detail,
+      lien,
+      echeance: o.echeanceAt,
+    });
     // Ceux qui attendent la réponse : le responsable du service et ceux qui suivent le dossier.
     const service = p.serviceId
       ? await prisma.service.findUnique({
