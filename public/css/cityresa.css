@@ -927,7 +927,14 @@ a.pastille-action:hover::after { background: color-mix(in srgb, var(--primary) 1
 .portail-brand .lucide { color: var(--primary); }
 .portail-brand small { color: var(--muted); font-weight: 400; font-size: 0.72rem; display: block; }
 .portail-nav { margin-left: auto; display: flex; align-items: center; gap: 4px; }
-.portail-nav a { color: var(--body); font-weight: 500; font-size: 0.84rem; padding: 8px 12px; border-radius: 8px; }
+.portail-nav a { color: var(--body); font-weight: 500; font-size: 0.84rem; padding: 8px 12px; border-radius: 8px; white-space: nowrap; }
+/* Le menu de la personne connectée, à droite de la barre : organisation, compte, déconnexion. */
+.portail-compte { margin-left: 6px; }
+.portail-compte-bouton { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border: 1px solid var(--line); border-radius: var(--radius-pill); background: var(--surface); color: var(--body); font-weight: 500; font-size: 0.84rem; white-space: nowrap; }
+.portail-compte-bouton:hover, .portail-compte-bouton[aria-expanded="true"] { background: var(--inset); color: var(--strong); }
+.portail-compte-bouton.active { color: var(--primary); border-color: var(--primary); }
+.portail-compte-bouton .nom { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+.portail-compte .dropdown-menu a { display: flex; align-items: center; gap: 8px; border-radius: 0; }
 .portail-nav a:not(.btn):hover { background: var(--inset); color: var(--strong); }
 .portail-nav a.active { color: var(--primary); }
 .portail-main { flex: 1; max-width: 1180px; width: 100%; margin: 0 auto; padding: 24px 20px 64px; }

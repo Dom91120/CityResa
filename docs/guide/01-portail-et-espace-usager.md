@@ -161,7 +161,7 @@ Les agents municipaux y trouveront aussi de quoi accompagner un usager au télé
 *Figure — « Mes réservations » de Martine Dupont : trois dossiers en cours, chacun à une étape différente.*
 
 **Ce que l'on voit**
-- Le menu de l'espace usager : **Espaces**, **Mes réservations**, **Mes vœux**, **Mes messages**, **Mon organisation**, **Mon compte**, **Déconnexion**. Le chiffre à côté de **Mes réservations** compte les conventions à signer ; celui de **Mes messages**, les messages non lus.
+- Le menu de l'espace usager : **Espaces**, **Mes réservations**, **Mes vœux**, **Mes messages** et, pour une association, **Mes subventions**. À droite, le bouton à votre prénom ouvre **Mon organisation**, **Mon compte** et **Déconnexion** (sur un petit écran, tout se trouve dans le menu ☰). Le chiffre à côté de **Mes réservations** compte les conventions à signer ; celui de **Mes messages**, les messages non lus.
 - Le bouton **Nouvelle demande** et les onglets **En cours** et **Passées et archivées**, avec leur nombre de dossiers.
 - Une ligne par dossier : photo, objet, statut (Confirmée, Acceptée, À traiter…), espace, date et horaires, numéro (N° R260025) et bouton **Voir le dossier**.
 - Sous chaque dossier, la phrase « prochaine étape » et une frise en quatre étapes : Demande, Signature, Confirmée, Terminée.

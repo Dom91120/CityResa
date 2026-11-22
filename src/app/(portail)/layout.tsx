@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Blason } from "@/components/blason";
 import { Icone } from "@/components/icones";
+import { Avatar } from "@/components/macros";
 import { ConfirmModal, ScriptDiffere, ScriptsPage } from "@/components/scripts";
 import { FlashMessages } from "@/components/shell";
 import { ETATS_ACCESSIBILITE } from "@/lib/accessibilite";
@@ -78,6 +79,12 @@ export default async function PortailLayout({ children }: { children: React.Reac
       ? ctx.pathname === "/portail" || ctx.pathname.startsWith("/portail/espaces")
       : ctx.pathname === href || ctx.pathname.startsWith(`${href}/`);
 
+  // Sur grand écran, la barre ne garde que les rubriques de travail ; l'organisation, le compte
+  // et la déconnexion se rangent dans le menu de la personne connectée, à droite.
+  const DU_COMPTE = new Set(["/portail/mon-organisation", "/portail/mon-compte"]);
+  const liensBarre = liens.filter((l) => !DU_COMPTE.has(l.href));
+  const liensCompte = liens.filter((l) => DU_COMPTE.has(l.href));
+
   const lienNav = (l: Lien, classes = "") => (
     <a key={l.href} href={l.href} className={`${classes}${actif(l.href) ? " active" : ""}`}>
       <Icone nom={l.icone} taille={15} /> {l.label}
@@ -104,16 +111,34 @@ export default async function PortailLayout({ children }: { children: React.Reac
             </span>
           </a>
           <nav className="portail-nav d-none d-lg-flex" aria-label="Navigation principale">
-            {liens.map((l) => lienNav(l))}
-            {user?.isAgent ? (
-              <a href="/">
-                <Icone nom="layout-dashboard" taille={15} /> Back-office
-              </a>
-            ) : null}
+            {liensBarre.map((l) => lienNav(l))}
             {user ? (
-              <a href="/deconnexion" className="text-muted">
-                <Icone nom="log-out" taille={15} /> Déconnexion
-              </a>
+              <div className="dropdown portail-compte">
+                <button
+                  type="button"
+                  className={`portail-compte-bouton${liensCompte.some((l) => actif(l.href)) ? " active" : ""}`}
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                  aria-label={`Menu de ${user.name}`}
+                >
+                  <Avatar nom={user.name} taille="sm" />
+                  <span className="nom">{user.firstName || user.name}</span>
+                  <Icone nom="chevron-down" taille={14} />
+                </button>
+                <div className="dropdown-menu dropdown-menu-end">
+                  <div className="dropdown-header">{user.name}</div>
+                  {liensCompte.map((l) => lienNav(l, "dropdown-item"))}
+                  {user.isAgent ? (
+                    <a href="/" className="dropdown-item">
+                      <Icone nom="layout-dashboard" taille={15} /> Back-office
+                    </a>
+                  ) : null}
+                  <div className="dropdown-divider" />
+                  <a href="/deconnexion" className="dropdown-item">
+                    <Icone nom="log-out" taille={15} /> Déconnexion
+                  </a>
+                </div>
+              </div>
             ) : (
               <>
                 <a href="/connexion">

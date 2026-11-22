@@ -36,6 +36,7 @@ import {
   todayParisISO,
   toParisWall,
 } from "@/lib/paris-time";
+import { pdfSimple } from "@/lib/pdf-simple";
 import type { Montants } from "@/lib/plan-budget";
 import { affecterCreneaux, reverifierAffectations } from "@/server/affectation";
 import { amorcer, poserMotDePasse } from "@/server/amorcage";
@@ -2818,7 +2819,11 @@ async function creerUsagers(): Promise<Map<string, OrgRow>> {
     await deposerDocument({
       kind: "organisation",
       parentId: basket.id,
-      fichier: { nom: "statuts.txt", mime: "text/plain", octets: Buffer.from(texte, "utf8") },
+      fichier: {
+        nom: "statuts.pdf",
+        mime: "application/pdf",
+        octets: pdfSimple("Statuts de l'association", texte.split("\n").filter(Boolean)),
+      },
       docKind: "statuts",
       title: "Statuts de l'association",
       categoryId: refOuNull("doc_categorie", "Statuts"),
@@ -3507,10 +3512,10 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
     }
     // Les pièces : complètes pour les dossiers instruits, partielles pour le dossier tout juste déposé.
     const pieces: [string, string, string][] = [
-      ["pv_ag", "pv-assemblee-generale.txt", "Procès-verbal de l'assemblée générale"],
-      ["comptes", "comptes-approuves.csv", "Comptes approuvés"],
-      ["rib", "rib.txt", "RIB de l'association"],
-      ["compte_rendu", "compte-rendu-actions.txt", "Compte rendu des actions subventionnées"],
+      ["pv_ag", "pv-assemblee-generale.pdf", "Procès-verbal de l'assemblée générale"],
+      ["comptes", "comptes-approuves.pdf", "Comptes approuvés"],
+      ["rib", "rib.pdf", "RIB de l'association"],
+      ["compte_rendu", "compte-rendu-actions.pdf", "Compte rendu des actions subventionnées"],
     ];
     const aFournir =
       s.status === "deposee"
@@ -3524,11 +3529,11 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
         parentId: sub.id,
         fichier: {
           nom,
-          mime: nom.endsWith(".csv") ? "text/csv" : "text/plain",
-          octets: Buffer.from(
-            `${titre} · ${org.name} · exercice ${s.exercice - 1} (document de démonstration)\n`,
-            "utf8",
-          ),
+          mime: "application/pdf",
+          octets: pdfSimple(titre, [
+            `${org.name} · exercice ${s.exercice - 1}`,
+            "Document de démonstration : ce fichier tient lieu de la pièce demandée et n'a aucune valeur réelle.",
+          ]),
         },
         docKind: kind,
         title: titre,
