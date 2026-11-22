@@ -669,7 +669,7 @@ rencontre.
 | --- | --- | --- | --- |
 | E1 *(traité, § 9 lot 2)* | **Séparer Vie associative et Service des fêtes**, qui partagent les mêmes salles et se distinguent par le type de demandeur. | Un seul secteur **Salles** : tout agent du secteur voit et traite toutes les demandes des salles, associations comme particuliers et entreprises. Le périmètre d'un agent se règle par espace, jamais par type d'usager. Seuls le filtre « type d'usager » des listes et du planning et l'« agent assigné », choisi à la main, permettent à chacun de retrouver ses dossiers. | Notion de **service** portée par l'agent (au-delà du secteur) ; aiguillage d'une demande vers un service selon l'espace **et** le type de demandeur ; notifications, tableau de bord, compteurs et droits de décision limités au service. |
 | E2 | **Communication** : suivre, relire, remplacer. | Aucun compte ni rôle prévu. Le suivi et le remplacement s'obtiennent en donnant à ses agents un compte du secteur Salles (Lecteur, Agent ou Gestionnaire). La **relecture** n'existe pas : aucune étape ne soumet un dossier, une convention ou un message à un second regard avant envoi. | Préciser avec la Ville ce qui est relu (réponse à l'usager, convention, événement ouvert au public, facture) et à quel moment ; selon la réponse, étape « à relire » dans le circuit ou simple mise en copie. Suppléance déclarée (dates, service remplacé) plutôt qu'un compte permanent. |
-| E3 *(traité, § 9 lots 1 et 6, hors campagnes)* | **Élus dans les circuits** de réservation. | L'élu n'agit que sur les subventions. Sur les réservations, les campagnes de créneaux, la gratuité, les dérogations et les réquisitions, il lit sans pouvoir donner d'avis ni valider. | Arrêter la liste des décisions soumises à un élu ; **avis ou visa d'un élu** sur un dossier de réservation (comme l'avis de subvention), demandé par l'agent, tracé dans l'historique, bloquant ou non selon le cas. |
+| E3 *(traité, § 9 lots 1, 6 et 8)* | **Élus dans les circuits** de réservation. | L'élu n'agit que sur les subventions. Sur les réservations, les campagnes de créneaux, la gratuité, les dérogations et les réquisitions, il lit sans pouvoir donner d'avis ni valider. | Arrêter la liste des décisions soumises à un élu ; **avis ou visa d'un élu** sur un dossier de réservation (comme l'avis de subvention), demandé par l'agent, tracé dans l'historique, bloquant ou non selon le cas. |
 | E4 *(traité, § 9 lots 1 et 3)* | **Élu de délégation** (sports, vie associative, fêtes…). | Un élu est transversal : il voit tout et peut donner un avis sur toute demande de subvention. Le « secteur d'instruction » d'un dossier de subvention (Sport, Culture, Solidarité…) est une étiquette, sans effet sur qui est sollicité ; l'élu n'est pas notifié quand un dossier attend son avis. | Délégation portée par le compte de l'élu ; avis demandé aux seuls élus concernés ; notification à l'élu. |
 | E5 *(traité, § 9 lot 3)* | **Subventions : quel service instruit ?** Les associations sportives relèvent du Service des sports, les autres de la Vie associative. | Les droits sur les subventions tiennent au **rôle** (Gestionnaire : tout ; Agent : lecture), pas au service. Un seul service de contact se règle dans les paramètres (« Service de la vie associative »). | Répartition de l'instruction par service selon la case « association sportive » ou le secteur d'instruction ; contact du service instructeur sur le dossier. |
 | E6 *(traité, § 9 lot 4)* | **Usagers : service de référence.** | Le fichier des usagers est commun à tous les agents : tout agent en écriture valide une fiche, vérifie des pièces ou modifie une organisation, quel que soit son secteur. | Service de référence déduit du type (et de la case « sportive ») ; fiches à valider et pièces à vérifier présentées au bon service. |
@@ -956,7 +956,7 @@ Ville, pas un manque de l'application.
 - l'annulation par l'usager et les annulations automatiques (option échue) ne sont pas retenues.
 
 L'écart **E3** (élus dans les circuits de réservation) est ainsi traité pour l'acceptation, le
-refus, l'annulation et la réquisition ; il reste l'attribution des créneaux d'une campagne.
+refus, l'annulation et la réquisition ; l'attribution des créneaux d'une campagne suit au lot 8.
 
 **Lot 7, livré** — étapes avant le vote d'une subvention :
 
@@ -969,12 +969,26 @@ refus, l'annulation et la réquisition ; il reste l'attribution des créneaux d'
   clôt les étapes encore ouvertes ; la carte Circuit du dossier permet de demander l'étape à
   l'avance et d'y répondre.
 
+**Lot 8, livré** — étapes sur une campagne de créneaux :
+
+- troisième type de circuit, **Campagnes de créneaux** : un seul moment, **avant de prévenir
+  les demandeurs** ; aiguillage possible sur le secteur des espaces ; le service reste celui
+  qui conduit la campagne ;
+- la campagne rejoint son circuit à la clôture du dépôt ; sa fiche porte la carte Circuit ;
+  l'envoi des décisions est retenu tant qu'un visa ou une relecture manque, l'étape étant
+  demandée d'office avec le bilan de l'arbitrage ;
+- la personne sollicitée répond depuis « Mes étapes » ; relance des retards commune ;
+- limite assumée : l'étape retient l'annonce des décisions, non la création des dossiers des
+  créneaux attribués ; les réponses sont tracées au journal d'audit.
+
+L'écart **E3** est ainsi traité aussi pour les campagnes de créneaux.
+
 **Reste à faire**
 
 | Sujet | Écart |
 | --- | --- |
 | Droits par service sur ce qui reste réglé **par espace** : présences, personnel de service, fermetures, planning (filtre par service) | E1 |
-| Étapes de circuit (visa, avis) sur l'**attribution des créneaux** d'une campagne, la retenue sur caution et l'annulation | E3 |
+| Étapes de circuit (visa, avis) sur la retenue sur caution ; simulation d'une campagne | E3 |
 | Subventions : filtre par service de la liste, contact du service instructeur dans les courriels et le PDF du dossier ; étapes avant le versement | E5, E7 |
 | Autres **moments** d'insertion : avant l'émission d'une facture, une retenue sur caution, une fermeture exceptionnelle | E3 |
 | Règle de réunion **tous / majorité** (aujourd'hui : une seule réponse suffit) | — |

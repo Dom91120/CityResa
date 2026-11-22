@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { EnteteForm, PiedForm, SectionForm, Select } from "@/components/formulaire";
+import { CYCLES } from "@/lib/circuits";
 import { contexteAdmin } from "@/modules/admin/server";
 import { chargerCircuit } from "@/modules/processus/server";
 import { ChampsCondition } from "@/modules/processus/vues";
@@ -33,8 +34,9 @@ export default async function AiguillagePage({ params }: { params: Promise<{ id:
         <input type="hidden" name="csrf_token" value={page.csrf} />
         <input type="hidden" name="action" value="aiguillage" />
         <div className="data-card">
+          {/* Une campagne a déjà son service : celui qui la conduit. */}
           <SectionForm
-            titre="Service"
+            titre={c.objet === "campagne" ? "Service (sans objet pour une campagne)" : "Service"}
             icone="building-2"
             aide="Le service auquel les dossiers de ce circuit sont confiés. Il figure sur le dossier et reçoit les étapes adressées « au service du dossier »."
           >
@@ -43,11 +45,7 @@ export default async function AiguillagePage({ params }: { params: Promise<{ id:
               name="service_id"
               options={services.map((s) => [String(s.id), s.name])}
               valeur={c.definition.serviceId}
-              blank={
-                c.objet === "subvention"
-                  ? "— aucun service : l'écriture sur les subventions —"
-                  : "— aucun service : les agents chargés de l'espace —"
-              }
+              blank={`— aucun service : ${CYCLES[c.objet].sansService} —`}
             />
           </SectionForm>
           {c.parDefaut ? (

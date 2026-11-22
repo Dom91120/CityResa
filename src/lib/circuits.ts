@@ -18,11 +18,12 @@ export type TypeCritere = "bool" | "liste" | "nombre";
 export const OBJETS = {
   reservation: "Réservations",
   subvention: "Subventions",
+  campagne: "Campagnes de créneaux",
 } as const;
 export type Objet = keyof typeof OBJETS;
 
 export function lireObjet(v: unknown): Objet {
-  return v === "subvention" ? "subvention" : "reservation";
+  return v === "subvention" || v === "campagne" ? v : "reservation";
 }
 
 export type Critere = {
@@ -46,6 +47,8 @@ export const CRITERES: readonly Critere[] = [
     label: "Secteur de l'espace",
     type: "liste",
     groupe: "Espace",
+    objets: ["reservation", "campagne"],
+    aide: "Pour une campagne : le secteur de ses espaces, s'ils sont tous du même.",
     options: [
       ["salle", "Salles"],
       ["sport", "Sports"],
@@ -308,6 +311,7 @@ export const MOMENTS = {
   avant_requisition: "Avant une réquisition pour la Ville",
   avis_elus: "À l'avis des élus",
   avant_vote: "Avant le vote de la subvention",
+  avant_notification: "Avant de prévenir les demandeurs",
 } as const;
 export type Moment = keyof typeof MOMENTS;
 
@@ -319,6 +323,7 @@ export const RETENU: Record<Moment, string> = {
   avant_requisition: "la réquisition",
   avis_elus: "le vote",
   avant_vote: "le vote",
+  avant_notification: "l'envoi des décisions",
 };
 
 /**
@@ -333,6 +338,8 @@ export const STATUTS_DU_MOMENT: Record<Moment, readonly string[]> = {
   avant_requisition: ["acceptee", "signee", "confirmee"],
   avis_elus: [],
   avant_vote: ["deposee", "instruction", "avis"],
+  // Une campagne se nomme « instruction » pendant l'arbitrage ; les décisions partent ensuite.
+  avant_notification: ["instruction"],
 };
 
 export function lireMoment(v: unknown, objet: Objet = "reservation"): Moment {
@@ -354,6 +361,11 @@ export const INSERTION: Record<
     moments: ["avis_elus", "avant_vote"],
     natures: ["avis", "relecture", "visa"],
     titre: "Avis des élus et étapes avant le vote",
+  },
+  campagne: {
+    moments: ["avant_notification"],
+    natures: ["relecture", "avis", "visa"],
+    titre: "Étapes avant de prévenir les demandeurs",
   },
 };
 
@@ -666,3 +678,69 @@ export function comparer(avant: Definition, apres: Definition, ref: Referentiel)
     out.push("Ordre des étapes modifié.");
   return out;
 }
+
+// ── Le cycle de fond de chaque type de dossier, en clair ──
+
+/**
+ * Les libellés propres à chaque type de dossier : le cycle fixe autour duquel un circuit
+ * insère ses étapes (logigramme), et les phrases de l'éditeur.
+ */
+export const CYCLES: Record<
+  Objet,
+  {
+    sousTitre: string;
+    /** Qui instruit quand le circuit ne désigne aucun service. */
+    sansService: string;
+    sansEtape: string;
+    depart: { titre: string; texte: string };
+    decision: { titre: string; texte: string };
+    fin: { titre: string; texte: string };
+  }
+> = {
+  reservation: {
+    sousTitre: "Circuit des demandes de réservation",
+    sansService: "les agents chargés de l'espace",
+    sansEtape: "Aucune étape : une demande se traite sans relecture, avis ni visa.",
+    depart: {
+      titre: "Demande reçue · À traiter",
+      texte: "échanges avec l'usager, demande d'informations",
+    },
+    decision: {
+      titre: "Acceptée",
+      texte: "Disponibilité revérifiée, convention générée, usager prévenu",
+    },
+    fin: {
+      titre: "Signée · Confirmée · Terminée",
+      texte: "Signature, acompte, événement, clôture : cycle de fond, non paramétrable",
+    },
+  },
+  subvention: {
+    sousTitre: "Circuit des demandes de subvention",
+    sansService: "les agents qui ont l'écriture sur les subventions",
+    sansEtape:
+      "Aucun élu nommé : tout compte qui a l'écriture sur les subventions peut donner un avis.",
+    depart: {
+      titre: "Dossier déposé · Instruction",
+      texte: "pièces, renvoi comme incomplet, soumission aux élus",
+    },
+    decision: {
+      titre: "Votée ou refusée",
+      texte: "Décision enregistrée par le service instructeur, association prévenue",
+    },
+    fin: { titre: "Versée", texte: "Versement daté : cycle de fond, non paramétrable" },
+  },
+  campagne: {
+    sousTitre: "Circuit des campagnes de créneaux",
+    sansService: "le service qui conduit la campagne",
+    sansEtape: "Aucune étape : les demandeurs sont prévenus dès que les vœux sont arbitrés.",
+    depart: {
+      titre: "Dépôt clos · Instruction",
+      texte: "arbitrage des vœux, attribution des créneaux",
+    },
+    decision: {
+      titre: "Demandeurs prévenus",
+      texte: "Un courriel par organisation : créneaux attribués et vœux refusés",
+    },
+    fin: { titre: "Clôturée", texte: "Cycle de fond, non paramétrable" },
+  },
+};

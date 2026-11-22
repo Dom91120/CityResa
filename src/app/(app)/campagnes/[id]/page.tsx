@@ -12,6 +12,7 @@ import {
 import { dateCourte, pluriel } from "@/lib/libelles";
 import { ChampsCampagne, StatutCampagne, TableauVoeux } from "@/modules/campagnes/vues";
 import { Onglets, Volet } from "@/modules/espaces/vues";
+import { CarteCircuit } from "@/modules/processus/dossier";
 import { saisons } from "@/server/calendrier";
 import {
   arbitrables,
@@ -20,6 +21,8 @@ import {
   gereCampagne,
   voitCampagne,
 } from "@/server/campagnes";
+import { etatCircuit } from "@/server/circuits";
+import { porteurCampagneParId } from "@/server/circuits-campagne";
 import { prisma } from "@/server/db";
 import { idDeRoute } from "@/server/guards";
 import { contexteModule } from "@/server/module";
@@ -58,6 +61,9 @@ export default async function CampagnePage({ params }: { params: Promise<{ id: s
         })
       ).map((s) => [String(s.id), s.name] as [string, string])
     : [];
+  // Le circuit de la campagne : ses étapes précèdent l'envoi des décisions.
+  const porteur = page.features.processus ? await porteurCampagneParId(c.id) : null;
+  const circuit = porteur ? await etatCircuit(porteur) : null;
   const conflits = conflitsParVoeu(arbitrables(c));
   const nb = (status: string) => c.voeux.filter((v) => v.status === status).length;
   const aPrevenir = c.voeux.filter((v) => v.status !== "en_attente" && !v.notifiedAt).length;
@@ -161,6 +167,19 @@ export default async function CampagnePage({ params }: { params: Promise<{ id: s
             : undefined
         }
       />
+
+      {circuit ? (
+        <div className="mb-3">
+          <CarteCircuit
+            etat={circuit}
+            dossier={{ id: c.id, numero: c.label, status: c.status }}
+            csrf={csrf}
+            peutDecider={peutGerer}
+            userId={user.id}
+            base={ici}
+          />
+        </div>
+      ) : null}
 
       {/* Les mêmes cartes de synthèse que sur le tableau de bord. */}
       <div className="stat-grid">

@@ -162,7 +162,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           case "supprimer": {
             const nb =
               (await prisma.reservation.count({ where: { circuitVersion: { circuitId: id } } })) +
-              (await prisma.subvention.count({ where: { circuitVersion: { circuitId: id } } }));
+              (await prisma.subvention.count({ where: { circuitVersion: { circuitId: id } } })) +
+              (await prisma.campagne.count({ where: { circuitVersion: { circuitId: id } } }));
             if (nb)
               throw new UserFacingError(
                 "Des dossiers ont suivi ce circuit : désactivez-le plutôt que de le supprimer.",

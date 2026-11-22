@@ -46,6 +46,10 @@ export default async function EtapesPage({
             ...c,
             objet: "subvention" as const,
           })),
+          ...(await circuitsEnService("campagne")).map((c) => ({
+            ...c,
+            objet: "campagne" as const,
+          })),
         ]
       : [];
   const [ref, options] =
@@ -143,7 +147,7 @@ export default async function EtapesPage({
                               {e.dossier.numero} · {e.dossier.title}
                             </a>
                             <small>
-                              {e.dossier.objet === "subvention"
+                              {e.dossier.objet !== "reservation"
                                 ? e.dossier.detail
                                 : `${e.dossier.demandeur} · ${e.dossier.detail}`}
                             </small>

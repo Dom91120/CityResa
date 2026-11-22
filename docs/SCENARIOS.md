@@ -346,7 +346,9 @@ même créneau.
 | 6 | Karim | Ouvrez la campagne (ch. 3.13). | Onglet Gymnase Gambetta : trois vœux, dont deux portent la pastille **1 conflit**. |
 | 7 | Karim | Menu « … » › **Clore le dépôt et instruire**. | État **En instruction**. Côté portail, le formulaire de vœu a disparu. |
 | 8 | Karim | **Arbitrer automatiquement**, confirmez. | Deux associations de même priorité : le vœu déposé **le premier** (ASCB) est attribué ; celui de TTMC qui le chevauche est refusé avec « Créneau attribué en priorité à… ». Le vœu du mardi est attribué. |
-| 9 | Karim | **Prévenir les demandeurs**. | Un seul courriel par association dans la console, avec attributions (numéro de dossier) et refus (motif). |
+| 9 | Karim | **Prévenir les demandeurs**. | Envoi **retenu** : message jaune, le « Visa de l'élu sur l'attribution » est demandé d'office avec le bilan de l'arbitrage (carte **Circuit** de la campagne). |
+| 9a | Pierre | **Mes étapes** : ouvrez la campagne, puis **Visa accordé**. | Il lit la campagne sans pouvoir l'arbitrer ; Karim est prévenu par la cloche. |
+| 9b | Karim | **Prévenir les demandeurs** de nouveau. | Un seul courriel par association dans la console, avec attributions (numéro de dossier) et refus (motif). |
 | 10 | Redouane | **Mes vœux**, puis **Mes réservations**. | Vœu « Attribué » avec son dossier ; le dossier récurrent est à signer. Signez-le : il est **Confirmée** aussitôt (gratuit). |
 | 11 | Karim | Ouvrez le dossier d'ASCB (ch. 2.12). | Récurrence « Chaque semaine le jeudi, jusqu'au 31/08 » ; une liste de créneaux **sans** les vacances scolaires ni les jours fériés ; Montants : « Gratuit ». |
 | 12 | Karim | **Planning** › **Semaine type** (ch. 3.9). | Les créneaux attribués y figurent une fois signés ou acceptés ; PDF A4 / A3. |
@@ -368,9 +370,10 @@ TTMC qui obtient le jeudi, bien qu'il ait déposé après.
 > avec Sophie, de rouvrir le dépôt de « Créneaux annuels 2026-2027 » pendant que celle de Karim
 > est ouverte : les deux coexistent, et le portail les présente ensemble dans **Mes vœux**.
 >
-> **Écart E3** — L'attribution des créneaux de la saison est une décision à laquelle les élus
-> sont associés. Connectez-vous avec Pierre et ouvrez la campagne : il la lit, mais ne peut ni
-> donner d'avis ni valider l'arbitrage.
+> **Écart E3, traité** — L'attribution des créneaux de la saison est une décision à laquelle
+> les élus sont associés : le circuit « Campagnes de créneaux » demande le visa de l'élu délégué
+> avant que les demandeurs soient prévenus (étapes 9 à 9b, ch. 12.8). Le visa retient l'annonce,
+> pas la création des dossiers : dites si l'élu doit intervenir plus tôt.
 
 ---
 
@@ -534,7 +537,7 @@ budget.
 > de démonstration le fait pour la gratuité accordée à la main (scénario 4) et pour la
 > réquisition du créneau d'une association (scénario 7). Notez les autres décisions où vous
 > attendriez un élu : dérogation au délai, refus, annulation (ajoutez l'étape vous-même au
-> scénario 14). Seule l'attribution des créneaux d'une campagne (scénario 5) n'est pas couverte.
+> scénario 14). L'attribution des créneaux d'une campagne est visée par l'élu au scénario 5.
 
 ---
 

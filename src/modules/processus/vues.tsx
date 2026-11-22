@@ -7,6 +7,7 @@ import { Chip } from "@/components/macros";
 import {
   type Condition,
   type Critere,
+  CYCLES,
   criteresDe,
   type Definition,
   decrireCondition,
@@ -191,7 +192,7 @@ export function Logigramme({
   objet?: Objet;
 }) {
   const service = definition.serviceId ? referentiel.services.get(definition.serviceId) : null;
-  const subvention = objet === "subvention";
+  const cycle = CYCLES[objet];
   // Les étapes d'une annulation ou d'une réquisition viennent après l'acceptation.
   const tardifs: readonly Moment[] = ["avant_annulation", "avant_requisition"];
   const avant = definition.etapes.filter((e) => !tardifs.includes(e.moment));
@@ -238,13 +239,9 @@ export function Logigramme({
       <li className="logi-noeud logi-socle">
         <Icone nom="inbox" taille={15} />
         <div>
-          <strong>
-            {subvention ? "Dossier déposé · Instruction" : "Demande reçue · À traiter"}
-          </strong>
+          <strong>{cycle.depart.titre}</strong>
           <span>
-            {subvention
-              ? `Instruction par ${service ? service.name : "les agents qui ont l'écriture sur les subventions"} : pièces, renvoi comme incomplet, soumission aux élus`
-              : `Instruction par ${service ? service.name : "les agents chargés de l'espace"} : échanges avec l'usager, demande d'informations`}
+            Instruction par {service ? service.name : cycle.sansService} : {cycle.depart.texte}
           </span>
         </div>
       </li>
@@ -252,24 +249,16 @@ export function Logigramme({
       <li className="logi-noeud logi-socle">
         <Icone nom="circle-check" taille={15} />
         <div>
-          <strong>{subvention ? "Votée ou refusée" : "Acceptée"}</strong>
-          <span>
-            {subvention
-              ? "Décision enregistrée par le service instructeur, association prévenue"
-              : "Disponibilité revérifiée, convention générée, usager prévenu"}
-          </span>
+          <strong>{cycle.decision.titre}</strong>
+          <span>{cycle.decision.texte}</span>
         </div>
       </li>
       {apres.map(noeud)}
       <li className="logi-noeud logi-socle">
         <Icone nom="pen-line" taille={15} />
         <div>
-          <strong>{subvention ? "Versée" : "Signée · Confirmée · Terminée"}</strong>
-          <span>
-            {subvention
-              ? "Versement daté : cycle de fond, non paramétrable"
-              : "Signature, acompte, événement, clôture : cycle de fond, non paramétrable"}
-          </span>
+          <strong>{cycle.fin.titre}</strong>
+          <span>{cycle.fin.texte}</span>
         </div>
       </li>
     </ol>

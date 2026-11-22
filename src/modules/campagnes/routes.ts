@@ -4,6 +4,7 @@
  * Réservés aux agents qui écrivent sur les réservations.
  */
 import { lireStatutCampagne, phraseBilanArbitrage } from "@/lib/campagnes";
+import { STATUTS_DU_MOMENT } from "@/lib/circuits";
 import { champ, champOuNull, coche, idOuNull, ids, parseDate, parseInt_ } from "@/lib/forms-util";
 import { minutesDe } from "@/lib/paris-time";
 import {
@@ -125,6 +126,10 @@ export async function actionCampagne(
         const nouveau = lireStatutCampagne(champ(form, "statut"));
         if (!nouveau) throw new UserFacingError("État inconnu.");
         await changerStatutCampagne(c, nouveau, user.name);
+        if (nouveau === "instruction") {
+          const { aiguillerCampagne } = await import("@/server/circuits-campagne");
+          await aiguillerCampagne(id).catch((e) => console.error("[circuit campagne]", e));
+        }
         return redirigerAvecMessage(
           fiche,
           nouveau === "ouverte"
@@ -145,7 +150,46 @@ export async function actionCampagne(
           b.erreurs ? "warning" : "success",
         );
       }
+      case "etapes/demander": {
+        const { etatCircuit, ouvrirEtape } = await import("@/server/circuits");
+        const { aiguillerCampagne, porteurCampagneParId } = await import(
+          "@/server/circuits-campagne"
+        );
+        await aiguillerCampagne(id);
+        const p = await porteurCampagneParId(id);
+        const e = p
+          ? (await etatCircuit(p))?.etapes.find((x) => x.cle === champ(form, "cle"))
+          : null;
+        if (!p || !e) throw new UserFacingError("Cette étape ne s'applique pas à cette campagne.");
+        if (e.etat === "ouverte") throw new UserFacingError("Cette étape attend déjà une réponse.");
+        if (!STATUTS_DU_MOMENT[e.moment].includes(p.status))
+          throw new UserFacingError(
+            "Le moment de cette étape est passé : elle ne se demande plus.",
+          );
+        await ouvrirEtape(p, e, user.name, champOuNull(form, "contexte"));
+        return redirigerAvecMessage(
+          `${fiche}#circuit`,
+          `« ${e.libelle} » demandé à : ${e.libelleIntervenant}.`,
+          "success",
+        );
+      }
       case "notifier": {
+        // Le circuit de la campagne peut soumettre l'arbitrage à un visa avant l'envoi.
+        const { verifierAvant } = await import("@/server/circuits");
+        const { aiguillerCampagne, porteurCampagneParId } = await import(
+          "@/server/circuits-campagne"
+        );
+        await aiguillerCampagne(id);
+        const p = await porteurCampagneParId(id);
+        try {
+          // Rien à envoyer : inutile de solliciter l'élu.
+          if (p && c.voeux.some((v) => v.status !== "en_attente" && !v.notifiedAt))
+            await verifierAvant(p, "avant_notification", user, `Arbitrage soumis : ${p.detail}`);
+        } catch (e) {
+          if (e instanceof UserFacingError)
+            return redirigerAvecMessage(`${fiche}#circuit`, e.message, "warning");
+          throw e;
+        }
         const n = await notifierDecisions(c, acteur);
         return redirigerAvecMessage(
           fiche,

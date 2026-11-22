@@ -1062,9 +1062,12 @@ model Campagne {
   closeDate DateTime? @map("close_date") @db.Date
   consignes String?
 
+  /// Version du circuit suivie par la campagne, fixée quand le dépôt se clôt.
+  circuitVersionId Int?            @map("circuit_version_id")
+  circuitVersion   CircuitVersion? @relation(fields: [circuitVersionId], references: [id], onDelete: SetNull)
   /// Service qui conduit la campagne (module Processus) ; null = les agents chargés des espaces.
-  serviceId Int?     @map("service_id")
-  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  serviceId        Int?            @map("service_id")
+  service          Service?        @relation(fields: [serviceId], references: [id], onDelete: SetNull)
 
   espaces CampagneEspace[]
   voeux   Voeu[]
@@ -1498,7 +1501,7 @@ model Delegation {
 /// d'aiguillage, service, étapes) vit dans ses versions.
 model Circuit {
   id          Int      @id @default(autoincrement())
-  /// reservation | subvention
+  /// reservation | subvention | campagne
   objet       String   @default("reservation") @db.VarChar(20)
   name        String   @db.VarChar(120)
   description String?  @db.VarChar(400)
@@ -1535,6 +1538,7 @@ model CircuitVersion {
 
   reservations Reservation[]
   subventions  Subvention[]
+  campagnes    Campagne[]
   etapes       DossierEtape[]
 
   @@unique([circuitId, numero])

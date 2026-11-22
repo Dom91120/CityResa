@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   aiguiller,
   type CircuitPublie,
+  CYCLES,
   cleEtape,
   comparer,
   conditionVraie,
@@ -18,6 +19,7 @@ import {
   lireCondition,
   lireDefinition,
   lireMoment,
+  lireObjet,
   type Referentiel,
   STATUTS_DU_MOMENT,
   type Test,
@@ -273,6 +275,23 @@ describe("types de dossier", () => {
     expect(STATUTS_DU_MOMENT.avant_vote).toEqual(["deposee", "instruction", "avis"]);
     expect(lireMoment("avant_vote", "subvention")).toBe("avant_vote");
     expect(lireMoment("avant_vote")).toBe("avant_acceptation");
+  });
+
+  it("une campagne n'admet que des étapes avant de prévenir les demandeurs", () => {
+    expect(lireObjet("campagne")).toBe("campagne");
+    expect(lireObjet("autre")).toBe("reservation");
+    expect(INSERTION.campagne.moments).toEqual(["avant_notification"]);
+    expect(STATUTS_DU_MOMENT.avant_notification).toEqual(["instruction"]);
+    expect(lireMoment("avant_acceptation", "campagne")).toBe("avant_notification");
+    expect(criteresDe("campagne").map((c) => c.cle)).toEqual(["secteur"]);
+    const d = lireDefinition({
+      etapes: [{ ...etape({ cle: "v", nature: "visa" }), moment: "avant_notification" }],
+    });
+    expect(
+      etapesApplicables(d, { secteur: "sport" }, "avant_notification").map((e) => e.cle),
+    ).toEqual(["v"]);
+    expect(etapesApplicables(d, { secteur: "sport" }, "avant_acceptation")).toEqual([]);
+    expect(Object.keys(CYCLES)).toEqual(Object.keys(INSERTION));
   });
 
   it("aiguille une subvention sur ses propres critères", () => {

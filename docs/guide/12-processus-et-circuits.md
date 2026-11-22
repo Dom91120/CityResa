@@ -254,7 +254,35 @@ Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écrit
 - Appartenir au service instructeur ne donne aucun droit que le rôle n'a pas. Le rôle Agent fourni n'a que la lecture sur les subventions : pour qu'un agent instruise, donnez-lui un rôle qui a l'écriture. Le jeu de démonstration le fait avec un rôle **Agent instructeur** (celui de l'agent, plus l'écriture sur les subventions), attribué à Karim Benali.
 - Le compteur **Subventions** du menu suit la file de travail de l'agent : les dossiers de ses services et ceux sans service.
 
-## 12.8 La simulation
+## 12.8 Les circuits des campagnes de créneaux
+
+**À quoi ça sert** — Soumettre l'attribution des créneaux d'une campagne (chapitre 3.13) à un élu, ou à une relecture, avant que les demandeurs soient prévenus.
+
+**Qui** — Administrateurs pour décrire le circuit ; le service qui conduit la campagne et la personne sollicitée pour s'en servir.
+
+**Marche à suivre**
+
+1. Dans **Processus et circuits**, créez un circuit de type **Campagnes de créneaux**.
+2. Ajoutez une étape : son seul moment est **Avant de prévenir les demandeurs**. Un visa ou une relecture retient l'envoi ; un avis ne le retient pas.
+3. Si vous tenez plusieurs circuits, réglez l'aiguillage sur le **secteur** des espaces de la campagne. Le service n'est pas à désigner : c'est celui qui conduit la campagne.
+4. Publiez.
+
+**Ce que voit le service**
+
+- Dès que le dépôt est clos, la fiche de la campagne porte une carte **Circuit** : le circuit suivi, les étapes et leur état, le bouton **Demander**.
+- **Prévenir les demandeurs** est retenu tant qu'un visa ou une relecture manque : l'étape est demandée d'office, avec le bilan de l'arbitrage (vœux attribués, refusés, en attente). L'envoi se refait une fois l'accord donné.
+- La personne sollicitée retrouve la campagne dans **Mes étapes**, l'ouvre en lecture et répond ; un retard est relancé comme pour un dossier.
+
+**Règles à connaître**
+
+- Une campagne rejoint son circuit à la clôture du dépôt et garde la version alors publiée.
+- Le visa retient l'**annonce** des décisions, pas l'arbitrage : un vœu attribué crée son dossier aussitôt, mais l'association n'en est prévenue qu'après l'accord. En cas de refus du visa, revoyez l'arbitrage (un vœu décidé se remet en attente) puis redemandez l'étape.
+- Un visa accordé vaut pour la suite de la campagne : les décisions prises ensuite s'envoient sans nouvelle demande. Redemandez l'étape vous-même si l'arbitrage a beaucoup changé.
+- Les réponses sont tracées dans le journal d'audit, la campagne n'ayant pas d'historique propre.
+- La simulation (12.9) ne porte que sur les réservations et les subventions.
+- Dans le jeu de démonstration, le circuit « Campagnes de créneaux » demande le visa de l'élu délégué sur toute campagne.
+
+## 12.9 La simulation
 
 **À quoi ça sert** — Vérifier, avant de publier, ce qui arriverait à un dossier.
 

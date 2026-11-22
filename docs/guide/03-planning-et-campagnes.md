@@ -355,7 +355,7 @@ Quand un seul espace est affiché, un bouton **Feuille de salle** apparaît à c
 2. Pour laisser l'application trancher, cliquez sur **Arbitrer automatiquement** et confirmez.
 3. Pour décider vous-même, sur la ligne d'un vœu : cliquez sur la coche pour l'attribuer, ou saisissez un motif et cliquez sur la croix pour le refuser.
 4. Vérifiez les vœux restés « En attente » : le motif indique le créneau déjà occupé. Décidez au cas par cas.
-5. Cliquez sur **Prévenir les demandeurs** : chaque organisation reçoit un seul courriel récapitulant ses créneaux attribués (avec le numéro de dossier) et ses vœux refusés (avec le motif).
+5. Cliquez sur **Prévenir les demandeurs** : chaque organisation reçoit un seul courriel récapitulant ses créneaux attribués (avec le numéro de dossier) et ses vœux refusés (avec le motif). Si le circuit de la campagne prévoit un visa ou une relecture (chapitre 12.8), l'envoi est retenu : l'étape est demandée d'office, et vous prévenez les demandeurs une fois l'accord donné. La carte **Circuit**, en haut de la fiche, en montre l'état.
 6. Ouvrez le menu « ... » et choisissez **Clôturer la campagne**.
 
 **Règles à connaître**

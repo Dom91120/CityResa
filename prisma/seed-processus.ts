@@ -222,6 +222,58 @@ async function creerCircuitsSubventionDemo(): Promise<number> {
 }
 
 /**
+ * Le circuit des campagnes de créneaux : l'élu de la délégation vise l'attribution avant que
+ * les demandeurs soient prévenus. Les campagnes en cours d'arbitrage le rejoignent.
+ */
+async function creerCircuitCampagneDemo(): Promise<number> {
+  if ((await prisma.circuit.count({ where: { objet: "campagne" } })) > 0) return 0;
+  const delegation = await prisma.delegation.findFirst({ orderBy: { id: "asc" } });
+  if (!delegation) return 0;
+  const def: Definition = {
+    condition: null,
+    serviceId: null,
+    etapes: [
+      {
+        cle: "visa-attribution",
+        libelle: "Visa de l'élu sur l'attribution",
+        libelleUsager: "",
+        nature: "visa",
+        moment: "avant_notification",
+        intervenant: { type: "delegation", id: delegation.id },
+        condition: null,
+        delaiJours: 7,
+      },
+    ],
+  };
+  const c = await prisma.circuit.create({
+    data: {
+      objet: "campagne",
+      name: "Campagnes de créneaux",
+      description: "L'élu vise l'attribution des créneaux avant que les demandeurs soient prévenus",
+      position: 0,
+      parDefaut: true,
+      versions: {
+        create: {
+          numero: 1,
+          status: "publiee",
+          definition: def as unknown as Prisma.InputJsonValue,
+          createdBy: AUTEUR,
+          publiePar: AUTEUR,
+          publieAt: new Date(),
+          note: "Version initiale",
+        },
+      },
+    },
+    include: { versions: { select: { id: true } } },
+  });
+  await prisma.campagne.updateMany({
+    where: { status: "instruction", circuitVersionId: null },
+    data: { circuitVersionId: c.versions[0].id },
+  });
+  return 1;
+}
+
+/**
  * Le rôle « Agent instructeur » : celui de l'agent, avec l'écriture sur les subventions. Il
  * est donné à Karim Benali, qui instruit les dossiers des associations sportives : le service
  * désigne ses dossiers, le rôle lui donne le droit de les instruire.
@@ -340,7 +392,7 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
     return {
       services: 0,
       comptes: await creerComptesServices(motDePasse),
-      circuits: await creerCircuitsSubventionDemo(),
+      circuits: (await creerCircuitsSubventionDemo()) + (await creerCircuitCampagneDemo()),
       dossiers: 0,
       etapes: await creerEtapeDemo(),
     };
@@ -508,7 +560,7 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
   return {
     services: 4,
     comptes: await creerComptesServices(motDePasse),
-    circuits: 3 + (await creerCircuitsSubventionDemo()),
+    circuits: 3 + (await creerCircuitsSubventionDemo()) + (await creerCircuitCampagneDemo()),
     dossiers: dossiers.length,
     etapes: await creerEtapeDemo(),
   };

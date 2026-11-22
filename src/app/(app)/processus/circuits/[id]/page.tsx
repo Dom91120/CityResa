@@ -13,6 +13,7 @@ import { Champ, Grille, Interrupteur } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
 import { Chip } from "@/components/macros";
 import {
+  CYCLES,
   comparer,
   controler,
   decrireCondition,
@@ -52,7 +53,9 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
     }),
     c.objet === "subvention"
       ? prisma.subvention.count({ where: { circuitVersion: { circuitId: c.id } } })
-      : prisma.reservation.count({ where: { circuitVersion: { circuitId: c.id } } }),
+      : c.objet === "campagne"
+        ? prisma.campagne.count({ where: { circuitVersion: { circuitId: c.id } } })
+        : prisma.reservation.count({ where: { circuitVersion: { circuitId: c.id } } }),
   ]);
   const libelles = libellesDe(options);
   const def = c.definition;
@@ -85,7 +88,11 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
         titre={c.name}
         badges={
           <>
-            <Chip teinte={c.objet === "subvention" ? "lime" : "sky"}>{OBJETS[c.objet]}</Chip>
+            <Chip
+              teinte={c.objet === "subvention" ? "lime" : c.objet === "campagne" ? "rose" : "sky"}
+            >
+              {OBJETS[c.objet]}
+            </Chip>
             {c.parDefaut ? <Chip teinte="slate">Par défaut</Chip> : null}
             {c.publiee ? (
               <Chip teinte="emerald">v{c.publiee.numero} en service</Chip>
@@ -96,12 +103,7 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
             {c.isActive ? null : <Chip teinte="slate">Inactif</Chip>}
           </>
         }
-        sousTitre={
-          c.description ??
-          (c.objet === "subvention"
-            ? "Circuit des demandes de subvention"
-            : "Circuit des demandes de réservation")
-        }
+        sousTitre={c.description ?? CYCLES[c.objet].sousTitre}
         actions={
           <>
             <BoutonOuvrir
@@ -201,13 +203,7 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
               {c.parDefaut ? null : <Lu label="Ordre d'examen" valeur={String(c.position)} />}
               <Lu
                 label="Confié à"
-                valeur={
-                  service
-                    ? service.name
-                    : c.objet === "subvention"
-                      ? "Aucun service : les agents qui ont l'écriture sur les subventions"
-                      : "Aucun service : les agents chargés de l'espace"
-                }
+                valeur={service ? service.name : `Aucun service : ${CYCLES[c.objet].sansService}`}
               />
               <Lu label="Dossiers" valeur={`${nbDossiers} dossier(s) ont suivi ce circuit`} />
             </Lus>
@@ -259,11 +255,7 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
                 ))}
               </ul>
             ) : (
-              <p className="text-muted small mb-0">
-                {c.objet === "subvention"
-                  ? "Aucun élu nommé : tout compte qui a l'écriture sur les subventions peut donner un avis."
-                  : "Aucune étape : une demande se traite sans relecture, avis ni visa."}
-              </p>
+              <p className="text-muted small mb-0">{CYCLES[c.objet].sansEtape}</p>
             )}
           </Section>
 

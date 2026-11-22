@@ -421,6 +421,11 @@ export function porteurReservation(r: ReservationComplete): Porteur {
   };
 }
 
+/** La cloche range une étape de campagne avec les réservations. */
+function typeNotif(p: Porteur): "reservation" | "subvention" {
+  return p.objet === "subvention" ? "subvention" : "reservation";
+}
+
 /** Un dossier tel que le moteur l'accepte : une réservation complète, ou un porteur. */
 export type Dossier = ReservationComplete | Porteur;
 
@@ -433,6 +438,10 @@ export async function chargerPorteur(objet: string, id: number): Promise<Porteur
   if (objet === "subvention") {
     const { porteurSubventionParId } = await import("@/server/circuits-subvention");
     return porteurSubventionParId(id);
+  }
+  if (objet === "campagne") {
+    const { porteurCampagneParId } = await import("@/server/circuits-campagne");
+    return porteurCampagneParId(id);
   }
   const r = await chargerReservation(id);
   return r ? porteurReservation(r) : null;
@@ -527,7 +536,7 @@ export async function ouvrirEtape(
     e.attendus.map((a) =>
       notifier(
         a.id,
-        p.objet,
+        typeNotif(p),
         `${NATURES[e.nature].label} attendu${e.nature === "relecture" ? "e" : ""} · ${p.numero}`,
         `${e.libelle} · ${p.titre} · ${p.detail}`,
         `${p.lien}#circuit`,
@@ -602,6 +611,12 @@ const VERROUS: Record<Moment, { fait: string; impossible: string; reste: string;
       sinon: "Revoyez votre décision, ou redemandez l'étape.",
     },
     avis_elus: { fait: "", impossible: "", reste: "", sinon: "" },
+    avant_notification: {
+      fait: "Les décisions de la campagne ne sont pas encore envoyées",
+      impossible: "Envoi impossible",
+      reste: "il restera à prévenir les demandeurs",
+      sinon: "Revoyez l'arbitrage puis redemandez l'étape.",
+    },
     avant_vote: {
       fait: "La subvention n'est pas encore votée",
       impossible: "Vote impossible",
@@ -709,7 +724,7 @@ export async function repondreEtape(
     [...aPrevenir].map((id) =>
       notifier(
         id,
-        p.objet,
+        typeNotif(p),
         `${issue} · ${p.numero}`,
         `${e.libelle} · ${user.name}${texte ? ` · ${texte}` : ""}`,
         `${p.lien}#circuit`,
@@ -759,7 +774,7 @@ export async function relancerEtapesEnRetard(now = new Date()): Promise<number> 
       attendus.map((a) =>
         notifier(
           a.id,
-          p.objet,
+          typeNotif(p),
           `En retard · ${o.libelle} · ${p.numero}`,
           `${p.titre} · attendu le ${depuis}`,
           lien,
@@ -781,7 +796,7 @@ export async function relancerEtapesEnRetard(now = new Date()): Promise<number> 
       [...suiveurs].map((id) =>
         notifier(
           id,
-          p.objet,
+          typeNotif(p),
           `Étape en retard · ${p.numero}`,
           `${o.libelle} · attendue le ${depuis} · ${attendus.map((a) => a.name).join(", ") || "personne n'est désigné"}`,
           lien,
