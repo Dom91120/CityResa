@@ -70,6 +70,10 @@ export function etapeDuFormulaire(
   const nature = champ(form, "nature") as Nature;
   if (!(nature in NATURES) || !INSERTION[objet].natures.includes(nature))
     throw new UserFacingError("Choisissez la nature de l'étape.");
+  if (lireMoment(champ(form, "moment"), objet) === "avis_elus" && nature !== "avis")
+    throw new UserFacingError(
+      "À l'avis des élus, l'étape est un avis ; un visa ou une relecture se placent avant le vote.",
+    );
   const cleSaisie = champ(form, "cle");
   const connue = existantes.find((e) => e.cle === cleSaisie);
   return {

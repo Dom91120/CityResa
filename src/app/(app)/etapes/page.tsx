@@ -5,7 +5,7 @@ import { Icone } from "@/components/icones";
 import { SegTabs, VideBloc } from "@/components/liste";
 import { Chip } from "@/components/macros";
 import { NATURES, OBJETS } from "@/lib/circuits";
-import { dateCourte, depuis, montant, plage } from "@/lib/libelles";
+import { dateCourte, depuis, montant } from "@/lib/libelles";
 import { Logigramme, PastilleNature } from "@/modules/processus/vues";
 import {
   circuitsEnService,
@@ -139,15 +139,13 @@ export default async function EtapesPage({
                         </td>
                         <td className="col-souple col-souple--large">
                           <span className="cell2" style={{ whiteSpace: "normal" }}>
-                            <a
-                              href={`/reservations/${e.dossier.id}#circuit`}
-                              className="fw-semibold"
-                            >
+                            <a href={`${e.dossier.lien}#circuit`} className="fw-semibold">
                               {e.dossier.numero} · {e.dossier.title}
                             </a>
                             <small>
-                              {e.dossier.demandeur} · {e.dossier.espace} ·{" "}
-                              {plage(e.dossier.startAt, e.dossier.endAt)}
+                              {e.dossier.objet === "subvention"
+                                ? e.dossier.detail
+                                : `${e.dossier.demandeur} · ${e.dossier.detail}`}
                             </small>
                           </span>
                         </td>
@@ -191,7 +189,7 @@ export default async function EtapesPage({
                             </>
                           ) : (
                             <a
-                              href={`/reservations/${e.dossier.id}#circuit`}
+                              href={`${e.dossier.lien}#circuit`}
                               className="btn btn-sm btn-outline-secondary"
                             >
                               Voir

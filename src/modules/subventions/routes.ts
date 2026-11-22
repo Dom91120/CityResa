@@ -2,6 +2,7 @@
  * Les gestes du module ASSO (routes POST sous src/app/envoi/subventions) : dépôt,
  * modification, avis, transitions de statut, suppression.
  */
+import { STATUTS_DU_MOMENT } from "@/lib/circuits";
 import { SUBVENTION_STATUS } from "@/lib/constantes";
 import { estFiche } from "@/lib/dossier-subvention";
 import { champ, champOuNull, idOuNull, parseInt_ } from "@/lib/forms-util";
@@ -81,6 +82,26 @@ export async function statut(user: CurrentUser, id: number, form: FormData): Pro
   try {
     await exigerInstruction(user, id);
     const { statut: nouveau, opts } = lireTransition(form);
+    if (nouveau === "votee" || nouveau === "refusee") {
+      const { cloreEtapesOuvertes, verifierAvant } = await import("@/server/circuits");
+      if (nouveau === "votee") {
+        const { porteurSubventionParId } = await import("@/server/circuits-subvention");
+        const p = await porteurSubventionParId(id);
+        try {
+          if (p)
+            await verifierAvant(
+              p,
+              "avant_vote",
+              user,
+              `Vote envisagé : ${opts.montantAccorde ?? "?"} € accordés${opts.note ? ` · ${opts.note}` : ""}`,
+            );
+        } catch (e) {
+          if (e instanceof UserFacingError)
+            return redirigerAvecMessage(`/subventions/${id}#circuit`, e.message, "warning");
+          throw e;
+        }
+      } else await cloreEtapesOuvertes(id, user.name, "subvention");
+    }
     const s = await changerStatutSubvention(id, nouveau, user, opts);
     const messages: Record<string, string> = {
       instruction: `Demande ${s.numero} prise en instruction par ${user.name}.`,
@@ -373,5 +394,34 @@ export async function portailDeposer(user: CurrentUser, id: number): Promise<Res
     );
   } catch (e) {
     return erreur(e, retour);
+  }
+}
+
+/** POST /subventions/[id]/etapes/demander : demande (ou redemande) une étape du circuit. */
+export async function demanderEtape(
+  user: CurrentUser,
+  id: number,
+  form: FormData,
+): Promise<Response> {
+  const fiche = `/subventions/${id}`;
+  try {
+    await exigerInstruction(user, id);
+    const { etatCircuit, ouvrirEtape } = await import("@/server/circuits");
+    const { porteurSubventionParId } = await import("@/server/circuits-subvention");
+    const p = await porteurSubventionParId(id);
+    if (!p) return pasTrouve();
+    const e = (await etatCircuit(p))?.etapes.find((x) => x.cle === champ(form, "cle"));
+    if (!e) throw new UserFacingError("Cette étape ne s'applique pas à ce dossier.");
+    if (e.etat === "ouverte") throw new UserFacingError("Cette étape attend déjà une réponse.");
+    if (!STATUTS_DU_MOMENT[e.moment].includes(p.status))
+      throw new UserFacingError("Le moment de cette étape est passé : elle ne se demande plus.");
+    await ouvrirEtape(p, e, user.name, champOuNull(form, "contexte"));
+    return redirigerAvecMessage(
+      `${fiche}#circuit`,
+      `« ${e.libelle} » demandé à : ${e.libelleIntervenant}.`,
+      "success",
+    );
+  } catch (e) {
+    return erreur(e, `${fiche}#circuit`);
   }
 }

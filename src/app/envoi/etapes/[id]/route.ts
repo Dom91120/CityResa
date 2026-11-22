@@ -1,11 +1,10 @@
 import { champ, champOuNull } from "@/lib/forms-util";
-import { repondreEtape } from "@/server/circuits";
+import { chargerPorteur, repondreEtape } from "@/server/circuits";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
 import * as features from "@/server/features";
 import { requireAgent } from "@/server/guards";
 import { idDe, pasTrouve, redirigerAvecMessage, suite, traiterFormulaire } from "@/server/http";
-import { chargerReservation } from "@/server/reservations";
 
 /**
  * POST /etapes/<id> : la réponse à une étape de circuit (relecture, avis, visa). Elle
@@ -21,8 +20,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       const user = await requireAgent();
       await features.require("processus");
       const etape = await prisma.dossierEtape.findUnique({ where: { id } });
-      if (etape?.objet !== "reservation") return pasTrouve();
-      const r = await chargerReservation(etape.objetId);
+      if (!etape) return pasTrouve();
+      const r = await chargerPorteur(etape.objet, etape.objetId);
       if (!r) return pasTrouve();
       const retour = suite(form, "/etapes");
       const reponse = champ(form, "reponse");

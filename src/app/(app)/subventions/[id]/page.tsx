@@ -26,6 +26,7 @@ import { nomRepresentant } from "@/lib/dossier-usager";
 import { dateCourte, dateHeure, depuis, montant, pluriel } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
 import { planDe, ratioDemande, totaux } from "@/lib/plan-budget";
+import { CarteCircuit } from "@/modules/processus/dossier";
 import {
   ChipCampagne,
   LectureFiche,
@@ -41,7 +42,8 @@ import {
   TRANSITIONS_SUBVENTION,
 } from "@/modules/subventions/server";
 import { ChipAvis, TypeSubvention } from "@/modules/subventions/vues";
-import { consultation } from "@/server/circuits-subvention";
+import { etatCircuit } from "@/server/circuits";
+import { consultation, porteurSubvention } from "@/server/circuits-subvention";
 import { prisma } from "@/server/db";
 import { docCategories, forParent } from "@/server/documents";
 import { idDeRoute } from "@/server/guards";
@@ -123,6 +125,8 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
     peutEditer &&
     (!circuit?.restreinte || user.isAdmin || circuit.consultes.some((p) => p.id === user.id));
   const donnes = new Set(s.avis.map((a) => a.authorId));
+  // Les étapes que le circuit place avant le vote (visa, relecture).
+  const etapesVote = circuit ? await etatCircuit(porteurSubvention(s)) : null;
   const ici = `/subventions/${id}`;
   const org = s.organisation;
   const d = dossierDe(s);
@@ -583,6 +587,17 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
                   peut donner un avis.
                 </p>
               )}
+              {etapesVote ? (
+                <CarteCircuit
+                  etat={etapesVote}
+                  dossier={s}
+                  csrf={page.csrf}
+                  peutDecider={decide}
+                  userId={user.id}
+                  base={ici}
+                  sansEntete
+                />
+              ) : null}
             </div>
           ) : null}
           <div className="data-card" id="avis">

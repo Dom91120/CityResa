@@ -96,7 +96,8 @@ et fêtes » est confiée à Pierre Durand. Le dossier R260008 attend déjà son
 
 Deux circuits de subvention complètent le jeu : les demandes des **associations sportives** sont
 instruites par le Service des sports (Karim), les **autres** par la Vie associative (Sophie) ;
-dans les deux cas l'avis est demandé à l'élu de la délégation.
+dans les deux cas l'avis est demandé à l'élu de la délégation. Pour les « autres associations »,
+la Communication relit en plus, avant le vote, toute demande d'au moins 2 500 €.
 
 ### Comment lire un scénario
 
@@ -473,7 +474,7 @@ vote puis le versement sont enregistrés.
 | --- | --- | --- | --- |
 | 12 | Pierre | **Subventions** › onglet **Avis** › le dossier (ch. 7.3). | Il lit tout le dossier ; il a **Donner mon avis** mais ni **Voter**, ni **Refuser**. La carte Instruction rappelle que la décision est enregistrée par les agents. |
 | 13 | Pierre | Avis « Avec réserve », montant proposé inférieur au montant demandé, commentaire. Puis **Modifier mon avis**. | Un seul avis par personne : le second remplace le premier. |
-| 14 | Sophie | **Voter la subvention**. | Le montant accordé est pré-rempli avec la moyenne des montants proposés. Ajoutez une note (délibération). Statut **Votée** ; courriel et notification à l'association. |
+| 14 | Sophie | **Voter la subvention**. | Le montant accordé est pré-rempli avec la moyenne des montants proposés. Ajoutez une note (délibération). Statut **Votée** ; courriel et notification à l'association. Si la demande atteint 2 500 €, voir la variante « relecture avant le vote » ci-dessous. |
 | 15 | Pierre | Rouvrez le dossier. | Les avis sont clos. |
 | 16 | Sophie | **Marquer versée**, date du jour. | Statut **Versée**, dossier clos. |
 | 17 | Madeleine | **Mes subventions**, puis le dossier (ch. 1.20). | Pastille « Versée le … » ; bandeau « Subvention versée le … : montant » puis le parcours ; bloc Décision ; **Dossier PDF** en aperçu. |
@@ -492,6 +493,15 @@ budget.
 > **Écarts E4 et E5, traités** — Le dossier d'Espace Yoga est instruit par la Vie associative
 > (carte **Circuit** du dossier) ; à l'étape 11, Pierre est prévenu par la cloche et retrouve le
 > dossier dans **Mes étapes**. La variante ci-dessous montre le Service des sports.
+
+**Variante — relecture avant le vote** (dossier S270001 d'Around dance, 3 000 € demandés, déjà soumis aux élus)
+
+| # | Qui | Action | Constat |
+| --- | --- | --- | --- |
+| a | Sophie | Ouvrez S270001 : carte **Circuit**. | « Avis de l'élu délégué : avis donné », puis « Relecture par la Communication : à demander ». |
+| b | Sophie | **Voter la subvention**, 2 500 €, une note. | Vote **retenu** : message jaune, la relecture est demandée d'office avec « Vote envisagé : 2 500 € accordés ». Le dossier reste « Avis des élus ». |
+| c | Camille | **Mes étapes** : ouvrez le dossier, puis **Relu, bon pour envoi**. | Elle lit le dossier sans pouvoir l'instruire ; Sophie est prévenue par la cloche. |
+| d | Sophie | **Voter la subvention** de nouveau. | **Votée** ; l'historique porte la relecture demandée, la relecture faite et le vote. |
 
 **Variante — une association sportive** (dossier S270002 du TTMC, déjà déposé)
 

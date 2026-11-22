@@ -958,14 +958,25 @@ Ville, pas un manque de l'application.
 L'écart **E3** (élus dans les circuits de réservation) est ainsi traité pour l'acceptation, le
 refus, l'annulation et la réquisition ; il reste l'attribution des créneaux d'une campagne.
 
+**Lot 7, livré** — étapes avant le vote d'une subvention :
+
+- le **moteur d'étapes** ne dépend plus du type de dossier : une réservation et une demande de
+  subvention s'y ramènent à un même « porteur » (numéro, service, circuit, statut, faits,
+  historique) ; ouverture, réponse, relance des retards et « Mes étapes » sont communs ;
+- un circuit de subvention admet, en plus de l'avis des élus, des étapes au moment **avant le
+  vote** : une relecture ou un visa retient le vote, un avis non ;
+- le vote retenu demande l'étape d'office avec le montant envisagé ; le refus de la demande
+  clôt les étapes encore ouvertes ; la carte Circuit du dossier permet de demander l'étape à
+  l'avance et d'y répondre.
+
 **Reste à faire**
 
 | Sujet | Écart |
 | --- | --- |
 | Droits par service sur ce qui reste réglé **par espace** : présences, personnel de service, fermetures, planning (filtre par service) | E1 |
 | Étapes de circuit (visa, avis) sur l'**attribution des créneaux** d'une campagne, la retenue sur caution et l'annulation | E3 |
-| Subventions : étapes **bloquantes avant le vote** (visa, relecture), filtre par service de la liste, contact du service instructeur dans les courriels et le PDF du dossier | E5, E7 |
-| Autres **moments** d'insertion : avant l'émission d'une facture, une retenue sur caution, une fermeture exceptionnelle ; subventions : avant le vote | E3 |
+| Subventions : filtre par service de la liste, contact du service instructeur dans les courriels et le PDF du dossier ; étapes avant le versement | E5, E7 |
+| Autres **moments** d'insertion : avant l'émission d'une facture, une retenue sur caution, une fermeture exceptionnelle | E3 |
 | Règle de réunion **tous / majorité** (aujourd'hui : une seule réponse suffit) | — |
 | **Échéance** : passage d'office à l'étape suivante ou transmission au suppléant (aujourd'hui : une relance, l'alerte au responsable, et l'échéance en rouge) ; relance des avis sur les subventions | — |
 | **Effets** paramétrables d'une étape (modèle de courriel, mise en copie, document) ; courriel en plus de la cloche | E2 |

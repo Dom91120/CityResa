@@ -16,6 +16,8 @@ export function CarteCircuit({
   csrf,
   peutDecider,
   userId,
+  base,
+  sansEntete = false,
 }: {
   etat: EtatCircuit;
   dossier: { id: number; numero: string; status: string };
@@ -23,8 +25,12 @@ export function CarteCircuit({
   /** L'agent instruit ce dossier : il demande les étapes. */
   peutDecider: boolean;
   userId: string;
+  /** La fiche du dossier ; par défaut celle d'une réservation. */
+  base?: string;
+  /** Les étapes seules, sans titre ni service : la page les présente déjà. */
+  sansEntete?: boolean;
 }) {
-  const fiche = `/reservations/${dossier.id}`;
+  const fiche = base ?? `/reservations/${dossier.id}`;
   const maintenant = Date.now();
   /** L'étape a-t-elle encore un sens au statut actuel du dossier ? */
   const vivante = (e: { moment: Moment }) => STATUTS_DU_MOMENT[e.moment].includes(dossier.status);
@@ -36,17 +42,22 @@ export function CarteCircuit({
     (e) => vivante(e) && (e.moment === "avant_acceptation" || e.etat !== "a_demander"),
   );
   // Un dossier sans service ni étape n'a rien à montrer.
-  if (!etat.service && !etapes.length) return null;
+  if (!etapes.length && (sansEntete || !etat.service)) return null;
   return (
-    <div className="data-card circuit" id="circuit">
-      <h5>
-        <Icone nom="workflow" taille={16} /> Circuit
-        <small>
-          {etat.circuit?.name}
-          {etat.version ? ` · v${etat.version.numero}` : ""}
-        </small>
-      </h5>
-      {etat.service ? (
+    <div
+      className={sansEntete ? "circuit-suite" : "data-card circuit"}
+      id={sansEntete ? undefined : "circuit"}
+    >
+      {sansEntete ? null : (
+        <h5>
+          <Icone nom="workflow" taille={16} /> Circuit
+          <small>
+            {etat.circuit?.name}
+            {etat.version ? ` · v${etat.version.numero}` : ""}
+          </small>
+        </h5>
+      )}
+      {etat.service && !sansEntete ? (
         <p className="circuit-service">
           Dossier confié à <strong>{etat.service.name}</strong>
           {etat.service.email || etat.service.phone
@@ -83,7 +94,7 @@ export function CarteCircuit({
                   <PastilleEtat etat={e.etat} nature={e.nature} />
                 </div>
                 <div className="circuit-etape-qui">
-                  {e.moment === "avant_acceptation" ? "" : `${MOMENTS[e.moment]} · `}
+                  {e.moment === "avant_acceptation" || sansEntete ? "" : `${MOMENTS[e.moment]} · `}
                   {e.libelleIntervenant}
                   {e.attendus.length ? ` : ${e.attendus.map((p) => p.name).join(", ")}` : ""}
                   {e.bloquante ? "" : " · ne retient rien"}

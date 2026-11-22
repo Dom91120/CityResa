@@ -208,13 +208,13 @@ export function Logigramme({
           <span>
             {libelleIntervenant(e.intervenant, referentiel)}
             {e.delaiJours ? ` · sous ${e.delaiJours} j` : ""}
-            {subvention
+            {e.moment === "avis_elus"
               ? " · consulté à la soumission aux élus"
               : n.bloquante
                 ? ` · retient ${RETENU[e.moment]}`
                 : " · ne retient rien"}
           </span>
-          {subvention ? null : <span>{MOMENTS[e.moment]}</span>}
+          {e.moment === "avis_elus" ? null : <span>{MOMENTS[e.moment]}</span>}
           <span className="logi-condition">
             <Icone nom="filter" taille={12} /> {decrireCondition(e.condition, libelles)}
           </span>

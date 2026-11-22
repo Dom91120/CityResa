@@ -139,7 +139,7 @@ L'association remplit normalement son dossier elle-même depuis « Mes subventio
 
 **Comment faire — voter la subvention**
 
-1. Sur une demande au statut **Avis des élus**, cliquez sur **Voter la subvention**.
+1. Sur une demande au statut **Avis des élus**, cliquez sur **Voter la subvention**. Si le circuit du dossier prévoit une relecture ou un visa avant le vote (chapitre 12.7), le vote est retenu : l'étape est demandée d'office, et vous votez de nouveau une fois l'accord donné.
 2. Le **Montant accordé (€)** est pré-rempli avec la moyenne des montants proposés par les élus (ou le montant demandé s'il n'y a pas de proposition) ; corrigez-le si besoin. Saisissez 0 pour un vote sans attribution.
 3. Ajoutez une **Note (délibération, conditions…)**.
 4. Cliquez sur **Enregistrer le vote**.

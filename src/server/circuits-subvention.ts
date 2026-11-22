@@ -15,9 +15,11 @@ import {
   libelleIntervenant,
   lireDefinition,
 } from "@/lib/circuits";
+import { montant } from "@/lib/libelles";
 import {
   circuitsEnService,
   type Personne,
+  type Porteur,
   personnesDe,
   processusActif,
   referentiel,
@@ -230,4 +232,52 @@ export async function avisAttendus(user: CurrentUser, tous = false): Promise<Avi
     }
   }
   return out;
+}
+
+// ── Étapes du moteur (visa, relecture avant le vote) ──
+
+type SubventionPorteur = {
+  id: number;
+  numero: string;
+  objet: string;
+  status: string;
+  exercice: number;
+  type: string;
+  nature: string;
+  montantDemande: number;
+  secteurId: number | null;
+  serviceId: number | null;
+  circuitVersionId: number | null;
+  organisation: { name: string; sportive: boolean; conventionnee: boolean };
+};
+
+/** Une demande de subvention vue par le moteur d'étapes. */
+export function porteurSubvention(s: SubventionPorteur): Porteur {
+  return {
+    objet: "subvention",
+    id: s.id,
+    numero: s.numero,
+    titre: s.objet,
+    detail: `${s.organisation.name} · exercice ${s.exercice} · ${montant(s.montantDemande)} demandés`,
+    lien: `/subventions/${s.id}`,
+    demandeur: s.organisation.name,
+    status: s.status,
+    serviceId: s.serviceId,
+    circuitVersionId: s.circuitVersionId,
+    suiveurs: [],
+    faits: faitsSubvention(s),
+    historiser: async (action, comment, acteur) => {
+      await prisma.subventionHistory.create({
+        data: { subventionId: s.id, action, comment, performedBy: acteur },
+      });
+    },
+  };
+}
+
+export async function porteurSubventionParId(id: number): Promise<Porteur | null> {
+  const s = await prisma.subvention.findUnique({
+    where: { id },
+    include: { organisation: { select: { name: true, sportive: true, conventionnee: true } } },
+  });
+  return s ? porteurSubvention(s) : null;
 }

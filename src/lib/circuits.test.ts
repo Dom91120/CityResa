@@ -229,7 +229,6 @@ describe("types de dossier", () => {
       ["a", "avis_elus"],
       ["c", "avant_acceptation"],
     ]);
-    expect(INSERTION.subvention.natures).toEqual(["avis"]);
   });
 
   it("une réservation admet quatre moments, que la lecture conserve", () => {
@@ -256,6 +255,24 @@ describe("types de dossier", () => {
     expect(STATUTS_DU_MOMENT.avant_refus).not.toContain("acceptee");
     expect(STATUTS_DU_MOMENT.avant_requisition).toEqual(["acceptee", "signee", "confirmee"]);
     expect(STATUTS_DU_MOMENT.avant_annulation).toContain("a_traiter");
+  });
+
+  it("une subvention admet l'avis des élus et des étapes avant le vote", () => {
+    expect(INSERTION.subvention.moments).toEqual(["avis_elus", "avant_vote"]);
+    const d = lireDefinition({
+      etapes: [
+        { ...etape({ cle: "a", nature: "avis" }), moment: "avis_elus" },
+        { ...etape({ cle: "b", nature: "relecture" }), moment: "avant_vote" },
+        { ...etape({ cle: "c", nature: "visa" }), moment: "avis_elus" },
+      ],
+    });
+    expect(d.etapes.map((e) => [e.cle, e.moment])).toEqual([
+      ["a", "avis_elus"],
+      ["b", "avant_vote"],
+    ]);
+    expect(STATUTS_DU_MOMENT.avant_vote).toEqual(["deposee", "instruction", "avis"]);
+    expect(lireMoment("avant_vote", "subvention")).toBe("avant_vote");
+    expect(lireMoment("avant_vote")).toBe("avant_acceptation");
   });
 
   it("aiguille une subvention sur ses propres critères", () => {

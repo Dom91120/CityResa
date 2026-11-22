@@ -120,9 +120,10 @@ async function creerEtapeDemo(): Promise<number> {
  */
 async function creerCircuitsSubventionDemo(): Promise<number> {
   if ((await prisma.circuit.count({ where: { objet: "subvention" } })) > 0) return 0;
-  const [sports, vieAsso, delegation] = await Promise.all([
+  const [sports, vieAsso, communication, delegation] = await Promise.all([
     prisma.service.findUnique({ where: { name: "Service des sports" } }),
     prisma.service.findUnique({ where: { name: "Vie associative" } }),
+    prisma.service.findUnique({ where: { name: "Communication" } }),
     prisma.delegation.findFirst({ orderBy: { id: "asc" } }),
   ]);
   if (!sports || !vieAsso || !delegation) return 0;
@@ -179,7 +180,29 @@ async function creerCircuitsSubventionDemo(): Promise<number> {
     "Subventions · autres associations",
     "Toute autre demande de subvention, instruite par la Vie associative",
     true,
-    { condition: null, serviceId: vieAsso.id, etapes: [avisElu] },
+    {
+      condition: null,
+      serviceId: vieAsso.id,
+      // Au-delà de 2 500 € demandés, la Communication relit le dossier avant le vote.
+      etapes: communication
+        ? [
+            avisElu,
+            {
+              cle: "relecture-vote",
+              libelle: "Relecture par la Communication",
+              libelleUsager: "",
+              nature: "relecture",
+              moment: "avant_vote",
+              intervenant: { type: "service", id: communication.id },
+              condition: {
+                mode: "tous",
+                tests: [{ champ: "montant_demande", op: "min", valeur: 2500 }],
+              },
+              delaiJours: 5,
+            },
+          ]
+        : [avisElu],
+    },
   );
   const circuits = await circuitsEnService("subvention");
   const dossiers = await prisma.subvention.findMany({

@@ -1357,3 +1357,4 @@ input[type="time"]::-webkit-datetime-edit-text { padding-top: 0; padding-bottom:
 .astuce-alerte { background: var(--amber-dim); }
 .astuce-alerte .lucide { color: var(--amber-text); }
 @media (max-width: 640px) { .condition-ligne { grid-template-columns: 1fr; } }
+.circuit-suite { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 10px; }

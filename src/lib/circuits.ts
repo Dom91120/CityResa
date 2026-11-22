@@ -307,6 +307,7 @@ export const MOMENTS = {
   avant_annulation: "Avant une annulation par la collectivité",
   avant_requisition: "Avant une réquisition pour la Ville",
   avis_elus: "À l'avis des élus",
+  avant_vote: "Avant le vote de la subvention",
 } as const;
 export type Moment = keyof typeof MOMENTS;
 
@@ -317,6 +318,7 @@ export const RETENU: Record<Moment, string> = {
   avant_annulation: "l'annulation",
   avant_requisition: "la réquisition",
   avis_elus: "le vote",
+  avant_vote: "le vote",
 };
 
 /**
@@ -330,6 +332,7 @@ export const STATUTS_DU_MOMENT: Record<Moment, readonly string[]> = {
   avant_annulation: ["a_traiter", "en_traitement", "acceptee", "signee", "confirmee"],
   avant_requisition: ["acceptee", "signee", "confirmee"],
   avis_elus: [],
+  avant_vote: ["deposee", "instruction", "avis"],
 };
 
 export function lireMoment(v: unknown, objet: Objet = "reservation"): Moment {
@@ -347,7 +350,11 @@ export const INSERTION: Record<
     natures: ["relecture", "avis", "visa"],
     titre: "Étapes du circuit",
   },
-  subvention: { moments: ["avis_elus"], natures: ["avis"], titre: "Avis demandés aux élus" },
+  subvention: {
+    moments: ["avis_elus", "avant_vote"],
+    natures: ["avis", "relecture", "visa"],
+    titre: "Avis des élus et étapes avant le vote",
+  },
 };
 
 export type Intervenant =

@@ -227,7 +227,8 @@ Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écrit
 
 - son **aiguillage**, sur des critères propres aux subventions : association sportive, association conventionnée, type de subvention, première demande ou renouvellement, secteur d'instruction, montant demandé ;
 - le **service instructeur** ;
-- les **avis demandés aux élus** : une ou plusieurs étapes d'avis, chacune adressée à une délégation (ou à un service, à un rôle), sous condition ou toujours.
+- les **avis demandés aux élus** : une ou plusieurs étapes d'avis, chacune adressée à une délégation (ou à un service, à un rôle), sous condition ou toujours ;
+- des **étapes avant le vote** : une relecture ou un visa qui retient le vote, ou un avis qui ne le retient pas, comme pour une réservation.
 
 **Ce qui change sur un dossier**
 
@@ -239,7 +240,7 @@ Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écrit
 **Comment faire**
 
 1. **Processus et circuits** › **Nouveau circuit**, type de dossier **Subventions**.
-2. Réglez l'aiguillage et le service instructeur, puis ajoutez un ou plusieurs **Avis demandés aux élus**.
+2. Réglez l'aiguillage et le service instructeur, puis ajoutez les étapes : au moment **À l'avis des élus**, un avis ; au moment **Avant le vote de la subvention**, une relecture, un visa ou un avis.
 3. Simulez sur un dossier (numéro en S…), puis publiez.
 
 **Règles à connaître**
@@ -247,7 +248,8 @@ Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écrit
 - Sans circuit de subvention publié, rien ne change : l'instruction demande l'écriture sur les subventions et tout compte qui l'a peut donner un avis.
 - Un circuit sans avis nommé confie l'instruction à un service, mais laisse l'avis ouvert comme avant.
 - Un dossier garde le circuit de son dépôt ; il n'en change plus une fois soumis aux élus.
-- Les avis ne retiennent pas le vote : le service instructeur vote quand il l'estime utile, la carte Circuit lui montre les avis encore attendus.
+- Les avis des élus ne retiennent pas le vote : le service instructeur vote quand il l'estime utile, la carte Circuit lui montre les avis encore attendus.
+- Une étape **avant le vote** se comporte comme sur une réservation : si une relecture ou un visa s'applique, **Voter la subvention** est retenu, l'étape est demandée d'office avec le montant envisagé, et le vote se refait une fois l'accord donné. Elle se demande aussi à l'avance depuis la carte Circuit, se retrouve dans **Mes étapes** de la personne attendue et se relance en cas de retard. Un refus de la demande clôt les étapes encore ouvertes. Dans le jeu de démonstration, la Communication relit avant le vote toute demande d'au moins 2 500 €.
 - Un élu donne un avis, il n'instruit jamais, même membre d'un service.
 - Appartenir au service instructeur ne donne aucun droit que le rôle n'a pas. Le rôle Agent fourni n'a que la lecture sur les subventions : pour qu'un agent instruise, donnez-lui un rôle qui a l'écriture. Le jeu de démonstration le fait avec un rôle **Agent instructeur** (celui de l'agent, plus l'écriture sur les subventions), attribué à Karim Benali.
 - Le compteur **Subventions** du menu suit la file de travail de l'agent : les dossiers de ses services et ceux sans service.
