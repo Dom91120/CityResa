@@ -1067,12 +1067,18 @@ L'écart **E7** est ainsi traité pour les subventions.
   en le nommant ; une étape dont le moment ne convient pas au type est écartée et signalée ;
 - l'import est tracé au journal d'audit.
 
+**Lot 18, livré** — simulation d'une campagne :
+
+- la simulation accepte une **campagne de créneaux**, choisie dans une liste : circuit retenu,
+  service qui la conduit, étapes avant de prévenir les demandeurs et personnes sollicitées ;
+- pour une subvention, elle distingue désormais l'avis des élus des étapes avant le vote et
+  avant le versement.
+
 **Reste à faire**
 
 | Sujet | Écart |
 | --- | --- |
 | Droits par service sur ce qui reste réglé **par espace** : présences, personnel de service, fermetures | E1 |
-| Simulation d'une campagne | E3 |
 | Autres **moments** d'insertion : avant l'émission d'une facture, une fermeture exceptionnelle | E3 |
 | **Échéance** : passage d'office à l'étape suivante ou transmission au suppléant (aujourd'hui : une relance, l'alerte au responsable, et l'échéance en rouge) | — |
 | **Effets** paramétrables d'une étape (modèle de courriel propre à l'étape, mise en copie, document) | E2 |

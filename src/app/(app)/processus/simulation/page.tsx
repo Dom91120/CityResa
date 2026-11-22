@@ -5,6 +5,7 @@ import { Chip } from "@/components/macros";
 import {
   aiguiller,
   CRITERES,
+  CYCLES,
   criteresDe,
   decrireCondition,
   etapesApplicables,
@@ -27,6 +28,7 @@ import {
   personnesDe,
   referentiel,
 } from "@/server/circuits";
+import { porteurCampagneParId } from "@/server/circuits-campagne";
 import { faitsSubvention } from "@/server/circuits-subvention";
 import { prisma } from "@/server/db";
 import { INCLUDE_RESERVATION } from "@/server/reservations";
@@ -45,7 +47,30 @@ function dire(cle: string, v: unknown, libelles: ReturnType<typeof libellesDe>):
   return `${v}${c?.unite ? ` ${c.unite}` : ""}`;
 }
 
-type Dossier = { objet: Objet; lien: string; titre: string; detail: string; faits: Faits };
+type Dossier = {
+  objet: Objet;
+  lien: string;
+  titre: string;
+  detail: string;
+  faits: Faits;
+  /** Le service que le dossier a déjà : une campagne garde celui qui la conduit. */
+  serviceId?: number | null;
+};
+
+/** La campagne de créneaux à simuler. */
+async function trouverCampagne(id: number): Promise<Dossier | null> {
+  const p = await porteurCampagneParId(id);
+  return p
+    ? {
+        objet: "campagne",
+        lien: p.lien,
+        titre: `${p.numero} · ${p.titre}`,
+        detail: `${p.demandeur} · ${p.detail}`,
+        faits: p.faits,
+        serviceId: p.serviceId,
+      }
+    : null;
+}
 
 /** Le dossier à simuler : une réservation (R…) ou une demande de subvention (S…, P…). */
 async function trouver(numero: string, gratuit: boolean): Promise<Dossier | null> {
@@ -82,7 +107,12 @@ async function trouver(numero: string, gratuit: boolean): Promise<Dossier | null
 export default async function SimulationPage({
   searchParams,
 }: {
-  searchParams: Promise<{ numero?: string; brouillons?: string; gratuit?: string }>;
+  searchParams: Promise<{
+    numero?: string;
+    campagne?: string;
+    brouillons?: string;
+    gratuit?: string;
+  }>;
 }) {
   const page = await contexteAdmin();
   if (!page.features.processus) notFound();
@@ -90,8 +120,9 @@ export default async function SimulationPage({
   const numero = (sp.numero ?? "").trim().toUpperCase();
   const brouillons = sp.brouillons === "1";
   const gratuit = sp.gratuit === "1";
-  const [d, recents, subventions, options, ref] = await Promise.all([
-    numero ? trouver(numero, gratuit) : null,
+  const campagneId = Number.parseInt(sp.campagne ?? "", 10) || 0;
+  const [d, recents, subventions, campagnes, options, ref] = await Promise.all([
+    numero ? trouver(numero, gratuit) : campagneId ? trouverCampagne(campagneId) : null,
     prisma.reservation.findMany({
       orderBy: { createdAt: "desc" },
       take: 6,
@@ -102,6 +133,11 @@ export default async function SimulationPage({
       orderBy: { createdAt: "desc" },
       take: 6,
       select: { numero: true, objet: true, organisation: { select: { name: true } } },
+    }),
+    prisma.campagne.findMany({
+      orderBy: { id: "desc" },
+      take: 12,
+      select: { id: true, label: true, saison: { select: { label: true } } },
     }),
     optionsCriteres(),
     referentiel(),
@@ -118,13 +154,13 @@ export default async function SimulationPage({
         )
       : [];
   const ecartees = retenu ? retenu.definition.etapes.filter((e) => !etapes.includes(e)) : [];
-  const service = retenu?.definition.serviceId
-    ? ref.services.get(retenu.definition.serviceId)
-    : null;
-  const attendus = await Promise.all(
-    etapes.map((e) => personnesDe(e.intervenant, retenu?.definition.serviceId ?? null)),
-  );
+  // Une campagne garde le service qui la conduit ; les autres dossiers prennent celui du circuit.
+  const serviceId =
+    d?.objet === "campagne" ? (d.serviceId ?? null) : (retenu?.definition.serviceId ?? null);
+  const service = serviceId ? ref.services.get(serviceId) : null;
+  const attendus = await Promise.all(etapes.map((e) => personnesDe(e.intervenant, serviceId)));
   const subvention = d?.objet === "subvention";
+  const campagne = d?.objet === "campagne";
 
   return (
     <>
@@ -153,7 +189,6 @@ export default async function SimulationPage({
               defaultValue={numero}
               placeholder="R260017 ou S270001"
               list="sim-recents"
-              required
             />
             <datalist id="sim-recents">
               {recents.map((x) => (
@@ -168,6 +203,26 @@ export default async function SimulationPage({
               ))}
             </datalist>
           </div>
+          {campagnes.length ? (
+            <div>
+              <label className="form-label" htmlFor="sim-campagne">
+                ou une campagne de créneaux
+              </label>
+              <select
+                name="campagne"
+                id="sim-campagne"
+                className="form-select"
+                defaultValue={numero ? "" : campagneId ? String(campagneId) : ""}
+              >
+                <option value="">—</option>
+                {campagnes.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.label} · {c.saison.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
           <label className="form-check mb-2">
             <input
               type="checkbox"
@@ -197,6 +252,9 @@ export default async function SimulationPage({
       {numero && !d ? (
         <div className="alert alert-warning">Aucun dossier ne porte le numéro {numero}.</div>
       ) : null}
+      {!numero && campagneId && !d ? (
+        <div className="alert alert-warning">Cette campagne n'existe plus.</div>
+      ) : null}
 
       {d && resultat ? (
         <div className="fiche-colonnes">
@@ -204,7 +262,10 @@ export default async function SimulationPage({
             <Section titre="Résultat" icone="workflow">
               <Lus colonnes={1} intitule="120px">
                 <Lu label="Dossier" valeur={<a href={d.lien}>{d.titre}</a>} />
-                <Lu label={subvention ? "Demande" : "Créneau"} valeur={d.detail} />
+                <Lu
+                  label={subvention ? "Demande" : campagne ? "Vœux" : "Créneau"}
+                  valeur={d.detail}
+                />
                 <Lu
                   label="Circuit retenu"
                   valeur={
@@ -212,19 +273,23 @@ export default async function SimulationPage({
                       <a href={`/processus/circuits/${retenu.id}`}>{retenu.name}</a>
                     ) : subvention ? (
                       <Chip teinte="slate">Aucun circuit : le dossier s'instruit comme avant</Chip>
+                    ) : campagne ? (
+                      <Chip teinte="slate">
+                        Aucun circuit : les demandeurs sont prévenus sans étape
+                      </Chip>
                     ) : (
                       <Chip teinte="red">Aucun circuit : publiez un circuit par défaut</Chip>
                     )
                   }
                 />
                 <Lu
-                  label={subvention ? "Instruit par" : "Confié à"}
+                  label={subvention ? "Instruit par" : campagne ? "Conduite par" : "Confié à"}
                   valeur={
                     service
                       ? service.name
-                      : subvention
-                        ? "Les agents qui ont l'écriture sur les subventions"
-                        : "Les agents chargés de l'espace"
+                      : campagne
+                        ? "Les agents chargés de ses espaces"
+                        : `${CYCLES[d.objet].sansService.charAt(0).toUpperCase()}${CYCLES[d.objet].sansService.slice(1)}`
                   }
                 />
               </Lus>
@@ -251,7 +316,9 @@ export default async function SimulationPage({
             </Section>
 
             <Section
-              titre={subvention ? "Élus qui seraient consultés" : "Étapes que prévoit le circuit"}
+              titre={
+                subvention ? "Élus consultés et étapes du circuit" : "Étapes que prévoit le circuit"
+              }
               icone="list-checks"
               nb={etapes.length}
             >
@@ -270,7 +337,7 @@ export default async function SimulationPage({
                             : "personne — l'étape resterait sans réponse"}
                         </small>
                         <small>
-                          {subvention
+                          {e.moment === "avis_elus"
                             ? "Prévenu à la soumission aux élus ; l'avis lui est réservé."
                             : `${MOMENTS[e.moment]} · ${
                                 NATURES[e.nature].bloquante
@@ -286,7 +353,9 @@ export default async function SimulationPage({
                 <p className="text-muted small mb-0">
                   {subvention
                     ? "Aucun élu nommé : tout compte qui a l'écriture sur les subventions pourrait donner un avis."
-                    : "Aucune : la demande se traiterait sans étape préalable."}
+                    : campagne
+                      ? "Aucune : les demandeurs seraient prévenus dès l'arbitrage fait."
+                      : "Aucune : la demande se traiterait sans étape préalable."}
                 </p>
               )}
               {ecartees.length ? (

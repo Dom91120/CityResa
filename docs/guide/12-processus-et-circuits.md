@@ -298,7 +298,7 @@ Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écrit
 - Le visa retient l'**annonce** des décisions, pas l'arbitrage : un vœu attribué crée son dossier aussitôt, mais l'association n'en est prévenue qu'après l'accord. En cas de refus du visa, revoyez l'arbitrage (un vœu décidé se remet en attente) puis redemandez l'étape.
 - Un visa accordé vaut pour la suite de la campagne : les décisions prises ensuite s'envoient sans nouvelle demande. Redemandez l'étape vous-même si l'arbitrage a beaucoup changé.
 - Les réponses sont tracées dans le journal d'audit, la campagne n'ayant pas d'historique propre.
-- La simulation (12.9) ne porte que sur les réservations et les subventions.
+- La simulation (12.9) accepte aussi une campagne.
 - Dans le jeu de démonstration, le circuit « Campagnes de créneaux » demande le visa de l'élu délégué sur toute campagne.
 
 ## 12.9 La simulation
@@ -313,8 +313,8 @@ Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écrit
 
 **Comment faire**
 
-1. Cliquez sur **Simuler** et saisissez le numéro d'un dossier existant : une réservation (R…) ou une demande de subvention (S…).
+1. Cliquez sur **Simuler** et saisissez le numéro d'un dossier existant : une réservation (R…) ou une demande de subvention (S…). Pour une campagne de créneaux, laissez le numéro vide et choisissez-la dans la liste **ou une campagne de créneaux**.
 2. Cochez **Avec les brouillons** pour tester ce que vous n'avez pas encore publié, et **Comme si la gratuité était accordée** pour éprouver une étape qui en dépend.
 3. Lisez le résultat : le circuit retenu et le service, chaque circuit examiné avec la raison de son sort, les étapes qui s'ouvriraient et les personnes sollicitées, et à droite tout ce que les règles lisent du dossier.
 
-**Règles à connaître** — La simulation n'enregistre rien et n'envoie rien.
+**Règles à connaître** — La simulation n'enregistre rien et n'envoie rien. Pour une subvention, elle distingue l'avis des élus des étapes avant le vote et avant le versement. Pour une campagne, le service affiché est celui qui la conduit, et le seul fait lu est le secteur de ses espaces.

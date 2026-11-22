@@ -661,6 +661,7 @@ le décrit, on le simule, on le publie, on le vérifie.
 | 3 | Administrateur | Circuit **Salles · associations** › **Étapes** › **Ajouter** : « Relecture par la Communication », nature Relecture, qui répond : le service Communication, délai 3 jours ; critère « Événement ouvert au public » : Oui. | Le circuit passe en **Brouillon v2** ; le bandeau dit « prêt à être publié » et ce qui a changé ; le logigramme montre la nouvelle étape. |
 | 4 | Administrateur | Avant l'étape 2, tentez la même étape avec un service sans membre, puis **Publier**. | Publication refusée : « le service n'a aucun membre ». |
 | 5 | Administrateur | **Simuler**, numéro d'un dossier d'association ouvert au public, case **Avec les brouillons**. | Circuit retenu, raison de l'écart des autres, étape « Relecture » qui s'ouvrirait et personnes sollicitées. Sans la case : l'étape n'apparaît pas. |
+| 5a | Administrateur | Toujours dans **Simuler** : videz le numéro et choisissez la campagne « Créneaux annuels 2026-2027 ». | Circuit « Campagnes de créneaux », conduite par la Vie associative, visa de l'élu avant de prévenir les demandeurs. |
 | 6 | Administrateur | **Publier**, avec une note de version. | « v2 en service ». Section Versions : v1 archivée. |
 | 7 | Sandra | Portail : nouvelle demande de salle, **ouverte au public**. | Dossier « À traiter ». |
 | 8 | Sophie | Ouvrez le dossier : carte **Circuit** en v2, étape « Relecture » à demander. **Approuver**. | Acceptation retenue (message jaune), relecture demandée d'office. |
