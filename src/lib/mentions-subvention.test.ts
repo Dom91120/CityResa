@@ -25,6 +25,24 @@ describe("contactService", () => {
     });
   });
 
+  it("préfère le service instructeur du dossier, et complète ses coordonnées", () => {
+    expect(
+      contactService(CFG, {
+        name: "Service des sports",
+        email: "sports@test.example",
+        phone: null,
+      }),
+    ).toEqual({
+      nom: "Service des sports",
+      email: "sports@test.example",
+      telephone: "01 11 11 11 11",
+    });
+    expect(contactService(CFG, null).nom).toBe("Service de la vie associative");
+    expect(contactService(CFG, { name: " ", email: null, phone: null }).nom).toBe(
+      "Service de la vie associative",
+    );
+  });
+
   it("se replie sur la collectivité, rubrique par rubrique", () => {
     const c = contactService({
       ...CFG,

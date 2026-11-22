@@ -29,11 +29,22 @@ export type ContactService = { nom: string; email: string; telephone: string };
  * Le service à contacter pour un dossier de subvention : ses propres coordonnées, à défaut
  * celles de la collectivité.
  */
-export function contactService(cfg: ReglagesService): ContactService {
-  return {
+export function contactService(
+  cfg: ReglagesService,
+  /** Le service instructeur du dossier (module Processus), quand il en a un. */
+  instructeur?: { name: string; email: string | null; phone: string | null } | null,
+): ContactService {
+  const general = {
     nom: cfg.SUBVENTIONS_SERVICE_NOM.trim() || cfg.COLLECTIVITE_NOM.trim(),
     email: cfg.SUBVENTIONS_SERVICE_EMAIL.trim() || cfg.COLLECTIVITE_EMAIL.trim(),
     telephone: cfg.SUBVENTIONS_SERVICE_TELEPHONE.trim() || cfg.COLLECTIVITE_TELEPHONE.trim(),
+  };
+  if (!instructeur?.name.trim()) return general;
+  // Le service du dossier parle en son nom ; une coordonnée absente reprend celle du réglage.
+  return {
+    nom: instructeur.name.trim(),
+    email: instructeur.email?.trim() || general.email,
+    telephone: instructeur.phone?.trim() || general.telephone,
   };
 }
 
@@ -48,8 +59,11 @@ export type ParagrapheNotice = { titre: string; texte: string };
  * La notice d'information sur les données personnelles recueillies par le dossier (règlement
  * européen 2016/679 et loi « informatique et libertés »), reprise du dossier de la Ville.
  */
-export function noticeDonnees(cfg: ReglagesService): ParagrapheNotice[] {
-  const service = contactService(cfg);
+export function noticeDonnees(
+  cfg: ReglagesService,
+  instructeur?: { name: string; email: string | null; phone: string | null } | null,
+): ParagrapheNotice[] {
+  const service = contactService(cfg, instructeur);
   const collectivite = cfg.COLLECTIVITE_NOM.trim();
   const adresse = [cfg.COLLECTIVITE_ADRESSE.trim(), cfg.COLLECTIVITE_EMAIL.trim()]
     .filter(Boolean)

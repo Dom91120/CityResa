@@ -121,6 +121,13 @@ export default async function SubventionPortailPage({
           {etat.parcours.length ? (
             <div className="small text-muted">Parcours : {etat.parcours.join(" · ")}.</div>
           ) : null}
+          {/* Le service qui instruit le dossier, une fois celui-ci déposé. */}
+          {s.service ? (
+            <div className="small text-muted">
+              Votre interlocuteur :{" "}
+              {[s.service.name, s.service.email, s.service.phone].filter(Boolean).join(" · ")}
+            </div>
+          ) : null}
         </div>
       </div>
 

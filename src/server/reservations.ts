@@ -3,6 +3,7 @@
  * récurrence, options, matériel, devis), transitions de statut avec notifications et
  * courriels, fil de discussion, historique.
  */
+
 import type { Prisma } from "@/generated/prisma/client";
 import { fraisPrevus, lireBareme } from "@/lib/annulation";
 import {
@@ -27,6 +28,7 @@ import { manquesDossier, nomRepresentant, phraseManques } from "@/lib/dossier-us
 import { dateHeure, dateMoyenne, montant, plage } from "@/lib/libelles";
 import { proposable } from "@/lib/materiel-stock";
 import { STATUTS_OPTION } from "@/lib/options";
+import { variablesService } from "@/lib/services";
 import { calculerDevis, type Devis } from "@/lib/tarification";
 import { auditRecord } from "@/server/audit";
 import { joursExclus } from "@/server/calendrier";
@@ -615,16 +617,7 @@ export async function variablesDossier(r: ReservationComplete): Promise<Record<s
     lien_bo: `${cfg.APP_BASE_URL}/reservations/${r.id}`,
     consignes: r.espace.instructions ?? "—",
     // Le service auquel le dossier est confié (module Processus) : nom, contact, signature.
-    service: r.service?.name ?? cfg.COLLECTIVITE_NOM,
-    service_contact: r.service
-      ? [r.service.email, r.service.phone].filter(Boolean).join(" · ")
-      : "",
-    signature: r.service
-      ? [r.service.name, cfg.COLLECTIVITE_NOM, r.service.email, r.service.phone]
-          .filter((x): x is string => Boolean(x))
-          .map(escapeHtml)
-          .join("<br>")
-      : escapeHtml(cfg.COLLECTIVITE_NOM),
+    ...variablesService(cfg.COLLECTIVITE_NOM, r.service, escapeHtml),
   };
 }
 

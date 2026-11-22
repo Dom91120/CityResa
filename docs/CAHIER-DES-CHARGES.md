@@ -1011,13 +1011,24 @@ pas d'export.
   semaine, l'export Excel et les vues enregistrées ; les fermetures restent affichées ;
 - les deux filtres n'apparaissent que si le module est actif et des services décrits.
 
+**Lot 12, livré** — le service instructeur vu par l'association :
+
+- les courriels d'un dossier de subvention (accusé de réception, dossier à compléter, décision)
+  sont **signés du service instructeur**, avec ses coordonnées, comme ceux d'une réservation ;
+- le portail affiche « Votre interlocuteur » sur le dossier déposé ; le **PDF du dossier** et la
+  notice sur les données personnelles nomment ce service ;
+- une coordonnée absente du service reprend celle des réglages des subventions ; un dossier
+  sans service garde le contact général.
+
+L'écart **E7** est ainsi traité pour les subventions.
+
 **Reste à faire**
 
 | Sujet | Écart |
 | --- | --- |
 | Droits par service sur ce qui reste réglé **par espace** : présences, personnel de service, fermetures | E1 |
 | Étapes de circuit (visa, avis) sur la retenue sur caution ; simulation d'une campagne | E3 |
-| Subventions : contact du service instructeur dans les courriels et le PDF du dossier ; étapes avant le versement | E5, E7 |
+| Subventions : étapes avant le versement | E5 |
 | Autres **moments** d'insertion : avant l'émission d'une facture, une retenue sur caution, une fermeture exceptionnelle | E3 |
 | **Échéance** : passage d'office à l'étape suivante ou transmission au suppléant (aujourd'hui : une relance, l'alerte au responsable, et l'échéance en rouge) ; relance des avis sur les subventions | — |
 | **Effets** paramétrables d'une étape (modèle de courriel, mise en copie, document) ; courriel en plus de la cloche | E2 |

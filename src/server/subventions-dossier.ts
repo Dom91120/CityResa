@@ -3,6 +3,7 @@
  * signature de l'attestation par code, dépôt (numéro, réception, PDF, courriel), renvoi comme
  * incomplet. Règles pures dans src/lib/dossier-subvention.ts et src/lib/pieces-subvention.ts.
  */
+
 import type { CampagneSubvention, Prisma } from "@/generated/prisma/client";
 import { SUBVENTION_TYPES } from "@/lib/constantes";
 import {
@@ -38,6 +39,7 @@ import { invalidateNavCounts } from "@/server/nav";
 import { notifier, notifierAgents } from "@/server/notifications";
 import { estNumeroProvisoire, prochainNumero } from "@/server/numerotation";
 import { htmlVersPdf } from "@/server/pdf";
+import { variablesServiceSubvention } from "@/server/services";
 import { locauxMisADisposition } from "@/server/valorisation";
 
 type Acteur = Pick<CurrentUser, "name" | "email">;
@@ -395,6 +397,7 @@ export async function deposerDossier(
       campagne: campagne?.label ?? `Exercice ${maj.exercice}`,
       date_limite: campagne ? `le ${dateCourte(campagne.clotureDate)}` : "date à venir",
       lien: `${cfg.APP_BASE_URL}/portail/mes-subventions/${maj.id}`,
+      ...(await variablesServiceSubvention(maj.id)),
     });
   for (const u of org.users)
     await notifier(
@@ -447,6 +450,7 @@ export async function renvoyerIncomplet(
       motif,
       date_limite: s.campagne ? dateCourte(s.campagne.clotureDate) : "la clôture de la campagne",
       lien: `${cfg.APP_BASE_URL}/portail/mes-subventions/${s.id}`,
+      ...(await variablesServiceSubvention(s.id)),
     });
   for (const u of org.users)
     await notifier(

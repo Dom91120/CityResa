@@ -10,6 +10,7 @@ import {
   type ServiceUsagers,
   serviceReference,
   servicesAgis,
+  variablesService,
 } from "@/lib/services";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
@@ -80,4 +81,20 @@ export async function optionsServices(): Promise<[string, string][]> {
     orderBy: [{ position: "asc" }, { name: "asc" }],
   });
   return services.map((s) => [String(s.id), s.name]);
+}
+
+/**
+ * Les variables de courriel du service instructeur d'une demande de subvention (nom, contact,
+ * signature) ; vide sans service ou module éteint : la collectivité signe alors seule.
+ */
+export async function variablesServiceSubvention(id: number): Promise<Record<string, string>> {
+  const cfg = await getSettings();
+  if (!enabledIn(cfg, "processus")) return {};
+  const s = await prisma.subvention.findUnique({
+    where: { id },
+    select: { service: { select: { name: true, email: true, phone: true } } },
+  });
+  if (!s?.service) return {};
+  const { escapeHtml } = await import("@/server/email-templates");
+  return variablesService(cfg.COLLECTIVITE_NOM, s.service, escapeHtml);
 }

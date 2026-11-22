@@ -10,6 +10,7 @@ import {
   servicesAgis,
   suppleanceEnCours,
   usagerSuivi,
+  variablesService,
 } from "@/lib/services";
 
 const service = (id: number, plus: Partial<ServiceBrut> = {}): ServiceBrut => ({
@@ -166,5 +167,31 @@ describe("service de référence d'un usager", () => {
     expect(usagerSuivi(sophie, 1)).toBe(false);
     expect(usagerSuivi(sophie, null)).toBe(true);
     expect(usagerSuivi({ actif: true, isAdmin: false, services: [] }, 1)).toBe(true);
+  });
+});
+
+describe("le service dans les courriels", () => {
+  const html = (s: string) => s.replace(/&/g, "&amp;");
+
+  it("signe du service, de la collectivité et de ses coordonnées", () => {
+    expect(
+      variablesService(
+        "Ville de Test",
+        { name: "Sports & loisirs", email: "sports@test.example", phone: null },
+        html,
+      ),
+    ).toEqual({
+      service: "Sports & loisirs",
+      service_contact: "sports@test.example",
+      signature: "Sports &amp; loisirs<br>Ville de Test<br>sports@test.example",
+    });
+  });
+
+  it("laisse la collectivité signer seule sans service", () => {
+    expect(variablesService("Ville de Test", null, html)).toEqual({
+      service: "Ville de Test",
+      service_contact: "",
+      signature: "Ville de Test",
+    });
   });
 });

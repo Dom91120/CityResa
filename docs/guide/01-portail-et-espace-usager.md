@@ -521,6 +521,8 @@ Pendant le dépôt (la figure montre la page après sa clôture) :
 ![Dossier de subvention](captures/asso-subvention.webp)
 *Figure — le dossier S270001 au statut « Avis des élus » : bandeau d'étape, fiches en lecture, pièces et historique.*
 
+Une fois le dossier déposé, le bandeau indique **Votre interlocuteur** : le service qui l'instruit, avec son courriel et son téléphone. Les courriels reçus au sujet du dossier sont signés de ce service.
+
 **Ce que l'on voit**
 - En tête : numéro, statut, exercice, nature, objet, montant demandé, campagne, et le bouton **Dossier PDF**.
 - Un bandeau qui explique l'étape, la date de réception et la signature.

@@ -72,7 +72,9 @@ export async function CorpsFiche({
         <h2 className="h5 mb-0">{fiche.titre}</h2>
         <span className="text-muted small">{fiche.aide}</span>
       </div>
-      {portail && redaction ? <AideService contact={contactService(cfg)} classes="mb-3" /> : null}
+      {portail && redaction ? (
+        <AideService contact={contactService(cfg, s.service)} classes="mb-3" />
+      ) : null}
 
       {cle === "pieces" ? (
         <div className="data-card p-4">
@@ -146,7 +148,7 @@ export async function CorpsFiche({
             <Icone nom="shield-check" taille={16} classes="text-muted" /> Vos données personnelles
           </summary>
           <dl className="small mb-0 mt-2">
-            {noticeDonnees(cfg).map((n) => (
+            {noticeDonnees(cfg, s.service).map((n) => (
               <div key={n.titre} className="mb-2">
                 <dt>{n.titre}</dt>
                 <dd className="mb-0 text-muted">{n.texte}</dd>

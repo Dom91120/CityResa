@@ -115,3 +115,27 @@ export function usagerSuivi(a: Acteur, referenceId: number | null | undefined): 
   const file = fileDeTravail(a);
   return file === null || !referenceId || file.includes(referenceId);
 }
+
+// ── Le service dans les courriels d'un dossier ──
+
+export type ServiceContact = { name: string; email: string | null; phone: string | null };
+
+/**
+ * Les variables de courriel qui nomment le service d'un dossier : son nom, son contact sur une
+ * ligne, et la signature (service, collectivité, coordonnées). Sans service, la collectivité
+ * signe seule. `echapper` protège le HTML de la signature.
+ */
+export function variablesService(
+  collectivite: string,
+  service: ServiceContact | null | undefined,
+  echapper: (s: string) => string,
+): { service: string; service_contact: string; signature: string } {
+  if (!service)
+    return { service: collectivite, service_contact: "", signature: echapper(collectivite) };
+  const contact = [service.email, service.phone].filter((x): x is string => Boolean(x));
+  return {
+    service: service.name,
+    service_contact: contact.join(" · "),
+    signature: [service.name, collectivite, ...contact].map(echapper).join("<br>"),
+  };
+}

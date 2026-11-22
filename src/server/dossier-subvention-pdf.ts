@@ -345,7 +345,7 @@ export async function htmlDossierSubvention(
   const pr = d.presentation;
   const tr = d.tresorerie;
   const att = d.attestation;
-  const service = contactService(cfg);
+  const service = contactService(cfg, s.service);
   const entete = image("entete-ville.png");
   const logo = image("logo-ville.png");
   const t = totaux(plan, { ...d.budget.charges, ...d.budget.produits, ...d.budget.contributions });
@@ -593,7 +593,7 @@ ${tableCompteResultat(plan, d)}
 <div class="boite" style="min-height:230px"><p><strong>Synthèse des rapports d'activités, de gestion et des résultats financiers de l'année écoulée</strong> (y incluant les explications des écarts entre le « Budget » et le « Réalisé ») <strong>:</strong></p>
 <p class="pre" style="margin-left:26px">${v(d.bilan.synthese)}</p></div>
 <div class="rgpd"><p class="t">Information concernant la collecte et le traitement des données à caractère personnel dans le cadre de la campagne de subvention ${exN} (${p(cfg.COLLECTIVITE_NOM)}), conformément au règlement européen n°2016/679/UE sur la protection des données personnelles du 27/04/2016 et à la loi « informatique et libertés » n°78-17 du 06/01/1978 modifiée</p>
-${noticeDonnees(cfg)
+${noticeDonnees(cfg, s.service)
   .map(
     (n) =>
       `<p>• <strong style="text-decoration:underline">${p(n.titre)}</strong> : ${p(n.texte)}</p>`,

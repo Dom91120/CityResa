@@ -3,6 +3,7 @@
  * de vie (déposée → instruction → avis → votée / refusée → versée), avis des élus,
  * filtres de la liste, synthèse par exercice, export.
  */
+
 import type { Prisma } from "@/generated/prisma/client";
 import { AVIS_LABELS, SUBVENTION_STATUS, SUBVENTION_TYPES } from "@/lib/constantes";
 import { champ, champOuNull, idOuNull, parseDate, parseFloat_, parseInt_ } from "@/lib/forms-util";
@@ -18,6 +19,7 @@ import { invalidateNavCounts } from "@/server/nav";
 import { notifier } from "@/server/notifications";
 import { prochainNumero } from "@/server/numerotation";
 import { normaliser, type Params, param } from "@/server/paging";
+import { variablesServiceSubvention } from "@/server/services";
 
 export const INCLUDE_SUBVENTION_LISTE = {
   organisation: { select: { id: true, name: true, type: true, sportive: true } },
@@ -44,7 +46,7 @@ export const INCLUDE_SUBVENTION = {
   },
   campagne: true,
   secteur: true,
-  service: { select: { id: true, name: true } },
+  service: { select: { id: true, name: true, email: true, phone: true } },
   dossierDocument: { select: { id: true, filename: true, createdAt: true } },
   histories: { orderBy: { performedAt: "desc" as const } },
 } satisfies Prisma.SubventionInclude;
@@ -444,6 +446,7 @@ export async function creerSubvention(
       objet: e.objet,
       montant: montant(e.montantDemande),
       exercice: e.exercice,
+      ...(await variablesServiceSubvention(s.id)),
     });
   for (const u of s.organisation.users)
     await notifier(
@@ -634,6 +637,7 @@ export async function changerStatutSubvention(
         note: opts.note ?? "",
         exercice: maj.exercice,
         lien: `${cfg.APP_BASE_URL}/portail/mes-subventions/${maj.id}`,
+        ...(await variablesServiceSubvention(maj.id)),
       });
     for (const u of org.users)
       await notifier(
