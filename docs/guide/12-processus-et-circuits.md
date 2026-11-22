@@ -223,6 +223,7 @@ Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écrit
 - La publication est refusée tant qu'il reste une incohérence (étape sans libellé, service sans membre, délégation sans élu, circuit sans règle) : la fiche les liste.
 - Les dossiers en cours **gardent la version** de leur circuit ; la nouvelle version s'applique aux demandes créées ensuite.
 - **Abandonner le brouillon** revient à la version en service ; une version archivée se **reprend en brouillon**.
+- **Exporter (fichier)**, dans le menu « ... » d'un circuit, télécharge sa définition en JSON : le brouillon s'il y en a un, sinon la version en service. **Importer un fichier…** la recharge dans le brouillon d'un circuit du même type (réservations, subventions ou campagnes) : aiguillage et étapes sont remplacés, rien ne s'applique avant la publication. Services et délégations sont retrouvés par leur **nom** ; s'il en manque un, ou un rôle, l'import est refusé en le nommant. Les critères qui citent un espace, un site ou un profil gardent leurs identifiants : relisez-les après un import venu d'une autre base. L'export sert de sauvegarde avant une refonte, de modèle pour un circuit voisin, ou à passer d'une base d'essai à la base réelle.
 - Un circuit qu'un dossier a suivi ne se supprime pas : désactivez-le.
 - À l'installation, un seul circuit existe, le **Circuit standard**, sans service ni étape : les demandes se traitent comme avant le module.
 

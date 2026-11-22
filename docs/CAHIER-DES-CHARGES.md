@@ -1058,6 +1058,15 @@ L'écart **E7** est ainsi traité pour les subventions.
 - le seuil de validation par un administrateur reste en place, après le visa ;
 - démonstration : l'élu vise la retenue sur la caution d'un particulier ou d'une entreprise.
 
+**Lot 17, livré** — export et import d'un circuit :
+
+- **export** d'un circuit en fichier JSON (brouillon s'il y en a un, sinon version en service),
+  avec le nom des services et des délégations cités ;
+- **import** dans le brouillon d'un circuit du même type : rien ne s'applique avant la
+  publication ; services et délégations sont retrouvés par leur nom, un manque refuse l'import
+  en le nommant ; une étape dont le moment ne convient pas au type est écartée et signalée ;
+- l'import est tracé au journal d'audit.
+
 **Reste à faire**
 
 | Sujet | Écart |
@@ -1068,7 +1077,7 @@ L'écart **E7** est ainsi traité pour les subventions.
 | **Échéance** : passage d'office à l'étape suivante ou transmission au suppléant (aujourd'hui : une relance, l'alerte au responsable, et l'échéance en rouge) | — |
 | **Effets** paramétrables d'une étape (modèle de courriel propre à l'étape, mise en copie, document) | E2 |
 | Service sur les factures | E7 |
-| **Bascule** d'un dossier en cours sur une nouvelle version ; **export / import** d'un circuit | — |
+| **Bascule** d'un dossier en cours sur une nouvelle version | — |
 | Catégorie de permission « **Processus** » (aujourd'hui : administrateur seul) | — |
 
 ### Limites voulues

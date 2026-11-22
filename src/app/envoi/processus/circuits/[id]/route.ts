@@ -1,5 +1,5 @@
 import type { Prisma } from "@/generated/prisma/client";
-import { controler, lireDefinition } from "@/lib/circuits";
+import { controler, lireDefinition, lireImportCircuit } from "@/lib/circuits";
 import { champ, champOuNull, coche, idOuNull, parseInt_ } from "@/lib/forms-util";
 import {
   chargerCircuit,
@@ -134,6 +134,34 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             );
             return ok(
               `Version ${c.brouillon.numero} publiée : elle s'applique aux nouvelles demandes.`,
+            );
+          }
+          case "importer": {
+            const fichier = form.get("fichier");
+            if (!(fichier instanceof File) || !fichier.size)
+              throw new UserFacingError("Choisissez le fichier d'un circuit (export JSON).");
+            if (fichier.size > 200_000)
+              throw new UserFacingError("Ce fichier est trop volumineux pour un circuit.");
+            let brut: unknown;
+            try {
+              brut = JSON.parse(await fichier.text());
+            } catch {
+              throw new UserFacingError("Ce fichier n'est pas un JSON lisible.");
+            }
+            const lu = lireImportCircuit(brut, c.objet, await referentiel());
+            if ("erreurs" in lu)
+              throw new UserFacingError(`Import refusé. ${lu.erreurs.join(" ")}`);
+            await enregistrerBrouillon(id, admin.name, () => lu.definition);
+            await auditRecord(
+              "circuit importe",
+              `${c.name} · ${fichier.name} · ${lu.definition.etapes.length} étape(s)`,
+              "admin",
+              admin.email,
+            );
+            return ok(
+              `Fichier importé dans le brouillon : ${lu.definition.etapes.length} étape(s). ${lu.avertissements.join(" ")} Relisez l'aiguillage et les critères, puis publiez.`
+                .replace(/\s+/g, " ")
+                .trim(),
             );
           }
           case "abandonner": {

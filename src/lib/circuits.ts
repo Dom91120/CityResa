@@ -824,3 +824,120 @@ export const CYCLES: Record<
     fin: { titre: "Clôturée", texte: "Cycle de fond, non paramétrable" },
   },
 };
+
+// ── Export et import d'un circuit en fichier ──
+
+export const FORMAT_EXPORT = "cityresa-circuit";
+
+/**
+ * Le fichier d'un circuit : sa définition, et le nom des services et des délégations qu'elle
+ * cite, pour les retrouver à l'import même si leurs identifiants diffèrent.
+ */
+export type ExportCircuit = {
+  format: typeof FORMAT_EXPORT;
+  version: 1;
+  objet: Objet;
+  name: string;
+  description: string | null;
+  definition: Definition;
+  references: { services: Record<string, string>; delegations: Record<string, string> };
+};
+
+export function exporterCircuit(
+  c: { objet: Objet; name: string; description: string | null },
+  def: Definition,
+  ref: Referentiel,
+): ExportCircuit {
+  const services: Record<string, string> = {};
+  const delegations: Record<string, string> = {};
+  const service = (id: number | null) => {
+    const s = id ? ref.services.get(id) : null;
+    if (id && s) services[String(id)] = s.name;
+  };
+  service(def.serviceId);
+  for (const e of def.etapes) {
+    if (e.intervenant.type === "service") service(e.intervenant.id);
+    if (e.intervenant.type === "delegation") {
+      const d = ref.delegations.get(e.intervenant.id);
+      if (d) delegations[String(e.intervenant.id)] = d.label;
+    }
+  }
+  return {
+    format: FORMAT_EXPORT,
+    version: 1,
+    objet: c.objet,
+    name: c.name,
+    description: c.description,
+    definition: def,
+    references: { services, delegations },
+  };
+}
+
+/**
+ * Lit le fichier d'un circuit pour l'importer dans un circuit de type `objet` : la définition,
+ * services et délégations retrouvés par leur nom, ou les erreurs qui empêchent l'import. Les
+ * critères qui citent un espace, un site ou un profil gardent leurs identifiants : à relire.
+ */
+export function lireImportCircuit(
+  brut: unknown,
+  objet: Objet,
+  ref: Referentiel,
+): { definition: Definition; avertissements: string[] } | { erreurs: string[] } {
+  const b = (brut ?? {}) as Partial<ExportCircuit> & { definition?: { etapes?: unknown } };
+  if (b.format !== FORMAT_EXPORT)
+    return { erreurs: ["Ce fichier n'est pas l'export d'un circuit CityRésa."] };
+  if (b.objet !== objet)
+    return {
+      erreurs: [
+        `Ce fichier décrit un circuit « ${OBJETS[lireObjet(b.objet)]} » : il ne s'importe pas dans un circuit « ${OBJETS[objet]} ».`,
+      ],
+    };
+  const lue = lireDefinition(b.definition);
+  const erreurs: string[] = [];
+  const avertissements: string[] = [];
+  const noms = (b.references ?? {}) as Partial<ExportCircuit["references"]>;
+  const retrouver = (
+    id: number,
+    exportes: Record<string, string> | undefined,
+    ici: Map<number, { name?: string; label?: string }>,
+    quoi: string,
+  ): number | null => {
+    const nom = exportes?.[String(id)];
+    if (!nom) {
+      if (ici.has(id)) return id;
+      erreurs.push(`${quoi} n° ${id} : introuvable ici, et le fichier ne donne pas son nom.`);
+      return null;
+    }
+    for (const [k, v] of ici) if ((v.name ?? v.label) === nom) return k;
+    erreurs.push(`${quoi} « ${nom} » n'existe pas ici : à créer d'abord, sous le même nom.`);
+    return null;
+  };
+  const serviceId = lue.serviceId
+    ? retrouver(lue.serviceId, noms.services, ref.services, "Le service")
+    : null;
+  const etapes: Etape[] = [];
+  for (const e of lue.etapes) {
+    if (!INSERTION[objet].moments.includes(e.moment)) {
+      avertissements.push(`Étape « ${e.libelle} » écartée : son moment ne convient pas à ce type.`);
+      continue;
+    }
+    let intervenant: Intervenant | null = e.intervenant;
+    if (e.intervenant.type === "service") {
+      const id = retrouver(e.intervenant.id, noms.services, ref.services, "Le service");
+      intervenant = id ? { type: "service", id } : null;
+    } else if (e.intervenant.type === "delegation") {
+      const id = retrouver(e.intervenant.id, noms.delegations, ref.delegations, "La délégation");
+      intervenant = id ? { type: "delegation", id } : null;
+    } else if (e.intervenant.type === "role" && !ref.roles.has(e.intervenant.role)) {
+      erreurs.push(`Le rôle « ${e.intervenant.role} » n'existe pas ici.`);
+    }
+    if (intervenant) etapes.push({ ...e, intervenant });
+  }
+  const brutes = Array.isArray(b.definition?.etapes) ? b.definition.etapes.length : 0;
+  if (brutes > lue.etapes.length)
+    avertissements.push(
+      `${brutes - lue.etapes.length} étape(s) illisible(s) du fichier ont été écartées.`,
+    );
+  if (erreurs.length) return { erreurs: [...new Set(erreurs)] };
+  return { definition: { condition: lue.condition, serviceId, etapes }, avertissements };
+}

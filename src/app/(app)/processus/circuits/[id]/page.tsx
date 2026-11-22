@@ -119,6 +119,23 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
         }
         menu={[
           <MenuLien
+            key="export"
+            url={`${ici}/export.json`}
+            libelle={c.brouillon ? "Exporter le brouillon (fichier)" : "Exporter (fichier)"}
+            icone="download"
+          />,
+          <li key="import">
+            <button
+              type="button"
+              className="dropdown-item"
+              data-bs-toggle="modal"
+              data-bs-target="#modal-importer"
+            >
+              <Icone nom="upload" taille={14} />
+              Importer un fichier…
+            </button>
+          </li>,
+          <MenuLien
             key="sim"
             url={`/processus/simulation?brouillons=1`}
             libelle="Simuler avec les brouillons"
@@ -361,6 +378,31 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
           />
         </ModalAction>
       ) : null}
+      <ModalAction
+        id="modal-importer"
+        titre="Importer un circuit"
+        action={ici}
+        csrf={page.csrf}
+        bouton="Importer dans le brouillon"
+        icone="upload"
+        multipart
+        aide="Le fichier remplace l'aiguillage et les étapes du brouillon (créé au besoin). Rien ne s'applique aux dossiers avant la publication ; services et délégations sont retrouvés par leur nom."
+      >
+        <input type="hidden" name="action" value="importer" />
+        <div>
+          <label className="form-label" htmlFor="ci-fichier">
+            Fichier exporté (JSON)
+          </label>
+          <input
+            type="file"
+            name="fichier"
+            id="ci-fichier"
+            className="form-control"
+            accept="application/json,.json"
+            required
+          />
+        </div>
+      </ModalAction>
     </>
   );
 }

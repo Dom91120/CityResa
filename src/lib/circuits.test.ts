@@ -15,11 +15,14 @@ import {
   etapesApplicables,
   etapesRetenant,
   etatEtape,
+  exporterCircuit,
   type Faits,
+  FORMAT_EXPORT,
   INSERTION,
   issueReunion,
   lireCondition,
   lireDefinition,
+  lireImportCircuit,
   lireMoment,
   lireObjet,
   lireReunion,
@@ -520,5 +523,88 @@ describe("comparaison de versions", () => {
     expect(comparer(def({ etapes: [a, b] }), def({ etapes: [b, a] }), ref)).toEqual([
       "Ordre des étapes modifié.",
     ]);
+  });
+});
+
+describe("export et import d'un circuit", () => {
+  const ici: Referentiel = {
+    services: new Map([[7, { name: "Vie associative", personnes: 2, responsable: true }]]),
+    delegations: new Map([[3, { label: "Sports", personnes: 1 }]]),
+    roles: new Map([["financier", { label: "Financier", personnes: 1 }]]),
+  };
+  const ailleurs: Referentiel = {
+    services: new Map([[42, { name: "Vie associative", personnes: 1, responsable: false }]]),
+    delegations: new Map([[9, { label: "Sports", personnes: 1 }]]),
+    roles: new Map([["financier", { label: "Financier", personnes: 1 }]]),
+  };
+  const definition = lireDefinition({
+    serviceId: 7,
+    etapes: [
+      { ...etape({ cle: "a" }), intervenant: { type: "delegation", id: 3 } },
+      { ...etape({ cle: "b" }), intervenant: { type: "service", id: 7 } },
+      { ...etape({ cle: "c" }), intervenant: { type: "role", role: "financier" } },
+    ],
+  });
+  const fichier = exporterCircuit(
+    { objet: "reservation", name: "Salles", description: null },
+    definition,
+    ici,
+  );
+
+  it("exporte la définition avec le nom de ce qu'elle cite", () => {
+    expect(fichier.format).toBe(FORMAT_EXPORT);
+    expect(fichier.references).toEqual({
+      services: { "7": "Vie associative" },
+      delegations: { "3": "Sports" },
+    });
+  });
+
+  it("réimporte à l'identique dans la même base", () => {
+    const r = lireImportCircuit(JSON.parse(JSON.stringify(fichier)), "reservation", ici);
+    expect(r).toEqual({ definition, avertissements: [] });
+  });
+
+  it("retrouve services et délégations par leur nom dans une autre base", () => {
+    const r = lireImportCircuit(fichier, "reservation", ailleurs);
+    if ("erreurs" in r) throw new Error(r.erreurs.join(" "));
+    expect(r.definition.serviceId).toBe(42);
+    expect(r.definition.etapes.map((e) => e.intervenant)).toEqual([
+      { type: "delegation", id: 9 },
+      { type: "service", id: 42 },
+      { type: "role", role: "financier" },
+    ]);
+  });
+
+  it("refuse un fichier étranger, un autre type, un service ou un rôle absent", () => {
+    expect(lireImportCircuit({ definition }, "reservation", ici)).toEqual({
+      erreurs: ["Ce fichier n'est pas l'export d'un circuit CityRésa."],
+    });
+    const autreType = lireImportCircuit(fichier, "subvention", ici);
+    expect("erreurs" in autreType && autreType.erreurs[0]).toMatch(/Réservations/);
+    const vide: Referentiel = { services: new Map(), delegations: new Map(), roles: new Map() };
+    const r = lireImportCircuit(fichier, "reservation", vide);
+    expect("erreurs" in r && r.erreurs).toEqual([
+      "Le service « Vie associative » n'existe pas ici : à créer d'abord, sous le même nom.",
+      "La délégation « Sports » n'existe pas ici : à créer d'abord, sous le même nom.",
+      "Le rôle « financier » n'existe pas ici.",
+    ]);
+  });
+
+  it("écarte, en le disant, une étape dont le moment ne convient pas au type", () => {
+    const regie = { type: "role", role: "financier" };
+    const campagne = exporterCircuit(
+      { objet: "campagne", name: "C", description: null },
+      lireDefinition({
+        etapes: [
+          { ...etape({ cle: "v" }), moment: "avant_notification", intervenant: regie },
+          { ...etape({ cle: "x" }), moment: "avant_refus", intervenant: regie },
+        ],
+      }),
+      ici,
+    );
+    const r = lireImportCircuit(campagne, "campagne", ici);
+    if ("erreurs" in r) throw new Error(r.erreurs.join(" "));
+    expect(r.definition.etapes.map((e) => e.cle)).toEqual(["v"]);
+    expect(r.avertissements).toHaveLength(1);
   });
 });
