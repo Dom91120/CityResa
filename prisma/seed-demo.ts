@@ -3421,16 +3421,17 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
     compter("campagnes_subvention");
   }
   /**
-   * Dépose un dossier de démonstration. `fixe` donne l'heure du dépôt, l'adresse de signature et
-   * la nature sans rien tirer au hasard : un dossier ajouté ainsi ne décale pas le reste du jeu.
+   * Dépose un dossier de démonstration. `fixe` donne l'heure du dépôt (en journée, heure de Paris),
+   * l'adresse de signature et la nature sans rien tirer au hasard : un dossier ajouté ainsi ne
+   * décale pas le reste du jeu.
    */
   const deposer = async (
     s: SpecDepot,
-    fixe?: { heure: number; ip: string; nature: "premiere" | "renouvellement" },
+    fixe?: { heure: string; ip: string; nature: "premiere" | "renouvellement" },
   ) => {
     const org = ctx.orgs.get(s.org);
     if (!org) return;
-    const createdAt = ilYA(s.depuis, fixe ? fixe.heure : entre(1, 10));
+    const createdAt = fixe ? a(-s.depuis, fixe.heure) : ilYA(s.depuis, entre(1, 10));
     const numero = await prochainNumero("SUB", s.exercice);
     const decision = ["votee", "versee", "refusee"].includes(s.status)
       ? plusTot(new Date(createdAt.getTime() + 60 * 86_400_000))
@@ -3676,7 +3677,7 @@ async function creerSubventions(ctx: Contexte): Promise<void> {
   ];
   for (const [i, s] of anterieurs.entries())
     await deposer(s, {
-      heure: 9 + i,
+      heure: ["10:15", "11:30", "14:45"][i] ?? "10:15",
       ip: `92.154.20.${40 + i}`,
       nature: i === anterieurs.length - 1 ? "premiere" : "renouvellement",
     });
