@@ -147,6 +147,7 @@ export default async function SubventionsPage({ searchParams }: { searchParams: 
         />
 
         <Barre
+          etagee={services.length > 0}
           q={fl.q}
           pathname={page.pathname}
           search={page.search}

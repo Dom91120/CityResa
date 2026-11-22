@@ -29,6 +29,7 @@ export function Barre({
   placeholder = "Rechercher…",
   pathname,
   search,
+  etagee = false,
 }: {
   q?: string;
   /** Les paramètres que la recherche conserve ; un tableau pour un filtre à plusieurs valeurs. */
@@ -38,6 +39,8 @@ export function Barre({
   placeholder?: string;
   pathname: string;
   search: URLSearchParams;
+  /** Beaucoup de filtres : la recherche garde sa ligne, les filtres passent dessous. */
+  etagee?: boolean;
 }) {
   const keep: [string, string][] = [];
   for (const [k, v] of Object.entries(hidden))
@@ -45,7 +48,7 @@ export function Barre({
   const perPage = search.get("per_page");
   if (perPage) keep.push(["per_page", perPage]);
   return (
-    <div className="list-toolbar">
+    <div className={`list-toolbar${etagee ? " list-toolbar--etagee" : ""}`}>
       <form method="GET" className="list-search" role="search">
         {keep.map(([k, v]) => (
           <input key={`${k}=${v}`} type="hidden" name={k} value={v} />
