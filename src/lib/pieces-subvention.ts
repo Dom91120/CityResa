@@ -131,3 +131,26 @@ export function piecesManquantes(ctx: ContextePieces, kindsFournis: readonly str
   const fournis = new Set(kindsFournis);
   return piecesRequises(ctx).filter((p) => !fournis.has(p.kind));
 }
+
+/** Une pièce attendue, son état et les fichiers déposés qui la satisfont. */
+export type PieceRangee<D> = { piece: Piece; fournie: boolean; documents: D[] };
+
+/**
+ * Range les fichiers déposés sous la pièce attendue de même nature, pour n'afficher qu'une seule
+ * liste : une ligne par pièce attendue (fournie ou manquante) avec ses fichiers, puis les fichiers
+ * déposés en plus, que le dossier n'exigeait pas.
+ */
+export function rangerPieces<D extends { kind: string }>(
+  etats: readonly { piece: Piece; fournie: boolean }[],
+  documents: readonly D[],
+): { attendues: PieceRangee<D>[]; autres: D[] } {
+  const attendus = new Set(etats.map((e) => e.piece.kind));
+  return {
+    attendues: etats.map((e) => ({
+      piece: e.piece,
+      fournie: e.fournie,
+      documents: documents.filter((d) => d.kind === e.piece.kind),
+    })),
+    autres: documents.filter((d) => !attendus.has(d.kind)),
+  };
+}

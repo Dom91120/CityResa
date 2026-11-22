@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { FormDocument, ListeDocuments } from "@/components/documents";
+import { FormDocument } from "@/components/documents";
 import {
   BoutonOuvrir,
   Entete,
@@ -28,9 +28,9 @@ import { todayParisISO } from "@/lib/paris-time";
 import { planDe, ratioDemande, totaux } from "@/lib/plan-budget";
 import {
   ChipCampagne,
-  EtatPiecesListe,
   LectureFiche,
   ListeManques,
+  PiecesDossier,
 } from "@/modules/subventions/dossier-vues";
 import {
   avisOuvert,
@@ -412,19 +412,15 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
           </Section>
 
           <Section titre="Pièces" icone="paperclip" nb={pieces.length}>
-            <EtatPiecesListe
+            <PiecesDossier
               etats={etatPieces(
                 pourManques(s, d),
                 pieces.map((p) => p.kind),
               )}
-            />
-            <h3 className="h6 mt-3">Pièces déposées</h3>
-            <ListeDocuments
               documents={pieces}
               csrf={page.csrf}
               next={ici}
               peutSupprimer={() => peutEditer}
-              vide="Aucune pièce déposée."
             />
             {page.features.documents && peutEditer ? (
               <div className="mt-3">

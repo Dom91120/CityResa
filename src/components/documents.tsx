@@ -66,92 +66,128 @@ export function ListeDocuments({
   return (
     <div className="doc-liste">
       {documents.map((d) => (
-        <div key={d.id} className="doc-ligne">
-          <Icone nom={icone(d)} taille={18} classes="doc-ico" />
-          <span className="cell2" style={{ minWidth: 0, flex: 1 }}>
-            <span className="d-flex align-items-center gap-2 flex-wrap">
-              <a
-                href={
-                  estPdf(d)
-                    ? lienApercu(`/documents/${d.id}/view`, d.title || d.filename, next)
-                    : viewable(d)
-                      ? `/documents/${d.id}/view`
-                      : `/documents/${d.id}/download`
-                }
-                className="nom"
-                target={viewable(d) && !estPdf(d) ? "_blank" : undefined}
-                rel="noopener"
-              >
-                {d.title || d.filename}
-              </a>
-              <ChipValidite validUntil={d.validUntil} seuilJours={seuilJours} />
-            </span>
-            <small>
-              {[
-                DOCUMENT_KINDS[d.kind] !== "Pièce justificative" ? DOCUMENT_KINDS[d.kind] : null,
-                d.category?.label,
-                tailleLabel(d.size),
-                dateCourte(d.createdAt),
-                d.uploadedBy ? `par ${d.uploadedBy.firstName} ${d.uploadedBy.lastName}` : null,
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-            </small>
-          </span>
-          <span className="droite">
-            {peutDater?.(d) ? (
-              <form
-                method="POST"
-                action={`/documents/${d.id}/validite`}
-                className="d-inline-flex align-items-center gap-1"
-              >
-                <input type="hidden" name="csrf_token" value={csrf} />
-                <input type="hidden" name="next" value={next} />
-                <input
-                  type="date"
-                  name="valid_until"
-                  className="form-control form-control-sm"
-                  style={{ width: 150 }}
-                  defaultValue={d.validUntil ? ymdUtc(d.validUntil) : ""}
-                  aria-label="Valide jusqu'au"
-                  title="Valide jusqu'au"
-                />
-                <button
-                  type="submit"
-                  className="btn btn-ghost btn-icone btn-sm"
-                  title="Enregistrer la date de validité"
-                  aria-label="Enregistrer la date de validité"
-                >
-                  <Icone nom="calendar-check" taille={14} />
-                </button>
-              </form>
-            ) : null}
-            <a
-              href={`/documents/${d.id}/download`}
-              className="btn btn-ghost btn-icone btn-sm"
-              title="Télécharger"
-              aria-label="Télécharger"
-            >
-              <Icone nom="download" taille={14} />
-            </a>
-            {peutSupprimer?.(d) ? (
-              <form method="POST" action={`/documents/${d.id}/delete`} className="d-inline">
-                <input type="hidden" name="csrf_token" value={csrf} />
-                <input type="hidden" name="next" value={next} />
-                <button
-                  type="submit"
-                  className="btn btn-ghost btn-ghost-danger btn-icone btn-sm"
-                  title="Supprimer"
-                  aria-label="Supprimer"
-                  data-confirm="Supprimer cette pièce ?"
-                >
-                  <Icone nom="trash-2" taille={14} />
-                </button>
-              </form>
-            ) : null}
-          </span>
-        </div>
+        <LigneDocument
+          key={d.id}
+          d={d}
+          csrf={csrf}
+          next={next}
+          peutSupprimer={peutSupprimer}
+          peutDater={peutDater}
+          seuilJours={seuilJours}
+        />
       ))}
+    </div>
+  );
+}
+
+/**
+ * La ligne d'une pièce déposée : nom (aperçu, consultation ou téléchargement), nature, taille,
+ * date, puis les actions. `sansNature` : sous une pièce attendue, qui la dit déjà.
+ */
+export function LigneDocument({
+  d,
+  csrf,
+  next,
+  peutSupprimer,
+  peutDater,
+  seuilJours = 30,
+  sansNature = false,
+}: {
+  d: DocLigne;
+  csrf: string;
+  next: string;
+  peutSupprimer?: (d: DocLigne) => boolean;
+  peutDater?: (d: DocLigne) => boolean;
+  seuilJours?: number;
+  sansNature?: boolean;
+}) {
+  return (
+    <div className="doc-ligne">
+      <Icone nom={icone(d)} taille={18} classes="doc-ico" />
+      <span className="cell2" style={{ minWidth: 0, flex: 1 }}>
+        <span className="d-flex align-items-center gap-2 flex-wrap">
+          <a
+            href={
+              estPdf(d)
+                ? lienApercu(`/documents/${d.id}/view`, d.title || d.filename, next)
+                : viewable(d)
+                  ? `/documents/${d.id}/view`
+                  : `/documents/${d.id}/download`
+            }
+            className="nom"
+            target={viewable(d) && !estPdf(d) ? "_blank" : undefined}
+            rel="noopener"
+          >
+            {d.title || d.filename}
+          </a>
+          <ChipValidite validUntil={d.validUntil} seuilJours={seuilJours} />
+        </span>
+        <small>
+          {[
+            !sansNature && DOCUMENT_KINDS[d.kind] !== "Pièce justificative"
+              ? DOCUMENT_KINDS[d.kind]
+              : null,
+            d.category?.label,
+            tailleLabel(d.size),
+            dateCourte(d.createdAt),
+            d.uploadedBy ? `par ${d.uploadedBy.firstName} ${d.uploadedBy.lastName}` : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </small>
+      </span>
+      <span className="droite">
+        {peutDater?.(d) ? (
+          <form
+            method="POST"
+            action={`/documents/${d.id}/validite`}
+            className="d-inline-flex align-items-center gap-1"
+          >
+            <input type="hidden" name="csrf_token" value={csrf} />
+            <input type="hidden" name="next" value={next} />
+            <input
+              type="date"
+              name="valid_until"
+              className="form-control form-control-sm"
+              style={{ width: 150 }}
+              defaultValue={d.validUntil ? ymdUtc(d.validUntil) : ""}
+              aria-label="Valide jusqu'au"
+              title="Valide jusqu'au"
+            />
+            <button
+              type="submit"
+              className="btn btn-ghost btn-icone btn-sm"
+              title="Enregistrer la date de validité"
+              aria-label="Enregistrer la date de validité"
+            >
+              <Icone nom="calendar-check" taille={14} />
+            </button>
+          </form>
+        ) : null}
+        <a
+          href={`/documents/${d.id}/download`}
+          className="btn btn-ghost btn-icone btn-sm"
+          title="Télécharger"
+          aria-label="Télécharger"
+        >
+          <Icone nom="download" taille={14} />
+        </a>
+        {peutSupprimer?.(d) ? (
+          <form method="POST" action={`/documents/${d.id}/delete`} className="d-inline">
+            <input type="hidden" name="csrf_token" value={csrf} />
+            <input type="hidden" name="next" value={next} />
+            <button
+              type="submit"
+              className="btn btn-ghost btn-ghost-danger btn-icone btn-sm"
+              title="Supprimer"
+              aria-label="Supprimer"
+              data-confirm="Supprimer cette pièce ?"
+            >
+              <Icone nom="trash-2" taille={14} />
+            </button>
+          </form>
+        ) : null}
+      </span>
     </div>
   );
 }

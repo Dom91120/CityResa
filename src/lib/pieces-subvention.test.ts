@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { type ContextePieces, piecesManquantes, piecesRequises } from "@/lib/pieces-subvention";
+import {
+  type ContextePieces,
+  piecesManquantes,
+  piecesRequises,
+  rangerPieces,
+} from "@/lib/pieces-subvention";
 
 const base: ContextePieces = {
   nature: "renouvellement",
@@ -56,5 +61,37 @@ describe("pièces du dossier", () => {
       "comptes",
       "compte_rendu",
     ]);
+  });
+});
+
+describe("rangerPieces", () => {
+  const piece = (kind: string) => ({ kind, libelle: kind, condition: "toutes" as const });
+  const etats = [
+    { piece: piece("pv_ag"), fournie: true },
+    { piece: piece("rib"), fournie: false },
+  ];
+
+  it("range chaque fichier sous la pièce attendue de même nature", () => {
+    const docs = [
+      { id: 1, kind: "pv_ag" },
+      { id: 2, kind: "pv_ag" },
+    ];
+    const r = rangerPieces(etats, docs);
+    expect(r.attendues.map((a) => [a.piece.kind, a.fournie, a.documents.map((d) => d.id)])).toEqual(
+      [
+        ["pv_ag", true, [1, 2]],
+        ["rib", false, []],
+      ],
+    );
+    expect(r.autres).toEqual([]);
+  });
+
+  it("garde à part les fichiers que le dossier n'exigeait pas", () => {
+    const r = rangerPieces(etats, [
+      { id: 3, kind: "piece" },
+      { id: 4, kind: "pv_ag" },
+    ]);
+    expect(r.autres.map((d) => d.id)).toEqual([3]);
+    expect(r.attendues[0].documents.map((d) => d.id)).toEqual([4]);
   });
 });

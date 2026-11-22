@@ -3,7 +3,7 @@
  * back-office (un agent complète un dossier papier) : navigation entre fiches, formulaire ou
  * lecture seule, pièces, signature et dépôt sur la dernière fiche.
  */
-import { FormDocument, ListeDocuments } from "@/components/documents";
+import { FormDocument } from "@/components/documents";
 import { BoutonOuvrir, ModalAction } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import {
@@ -20,11 +20,11 @@ import { piecesRequises } from "@/lib/pieces-subvention";
 import { planDe } from "@/lib/plan-budget";
 import {
   AideService,
-  EtatPiecesListe,
   FormFiche,
   LectureFiche,
   ListeManques,
   NavFiches,
+  PiecesDossier,
 } from "@/modules/subventions/dossier-vues";
 import type { SubventionComplete } from "@/modules/subventions/server";
 import { getSettings } from "@/server/config-store";
@@ -81,14 +81,12 @@ export async function CorpsFiche({
             d'un changement de statuts et d'une signature par mandataire. Déposez chaque pièce avec
             la nature correspondante.
           </p>
-          <EtatPiecesListe etats={etatPieces(pourManques(s, d), kinds)} />
-          <h3 className="h6 mt-4">Pièces déposées</h3>
-          <ListeDocuments
+          <PiecesDossier
+            etats={etatPieces(pourManques(s, d), kinds)}
             documents={pieces}
             csrf={page.csrf}
             next={ici}
             peutSupprimer={(doc) => redaction && (!portail || doc.uploadedById === page.user.id)}
-            vide="Aucune pièce déposée."
           />
           {page.features.documents && redaction ? (
             <div className="mt-3">

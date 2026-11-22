@@ -4,6 +4,7 @@
  * lecture seule, tableaux de budget par postes, carte de campagne, liste des manques.
  */
 
+import { type DocLigne, LigneDocument, ListeDocuments } from "@/components/documents";
 import { Lu, Lus } from "@/components/fiche";
 import { Champ, Grille, Interrupteur, SectionForm, Select, Zone } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
@@ -29,6 +30,7 @@ import {
 } from "@/lib/mentions-subvention";
 import { todayParisISO } from "@/lib/paris-time";
 import type { Piece } from "@/lib/pieces-subvention";
+import { rangerPieces } from "@/lib/pieces-subvention";
 import {
   ecartsBudgetRealise,
   groupes,
@@ -1731,24 +1733,72 @@ export function LectureFiche({
   }
 }
 
-/** La liste des pièces attendues et leur état. */
-export function EtatPiecesListe({ etats }: { etats: { piece: Piece; fournie: boolean }[] }) {
+/**
+ * Les pièces d'un dossier, en une seule liste : chaque pièce attendue avec son état et, dessous,
+ * le ou les fichiers déposés pour elle ; puis les fichiers déposés en plus.
+ */
+export function PiecesDossier({
+  etats,
+  documents,
+  csrf,
+  next,
+  peutSupprimer,
+}: {
+  etats: { piece: Piece; fournie: boolean }[];
+  documents: DocLigne[];
+  csrf: string;
+  next: string;
+  peutSupprimer?: (d: DocLigne) => boolean;
+}) {
+  const { attendues, autres } = rangerPieces(etats, documents);
   return (
-    <ul className="liste-simple mb-0" style={{ margin: "0 -18px" }}>
-      {etats.map(({ piece, fournie }) => (
-        <li key={piece.kind}>
-          <Icone
-            nom={fournie ? "circle-check" : "circle-alert"}
-            taille={16}
-            classes={fournie ? "text-success" : "text-warning"}
+    <>
+      <div className="pieces-dossier">
+        {attendues.map(({ piece, fournie, documents: fichiers }) => (
+          <div key={piece.kind} className="piece-attendue">
+            <div className="piece-tete">
+              {/* L'icône dit seule l'état ; son intitulé reste lisible au survol et aux lecteurs d'écran. */}
+              <span className="piece-etat" title={fournie ? "Pièce fournie" : "Pièce manquante"}>
+                <Icone
+                  nom={fournie ? "circle-check" : "circle-alert"}
+                  taille={16}
+                  classes={fournie ? "text-success" : "text-warning"}
+                />
+                <span className="visually-hidden">{fournie ? "Fournie" : "Manquante"} :</span>
+              </span>
+              <span className="cell2" style={{ flex: 1, whiteSpace: "normal" }}>
+                <span>{piece.libelle}</span>
+                {!fournie && piece.aide ? <small>{piece.aide}</small> : null}
+              </span>
+            </div>
+            {fichiers.length ? (
+              <div className="doc-liste piece-fichiers">
+                {fichiers.map((d) => (
+                  <LigneDocument
+                    key={d.id}
+                    d={d}
+                    csrf={csrf}
+                    next={next}
+                    peutSupprimer={peutSupprimer}
+                    sansNature
+                  />
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ))}
+      </div>
+      {autres.length ? (
+        <>
+          <h3 className="h6 mt-3">Autres pièces</h3>
+          <ListeDocuments
+            documents={autres}
+            csrf={csrf}
+            next={next}
+            peutSupprimer={peutSupprimer}
           />
-          <span className="cell2" style={{ flex: 1, whiteSpace: "normal" }}>
-            <span>{piece.libelle}</span>
-            {piece.aide ? <small>{piece.aide}</small> : null}
-          </span>
-          <Chip teinte={fournie ? "emerald" : "amber"}>{fournie ? "Fournie" : "Manquante"}</Chip>
-        </li>
-      ))}
-    </ul>
+        </>
+      ) : null}
+    </>
   );
 }

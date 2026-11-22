@@ -597,6 +597,13 @@ textarea.form-control { min-height: 90px; }
 .fil-saisie textarea { min-height: 64px; }
 .fil-saisie-actions { display: flex; align-items: center; gap: 10px; justify-content: space-between; flex-wrap: wrap; }
 .doc-liste { display: flex; flex-direction: column; }
+/* Pièces d'un dossier : une pièce attendue (état et libellé), puis ses fichiers en retrait. */
+.piece-attendue { padding: 8px 0; border-top: 1px solid var(--line); }
+.piece-attendue:first-child { border-top: 0; padding-top: 0; }
+.piece-tete { display: flex; align-items: center; gap: 10px; font-size: 0.82rem; }
+.piece-etat { display: inline-flex; flex-shrink: 0; }
+.piece-fichiers { margin: 2px 0 0 26px; }
+.piece-fichiers .doc-ligne { border-top: 0; padding: 2px 0; }
 .doc-ligne { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 0.82rem; }
 .doc-ligne:first-child { border-top: 0; }
 .doc-ligne .lucide.doc-ico { color: var(--primary); }

@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { FormDocument, ListeDocuments } from "@/components/documents";
+import { FormDocument } from "@/components/documents";
 import { FilRetour, Lu, Lus, Section } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { Chip, StatutSubvention } from "@/components/macros";
@@ -9,7 +9,7 @@ import { etatPieces, FICHES } from "@/lib/dossier-subvention";
 import { dateCourte, dateHeure, montant } from "@/lib/libelles";
 import { planDe } from "@/lib/plan-budget";
 import { organisationDe } from "@/modules/portail/catalogue";
-import { EtatPiecesListe, LectureFiche } from "@/modules/subventions/dossier-vues";
+import { LectureFiche, PiecesDossier } from "@/modules/subventions/dossier-vues";
 import { chargerSubvention } from "@/modules/subventions/server";
 import { forParent } from "@/server/documents";
 import { idDeRoute } from "@/server/guards";
@@ -122,19 +122,15 @@ export default async function SubventionPortailPage({
         ))}
 
         <Section titre="Pièces" icone="paperclip" nb={pieces.length || null}>
-          <EtatPiecesListe
+          <PiecesDossier
             etats={etatPieces(
               pourManques(s, d),
               pieces.map((p) => p.kind),
             )}
-          />
-          <h3 className="h6 mt-3">Pièces déposées</h3>
-          <ListeDocuments
             documents={pieces}
             csrf={page.csrf}
             next={ici}
             peutSupprimer={(doc) => doc.uploadedById === page.user.id && !decidee}
-            vide="Aucune pièce jointe."
           />
           {page.features.documents && !decidee ? (
             <div className="mt-3">

@@ -494,7 +494,7 @@ Pendant le dépôt (la figure montre la page après sa clôture) :
 4. Enregistrez chaque fiche : vous pouvez quitter et reprendre plus tard, le dossier reste en rédaction.
 
 ![Fiche Pièces](captures/asso-subvention-pieces.webp)
-*Figure — la fiche « Pièces » : les pièces attendues avec leur état Fournie / Manquante, puis le dépôt d'une pièce avec sa nature.*
+*Figure — la fiche « Pièces » : les pièces attendues, précédées d'une coche verte (fournie) ou d'un signal orange (manquante), avec sous chacune le fichier déposé ; puis le dépôt d'une pièce avec sa nature.*
 
 5. Dans **Pièces**, déposez chaque document attendu en choisissant sa **Nature** (procès-verbal d'assemblée générale, comptes approuvés, RIB, compte rendu des actions subventionnées, statuts…). La liste s'adapte à votre situation : première demande, commissaire aux comptes, changement de statuts, signature par mandataire, actions spécifiques.
 
@@ -524,7 +524,7 @@ Pendant le dépôt (la figure montre la page après sa clôture) :
 - En tête : numéro, statut, exercice, nature, objet, montant demandé, campagne, et le bouton **Dossier PDF**.
 - Un bandeau qui explique l'étape, la date de réception et la signature.
 - Le bloc **Décision** une fois la subvention votée, refusée ou versée (montant accordé, dates, note).
-- Les fiches du dossier en lecture seule, le bloc **Pièces** (état des pièces attendues, pièces déposées, dépôt d'une pièce complémentaire) et l'**Historique** du dossier.
+- Les fiches du dossier en lecture seule, le bloc **Pièces** (une seule liste : chaque pièce attendue, précédée d'une coche verte si elle est fournie ou d'un signal orange si elle manque, avec dessous le fichier déposé ; les pièces déposées en plus viennent ensuite sous « Autres pièces » ; puis le dépôt d'une pièce complémentaire) et l'**Historique** du dossier.
 
 **Règles à connaître**
 - Les phrases d'étape selon le statut :
