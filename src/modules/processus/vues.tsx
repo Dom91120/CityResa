@@ -10,10 +10,12 @@ import {
   criteresDe,
   type Definition,
   decrireCondition,
+  type Etape,
   type EtatEtape,
   type Libelles,
   libelleIntervenant,
   MOMENTS,
+  type Moment,
   NATURES,
   type Nature,
   type Objet,
@@ -190,6 +192,36 @@ export function Logigramme({
 }) {
   const service = definition.serviceId ? referentiel.services.get(definition.serviceId) : null;
   const subvention = objet === "subvention";
+  // Les étapes d'une annulation ou d'une réquisition viennent après l'acceptation.
+  const tardifs: readonly Moment[] = ["avant_annulation", "avant_requisition"];
+  const avant = definition.etapes.filter((e) => !tardifs.includes(e.moment));
+  const apres = definition.etapes.filter((e) => tardifs.includes(e.moment));
+  const noeud = (e: Etape) => {
+    const n = NATURES[e.nature];
+    return (
+      <li key={e.cle} className={`logi-noeud logi-etape logi-${n.bloquante ? "bloque" : "libre"}`}>
+        <Icone nom={n.icone} taille={15} />
+        <div>
+          <strong>
+            {e.libelle} <PastilleNature nature={e.nature} />
+          </strong>
+          <span>
+            {libelleIntervenant(e.intervenant, referentiel)}
+            {e.delaiJours ? ` · sous ${e.delaiJours} j` : ""}
+            {subvention
+              ? " · consulté à la soumission aux élus"
+              : n.bloquante
+                ? ` · retient ${RETENU[e.moment]}`
+                : " · ne retient rien"}
+          </span>
+          {subvention ? null : <span>{MOMENTS[e.moment]}</span>}
+          <span className="logi-condition">
+            <Icone nom="filter" taille={12} /> {decrireCondition(e.condition, libelles)}
+          </span>
+        </div>
+      </li>
+    );
+  };
   return (
     <ol className="logigramme">
       <li className="logi-noeud logi-entree">
@@ -216,35 +248,7 @@ export function Logigramme({
           </span>
         </div>
       </li>
-      {definition.etapes.map((e) => {
-        const n = NATURES[e.nature];
-        return (
-          <li
-            key={e.cle}
-            className={`logi-noeud logi-etape logi-${n.bloquante ? "bloque" : "libre"}`}
-          >
-            <Icone nom={n.icone} taille={15} />
-            <div>
-              <strong>
-                {e.libelle} <PastilleNature nature={e.nature} />
-              </strong>
-              <span>
-                {libelleIntervenant(e.intervenant, referentiel)}
-                {e.delaiJours ? ` · sous ${e.delaiJours} j` : ""}
-                {subvention
-                  ? " · consulté à la soumission aux élus"
-                  : n.bloquante
-                    ? ` · retient ${RETENU[e.moment]}`
-                    : " · ne retient rien"}
-              </span>
-              {subvention ? null : <span>{MOMENTS[e.moment]}</span>}
-              <span className="logi-condition">
-                <Icone nom="filter" taille={12} /> {decrireCondition(e.condition, libelles)}
-              </span>
-            </div>
-          </li>
-        );
-      })}
+      {avant.map(noeud)}
       <li className="logi-noeud logi-socle">
         <Icone nom="circle-check" taille={15} />
         <div>
@@ -256,6 +260,7 @@ export function Logigramme({
           </span>
         </div>
       </li>
+      {apres.map(noeud)}
       <li className="logi-noeud logi-socle">
         <Icone nom="pen-line" taille={15} />
         <div>
