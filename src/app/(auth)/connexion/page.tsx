@@ -103,7 +103,7 @@ export default async function ConnexionPage({
             ) : null}
           </div>
           <div className="login-pied">
-            CityRésa · réservation des espaces de {cfg.COLLECTIVITE_NOM}
+            CityRésa · réservation des espaces · {cfg.COLLECTIVITE_NOM}
           </div>
         </div>
         <VisuelConnexion titre={cfg.PORTAIL_TITRE} texte={cfg.PORTAIL_ACCROCHE} />

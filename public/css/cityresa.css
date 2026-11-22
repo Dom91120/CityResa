@@ -916,7 +916,8 @@ a.pastille-action:hover::after { background: color-mix(in srgb, var(--primary) 1
 .login-visuel .accroche p { opacity: .9; font-size: 1rem; }
 /* Écrans de CityRésa au premier plan : l'image déborde sur le bord droit et se réduit sur les écrans bas. */
 .login-illustration { position: relative; display: block; width: auto; max-width: 100%; height: auto; max-height: calc(100vh - 280px); align-self: center; }
-.login-pied { margin-top: 24px; font-size: 0.76rem; color: var(--faint); }
+/* Le pied suit le formulaire : même largeur, texte centré sur le même axe que ses liens. */
+.login-pied { margin-top: 24px; max-width: 380px; width: 100%; text-align: center; font-size: 0.76rem; color: var(--faint); }
 @media (max-width: 991px) { .login-page { grid-template-columns: 1fr; } .login-visuel { display: none; } .login-panel { padding: 32px 24px; } }
 
 /* ============================ PORTAIL ============================ */
