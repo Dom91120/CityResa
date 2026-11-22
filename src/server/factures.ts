@@ -1,6 +1,7 @@
 /**
  * Facturation : factures d'acompte, de solde, de caution ; paiements ; PDF.
  */
+
 import { FACTURE_TYPES, PAIEMENT_MODES } from "@/lib/constantes";
 import { dateCourte, montant, plage } from "@/lib/libelles";
 import { auditRecord } from "@/server/audit";
@@ -9,6 +10,7 @@ import { prisma } from "@/server/db";
 import { enregistrerPdf } from "@/server/documents";
 import { escapeHtml } from "@/server/email-templates";
 import { UserFacingError } from "@/server/errors";
+import { enabledIn } from "@/server/features";
 import { notifier } from "@/server/notifications";
 import { prochainNumero } from "@/server/numerotation";
 import { CSS_EDITION, htmlVersPdf } from "@/server/pdf";
@@ -26,7 +28,12 @@ export async function chargerFacture(id: number) {
     include: {
       paiements: { include: { recordedBy: true }, orderBy: { paidAt: "asc" } },
       reservation: {
-        include: { espace: { include: { site: true } }, user: true, organisation: true },
+        include: {
+          espace: { include: { site: true } },
+          user: true,
+          organisation: true,
+          service: { select: { name: true, email: true, phone: true } },
+        },
       },
       organisation: true,
     },
@@ -202,11 +209,20 @@ export async function pdfFacture(id: number): Promise<Buffer | null> {
   const client = f.organisation ?? r?.organisation;
   const contact = r?.user;
   const paye = f.paiements.reduce((s, x) => s + x.montant, 0);
+  // Le service auquel le dossier est confié (module Processus) : l'interlocuteur du débiteur.
+  const service = enabledIn(cfg, "processus") ? r?.service : null;
+  const suivi = service
+    ? `<br><span class="muted">Dossier suivi par : <strong>${p(service.name)}</strong>${
+        service.email || service.phone
+          ? ` (${p([service.email, service.phone].filter(Boolean).join(" · "))})`
+          : ""
+      }</span>`
+    : "";
   const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><style>${CSS_EDITION}</style></head><body>
 <div class="entete"><div>${cfg.COLLECTIVITE_LOGO ? `<img class="logo" src="${cfg.COLLECTIVITE_LOGO}" alt="">` : ""}<div class="coll">${p(cfg.COLLECTIVITE_NOM)}</div><div class="muted">${p(cfg.COLLECTIVITE_ADRESSE)}</div></div>
 <div class="doc"><strong>${FACTURE_TYPES[f.type] ?? "Facture"}</strong><br>N° ${p(f.numero)}<br>Émise le ${dateCourte(f.createdAt)}${f.dueAt ? `<br>Échéance ${dateCourte(f.dueAt)}` : ""}</div></div>
 <div class="grille"><div class="bloc"><span class="muted">Débiteur</span><br><strong>${client ? p(client.name) : contact ? `${p(contact.firstName)} ${p(contact.lastName)}` : "—"}</strong>${client?.address ? `<br>${p(client.address)}<br>${p(client.postalCode)} ${p(client.city)}` : ""}${contact?.email ? `<br>${p(contact.email)}` : ""}</div>
-<div class="bloc"><span class="muted">Objet</span><br>${r ? `Réservation <strong>${p(r.numero)}</strong><br>${p(r.espace.name)}, ${p(r.espace.site.name)}<br>${plage(r.startAt, r.endAt)}` : p(f.libelle)}</div></div>
+<div class="bloc"><span class="muted">Objet</span><br>${r ? `Réservation <strong>${p(r.numero)}</strong><br>${p(r.espace.name)}, ${p(r.espace.site.name)}<br>${plage(r.startAt, r.endAt)}${suivi}` : p(f.libelle)}</div></div>
 <table><thead><tr><th>Désignation</th><th class="num">Montant HT</th><th class="num">TVA</th><th class="num">Montant TTC</th></tr></thead><tbody>
 <tr><td>${p(f.libelle)}</td><td class="num">${montant(f.montantHt)}</td><td class="num">${montant(f.tva)}</td><td class="num">${montant(f.montantTtc)}</td></tr>
 <tr class="total"><td colspan="3" class="num">Net à payer</td><td class="num">${montant(f.montantTtc)}</td></tr>

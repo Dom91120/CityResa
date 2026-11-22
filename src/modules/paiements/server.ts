@@ -32,6 +32,9 @@ export const INCLUDE_FACTURE_LISTE = {
       espace: { select: { name: true } },
       user: { select: { id: true, firstName: true, lastName: true, email: true } },
       organisation: { select: { id: true, name: true } },
+      // Le service auquel le dossier est confié (module Processus).
+      serviceId: true,
+      service: { select: { name: true } },
     },
   },
   organisation: {
@@ -106,6 +109,8 @@ export type FiltresFactures = {
   type: string;
   periode: string;
   organisation: number | null;
+  /** Service du dossier : son identifiant, « aucun » (sans service, facture libre), « » = tous. */
+  service: string;
   q: string;
 };
 
@@ -119,11 +124,13 @@ export const ONGLETS_FACTURES: [string, string][] = [
 
 export function lireFiltres(params: Params): FiltresFactures {
   const org = Number.parseInt(param(params, "organisation") ?? "", 10);
+  const svc = (param(params, "service") ?? "").trim();
   return {
     statut: (param(params, "statut") ?? "").trim(),
     type: (param(params, "type") ?? "").trim(),
     periode: (param(params, "periode") ?? "").trim(),
     organisation: Number.isInteger(org) && org > 0 ? org : null,
+    service: /^([1-9]\d*|aucun)$/.test(svc) ? svc : "",
     q: (param(params, "q") ?? "").trim(),
   };
 }
@@ -155,6 +162,11 @@ export function filtrerFactures(
     if (fl.organisation) {
       const orgId = f.organisationId ?? f.reservation?.organisation?.id ?? null;
       if (orgId !== fl.organisation) return false;
+    }
+    if (fl.service) {
+      const serviceId = f.reservation?.serviceId ?? null;
+      if (fl.service === "aucun" ? serviceId !== null : String(serviceId) !== fl.service)
+        return false;
     }
     if (ql && !texteDe(f).includes(ql)) return false;
     return true;

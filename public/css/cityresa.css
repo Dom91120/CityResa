@@ -448,9 +448,9 @@ textarea.form-control { min-height: 90px; }
 .circuit-version { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 0.82rem; color: var(--muted); }
 /* Barre étagée : la recherche sur sa ligne, les filtres sur la suivante, à leur aise. */
 .list-toolbar--etagee { flex-basis: 100%; }
-.list-toolbar--etagee > .list-search { flex: 0 1 360px; width: auto; max-width: 360px; }
-.list-toolbar--etagee > form.d-flex { flex: 1 1 100%; }
-.list-toolbar--etagee > form.d-flex > .filtre-select { flex: 1 1 190px; }
+.list-toolbar.list-toolbar--etagee > .list-search { flex: 0 1 360px; width: auto; max-width: 360px; }
+.list-toolbar.list-toolbar--etagee > form.d-flex { flex: 1 1 100%; }
+.list-toolbar.list-toolbar--etagee > form.d-flex > .filtre-select { flex: 1 1 190px; }
 .seg-tab { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); border: 1px solid var(--line); color: var(--body); font-size: 0.8rem; font-weight: 500; background: var(--surface); }
 .seg-tab:hover { border-color: var(--sub); color: var(--strong); }
 .seg-tab.active { border-color: var(--strong); color: var(--strong); font-weight: 600; }

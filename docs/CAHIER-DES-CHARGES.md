@@ -1103,6 +1103,15 @@ L'écart **E7** est ainsi traité pour les subventions.
 La transmission au suppléant existe déjà : une délégation sollicite son titulaire et son
 suppléant, un service suppléé sollicite aussi les membres du service qui le supplée.
 
+**Lot 22, livré** — le service sur les factures :
+
+- la liste des **paiements** indique le service du dossier de chaque facture et se filtre par
+  service (ou « Sans service ») ; les compteurs d'onglets et l'export CSV suivent ;
+- le **PDF d'une facture** porte « Dossier suivi par », avec le service et ses coordonnées ;
+- le courriel d'émission d'une facture était déjà signé du service du dossier (lot 2).
+
+L'écart **E7** (le service nommé à l'usager) est ainsi traité de bout en bout.
+
 **Reste à faire**
 
 | Sujet | Écart |
@@ -1110,7 +1119,6 @@ suppléant, un service suppléé sollicite aussi les membres du service qui le s
 | Droits par service sur ce qui reste réglé **par espace** : présences, personnel de service, fermetures | E1 |
 | Autres **moments** d'insertion : avant l'émission d'une facture, une fermeture exceptionnelle | E3 |
 | **Effets** paramétrables d'une étape (modèle de courriel propre à l'étape, mise en copie, document) | E2 |
-| Service sur les factures | E7 |
 
 ### Limites voulues
 

@@ -272,7 +272,7 @@ Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écrit
 - L'association connaît son interlocuteur : les courriels du dossier (accusé de réception, dossier à compléter, décision) sont signés du service instructeur, avec son courriel et son téléphone ; le bandeau du dossier sur le portail indique « Votre interlocuteur » ; le PDF du dossier et la notice sur les données personnelles nomment ce service. Une coordonnée que le service n'a pas reprend celle des réglages des subventions. Un dossier encore en rédaction n'a pas de service : le contact général s'affiche.
 - Un élu donne un avis, il n'instruit jamais, même membre d'un service.
 - Appartenir au service instructeur ne donne aucun droit que le rôle n'a pas. Le rôle Agent fourni n'a que la lecture sur les subventions : pour qu'un agent instruise, donnez-lui un rôle qui a l'écriture. Le jeu de démonstration le fait avec un rôle **Agent instructeur** (celui de l'agent, plus l'écriture sur les subventions), attribué à Karim Benali.
-- La liste des subventions se filtre par **service instructeur** (chapitre 7), le planning par **service du dossier** (chapitre 3.5).
+- La liste des subventions se filtre par **service instructeur** (chapitre 7), le planning par **service du dossier** (chapitre 3.5), les paiements par **service du dossier** (chapitre 6.1) ; le PDF d'une facture nomme ce service.
 - Le compteur **Subventions** du menu suit la file de travail de l'agent : les dossiers de ses services et ceux sans service.
 
 ## 12.8 Les circuits des campagnes de créneaux

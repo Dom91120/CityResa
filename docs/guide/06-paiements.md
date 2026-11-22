@@ -21,7 +21,7 @@ Ce chapitre décrit le suivi des factures émises pour les réservations (acompt
   - **Encaissé** sur le mois en cours et le nombre de règlements ;
   - **Factures émises**, toutes périodes.
 - Les onglets **À payer**, **En retard**, **Payées**, **Annulées** et **Toutes**.
-- La recherche (numéro, dossier, débiteur) et les filtres **Tous les types**, **Toutes périodes**, **Toutes les organisations**, puis **Filtrer**.
+- La recherche (numéro, dossier, débiteur) et les filtres **Tous les types**, **Toutes périodes**, **Toutes les organisations**, puis **Filtrer**. Quand des services sont décrits (chapitre 12), chaque ligne indique sous le dossier le **service** auquel il est confié, et un filtre **Tous les services** retient les factures d'un service, ou celles **Sans service** (dossier sans service, facture libre) ; l'export CSV le suit. Le PDF d'une facture porte alors « Dossier suivi par », avec le service et ses coordonnées.
 - Pour chaque facture : **Numéro** et date d'émission, **Type** (pastille Acompte, Solde, Caution, Frais d'annulation, Avoir), **Dossier** lié, **Débiteur** et son contact, **Montant TTC**, **Payé**, **Reste** (en rouge s'il reste une somme due) et **Échéance** (avec le nombre de jours restants).
 
 **Règles à connaître**

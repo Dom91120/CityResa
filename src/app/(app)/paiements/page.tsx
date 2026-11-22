@@ -30,6 +30,7 @@ import {
 import { CartesFactures, Debiteur, Echeance, TypeFacture } from "@/modules/paiements/vues";
 import { contexteModule } from "@/server/module";
 import { type Params, paginate, resolvePerPage } from "@/server/paging";
+import { optionsServices } from "@/server/services";
 
 export const metadata = { title: "Paiements - CityRésa" };
 
@@ -39,7 +40,7 @@ export default async function PaiementsPage({ searchParams }: { searchParams: Pr
   const fl = lireFiltres(params);
   const now = new Date();
   const auj = aujourdhuiUtc(now);
-  const toutes = await chargerFactures();
+  const [toutes, services] = await Promise.all([chargerFactures(), optionsServices()]);
   const p = periode(fl.periode || undefined, now);
   const s = synthese(toutes, p, now);
   const onglets = compterOnglets(toutes, fl, now);
@@ -106,6 +107,7 @@ export default async function PaiementsPage({ searchParams }: { searchParams: Pr
         />
 
         <Barre
+          etagee={services.length > 0}
           q={fl.q}
           pathname={page.pathname}
           search={page.search}
@@ -115,6 +117,7 @@ export default async function PaiementsPage({ searchParams }: { searchParams: Pr
             type: fl.type,
             periode: fl.periode,
             organisation: fl.organisation ? String(fl.organisation) : null,
+            service: fl.service,
           }}
           filtres={
             <>
@@ -140,6 +143,15 @@ export default async function PaiementsPage({ searchParams }: { searchParams: Pr
                 blank="Toutes les organisations"
                 ariaLabel="Organisation"
               />
+              {services.length ? (
+                <Filtre
+                  name="service"
+                  value={fl.service}
+                  options={[...services, ["aucun", "Sans service"]]}
+                  blank="Tous les services"
+                  ariaLabel="Service du dossier"
+                />
+              ) : null}
               <button type="submit" className="btn btn-outline-secondary btn-sm">
                 <Icone nom="filter" taille={14} /> Filtrer
               </button>
@@ -201,6 +213,9 @@ export default async function PaiementsPage({ searchParams }: { searchParams: Pr
                           <span className="cell2" style={{ maxWidth: 180 }}>
                             <a href={`/reservations/${f.reservation.id}`}>{f.reservation.numero}</a>
                             <small title={f.reservation.title}>{f.reservation.title}</small>
+                            {services.length && f.reservation.service ? (
+                              <small>{f.reservation.service.name}</small>
+                            ) : null}
                           </span>
                         ) : (
                           <span className="cell2" style={{ maxWidth: 180 }}>
