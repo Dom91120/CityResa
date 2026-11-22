@@ -800,6 +800,28 @@ const VERROUS: Record<Moment, { fait: string; impossible: string; reste: string;
  * étape bloquante applicable à ce moment n'est pas validée, le geste est retenu. Les étapes
  * pas encore demandées sont ouvertes au passage.
  */
+/** Les étapes qui retiennent encore ce geste sur le dossier (libellés), sans rien ouvrir. */
+export async function retenuesAvant(d: Dossier, moment: Moment): Promise<string[]> {
+  const etat = await etatCircuit(d);
+  return etat ? etat.retenues.filter((e) => e.moment === moment).map((e) => e.libelle) : [];
+}
+
+/**
+ * Comme `verifierAvant`, sans lever : les étapes à demander le sont au passage, et la réponse
+ * dit ce qui retient encore le geste (vide = rien). Sert aux gestes groupés (fermeture).
+ */
+export async function retenuAvant(
+  d: Dossier,
+  moment: Moment,
+  acteur: string,
+  contexte: string | null,
+): Promise<string[]> {
+  const etat = await etatCircuit(d);
+  if (!etat) return [];
+  await ouvrirEtapesPrealables(d, etat, acteur, contexte, moment);
+  return etat.retenues.filter((e) => e.moment === moment).map((e) => e.libelle);
+}
+
 export async function verifierAvant(
   r: Dossier,
   moment: Moment,

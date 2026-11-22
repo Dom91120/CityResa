@@ -1146,11 +1146,19 @@ Pour l'écart **E2**, la Communication peut ainsi suivre une décision sans la r
 L'écart **E1** est ainsi traité en entier : blocages sans réservation, vacations et plannings
 types restent réglés par espace ou par site, car ils ne touchent aucun dossier.
 
+**Lot 26, livré** — étape avant une fermeture exceptionnelle :
+
+- une fermeture qui annule des créneaux respecte désormais l'étape **avant une annulation** du
+  circuit de chaque dossier : elle laisse ses créneaux en place et demande l'étape, avec la
+  période et le motif de la fermeture ; l'aperçu signale ces dossiers ;
+- plutôt qu'un nouveau type de dossier pour la fermeture elle-même (qui n'en est pas un), le
+  circuit de chaque dossier touché décide : une salle fermée par une gestionnaire ne contourne
+  plus le visa qu'un dossier exige avant toute annulation.
+
 **Reste à faire**
 
 | Sujet | Écart |
 | --- | --- |
-| Autres **moments** d'insertion : avant une fermeture exceptionnelle | E3 |
 | **Effets** paramétrables d'une étape (modèle de courriel propre à l'étape, document joint) | E2 |
 
 ### Limites voulues

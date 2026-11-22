@@ -178,6 +178,7 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 - Un dossier dont tous les créneaux tombent pendant la fermeture n'est pas vidé : il est signalé « Tous ses créneaux : à annuler ou reporter depuis la fiche ».
 - Chaque usager reçoit un courriel « Fermeture exceptionnelle » par dossier, avec ses créneaux concernés, les remplacements possibles et un lien pour convenir d'un report.
 - Chaque dossier touché garde la trace de la fermeture dans son historique.
+- Si le circuit d'un dossier demande une relecture ou un visa **avant une annulation** (chapitre 12), l'aperçu l'indique (« Avant l'annulation : … ») ; la fermeture laisse les créneaux de ce dossier en place et demande l'étape, avec la période et le motif. Vous les annulerez depuis la fiche du dossier une fois l'accord donné.
 - Quand des services sont décrits (chapitre 12.4), la fermeture n'annule que les créneaux des dossiers de votre service : ceux d'un autre service sont marqués « … · décide de l'annulation » dans l'aperçu, laissés en place, et ce service est prévenu.
 
 ## 3.8 Imprimer le planning et la feuille de salle

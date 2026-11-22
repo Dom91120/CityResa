@@ -4,6 +4,7 @@ import { Icone } from "@/components/icones";
 import { StatutResa } from "@/components/macros";
 import { plage } from "@/lib/libelles";
 import { type Alternative, alternativesPour } from "@/server/alternatives";
+import { chargerPorteur, retenuesAvant } from "@/server/circuits";
 import { prisma } from "@/server/db";
 import { apercuFermeture } from "@/server/fermetures";
 import { requireEdit } from "@/server/guards";
@@ -58,6 +59,13 @@ export default async function FermeturePage({
     );
   }
   const nbOcc = dossiers.reduce((n, d) => n + d.occurrences.length, 0);
+  // Ce que le circuit de chaque dossier demande avant une annulation.
+  const avantAnnulation = new Map<number, string[]>();
+  for (const d of dossiers) {
+    const p = await chargerPorteur("reservation", d.reservationId);
+    const l = p ? await retenuesAvant(p, "avant_annulation") : [];
+    if (l.length) avantAnnulation.set(d.reservationId, l);
+  }
   // Les dossiers d'un autre service : l'agent n'en annule rien, ce service décide.
   const autres = dossiers.filter((d) => !user.agitPour(d.serviceId));
   const entiers = dossiers.filter((d) => d.entier).length;
@@ -124,6 +132,12 @@ export default async function FermeturePage({
                         <td>
                           <a href={`/reservations/${d.reservationId}`}>{d.numero}</a>
                           <div className="text-muted small">{d.title}</div>
+                          {avantAnnulation.get(d.reservationId)?.length ? (
+                            <div className="small text-warning">
+                              Avant l'annulation :{" "}
+                              {avantAnnulation.get(d.reservationId)?.join(", ")}
+                            </div>
+                          ) : null}
                           {d.service && !user.agitPour(d.serviceId) ? (
                             <div className="small text-warning">
                               {d.service} · décide de l'annulation
@@ -181,6 +195,9 @@ export default async function FermeturePage({
                       : "",
                     autres.length
                       ? "Les dossiers d'un autre service ne sont pas annulés : ce service est prévenu et décide."
+                      : "",
+                    avantAnnulation.size
+                      ? "Un dossier dont le circuit demande une étape avant l'annulation garde ses créneaux : l'étape est demandée, vous les annulerez depuis sa fiche une fois l'accord donné."
                       : "",
                   ]
                     .filter(Boolean)

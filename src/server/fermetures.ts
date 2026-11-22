@@ -134,11 +134,30 @@ export async function poserFermeture(opts: {
   if (!apercuInchange(opts.vus, touches)) return "apercu_perime";
   const autres = touches.filter((t) => opts.agitPour && !opts.agitPour(t.serviceId));
   const horsService = new Set(autres.map((t) => t.reservationId));
+  const periode = plage(startAt, endAt);
+  // Le circuit d'un dossier peut retenir l'annulation (visa avant annulation) : la fermeture
+  // la respecte, laisse ses créneaux en place et demande l'étape.
+  const enAttente = new Set<number>();
+  if (opts.annuler) {
+    const { chargerPorteur, retenuAvant } = await import("@/server/circuits");
+    for (const t of touches) {
+      if (t.entier || horsService.has(t.reservationId)) continue;
+      const p = await chargerPorteur("reservation", t.reservationId);
+      if (!p) continue;
+      const libelles = await retenuAvant(
+        p,
+        "avant_annulation",
+        acteur.name,
+        `Fermeture de ${espace.name} (${periode})${motif ? ` · ${motif}` : ""} : ${t.occurrences.length} créneau(x) à annuler`,
+      );
+      if (libelles.length) enAttente.add(t.reservationId);
+    }
+  }
   const { creneauxAAnnuler, dossiersAnnules, bilan } = planFermeture(touches, {
     ...opts,
     horsService,
+    enAttente,
   });
-  const periode = plage(startAt, endAt);
   const dates = new Map(
     touches.map((t) => [
       t.reservationId,

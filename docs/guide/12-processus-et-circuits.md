@@ -29,7 +29,7 @@ Une étape précède l'un de six gestes sur une réservation :
 | --- | --- |
 | **Avant l'acceptation de la demande** | Approuver (ou créer directement le dossier accepté) |
 | **Avant le refus de la demande** | Décliner |
-| **Avant une annulation par la collectivité** | Annuler la réservation (l'annulation par l'usager n'est pas concernée) |
+| **Avant une annulation par la collectivité** | Annuler la réservation (l'annulation par l'usager n'est pas concernée), et annuler ses créneaux par une fermeture exceptionnelle : la fermeture laisse alors les créneaux du dossier en place et demande l'étape |
 | **Avant une réquisition pour la Ville** | Réquisitionner un créneau |
 | **Avant l'émission d'une facture** | Émettre une facture d'acompte, de solde ou de caution depuis le dossier (les factures émises d'office, comme les frais d'annulation, ne sont pas concernées) |
 | **Avant une retenue sur caution** | Retenir tout ou partie de la caution, après l'état des lieux de sortie (la restitution n'est pas concernée) |

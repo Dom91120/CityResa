@@ -53,6 +53,8 @@ export type BilanFermeture = {
   entiers: number;
   /** Dossiers d'un autre service : non annulés, laissés à sa décision. */
   laisses?: number;
+  /** Dossiers dont le circuit demande une étape avant l'annulation : non annulés, en attente. */
+  retenus?: number;
 };
 
 /** Ce que la fermeture va faire : créneaux à annuler, dossiers annulés en partie, bilan. */
@@ -63,10 +65,15 @@ export function planFermeture(
     prevenir: boolean;
     /** Les dossiers d'un autre service que celui de l'agent : il n'en annule rien. */
     horsService?: ReadonlySet<number>;
+    /** Les dossiers dont le circuit retient l'annulation (visa, relecture en attente). */
+    enAttente?: ReadonlySet<number>;
   },
 ): { creneauxAAnnuler: number[]; dossiersAnnules: Set<number>; bilan: BilanFermeture } {
   const hors = opts.horsService ?? new Set<number>();
-  const annules = touches.filter((t) => opts.annuler && !t.entier && !hors.has(t.reservationId));
+  const attente = opts.enAttente ?? new Set<number>();
+  const annules = touches.filter(
+    (t) => opts.annuler && !t.entier && !hors.has(t.reservationId) && !attente.has(t.reservationId),
+  );
   const creneauxAAnnuler = annules.flatMap((t) => t.occurrences.map((o) => o.creneauId));
   return {
     creneauxAAnnuler,
@@ -77,6 +84,7 @@ export function planFermeture(
       prevenus: opts.prevenir ? touches.length : 0,
       entiers: touches.filter((t) => t.entier).length,
       laisses: touches.filter((t) => hors.has(t.reservationId)).length,
+      retenus: touches.filter((t) => attente.has(t.reservationId)).length,
     },
   };
 }
@@ -90,11 +98,14 @@ export function phraseBilan(b: BilanFermeture, espace: string, periode: string):
     b.annulees ? pluriel(b.annulees, "créneau annulé", "créneaux annulés") : null,
     b.prevenus ? pluriel(b.prevenus, "usager prévenu", "usagers prévenus") : null,
   ].filter(Boolean);
+  const retenus = b.retenus
+    ? ` ${pluriel(b.retenus, "dossier attend", "dossiers attendent")} une étape de son circuit avant l'annulation : créneaux laissés en place, l'étape est demandée.`
+    : "";
   const laisses = b.laisses
     ? ` ${pluriel(b.laisses, "dossier d'un autre service", "dossiers d'un autre service")} : non annulé${b.laisses > 1 ? "s" : ""}, son service est prévenu.`
     : "";
   const aSuivre = b.entiers
     ? ` ${pluriel(b.entiers, "dossier entièrement couvert", "dossiers entièrement couverts")} : à annuler ou reporter depuis sa fiche.`
     : "";
-  return `Fermeture posée sur ${espace} (${periode}) : ${details.join(", ")}.${aSuivre}${laisses}`;
+  return `Fermeture posée sur ${espace} (${periode}) : ${details.join(", ")}.${aSuivre}${laisses}${retenus}`;
 }
