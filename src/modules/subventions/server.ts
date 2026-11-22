@@ -112,21 +112,16 @@ export function peutDecider(user: Pick<CurrentUser, "canEdit" | "role">): boolea
 
 /**
  * Instruire CE dossier (le prendre, le renvoyer, le soumettre, voter, verser, le modifier).
- * Sans service instructeur : l'écriture sur les subventions, comme avant. Avec un service
- * (module Processus) : les personnes qui agissent pour lui, même si leur rôle n'a que la
- * lecture sur les subventions, et les administrateurs.
+ * Le RÔLE dit ce qu'on a le droit de faire : il faut l'écriture sur les subventions. Le
+ * SERVICE dit sur quels dossiers : quand le dossier a un service instructeur (module
+ * Processus), il faut aussi agir pour lui. Appartenir au service ne donne aucun droit que le
+ * rôle n'a pas.
  */
 export function peutInstruire(
-  user: Pick<CurrentUser, "canEdit" | "canView" | "role" | "agitPour" | "services">,
+  user: Pick<CurrentUser, "canEdit" | "role" | "agitPour">,
   s: { serviceId: number | null },
 ): boolean {
-  if (user.role === "elu" || !user.agitPour(s.serviceId)) return false;
-  if (user.canEdit("subventions")) return true;
-  return (
-    Boolean(s.serviceId) &&
-    user.canView("subventions") &&
-    user.services.includes(s.serviceId as number)
-  );
+  return user.role !== "elu" && user.canEdit("subventions") && user.agitPour(s.serviceId);
 }
 
 export const REFUS_SERVICE =
@@ -134,12 +129,16 @@ export const REFUS_SERVICE =
 
 /** Le motif pour lequel l'utilisateur ne peut pas instruire ce dossier. */
 export function refusInstruction(
-  user: Pick<CurrentUser, "role">,
+  user: Pick<CurrentUser, "role" | "canEdit">,
   s: { serviceId: number | null },
 ): string {
   if (user.role === "elu") return REFUS_ELU;
+  if (!user.canEdit("subventions")) return REFUS_ROLE;
   return s.serviceId ? REFUS_SERVICE : "Modification non autorisée.";
 }
+
+export const REFUS_ROLE =
+  "Votre rôle n'a pas l'écriture sur les subventions : demandez-la à un administrateur.";
 
 export const REFUS_ELU =
   "Les élus donnent un avis ; la décision et le suivi sont enregistrés par les agents.";
@@ -495,13 +494,13 @@ export async function donnerAvis(id: number, e: AvisEntree, acteur: CurrentUser)
   // Quand le circuit nomme les élus consultés, l'avis leur est réservé.
   const { consultation } = await import("@/server/circuits-subvention");
   const c = await consultation(s);
-  if (c?.restreinte) {
-    if (!acteur.isAdmin && !c.consultes.some((p) => p.id === acteur.id))
-      throw new UserFacingError(
-        `L'avis sur ce dossier est demandé à : ${c.etapes.map((e) => e.libelleIntervenant).join(", ")}.`,
-      );
-  } else if (!acteur.canEdit("subventions"))
+  // Le rôle d'abord : donner un avis demande l'écriture sur les subventions.
+  if (!acteur.canEdit("subventions"))
     throw new UserFacingError("Vous n'avez pas le droit de donner un avis sur les subventions.");
+  if (c?.restreinte && !acteur.isAdmin && !c.consultes.some((p) => p.id === acteur.id))
+    throw new UserFacingError(
+      `L'avis sur ce dossier est demandé à : ${c.etapes.map((e) => e.libelleIntervenant).join(", ")}.`,
+    );
   const existant = await prisma.subventionAvis.findFirst({
     where: { subventionId: id, authorId: acteur.id },
   });

@@ -1,6 +1,6 @@
 import { fiche } from "@/modules/subventions/routes";
 import { require as exigerModule } from "@/server/features";
-import { requireView } from "@/server/guards";
+import { requireEdit } from "@/server/guards";
 import { idDe, pasTrouve, traiterFormulaire } from "@/server/http";
 
 /** POST /subventions/[id]/dossier/[fiche] : un agent remplit une fiche au nom de l'association. */
@@ -14,7 +14,7 @@ export async function POST(
   if (!id) return pasTrouve();
   return traiterFormulaire(
     req,
-    async (form) => fiche(await requireView("subventions"), id, p.fiche, form, "/subventions"),
+    async (form) => fiche(await requireEdit("subventions"), id, p.fiche, form, "/subventions"),
     `/subventions/${id}`,
   );
 }

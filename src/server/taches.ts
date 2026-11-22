@@ -187,13 +187,16 @@ async function digest(): Promise<Resultat> {
       },
     }),
   ]);
+  // Les rôles qui traitent les réservations (écriture), quel que soit leur nom.
+  const roles = (await prisma.role.findMany({ where: { isUsager: false } }))
+    .filter(
+      (r) =>
+        r.isAdmin ||
+        Number((r.permissions as Record<string, number> | null)?.reservations ?? 0) >= 2,
+    )
+    .map((r) => r.name);
   const agents = await prisma.user.findMany({
-    where: {
-      kind: "agent",
-      isActive: true,
-      notifEmail: true,
-      role: { in: ["admin", "gestionnaire", "agent"] },
-    },
+    where: { kind: "agent", isActive: true, notifEmail: true, role: { in: roles } },
     select: { email: true },
   });
   if (!agents.length) return { ok: true, message: "aucun destinataire" };

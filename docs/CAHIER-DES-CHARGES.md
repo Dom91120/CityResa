@@ -901,11 +901,12 @@ réservée au service du dossier).
   est prévenu ; il est aiguillé de nouveau si le secteur d'instruction change avant la
   soumission aux élus ;
 - **instruire** un dossier revient aux personnes de son service instructeur et aux
-  administrateurs, même si leur rôle n'a que la lecture sur les subventions ; le compteur du
-  menu suit la file de travail de l'agent ;
+  administrateurs ; il faut les deux : le rôle donne le droit (écriture sur les subventions),
+  le service désigne les dossiers, et l'appartenance à un service ne donne aucun droit que le
+  rôle n'a pas ; le compteur du menu suit la file de travail de l'agent ;
 - **avis des élus** : le circuit nomme les élus consultés (délégation, service ou rôle, sous
   condition) ; ils sont prévenus à la soumission, retrouvent le dossier dans « Mes étapes »
-  jusqu'à leur avis, et l'avis leur est réservé ;
+  jusqu'à leur avis, et l'avis leur est réservé (avec l'écriture sur les subventions) ;
 - carte **Circuit** sur le dossier (service instructeur, avis attendus ou donnés), logigramme
   et simulation étendus aux subventions.
 

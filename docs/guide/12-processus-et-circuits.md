@@ -197,7 +197,7 @@ Les trois natures d'étape :
 
 ![Dossier de subvention instruit par le Service des sports](captures/subvention-circuit.webp)
 
-*Figure — la demande d'une association sportive vue par Karim Benali, du Service des sports : il l'instruit, et l'avis sera demandé à l'élu de la délégation.*
+*Figure — la demande d'une association sportive vue par Karim Benali, agent instructeur du Service des sports : il l'instruit, et l'avis sera demandé à l'élu de la délégation.*
 
 **Ce que décrit un circuit de subvention**
 
@@ -208,9 +208,9 @@ Les trois natures d'étape :
 **Ce qui change sur un dossier**
 
 - **Au dépôt**, le dossier rejoint son circuit et son service instructeur, qui est prévenu. Si l'agent renseigne ensuite le **secteur d'instruction**, le dossier est aiguillé de nouveau tant qu'il n'est pas soumis aux élus.
-- **Instruire** le dossier (le prendre en instruction, le renvoyer comme incomplet, le compléter, le soumettre aux élus, voter, refuser, marquer versée) revient aux personnes du service instructeur et aux administrateurs. Un membre du service instruit même si son rôle n'a que la **lecture** sur les subventions : c'est le circuit qui le désigne. Les autres agents lisent « Ce dossier est instruit par … ».
+- **Instruire** le dossier (le prendre en instruction, le renvoyer comme incomplet, le compléter, le soumettre aux élus, voter, refuser, marquer versée) revient aux personnes du service instructeur et aux administrateurs. Il faut les deux clés : le **rôle** donne le droit (écriture sur « Subventions »), le **service** désigne les dossiers. Les agents d'un autre service lisent « Ce dossier est instruit par … » ; un membre du service dont le rôle n'a que la lecture lit « votre rôle n'a pas l'écriture sur les subventions ».
 - **À la soumission aux élus**, les élus que le circuit consulte sont prévenus par la cloche et retrouvent le dossier dans **Mes étapes**, jusqu'à ce qu'ils aient donné leur avis.
-- **Donner un avis** est alors réservé aux personnes consultées (et aux administrateurs). La carte **Circuit** du dossier indique pour chaque avis demandé s'il est attendu ou donné.
+- **Donner un avis** est alors réservé aux personnes consultées (et aux administrateurs), qui doivent avoir l'écriture sur « Subventions », comme le rôle Élu. La carte **Circuit** du dossier indique pour chaque avis demandé s'il est attendu ou donné.
 
 **Comment faire**
 
@@ -225,6 +225,7 @@ Les trois natures d'étape :
 - Un dossier garde le circuit de son dépôt ; il n'en change plus une fois soumis aux élus.
 - Les avis ne retiennent pas le vote : le service instructeur vote quand il l'estime utile, la carte Circuit lui montre les avis encore attendus.
 - Un élu donne un avis, il n'instruit jamais, même membre d'un service.
+- Appartenir au service instructeur ne donne aucun droit que le rôle n'a pas. Le rôle Agent fourni n'a que la lecture sur les subventions : pour qu'un agent instruise, donnez-lui un rôle qui a l'écriture. Le jeu de démonstration le fait avec un rôle **Agent instructeur** (celui de l'agent, plus l'écriture sur les subventions), attribué à Karim Benali.
 - Le compteur **Subventions** du menu suit la file de travail de l'agent : les dossiers de ses services et ceux sans service.
 
 ## 12.8 La simulation

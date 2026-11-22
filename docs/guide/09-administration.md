@@ -308,7 +308,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 **Qui** — Administrateurs.
 
 ![Fiche d'un compte](captures/utilisateur.webp)
-*Figure — La fiche de Karim Benali, agent : compte, sécurité, huit espaces en charge, données liées et journal.*
+*Figure — La fiche de Karim Benali, agent instructeur : compte, sécurité, huit espaces en charge, données liées et journal.*
 
 **Ce que l'on voit**
 
@@ -374,6 +374,8 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 | Élu | Écriture sur Subventions (pour donner un avis), lecture ailleurs. |
 | Lecteur | Lecture partout. |
 | Usager | Aucun accès au back-office (portail seulement). |
+
+Le jeu de démonstration ajoute un rôle **Agent instructeur** : celui de l'agent, avec l'écriture sur Subventions, pour l'agent qui instruit les demandes de son service (chapitre 12.7).
 
 **Comment faire**
 

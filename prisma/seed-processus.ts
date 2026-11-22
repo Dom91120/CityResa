@@ -197,8 +197,37 @@ async function creerCircuitsSubventionDemo(): Promise<number> {
   return 2;
 }
 
+/**
+ * Le rôle « Agent instructeur » : celui de l'agent, avec l'écriture sur les subventions. Il
+ * est donné à Karim Benali, qui instruit les dossiers des associations sportives : le service
+ * désigne ses dossiers, le rôle lui donne le droit de les instruire.
+ */
+async function creerRoleInstructeur(): Promise<void> {
+  const agent = await prisma.role.findUnique({ where: { name: "agent" } });
+  if (!agent) return;
+  const permissions = {
+    ...((agent.permissions as Record<string, number> | null) ?? {}),
+    subventions: 2,
+  };
+  const role = {
+    label: "Agent instructeur",
+    description: "Comme l'agent, et instruit les demandes de subvention de son service.",
+    permissions,
+  };
+  await prisma.role.upsert({
+    where: { name: "agent-instructeur" },
+    create: { name: "agent-instructeur", isAdmin: false, isUsager: false, ...role },
+    update: role,
+  });
+  await prisma.user.updateMany({
+    where: { email: "karim.benali@exemple.fr" },
+    data: { role: "agent-instructeur" },
+  });
+}
+
 export async function creerProcessusDemo(): Promise<Record<string, number>> {
   await seedCircuitStandard();
+  await creerRoleInstructeur();
   if ((await prisma.service.count()) > 0)
     return {
       services: 0,

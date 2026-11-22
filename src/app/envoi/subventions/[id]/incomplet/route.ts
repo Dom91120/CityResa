@@ -1,6 +1,6 @@
 import { incomplet } from "@/modules/subventions/routes";
 import { require as exigerModule } from "@/server/features";
-import { requireView } from "@/server/guards";
+import { requireEdit } from "@/server/guards";
 import { idDe, pasTrouve, traiterFormulaire } from "@/server/http";
 
 /** POST /subventions/[id]/incomplet : renvoie le dossier à l'association. */
@@ -10,7 +10,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!id) return pasTrouve();
   return traiterFormulaire(
     req,
-    async (form) => incomplet(await requireView("subventions"), id, form),
+    async (form) => incomplet(await requireEdit("subventions"), id, form),
     `/subventions/${id}`,
   );
 }

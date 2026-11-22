@@ -1,6 +1,6 @@
 import { secteur } from "@/modules/subventions/routes";
 import { require as exigerModule } from "@/server/features";
-import { requireView } from "@/server/guards";
+import { requireEdit } from "@/server/guards";
 import { idDe, pasTrouve, traiterFormulaire } from "@/server/http";
 
 /** POST /subventions/[id]/secteur : le secteur du cadre réservé. */
@@ -10,7 +10,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!id) return pasTrouve();
   return traiterFormulaire(
     req,
-    async (form) => secteur(await requireView("subventions"), id, form),
+    async (form) => secteur(await requireEdit("subventions"), id, form),
     `/subventions/${id}`,
   );
 }

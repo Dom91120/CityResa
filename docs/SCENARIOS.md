@@ -59,7 +59,7 @@ l'administrateur est celui affiché par `pnpm db:init`.
 | Qui | Compte | Rôle dans l'application | Service joué dans les scénarios |
 | --- | --- | --- | --- |
 | Sophie Martin | `sophie.martin@exemple.fr` | Gestionnaire, secteur Salles | **Vie associative** et **Service des fêtes** (voir l'écart E1) |
-| Karim Benali | `karim.benali@exemple.fr` | Agent, secteur Sports | **Service des sports** |
+| Karim Benali | `karim.benali@exemple.fr` | Agent instructeur, secteur Sports | **Service des sports** |
 | Pierre Durand | `pierre.durand@exemple.fr` | Élu, transversal | **Élu** |
 | Administrateur | compte de `pnpm db:init` | Administrateur | Administration ; crée le compte **Communication** (scénario 10) |
 | Martine Dupont | `martine.dupont@exemple.fr` | Usager | Particulier de la commune |
@@ -138,7 +138,7 @@ chacun. Les mêmes données ne donnent pas les mêmes écrans.
 | 3 | Sophie | Ouvrez **Mon équipe** (ch. 5). | Elle-même et l'élu (transversal). Karim, du secteur Sports, n'y est pas. |
 | 4 | Karim | Connectez-vous ; lisez le tableau de bord. | Uniquement des **équipements sportifs**. Pas d'entrée **Mon équipe** dans son menu. |
 | 5 | Karim | Ouvrez **Réservations**, puis cherchez « R260017 » avec Ctrl K (un dossier de salle). | Le dossier d'une salle n'est pas dans sa liste ; s'il l'atteint, il lit « Vous n'avez pas la main sur cet espace ». |
-| 6 | Karim | Ouvrez **Subventions**. | Il voit les dossiers mais aucun bouton d'instruction : lecture seule. |
+| 6 | Karim | Ouvrez **Subventions**, puis un dossier d'Around dance et celui du TTMC. | Son rôle « Agent instructeur » a l'écriture sur les subventions, mais il n'instruit que les dossiers de son service : aucun bouton sur Around dance (Vie associative), les boutons d'instruction sur le TTMC (association sportive). |
 | 7 | Pierre | Connectez-vous. | Tableau de bord complet, salles et sports confondus ; pas de lien **+ Nouvelle réservation** dans la barre du haut. |
 | 8 | Pierre | Ouvrez une demande « À traiter ». | Aucun bouton **Approuver** ni **Décliner**. |
 | 9 | Administrateur | Connectez-vous ; ouvrez **Administration › Comptes** puis **Rôles & permissions** (ch. 9). | Les comptes du back-office avec rôle et secteur ; le tableau des droits par rôle et par domaine sur quatre niveaux. |
@@ -487,7 +487,8 @@ budget.
 | # | Qui | Action | Constat |
 | --- | --- | --- | --- |
 | a | Sophie | Ouvrez S270002. | Elle le lit, sans bouton : « Ce dossier est instruit par Service des sports ». |
-| b | Karim | Ouvrez S270002 : **Prendre en instruction**, puis **Soumettre aux élus**. | Il instruit bien que son rôle n'ait que la lecture sur les subventions : le circuit le désigne. |
+| b | Karim | Ouvrez S270002 : **Prendre en instruction**, puis **Soumettre aux élus**. | Il instruit : son rôle « Agent instructeur » a l'écriture sur les subventions, et le circuit confie ce dossier à son service. |
+| b bis | Administrateur | **Comptes** › Karim : repassez-le au rôle **Agent**, puis rouvrez S270002 avec son compte. | Plus de bouton : « Votre service instruit ce dossier, mais votre rôle n'a pas l'écriture sur les subventions ». Le service ne donne aucun droit que le rôle n'a pas. Remettez « Agent instructeur ». |
 | c | Sophie | Tentez de donner un avis. | Refus : l'avis est demandé à la délégation. |
 | d | Pierre | **Mes étapes** › **Donner mon avis**. | Le dossier quitte ses étapes ; la carte Circuit affiche « Avis donné ». |
 | e | Karim | **Voter la subvention**. | Votée ; l'association est prévenue. |

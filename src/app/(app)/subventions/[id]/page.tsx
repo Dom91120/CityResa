@@ -117,10 +117,11 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
   const peutEditer = user.canEdit("subventions");
   const decide = peutInstruire(user, s);
   const circuit = page.features.processus ? await consultation(s) : null;
-  // Donner un avis : les personnes que le circuit consulte ; à défaut, l'écriture sur les subventions.
-  const peutAvis = circuit?.restreinte
-    ? user.isAdmin || circuit.consultes.some((p) => p.id === user.id)
-    : peutEditer;
+  // Donner un avis : l'écriture sur les subventions et, si le circuit nomme les personnes
+  // consultées, en faire partie.
+  const peutAvis =
+    peutEditer &&
+    (!circuit?.restreinte || user.isAdmin || circuit.consultes.some((p) => p.id === user.id));
   const donnes = new Set(s.avis.map((a) => a.authorId));
   const ici = `/subventions/${id}`;
   const org = s.organisation;
@@ -507,6 +508,11 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
                 <a href={`${ici}/dossier/attestation`} className="btn btn-outline-primary">
                   <Icone nom="send" taille={14} /> Vérifier et déposer
                 </a>
+              ) : !peutEditer && user.agitPour(s.serviceId) && s.serviceId ? (
+                <p className="text-faint small mb-0">
+                  <Icone nom="lock" taille={13} /> Votre service instruit ce dossier, mais votre
+                  rôle n'a pas l'écriture sur les subventions : demandez-la à un administrateur.
+                </p>
               ) : !decide && s.serviceId && user.role !== "elu" ? (
                 <p className="text-faint small mb-0">
                   <Icone nom="lock" taille={13} /> Ce dossier est instruit par{" "}

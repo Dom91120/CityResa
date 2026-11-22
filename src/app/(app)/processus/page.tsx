@@ -407,8 +407,8 @@ export default async function ProcessusPage({
                     return (
                       <tr key={c.id}>
                         <td className="tabular">{c.parDefaut ? "—" : c.position}</td>
-                        <td>
-                          <span className="cell2">
+                        <td className="col-souple col-souple--large">
+                          <span className="cell2" style={{ whiteSpace: "normal" }}>
                             <a href={`/processus/circuits/${c.id}`} className="fw-semibold">
                               {c.name}
                             </a>
@@ -418,7 +418,7 @@ export default async function ProcessusPage({
                             </small>
                           </span>
                         </td>
-                        <td className="col-souple">
+                        <td style={{ minWidth: 190 }}>
                           {c.parDefaut ? (
                             <Chip teinte="slate">Par défaut : tout le reste</Chip>
                           ) : (
