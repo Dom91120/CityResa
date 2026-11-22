@@ -4,6 +4,7 @@ import { BoutonOuvrir, FilRetour, Lu, Lus, ModalAction, Section } from "@/compon
 import { Icone } from "@/components/icones";
 import { Chip, Frise, StatutFacture, StatutResa } from "@/components/macros";
 import { fraisPrevus, lireBareme } from "@/lib/annulation";
+import { lienApercu } from "@/lib/apercu-pdf";
 import { decrireCaution } from "@/lib/caution";
 import { FACTURE_TYPES, RESERVATION_SOURCES } from "@/lib/constantes";
 import { decrireRecurrence, lireRecurrence } from "@/lib/creneaux";
@@ -372,7 +373,11 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
                         <td>{f.dueAt ? dateCourte(f.dueAt) : "—"}</td>
                         <td className="text-end">
                           <a
-                            href={`${ici}/factures/${f.id}/pdf`}
+                            href={lienApercu(
+                              `${ici}/factures/${f.id}/pdf`,
+                              `Facture ${f.numero}`,
+                              ici,
+                            )}
                             className="btn btn-sm btn-outline-secondary"
                           >
                             <Icone nom="file-down" taille={13} /> PDF

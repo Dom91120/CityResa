@@ -338,7 +338,7 @@ export async function reponseDocument(
       ...(mime
         ? {
             "Content-Security-Policy":
-              "default-src 'none'; img-src 'self'; object-src 'self'; frame-ancestors 'none'",
+              "default-src 'none'; img-src 'self'; object-src 'self'; frame-ancestors 'self'",
           }
         : {}),
     },

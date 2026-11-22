@@ -2,6 +2,7 @@ import { Icone } from "@/components/icones";
 import { VideBloc } from "@/components/liste";
 import { Chip, TypeOrganisation } from "@/components/macros";
 import { CarteStat } from "@/components/stats";
+import { lienApercu } from "@/lib/apercu-pdf";
 import { dateCourte, montant, pluriel } from "@/lib/libelles";
 import { seuilsFranchis, totaux } from "@/lib/valorisation";
 import { contexteModule } from "@/server/module";
@@ -240,10 +241,12 @@ export default async function ValorisationPage({
                       </td>
                       <td className="actions text-nowrap">
                         <a
-                          href={`/valorisation/${l.organisationId}/attestation.pdf?exercice=${exercice}`}
+                          href={lienApercu(
+                            `/valorisation/${l.organisationId}/attestation.pdf?exercice=${exercice}`,
+                            `Attestation ${exercice}`,
+                            `/valorisation?exercice=${exercice}`,
+                          )}
                           className="btn btn-ghost btn-icone btn-sm"
-                          target="_blank"
-                          rel="noopener"
                           title="Attestation annuelle (PDF)"
                           aria-label="Attestation annuelle (PDF)"
                         >

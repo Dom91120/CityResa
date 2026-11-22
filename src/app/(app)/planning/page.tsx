@@ -2,6 +2,7 @@ import { BoutonOuvrir, ModalAction } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { SegTabs, urlAvec, VideBloc } from "@/components/liste";
 import { ScriptDiffere } from "@/components/scripts";
+import { lienApercu } from "@/lib/apercu-pdf";
 import { nomCourt } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
 import {
@@ -217,10 +218,12 @@ export default async function PlanningPage({
           ) : null}
           {unSeul ? (
             <a
-              href={`/espaces/${unSeul.id}/feuille.pdf?date=${fen.date}`}
+              href={lienApercu(
+                `/espaces/${unSeul.id}/feuille.pdf?date=${fen.date}`,
+                `Feuille de salle · ${unSeul.name}`,
+                retour,
+              )}
               className="btn btn-outline-secondary btn-sm"
-              target="_blank"
-              rel="noopener"
               title="Programme de la semaine à afficher à la porte, avec QR code vers la version en ligne"
             >
               <Icone nom="qr-code" taille={14} /> Feuille de salle
@@ -245,9 +248,11 @@ export default async function PlanningPage({
               <li>
                 <a
                   className="dropdown-item"
-                  href={`/planning/semaine.pdf?date=${fen.date}${filtresPdfQs ? `&${filtresPdfQs}` : ""}&format=A4`}
-                  target="_blank"
-                  rel="noopener"
+                  href={lienApercu(
+                    `/planning/semaine.pdf?date=${fen.date}${filtresPdfQs ? `&${filtresPdfQs}` : ""}&format=A4`,
+                    "Planning de la semaine (A4)",
+                    retour,
+                  )}
                 >
                   <Icone nom="file-text" taille={14} /> Semaine en PDF (A4, une page par espace)
                 </a>
@@ -255,9 +260,11 @@ export default async function PlanningPage({
               <li>
                 <a
                   className="dropdown-item"
-                  href={`/planning/semaine.pdf?date=${fen.date}${filtresPdfQs ? `&${filtresPdfQs}` : ""}&format=A3`}
-                  target="_blank"
-                  rel="noopener"
+                  href={lienApercu(
+                    `/planning/semaine.pdf?date=${fen.date}${filtresPdfQs ? `&${filtresPdfQs}` : ""}&format=A3`,
+                    "Planning de la semaine (A3)",
+                    retour,
+                  )}
                 >
                   <Icone nom="file-text" taille={14} /> Semaine en PDF (A3)
                 </a>

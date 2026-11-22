@@ -99,7 +99,7 @@ L'association remplit normalement son dossier elle-même depuis « Mes subventio
 - Les étapes s'enchaînent toujours dans cet ordre : Rédaction → Déposé → En instruction → Avis des élus → Voté → Versé. Le refus clôt le dossier depuis les trois premières étapes ; le renvoi comme incomplet ramène en rédaction.
 - Un dossier voté, refusé ou versé est clos : il ne peut plus être modifié et ne reçoit plus d'avis.
 - Seul un dossier en rédaction ou simplement déposé, sans aucun avis, peut être supprimé ; sinon, refusez-le.
-- Le PDF du dossier est généré au dépôt et accroché aux pièces ; le bouton **PDF** le rend à jour à tout moment. Il est présenté comme le formulaire papier de la Ville, dans sa variante sportive ou non : page de garde avec le cadre réservé, fiches 1-1 à 8, pièces, attestation signée et contrat d'engagement républicain ; les réponses de l'association y sont en bleu.
+- Le PDF du dossier est généré au dépôt et accroché aux pièces ; le bouton **PDF** l'affiche dans une page d'aperçu, sans quitter l'application, avec de quoi l'ouvrir dans un onglet ou le télécharger. Il est présenté comme le formulaire papier de la Ville, dans sa variante sportive ou non : page de garde avec le cadre réservé, fiches 1-1 à 8, pièces, attestation signée et contrat d'engagement républicain ; les réponses de l'association y sont en bleu.
 
 ## 7.3 L'avis des élus
 

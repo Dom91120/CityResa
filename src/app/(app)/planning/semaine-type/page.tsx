@@ -1,6 +1,7 @@
 import { Icone } from "@/components/icones";
 import { urlAvec, VideBloc } from "@/components/liste";
 import { Chip } from "@/components/macros";
+import { lienApercu } from "@/lib/apercu-pdf";
 import { JOURS_ISO } from "@/lib/constantes";
 import { plageMinutes } from "@/lib/editions";
 import { pluriel } from "@/lib/libelles";
@@ -74,10 +75,12 @@ export default async function SemaineTypePage({
               qui ne génère rien (retenu dans le navigateur par dom-actions.js). */}
           <div className="btn-group btn-scinde" data-choix-memorise="pdf-format">
             <a
-              href={`/planning/semaine.pdf?${q.toString()}&format=A4`}
+              href={lienApercu(
+                `/planning/semaine.pdf?${q.toString()}&format=A4`,
+                "Semaine type",
+                retour,
+              )}
               className="btn btn-outline-secondary btn-sm"
-              target="_blank"
-              rel="noopener"
               title="Générer le PDF de la semaine type"
               data-choix-principal
             >
@@ -106,7 +109,11 @@ export default async function SemaineTypePage({
                     className={`dropdown-item${format === "A4" ? " est-retenu" : ""}`}
                     aria-current={format === "A4" ? "true" : undefined}
                     data-choix-valeur={format}
-                    data-choix-href={`/planning/semaine.pdf?${q.toString()}&format=${format}`}
+                    data-choix-href={lienApercu(
+                      `/planning/semaine.pdf?${q.toString()}&format=${format}`,
+                      "Semaine type",
+                      retour,
+                    )}
                   >
                     <Icone nom="check" taille={14} classes="coche" /> {libelle}
                   </button>

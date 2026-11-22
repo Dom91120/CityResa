@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { buildCsp, generateNonce } from "@/lib/csp";
+import { buildCsp, encadrableParLApplication, generateNonce } from "@/lib/csp";
 import { cheminFiche, retourMemorise } from "@/lib/url";
 
 const COOKIE_RETOUR = "cityresa_retour";
@@ -68,7 +68,11 @@ export default function proxy(request: NextRequest) {
   if (origine?.retour) headers.set("x-retour", encodeURIComponent(origine.retour));
 
   const nonce = generateNonce();
-  const csp = buildCsp(nonce, process.env.NODE_ENV !== "production");
+  const csp = buildCsp(
+    nonce,
+    process.env.NODE_ENV !== "production",
+    encadrableParLApplication(pathname),
+  );
   headers.set("x-nonce", nonce);
   headers.set("Content-Security-Policy", csp);
 

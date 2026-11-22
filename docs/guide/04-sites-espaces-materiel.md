@@ -297,7 +297,7 @@ Le formulaire compte trois parties.
 **Comment faire**
 
 1. Sur la fiche de l'espace, ouvrez le menu « … » en haut à droite.
-2. Cliquez sur **Feuille de salle (PDF, QR code)**. Le document s'ouvre dans un nouvel onglet ; imprimez-le.
+2. Cliquez sur **Feuille de salle (PDF, QR code)**. Le document s'affiche dans une page d'aperçu ; imprimez-le depuis sa barre d'outils.
 
 **Ce que contient la feuille** — Un PDF au format A4, en noir et blanc : le programme de la semaine de l'espace, les consignes, le règlement et un QR code qui renvoie vers la page publique de l'espace. La même feuille est accessible depuis le planning de l'espace.
 

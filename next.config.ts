@@ -40,6 +40,20 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Les PDF produits par l'application peuvent être encadrés par elle seule : la page
+      // d'aperçu (/apercu) les affiche sans quitter l'application.
+      {
+        source: "/:chemin((?:.*)\\.pdf)",
+        headers: [{ key: "X-Frame-Options", value: "SAMEORIGIN" }],
+      },
+      {
+        source: "/:chemin((?:.*)/pdf)",
+        headers: [{ key: "X-Frame-Options", value: "SAMEORIGIN" }],
+      },
+      {
+        source: "/documents/:id/view",
+        headers: [{ key: "X-Frame-Options", value: "SAMEORIGIN" }],
+      },
     ];
   },
   experimental: {

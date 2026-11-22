@@ -16,6 +16,7 @@ import { Icone } from "@/components/icones";
 import { VideBloc } from "@/components/liste";
 import { Avatar, Chip, OuiNon, PastilleEspace, StatutResa } from "@/components/macros";
 import { CarteStat } from "@/components/stats";
+import { lienApercu } from "@/lib/apercu-pdf";
 import { ESPACE_SECTEURS, OPTION_UNITES, TARIF_UNITES } from "@/lib/constantes";
 import { dateCourte, montantOuGratuit, plage } from "@/lib/libelles";
 import { aPartirDe, grilleEnVigueur } from "@/lib/tarification";
@@ -115,10 +116,9 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
         menu={[
           <MenuLien
             key="feuille"
-            url={`${fiche}/feuille.pdf`}
+            url={lienApercu(`${fiche}/feuille.pdf`, `Feuille de salle · ${e.name}`, fiche)}
             libelle="Feuille de salle (PDF, QR code)"
             icone="qr-code"
-            cible="_blank"
           />,
           peutEditer && !bloque ? (
             <MenuLien

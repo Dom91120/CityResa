@@ -13,6 +13,7 @@ import {
 } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { Avatar, Chip, OuiNon, StatutSubvention, TypeOrganisation } from "@/components/macros";
+import { lienApercu } from "@/lib/apercu-pdf";
 import {
   AVIS_LABELS,
   ROLE_LABELS,
@@ -171,10 +172,12 @@ export default async function SubventionPage({ params }: { params: Promise<{ id:
               />
             ) : null}
             <a
-              href={pdfId ? `/documents/${pdfId}/view` : `${ici}/dossier.pdf`}
+              href={lienApercu(
+                pdfId ? `/documents/${pdfId}/view` : `${ici}/dossier.pdf`,
+                `Dossier ${redaction ? `${s.exercice} en rédaction` : s.numero} · ${s.organisation.name}`,
+                ici,
+              )}
               className="btn btn-outline-secondary"
-              target="_blank"
-              rel="noopener"
             >
               <Icone nom="file-text" taille={14} /> PDF
             </a>

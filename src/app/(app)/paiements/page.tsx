@@ -10,6 +10,7 @@ import {
   Vide,
 } from "@/components/liste";
 import { StatutFacture } from "@/components/macros";
+import { lienApercu } from "@/lib/apercu-pdf";
 import { FACTURE_TYPES } from "@/lib/constantes";
 import { dateCourte, montant } from "@/lib/libelles";
 import { PERIODES, periode } from "@/lib/periodes";
@@ -238,12 +239,14 @@ export default async function PaiementsPage({ searchParams }: { searchParams: Pr
                             </a>
                           ) : null}
                           <a
-                            href={`/paiements/${f.id}/pdf`}
+                            href={lienApercu(
+                              `/paiements/${f.id}/pdf`,
+                              `Facture ${f.numero}`,
+                              urlAvec(page.pathname, page.search, {}),
+                            )}
                             className="btn btn-ghost btn-icone btn-sm"
                             title="PDF"
                             aria-label="PDF"
-                            target="_blank"
-                            rel="noopener"
                           >
                             <Icone nom="file-text" taille={14} />
                           </a>

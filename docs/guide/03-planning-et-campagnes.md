@@ -196,7 +196,7 @@ Quand un seul espace est affiché, un bouton **Feuille de salle** apparaît à c
 **Comment faire**
 
 1. Réglez les filtres de sites et d'espaces : le PDF reprend la sélection en cours, ainsi que les filtres des créneaux, rappelés sous le titre.
-2. Ouvrez **Imprimer, exporter** et choisissez le format. Le PDF s'ouvre dans un nouvel onglet.
+2. Ouvrez **Imprimer, exporter** et choisissez le format. Le PDF s'affiche dans une page d'aperçu, d'où vous pouvez l'imprimer, le télécharger ou l'ouvrir dans un onglet.
 3. Pour un tableur, choisissez **Période affichée en Excel** : le classeur reprend la période de la vue en cours (la semaine, le mois, le jour, ou la période choisie dans la vue Liste), les sites, les espaces et les filtres des créneaux.
 4. Pour la feuille de salle, filtrez sur un seul espace puis cliquez sur **Feuille de salle**. Elle est aussi disponible depuis la fiche de l'espace (**Feuille de salle (PDF, QR code)**).
 

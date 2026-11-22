@@ -13,7 +13,15 @@ export function generateNonce(): string {
   return btoa(String.fromCharCode(...bytes));
 }
 
-export function buildCsp(nonce: string, dev = false): string {
+/**
+ * Une réponse que l'application peut encadrer elle-même : les PDF qu'elle produit sans extension
+ * dans leur adresse (factures) et la consultation d'une pièce, affichés par la page d'aperçu.
+ */
+export function encadrableParLApplication(pathname: string): boolean {
+  return pathname.endsWith("/pdf") || /^\/documents\/\d+\/view$/.test(pathname);
+}
+
+export function buildCsp(nonce: string, dev = false, encadrable = false): string {
   return [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ""}`,
@@ -21,7 +29,7 @@ export function buildCsp(nonce: string, dev = false): string {
     "img-src 'self' data: blob:",
     "font-src 'self'",
     "connect-src 'self'",
-    "frame-ancestors 'none'",
+    `frame-ancestors ${encadrable ? "'self'" : "'none'"}`,
     "frame-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",

@@ -3,6 +3,7 @@ import { FormDocument, ListeDocuments } from "@/components/documents";
 import { FilRetour, Lu, Lus, Section } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { Chip, StatutSubvention } from "@/components/macros";
+import { lienApercu } from "@/lib/apercu-pdf";
 import { SUBVENTION_NATURES, SUBVENTION_STATUS } from "@/lib/constantes";
 import { etatPieces, FICHES } from "@/lib/dossier-subvention";
 import { dateCourte, dateHeure, montant } from "@/lib/libelles";
@@ -66,19 +67,15 @@ export default async function SubventionPortailPage({
         <div className="page-actions">
           {pdfId ? (
             <a
-              href={`/documents/${pdfId}/view`}
+              href={lienApercu(`/documents/${pdfId}/view`, "Dossier de subvention", ici)}
               className="btn btn-outline-primary btn-sm"
-              target="_blank"
-              rel="noopener"
             >
               <Icone nom="file-text" taille={14} /> Dossier PDF
             </a>
           ) : (
             <a
-              href={`${ici}/dossier.pdf`}
+              href={lienApercu(`${ici}/dossier.pdf`, "Dossier de subvention", ici)}
               className="btn btn-outline-primary btn-sm"
-              target="_blank"
-              rel="noopener"
             >
               <Icone nom="file-text" taille={14} /> Dossier PDF
             </a>

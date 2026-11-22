@@ -12,6 +12,7 @@ import {
 } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { Avatar, Chip, StatutFacture, StatutResa } from "@/components/macros";
+import { lienApercu } from "@/lib/apercu-pdf";
 import { FACTURE_TYPES, PAIEMENT_MODES } from "@/lib/constantes";
 import { dateCourte, dateHeure, heure, montant, nomCourt, plage, pluriel } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
@@ -73,10 +74,8 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
               />
             ) : null}
             <a
-              href={`${ici}/pdf`}
+              href={lienApercu(`${ici}/pdf`, `Facture ${f.numero}`, ici)}
               className="btn btn-outline-secondary"
-              target="_blank"
-              rel="noopener"
             >
               <Icone nom="file-text" taille={14} /> PDF
             </a>

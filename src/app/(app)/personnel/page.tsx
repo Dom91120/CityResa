@@ -3,6 +3,7 @@ import { Icone } from "@/components/icones";
 import { SegTabs, urlAvec, VideBloc } from "@/components/liste";
 import { Chip } from "@/components/macros";
 import { candidats, MOTIFS_INDISPONIBLE } from "@/lib/affectation";
+import { lienApercu } from "@/lib/apercu-pdf";
 import { dateMoyenne, heure, isoParis, nomCourt, plageHoraire } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
 import { creneauxNonCouverts, nomPersonne, resumeCouverture } from "@/lib/personnel";
@@ -164,9 +165,7 @@ export default async function PersonnelPage({
               <li>
                 <a
                   className="dropdown-item"
-                  href={`${pdf}&format=A4`}
-                  target="_blank"
-                  rel="noopener"
+                  href={lienApercu(`${pdf}&format=A4`, "Planning de service (A4)", retour)}
                 >
                   <Icone nom="file-text" taille={14} /> Semaine en PDF (A4, une page par site)
                 </a>
@@ -174,9 +173,7 @@ export default async function PersonnelPage({
               <li>
                 <a
                   className="dropdown-item"
-                  href={`${pdf}&format=A3`}
-                  target="_blank"
-                  rel="noopener"
+                  href={lienApercu(`${pdf}&format=A3`, "Planning de service (A3)", retour)}
                 >
                   <Icone nom="file-text" taille={14} /> Semaine en PDF (A3)
                 </a>

@@ -4,6 +4,7 @@ import { Icone } from "@/components/icones";
 import { StatutResa } from "@/components/macros";
 import { ScriptDiffere } from "@/components/scripts";
 import { fraisPrevus, lireBareme } from "@/lib/annulation";
+import { lienApercu } from "@/lib/apercu-pdf";
 import { isoParis, nomCourt, plage } from "@/lib/libelles";
 import {
   CarteDecision,
@@ -155,10 +156,13 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
         menu={[
           <MenuLien
             key="pdf"
-            url={`/reservations/${r.id}/convention.pdf`}
+            url={lienApercu(
+              `/reservations/${r.id}/convention.pdf`,
+              `Convention ${r.numero}`,
+              `/reservations/${r.id}`,
+            )}
             libelle="Convention (PDF)"
             icone="file-signature"
-            cible="_blank"
           />,
           <MenuLien
             key="planning"

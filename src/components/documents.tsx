@@ -2,8 +2,10 @@
  * Pièces jointes d'une fiche : la liste (icône, nom, catégorie, taille, date, actions)
  * et le formulaire de dépôt ; la galerie de photos d'un espace ou d'un site.
  */
+
 import { Icone } from "@/components/icones";
 import type { Document, Referential } from "@/generated/prisma/client";
+import { estPdf, lienApercu } from "@/lib/apercu-pdf";
 import { DOCUMENT_KINDS } from "@/lib/constantes";
 import { ymdUtc } from "@/lib/date-utc";
 import { dateCourte, tailleLabel } from "@/lib/libelles";
@@ -69,9 +71,15 @@ export function ListeDocuments({
           <span className="cell2" style={{ minWidth: 0, flex: 1 }}>
             <span className="d-flex align-items-center gap-2 flex-wrap">
               <a
-                href={viewable(d) ? `/documents/${d.id}/view` : `/documents/${d.id}/download`}
+                href={
+                  estPdf(d)
+                    ? lienApercu(`/documents/${d.id}/view`, d.title || d.filename, next)
+                    : viewable(d)
+                      ? `/documents/${d.id}/view`
+                      : `/documents/${d.id}/download`
+                }
                 className="nom"
-                target={viewable(d) ? "_blank" : undefined}
+                target={viewable(d) && !estPdf(d) ? "_blank" : undefined}
                 rel="noopener"
               >
                 {d.title || d.filename}

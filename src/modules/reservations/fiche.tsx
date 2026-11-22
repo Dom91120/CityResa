@@ -12,6 +12,7 @@ import { Icone } from "@/components/icones";
 import { Avatar, Chip, Frise, OuiNon, StatutFacture, TypeOrganisation } from "@/components/macros";
 import type { Option, Prisma, Referential, ReservationHistory } from "@/generated/prisma/client";
 import type { FraisPrevus } from "@/lib/annulation";
+import { lienApercu } from "@/lib/apercu-pdf";
 import { CAUTION_STATUS, lireStatutCaution } from "@/lib/caution";
 import {
   FACTURE_STATUS,
@@ -1961,23 +1962,33 @@ export function SectionConvention({
               r.conventionDocumentId ? (
                 <span className="d-flex gap-2 flex-wrap">
                   <a
-                    href={`/documents/${r.conventionDocumentId}/view`}
-                    target="_blank"
-                    rel="noopener"
+                    href={lienApercu(
+                      `/documents/${r.conventionDocumentId}/view`,
+                      `Convention ${r.numero}`,
+                      `/reservations/${r.id}`,
+                    )}
                   >
                     Voir le PDF
                   </a>
                   <a
-                    href={`/reservations/${r.id}/convention.pdf`}
-                    target="_blank"
-                    rel="noopener"
+                    href={lienApercu(
+                      `/reservations/${r.id}/convention.pdf`,
+                      `Convention ${r.numero} · version à jour`,
+                      `/reservations/${r.id}`,
+                    )}
                     className="text-muted"
                   >
                     Version à jour
                   </a>
                 </span>
               ) : (
-                <a href={`/reservations/${r.id}/convention.pdf`} target="_blank" rel="noopener">
+                <a
+                  href={lienApercu(
+                    `/reservations/${r.id}/convention.pdf`,
+                    `Convention ${r.numero}`,
+                    `/reservations/${r.id}`,
+                  )}
+                >
                   Aperçu PDF
                 </a>
               )
@@ -2053,9 +2064,11 @@ export function SectionConvention({
                   <td className="actions text-nowrap">
                     {a.documentId ? (
                       <a
-                        href={`/documents/${a.documentId}/view`}
-                        target="_blank"
-                        rel="noopener"
+                        href={lienApercu(
+                          `/documents/${a.documentId}/view`,
+                          `Avenant · ${r.numero}`,
+                          `/reservations/${r.id}`,
+                        )}
                         className="btn btn-ghost btn-icone btn-sm"
                         title="Voir le PDF"
                         aria-label="Voir le PDF"
