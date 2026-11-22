@@ -670,8 +670,11 @@ export async function actionReservation(
       "Cet espace n'est pas dans votre périmètre : vous ne pouvez pas agir sur ce dossier.",
       "danger",
     );
-  // Un dossier confié à un service se décide dans ce service ; écrire dans le fil reste ouvert.
-  if (!user.agitPour(r.serviceId) && cle !== "message")
+  // Un dossier confié à un service se décide dans ce service ; écrire dans le fil reste ouvert,
+  // et le personnel d'un créneau suit la règle des gestes de terrain (un agent sans service aussi).
+  const personnelDuCreneau =
+    segments[0] === "creneaux" && segments[2] === "service" && user.dossierOuvert(r.serviceId);
+  if (!user.agitPour(r.serviceId) && cle !== "message" && !personnelDuCreneau)
     return redirigerAvecMessage(
       fiche,
       "Ce dossier est confié à un autre service : vous pouvez le consulter et écrire dans le fil, pas le décider.",

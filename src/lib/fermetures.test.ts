@@ -83,13 +83,22 @@ describe("plan d'une fermeture", () => {
     const p = planFermeture(touches, { annuler: true, prevenir: true });
     expect(p.creneauxAAnnuler).toEqual([1, 2]);
     expect([...p.dossiersAnnules]).toEqual([10]);
-    expect(p.bilan).toEqual({ dossiers: 2, annulees: 2, prevenus: 2, entiers: 1 });
+    expect(p.bilan).toEqual({ dossiers: 2, annulees: 2, prevenus: 2, entiers: 1, laisses: 0 });
   });
 
   it("n'annule rien et ne prévient personne si l'agent ne le demande pas", () => {
     const p = planFermeture(touches, { annuler: false, prevenir: false });
     expect(p.creneauxAAnnuler).toEqual([]);
-    expect(p.bilan).toEqual({ dossiers: 2, annulees: 0, prevenus: 0, entiers: 1 });
+    expect(p.bilan).toEqual({ dossiers: 2, annulees: 0, prevenus: 0, entiers: 1, laisses: 0 });
+  });
+
+  it("n'annule pas les créneaux des dossiers d'un autre service", () => {
+    const p = planFermeture(touches, { annuler: true, prevenir: true, horsService: new Set([10]) });
+    expect(p.creneauxAAnnuler).toEqual([]);
+    expect(p.bilan.laisses).toBe(1);
+    expect(phraseBilan(p.bilan, "Salle A", "P")).toMatch(
+      /1 dossier d'un autre service : non annulé/,
+    );
   });
 });
 

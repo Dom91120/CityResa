@@ -58,6 +58,8 @@ export default async function FermeturePage({
     );
   }
   const nbOcc = dossiers.reduce((n, d) => n + d.occurrences.length, 0);
+  // Les dossiers d'un autre service : l'agent n'en annule rien, ce service décide.
+  const autres = dossiers.filter((d) => !user.agitPour(d.serviceId));
   const entiers = dossiers.filter((d) => d.entier).length;
 
   return (
@@ -122,6 +124,11 @@ export default async function FermeturePage({
                         <td>
                           <a href={`/reservations/${d.reservationId}`}>{d.numero}</a>
                           <div className="text-muted small">{d.title}</div>
+                          {d.service && !user.agitPour(d.serviceId) ? (
+                            <div className="small text-warning">
+                              {d.service} · décide de l'annulation
+                            </div>
+                          ) : null}
                         </td>
                         <td>{d.demandeur || <span className="text-faint">—</span>}</td>
                         <td>
@@ -167,11 +174,17 @@ export default async function FermeturePage({
                   label="Annuler les créneaux touchés"
                   name="annuler"
                   coche
-                  aide={
+                  aide={[
+                    "Retirés des dossiers et du montant dû.",
                     entiers
-                      ? "Retirés des dossiers et du montant dû. Les dossiers dont la fermeture couvre tous les créneaux sont laissés tels quels."
-                      : "Retirés des dossiers et du montant dû."
-                  }
+                      ? "Les dossiers dont la fermeture couvre tous les créneaux sont laissés tels quels."
+                      : "",
+                    autres.length
+                      ? "Les dossiers d'un autre service ne sont pas annulés : ce service est prévenu et décide."
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                 />
                 <Interrupteur
                   label="Prévenir les usagers par courriel"

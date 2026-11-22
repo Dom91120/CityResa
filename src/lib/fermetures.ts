@@ -51,14 +51,22 @@ export type BilanFermeture = {
   prevenus: number;
   /** Dossiers entièrement couverts, laissés à annuler ou reporter depuis leur fiche. */
   entiers: number;
+  /** Dossiers d'un autre service : non annulés, laissés à sa décision. */
+  laisses?: number;
 };
 
 /** Ce que la fermeture va faire : créneaux à annuler, dossiers annulés en partie, bilan. */
 export function planFermeture(
   touches: readonly DossierTouche[],
-  opts: { annuler: boolean; prevenir: boolean },
+  opts: {
+    annuler: boolean;
+    prevenir: boolean;
+    /** Les dossiers d'un autre service que celui de l'agent : il n'en annule rien. */
+    horsService?: ReadonlySet<number>;
+  },
 ): { creneauxAAnnuler: number[]; dossiersAnnules: Set<number>; bilan: BilanFermeture } {
-  const annules = touches.filter((t) => opts.annuler && !t.entier);
+  const hors = opts.horsService ?? new Set<number>();
+  const annules = touches.filter((t) => opts.annuler && !t.entier && !hors.has(t.reservationId));
   const creneauxAAnnuler = annules.flatMap((t) => t.occurrences.map((o) => o.creneauId));
   return {
     creneauxAAnnuler,
@@ -68,6 +76,7 @@ export function planFermeture(
       annulees: creneauxAAnnuler.length,
       prevenus: opts.prevenir ? touches.length : 0,
       entiers: touches.filter((t) => t.entier).length,
+      laisses: touches.filter((t) => hors.has(t.reservationId)).length,
     },
   };
 }
@@ -81,8 +90,11 @@ export function phraseBilan(b: BilanFermeture, espace: string, periode: string):
     b.annulees ? pluriel(b.annulees, "créneau annulé", "créneaux annulés") : null,
     b.prevenus ? pluriel(b.prevenus, "usager prévenu", "usagers prévenus") : null,
   ].filter(Boolean);
+  const laisses = b.laisses
+    ? ` ${pluriel(b.laisses, "dossier d'un autre service", "dossiers d'un autre service")} : non annulé${b.laisses > 1 ? "s" : ""}, son service est prévenu.`
+    : "";
   const aSuivre = b.entiers
     ? ` ${pluriel(b.entiers, "dossier entièrement couvert", "dossiers entièrement couverts")} : à annuler ou reporter depuis sa fiche.`
     : "";
-  return `Fermeture posée sur ${espace} (${periode}) : ${details.join(", ")}.${aSuivre}`;
+  return `Fermeture posée sur ${espace} (${periode}) : ${details.join(", ")}.${aSuivre}${laisses}`;
 }

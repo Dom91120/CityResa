@@ -2,6 +2,7 @@
  * Fermeture exceptionnelle d'un espace : aperçu des dossiers touchés avant de poser le blocage,
  * puis blocage avec, au choix, annulation des occurrences touchées et courriel aux usagers.
  */
+
 import { after } from "next/server";
 import { lignesCourriel } from "@/lib/alternatives";
 import {
@@ -16,6 +17,7 @@ import { alternativesPour } from "@/server/alternatives";
 import { auditRecord } from "@/server/audit";
 import { prisma } from "@/server/db";
 import { invalidateNavCounts } from "@/server/nav";
+import { agentsPour, notifier } from "@/server/notifications";
 import {
   chargerReservation,
   courrielUsager,
@@ -47,6 +49,9 @@ export type DossierFermeture = DossierTouche & {
   title: string;
   status: string;
   demandeur: string;
+  /** Le service auquel le dossier est confié (module Processus). */
+  serviceId: number | null;
+  service: string | null;
 };
 
 /** Les dossiers dont des créneaux prévus tombent sur la période (espace et sa famille). */
@@ -73,6 +78,8 @@ export async function apercuFermeture(
         numero: true,
         title: true,
         status: true,
+        serviceId: true,
+        service: { select: { name: true } },
         user: { select: { firstName: true, lastName: true } },
         organisation: { select: { name: true } },
       },
@@ -98,6 +105,8 @@ export async function apercuFermeture(
         title: d.title,
         status: d.status,
         demandeur: d.organisation?.name ?? personne,
+        serviceId: d.serviceId,
+        service: d.service?.name ?? null,
       },
     ];
   });
@@ -117,11 +126,18 @@ export async function poserFermeture(opts: {
   prevenir: boolean;
   vus: number[];
   acteur: { email: string; name: string };
+  /** L'agent agit-il pour ce service ? Sinon il n'annule rien du dossier (défaut : oui). */
+  agitPour?: (serviceId: number | null) => boolean;
 }): Promise<BilanFermeture | "apercu_perime"> {
   const { espace, startAt, endAt, motif, acteur } = opts;
   const touches = await apercuFermeture(espace.id, startAt, endAt);
   if (!apercuInchange(opts.vus, touches)) return "apercu_perime";
-  const { creneauxAAnnuler, dossiersAnnules, bilan } = planFermeture(touches, opts);
+  const autres = touches.filter((t) => opts.agitPour && !opts.agitPour(t.serviceId));
+  const horsService = new Set(autres.map((t) => t.reservationId));
+  const { creneauxAAnnuler, dossiersAnnules, bilan } = planFermeture(touches, {
+    ...opts,
+    horsService,
+  });
   const periode = plage(startAt, endAt);
   const dates = new Map(
     touches.map((t) => [
@@ -166,6 +182,21 @@ export async function poserFermeture(opts: {
     acteur.email,
   );
   invalidateNavCounts();
+  // Les dossiers d'un autre service : ce service est prévenu et décide de la suite.
+  for (const t of autres) {
+    const qui = await agentsPour(espace.id, t.serviceId);
+    await Promise.all(
+      qui.map((a) =>
+        notifier(
+          a.id,
+          "reservation",
+          `Fermeture exceptionnelle · ${t.numero}`,
+          `${espace.name} fermé (${periode}) par ${acteur.name} : créneaux à annuler ou reporter`,
+          `/reservations/${t.reservationId}`,
+        ),
+      ),
+    );
+  }
   if (opts.prevenir)
     after(async () => {
       for (const t of touches) {

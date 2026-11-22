@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   type Acteur,
   agitPour,
+  dossierOuvert,
   factureOuverte,
   fileDeTravail,
   type ServiceBrut,
@@ -167,6 +168,18 @@ describe("service de référence d'un usager", () => {
     expect(usagerSuivi(sophie, 1)).toBe(false);
     expect(usagerSuivi(sophie, null)).toBe(true);
     expect(usagerSuivi({ actif: true, isAdmin: false, services: [] }, 1)).toBe(true);
+  });
+});
+
+describe("gestes de terrain sur un dossier", () => {
+  const base = { actif: true, isAdmin: false, id: "u" };
+  it("suivent la file de travail, sauf pour un agent sans service", () => {
+    const fetes = { ...base, services: [3] };
+    expect(dossierOuvert(fetes, 3)).toBe(true);
+    expect(dossierOuvert(fetes, 2)).toBe(false);
+    expect(dossierOuvert(fetes, null)).toBe(true);
+    expect(dossierOuvert({ ...base, services: [] }, 2)).toBe(true);
+    expect(dossierOuvert({ ...fetes, isAdmin: true }, 2)).toBe(true);
   });
 });
 

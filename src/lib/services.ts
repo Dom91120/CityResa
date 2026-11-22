@@ -77,6 +77,15 @@ export function fileDeTravail(a: Acteur): number[] | null {
  * pour un agent sans service (régie, finances), qui encaisse pour tous.
  */
 export function factureOuverte(a: Acteur, serviceId: number | null | undefined): boolean {
+  return dossierOuvert(a, serviceId);
+}
+
+/**
+ * Peut-elle accomplir un geste de terrain ou de gestion sur un dossier de ce service (facture,
+ * constat de présence, personnel de service) ? Comme la décision, sauf pour un agent sans
+ * service (régie, accueil), qui agit pour tous.
+ */
+export function dossierOuvert(a: Acteur, serviceId: number | null | undefined): boolean {
   return fileDeTravail(a) === null || agitPour(a, serviceId);
 }
 

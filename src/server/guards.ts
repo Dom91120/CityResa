@@ -14,7 +14,14 @@ import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import type { Role as RoleRow, User as UserRow } from "@/generated/prisma/client";
 import { PERMISSION_CATEGORIES, type PermissionCategory } from "@/lib/constantes";
-import { type Acteur, agitPour, factureOuverte, fileDeTravail, usagerSuivi } from "@/lib/services";
+import {
+  type Acteur,
+  agitPour,
+  dossierOuvert,
+  factureOuverte,
+  fileDeTravail,
+  usagerSuivi,
+} from "@/lib/services";
 import { auth } from "@/server/auth";
 import { type AppSettings, getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
@@ -104,6 +111,8 @@ export type CurrentUser = {
   fileDeTravail: number[] | null;
   /** Peut-il toucher à la facture d'un dossier de ce service ? (un agent sans service : oui) */
   factureOuverte: (serviceId: number | null | undefined) => boolean;
+  /** Geste de terrain (présence, personnel de service) sur un dossier de ce service. */
+  dossierOuvert: (serviceId: number | null | undefined) => boolean;
   /** L'usager dont c'est le service de référence entre-t-il dans sa file de travail ? */
   suitUsager: (referenceId: number | null | undefined) => boolean;
 };
@@ -180,6 +189,7 @@ export function buildCurrentUser(
       agitPour(acteur, d.serviceId),
     fileDeTravail: fileDeTravail(acteur),
     factureOuverte: (serviceId) => factureOuverte(acteur, serviceId),
+    dossierOuvert: (serviceId) => dossierOuvert(acteur, serviceId),
     suitUsager: (referenceId) => usagerSuivi(acteur, referenceId),
   };
 }

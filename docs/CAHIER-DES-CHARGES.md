@@ -1131,11 +1131,25 @@ L'écart **E7** (le service nommé à l'usager) est ainsi traité de bout en bou
 
 Pour l'écart **E2**, la Communication peut ainsi suivre une décision sans la retenir.
 
+**Lot 25, livré** — droits par service sur les gestes de terrain :
+
+- **présences** : l'écran se limite à la file de travail et le constat est refusé sur le
+  créneau d'un dossier d'un autre service ;
+- **personnel de service** : propositions, validation, écart et affectation automatique
+  suivent la même règle, depuis le module comme depuis la fiche du dossier ;
+- **fermetures** : la fermeture reste posée par l'agent qui a la charge de l'espace, mais
+  n'annule que les créneaux des dossiers de son service ; les autres sont signalés dans
+  l'aperçu, laissés en place, et leur service est prévenu ;
+- règle commune : comme pour la facturation, un agent sans service agit pour tous sur ces
+  gestes de terrain ; il n'annule en revanche aucun créneau d'un dossier confié à un service.
+
+L'écart **E1** est ainsi traité en entier : blocages sans réservation, vacations et plannings
+types restent réglés par espace ou par site, car ils ne touchent aucun dossier.
+
 **Reste à faire**
 
 | Sujet | Écart |
 | --- | --- |
-| Droits par service sur ce qui reste réglé **par espace** : présences, personnel de service, fermetures | E1 |
 | Autres **moments** d'insertion : avant une fermeture exceptionnelle | E3 |
 | **Effets** paramétrables d'une étape (modèle de courriel propre à l'étape, document joint) | E2 |
 

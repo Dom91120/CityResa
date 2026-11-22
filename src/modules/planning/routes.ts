@@ -88,6 +88,7 @@ export async function fermer(form: FormData): Promise<Response> {
       prevenir: coche(form, "prevenir"),
       vus: form.getAll("creneau").map(Number).filter(Number.isInteger),
       acteur: { email: user.email, name: user.name },
+      agitPour: (serviceId) => user.agitPour(serviceId),
     });
     if (b === "apercu_perime")
       return redirigerAvecMessage(

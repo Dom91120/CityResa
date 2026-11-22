@@ -3,6 +3,7 @@
  * l'enregistrement d'un constat (présent avec heures réelles, ou absent sans prévenir).
  * Règles pures dans src/lib/presences.ts.
  */
+
 import { isoParis, plage } from "@/lib/libelles";
 import { parisDateTimeToInstant } from "@/lib/paris-time";
 import {
@@ -17,6 +18,7 @@ import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
 import type { CurrentUser } from "@/server/guards";
 import { historiser } from "@/server/reservations";
+import { dansLaFile } from "@/server/services";
 
 /** Les dossiers dont les créneaux passés comptent (acquis, puis terminés ou archivés). */
 export const STATUTS_CONSTATABLES = ["acceptee", "signee", "confirmee", "terminee", "archivee"];
@@ -49,6 +51,7 @@ export async function creneauxAConstater(
       reservation: {
         status: { in: STATUTS_CONSTATABLES },
         ...(f.dossier ? { id: f.dossier } : {}),
+        ...dansLaFile(user.fileDeTravail),
       },
       ...(user.espacesGeres.length ? { espaceId: { in: user.espacesGeres } } : {}),
       ...(f.espaces?.length ? { espaceId: { in: f.espaces } } : {}),
@@ -82,11 +85,17 @@ export async function constaterPresence(
 ): Promise<string> {
   const c = await prisma.creneau.findUnique({
     where: { id: creneauId },
-    include: { reservation: { select: { id: true, numero: true, status: true } } },
+    include: {
+      reservation: { select: { id: true, numero: true, status: true, serviceId: true } },
+    },
   });
   if (!c) throw new UserFacingError("Créneau introuvable.");
   if (!user.gereEspace(c.espaceId))
     throw new UserFacingError("Cet espace n'est pas dans votre périmètre.");
+  if (!user.dossierOuvert(c.reservation.serviceId))
+    throw new UserFacingError(
+      "Ce créneau relève d'un dossier confié à un autre service : c'est ce service qui en constate la présence.",
+    );
   if (c.status !== "prevu") throw new UserFacingError("Ce créneau est annulé.");
   if (!estPasse(c, now)) throw new UserFacingError("Ce créneau n'est pas encore passé.");
   if (!STATUTS_CONSTATABLES.includes(c.reservation.status))

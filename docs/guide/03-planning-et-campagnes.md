@@ -178,6 +178,7 @@ Ce chapitre présente le planning des espaces (ses quatre vues, ses impressions,
 - Un dossier dont tous les créneaux tombent pendant la fermeture n'est pas vidé : il est signalé « Tous ses créneaux : à annuler ou reporter depuis la fiche ».
 - Chaque usager reçoit un courriel « Fermeture exceptionnelle » par dossier, avec ses créneaux concernés, les remplacements possibles et un lien pour convenir d'un report.
 - Chaque dossier touché garde la trace de la fermeture dans son historique.
+- Quand des services sont décrits (chapitre 12.4), la fermeture n'annule que les créneaux des dossiers de votre service : ceux d'un autre service sont marqués « … · décide de l'annulation » dans l'aperçu, laissés en place, et ce service est prévenu.
 
 ## 3.8 Imprimer le planning et la feuille de salle
 
@@ -269,6 +270,7 @@ Quand un seul espace est affiché, un bouton **Feuille de salle** apparaît à c
 - Sur la fiche du dossier, la pastille du créneau devient « Présent » avec les heures constatées, ou « Absent sans prévenir ».
 - Les heures effectives (constatées si présent, zéro si absent, prévues sans constat) servent à la valorisation des avantages en nature et aux statistiques de présence.
 - La fiche de l'usager compte ses absences non signalées.
+- Quand des services sont décrits, vous ne voyez et ne constatez que les créneaux des dossiers de votre service (et ceux sans service) ; un agent sans service les constate tous.
 - Il n'y a pas de relance automatique des constats manquants.
 
 ## 3.11 L'envoi hebdomadaire du planning

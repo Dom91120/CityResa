@@ -60,7 +60,10 @@ export async function affecter(form: FormData): Promise<Response> {
     const voulus = ids(form, "site");
     const siteIds = sites.filter((s) => !voulus.length || voulus.includes(s.id)).map((s) => s.id);
     if (!siteIds.length) throw new UserFacingError("Aucun site dans votre périmètre.");
-    const bilan = await affecterCreneaux({ de: fen.de, a: fen.a, siteIds }, user.email);
+    const bilan = await affecterCreneaux(
+      { de: fen.de, a: fen.a, siteIds, services: user.fileDeTravail },
+      user.email,
+    );
     await auditRecord(
       "affectation personnel",
       `${fen.label} · ${resumeBilan(bilan)}`,
@@ -90,11 +93,15 @@ export async function actionProposition(
   try {
     const c = await prisma.creneau.findUnique({
       where: { id: creneauId },
-      select: { espaceId: true },
+      select: { espaceId: true, reservation: { select: { serviceId: true } } },
     });
     if (!c) return pasTrouve();
     if (!user.gereEspace(c.espaceId))
       throw new UserFacingError("Ce créneau n'est pas dans votre périmètre.");
+    if (!user.dossierOuvert(c.reservation.serviceId))
+      throw new UserFacingError(
+        "Ce créneau relève d'un dossier confié à un autre service : c'est ce service qui en choisit le personnel.",
+      );
     const { message, niveau } =
       action === "valider"
         ? await validerProposition(creneauId, idOuNull(form, "personnel_id"), user.email)

@@ -98,3 +98,13 @@ export async function variablesServiceSubvention(id: number): Promise<Record<str
   const { escapeHtml } = await import("@/server/email-templates");
   return variablesService(cfg.COLLECTIVITE_NOM, s.service, escapeHtml);
 }
+
+/**
+ * La condition sur le dossier d'un créneau qui le limite à une file de travail (dossiers de ses
+ * services et dossiers sans service) ; vide sans limite. À étaler dans `reservation: { … }`.
+ */
+export function dansLaFile(file: readonly number[] | null | undefined): {
+  OR?: ({ serviceId: null } | { serviceId: { in: number[] } })[];
+} {
+  return file ? { OR: [{ serviceId: null }, { serviceId: { in: [...file] } }] } : {};
+}

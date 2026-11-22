@@ -4,6 +4,7 @@
  * le site, validation et rejet des propositions, réaffectation après une absence ou un retrait.
  * Règles pures dans src/lib/affectation.ts.
  */
+
 import type { Prisma } from "@/generated/prisma/client";
 import {
   type AbsenceRef,
@@ -39,6 +40,7 @@ import {
   versPersonneAffectable,
   versVacationDatee,
 } from "@/server/personnel";
+import { dansLaFile } from "@/server/services";
 
 export { absencesEntre, versPersonneAffectable };
 
@@ -126,7 +128,9 @@ type CreneauCible = Prisma.CreneauGetPayload<{
 }>;
 
 async function creneauxCibles(
-  selection: { ids: number[] } | { de: Date; a: Date; siteIds?: number[] },
+  selection:
+    | { ids: number[] }
+    | { de: Date; a: Date; siteIds?: number[]; services?: number[] | null },
 ): Promise<CreneauCible[]> {
   const now = new Date();
   return prisma.creneau.findMany({
@@ -134,7 +138,10 @@ async function creneauxCibles(
       status: "prevu",
       personnelId: null,
       endAt: { gt: now },
-      reservation: { status: { in: STATUTS_FERMES } },
+      reservation: {
+        status: { in: STATUTS_FERMES },
+        ...("ids" in selection ? {} : dansLaFile(selection.services)),
+      },
       ...("ids" in selection
         ? { id: { in: selection.ids } }
         : {
@@ -166,7 +173,9 @@ function resumerEcartes(ecartes: readonly Ecarte[]): string {
  * proposition écartée (proposeAt null) exclut la personne écartée.
  */
 export async function affecterCreneaux(
-  selection: { ids: number[] } | { de: Date; a: Date; siteIds?: number[] },
+  selection:
+    | { ids: number[] }
+    | { de: Date; a: Date; siteIds?: number[]; services?: number[] | null },
   acteur: string,
   opts: { forcerProposition?: boolean } = {},
 ): Promise<Bilan> {
@@ -353,7 +362,7 @@ export async function propositionsEnAttente(
       proposeAt: { not: null },
       endAt: { gt: fenetre?.startAt ?? new Date() },
       ...(fenetre ? { startAt: { lt: fenetre.endAt } } : {}),
-      reservation: { status: { in: STATUTS_FERMES } },
+      reservation: { status: { in: STATUTS_FERMES }, ...dansLaFile(user.fileDeTravail) },
       ...(user.espacesGeres.length ? { espaceId: { in: user.espacesGeres } } : {}),
     },
     include: INCLUDE_PROPOSITION,
@@ -368,7 +377,7 @@ export async function nbPropositions(user: CurrentUser): Promise<number> {
       personnelId: null,
       proposeAt: { not: null },
       endAt: { gt: new Date() },
-      reservation: { status: { in: STATUTS_FERMES } },
+      reservation: { status: { in: STATUTS_FERMES }, ...dansLaFile(user.fileDeTravail) },
       ...(user.espacesGeres.length ? { espaceId: { in: user.espacesGeres } } : {}),
     },
   });

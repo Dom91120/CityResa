@@ -225,7 +225,7 @@ Ce chapitre présente le module **Personnel de service** : les gardiens, agents 
 
 **À quoi ça sert** — Placer une personne disponible sur chaque créneau réservé sans que le gestionnaire ait à chercher qui est libre : d'office sur les sites qui le souhaitent, sur proposition ailleurs.
 
-**Qui** — Le calcul est automatique ; la validation des propositions demande le droit d'écriture sur « Personnel de service » et la charge de l'espace.
+**Qui** — Le calcul est automatique ; la validation des propositions demande le droit d'écriture sur « Personnel de service » et la charge de l'espace. Quand des services sont décrits, chacun ne voit et ne valide que les propositions des dossiers de son service (un agent sans service, toutes) ; l'affectation automatique lancée depuis cet écran se limite de même.
 
 ![Propositions d'affectation](captures/personnel-propositions.webp)
 

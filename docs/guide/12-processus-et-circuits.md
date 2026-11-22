@@ -120,6 +120,8 @@ Une étape précède l'un de six gestes sur une réservation :
 
 - **Décider** : approuver, décliner, demander des informations, modifier, annuler, toucher aux créneaux, à la convention, à la caution. Sur le dossier d'un autre service, la carte de décision indique « Ce dossier est confié à … : la décision lui revient ».
 - **Facturer et encaisser** les factures du dossier.
+- **Les gestes de terrain** sur ses créneaux : constater la présence (chapitre 3.10), valider ou écarter une proposition de personnel de service et affecter quelqu'un (chapitre 11.8). L'écran **Présences**, l'onglet **Propositions** et l'affectation automatique se limitent à la file de travail. Comme pour les factures, un agent sans service (accueil, régie) les accomplit pour tous.
+- **Annuler des créneaux par une fermeture** : une fermeture exceptionnelle reste l'affaire de l'espace, tout agent qui en a la charge la pose ; mais elle n'annule que les créneaux des dossiers de son service. Ceux d'un autre service sont signalés dans l'aperçu (« … · décide de l'annulation »), laissés en place, et ce service est prévenu par la cloche pour annuler ou reporter.
 - **Être prévenu** : une nouvelle demande, un message de l'usager ou une annulation préviennent les personnes du service, plus les gestionnaires de l'espace.
 
 **Ce que l'usager voit du service** — Le service auquel son dossier est confié signe les courriels qu'il reçoit (« Service des fêtes, Ville de Châtillon », avec son courriel et son téléphone), figure sur la convention (« Dossier suivi par… ») et sur son dossier du portail (« Votre interlocuteur »). Les modèles de courriel disposent pour cela des variables `{{service}}`, `{{service_contact}}` et `{{{signature}}}`.
@@ -138,7 +140,7 @@ Une étape précède l'un de six gestes sur une réservation :
 - Un agent qui n'appartient à **aucun service** garde la vue d'ensemble mais ne décide pas sur un dossier confié à un service. Il encaisse en revanche toutes les factures : c'est le cas de la régie ou des finances.
 - Un **administrateur** agit sur tous les dossiers.
 - Un agent ne crée pas directement « Acceptée » ou « Confirmée » une demande qui revient à un autre service : il l'enregistre « À traiter ».
-- Présences, personnel de service et fermetures restent réglés par espace.
+- Les blocages sans réservation, les vacations du personnel et les plannings types restent réglés par espace ou par site : ils ne touchent aucun dossier.
 
 ## 12.5 Les services et les délégations
 
