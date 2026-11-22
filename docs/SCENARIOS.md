@@ -60,8 +60,11 @@ l'administrateur est celui affiché par `pnpm db:init`.
 | --- | --- | --- | --- |
 | Sophie Martin | `sophie.martin@exemple.fr` | Gestionnaire, secteur Salles | **Vie associative** et **Service des fêtes** (voir l'écart E1) |
 | Karim Benali | `karim.benali@exemple.fr` | Agent instructeur, secteur Sports | **Service des sports** |
+| Nadia Lefèvre | `nadia.lefevre@exemple.fr` | Agent, secteur Salles | **Service des fêtes** |
+| Camille Roche | `camille.roche@exemple.fr` | Agent, secteur Salles | **Communication** (responsable) |
+| Hélène Petit | `helene.petit@exemple.fr` | Financier, transversal | Régie : aucun service, encaisse pour tous |
 | Pierre Durand | `pierre.durand@exemple.fr` | Élu, transversal | **Élu** |
-| Administrateur | compte de `pnpm db:init` | Administrateur | Administration ; crée le compte **Communication** (scénario 10) |
+| Administrateur | compte de `pnpm db:init` | Administrateur | Administration |
 | Martine Dupont | `martine.dupont@exemple.fr` | Usager | Particulier de la commune |
 | Antoine Garcia | `antoine.garcia@exemple.fr` | Usager | Particulier extérieur |
 | Julien Bernard | `julien.bernard@exemple.fr` | Usager | Entreprise (Atelier Numérique SAS) |
@@ -72,9 +75,9 @@ l'administrateur est celui affiché par `pnpm db:init`.
 | Josette Nickels | `josette.nickels@exemple.fr` | Usager | Association extérieure (GAMA), fiche à valider |
 | Léa Fontaine | `lea.fontaine@exemple.fr` | Usager | Service interne (Service Culturel) |
 
-> **Écart E10** — Le jeu de démonstration n'a qu'un compte pour tout le secteur Salles : Sophie
-> Martin joue donc tour à tour la Vie associative et le Service des fêtes. Il n'y a ni compte
-> Communication (on le crée au scénario 10), ni compte Financier.
+Sophie Martin est responsable des deux services des salles : elle décide partout. Pour voir la
+séparation des services sans passer par l'administration, prenez Nadia (Service des fêtes
+seulement) ou Camille (Communication seulement).
 
 ### Les services et circuits de démonstration
 
@@ -123,6 +126,7 @@ dans les deux cas l'avis est demandé à l'élu de la délégation.
 | 13 | Faire vivre l'outil | Administrateur | 20 min | Paramètres, tâches planifiées, journal |
 | 14 | Décrire un circuit | Administrateur | 30 min | Services, aiguillage, étapes, simulation, versions |
 | 15 | Deux services, les mêmes salles | Tous | 25 min | Droits par service, file de travail, suppléance |
+| 16 | Trois comptes, trois services | Tous | 20 min | Comptes par service, service nommé, étapes en retard |
 
 ---
 
@@ -299,8 +303,8 @@ s'inscrire : sa fiche est à valider et elle, elle paiera.
 | # | Qui | Action | Constat |
 | --- | --- | --- | --- |
 | 11 | Josette | Portail › **Mon organisation**. | « En attente de validation » ; profil « Association extérieure » déduit du code postal. |
-| 12 | Sophie | **Usagers** › onglet **À valider** › GAMA (ch. 5.3). | Pastille « À valider », pièces attendues manquantes. |
-| 13 | Sophie | **Valider**. | La fiche est validée ; courriel aux membres dans la console. |
+| 12 | Sophie | **Usagers** › onglet **À valider**, puis cherchez GAMA dans **Tous**. | L'onglet est vide pour elle : GAMA est une association sportive, son service de référence est le Service des sports. Sur la fiche : « Service de référence : Service des sports », pas de bouton **Valider**. |
+| 13 | Karim | **Usagers** › onglet **À valider** › GAMA (ch. 5.3), puis **Valider**. | Pastille « À valider », pièces attendues manquantes ; la fiche est validée ; courriel aux membres dans la console. |
 | 14 | Josette | Demandez la Salle Gabriel Péri, une journée dans trois semaines. | Le devis est **payant** (150 € la journée) : la gratuité tient à la commune, pas au statut d'association. |
 | 15 | Sophie | **Usagers** › onglet **Pièces à vérifier** (ch. 5.5). | Les organisations dont une pièce manque, expire bientôt ou a expiré. |
 
@@ -315,8 +319,9 @@ gratuit est quand même **valorisé** en fin d'année.
 > **Écart E1, traité** — À l'étape 4, la carte **Circuit** indique « Dossier confié à Vie
 > associative » ; les dossiers du scénario 2 le sont au Service des fêtes (scénario 15).
 >
-> **Écart E6** — À l'étape 12, n'importe quel agent en écriture (Karim compris) peut valider la
-> fiche : vérifiez-le en vous connectant avec son compte.
+> **Écart E6, traité** — La fiche d'un usager est validée par son service de référence (guide
+> 12.5) : une association sportive par le Service des sports, une autre association par la Vie
+> associative, un particulier ou une entreprise par le Service des fêtes.
 
 ---
 
@@ -330,7 +335,7 @@ même créneau.
 
 | # | Qui | Action | Constat |
 | --- | --- | --- | --- |
-| 1 | Karim | **Campagnes** › **Nouvelle campagne** (ch. 3.12) : « Créneaux gymnases (test) », saison active, date limite dans quinze jours, consignes ; cochez **Gymnase Gambetta**. **Créer la campagne**. | Campagne en **Brouillon**. La liste des espaces ouverts aux vœux lui propose aussi les salles, et la liste des campagnes lui montre celle des salles (écart E11). |
+| 1 | Karim | **Campagnes** › **Nouvelle campagne** (ch. 3.12) : « Créneaux gymnases (test) », saison active, date limite dans quinze jours, consignes ; cochez **Gymnase Gambetta**. **Créer la campagne**. | Campagne en **Brouillon**, conduite par le **Service des sports**. La liste des espaces ne lui propose que les équipements sportifs, et la liste des campagnes ne lui montre pas celle des salles. |
 | 2 | Redouane | Portail › **Mes vœux**. | « Aucune campagne n'est ouverte au dépôt pour l'instant. » |
 | 3 | Karim | Menu « … » › **Ouvrir le dépôt des vœux**. | État **Dépôt ouvert**. |
 | 4 | Redouane | **Mes vœux** › Nouveau vœu : Gymnase Gambetta, jeudi 20 h – 22 h, « Entraînement seniors », 20 participants, hors vacances scolaires. **Déposer ce vœu**. | Vœu « En attente » ; le bandeau rappelle la date limite et les consignes. |
@@ -355,9 +360,10 @@ valorisation.
 **Variante** — Avant l'étape 8, cochez **Conventionnée** sur la fiche de TTMC (Usagers) : c'est
 TTMC qui obtient le jeudi, bien qu'il ait déposé après.
 
-> **Écart E11** — Les campagnes ne suivent pas le secteur : Karim voit la campagne des salles
-> et peut ouvrir des salles aux vœux. Seule la décision sur chaque vœu est limitée à ses
-> espaces : ouvrez la campagne « Créneaux annuels 2026-2027 » avec son compte pour le constater.
+> **Écart E11, traité** — Karim ne voit plus la campagne des salles, conduite par la Vie
+> associative, et sa propre campagne ne propose que les équipements sportifs. Essayez aussi,
+> avec Sophie, de rouvrir le dépôt de « Créneaux annuels 2026-2027 » pendant que celle de Karim
+> est ouverte : les deux coexistent, et le portail les présente ensemble dans **Mes vœux**.
 >
 > **Écart E3** — L'attribution des créneaux de la saison est une décision à laquelle les élus
 > sont associés. Connectez-vous avec Pierre et ouvrez la campagne : il la lit, mais ne peut ni
@@ -520,7 +526,7 @@ budget.
 ## Scénario 10 — La Communication suit, relit, remplace
 
 **Situation** — Le service Communication suit les dossiers de la Vie associative et du Service
-des fêtes, et les traite quand l'un des deux est absent. Aucun compte n'existe : on les crée,
+des fêtes, et les traite quand l'un des deux est absent. Le jeu de démonstration a déjà Camille Roche ; on crée ici deux comptes de plus,
 ce qui fait découvrir l'administration des comptes.
 
 **Comptes** — Administrateur, puis les deux comptes créés.
@@ -673,6 +679,30 @@ mêmes droits pendant sa période.
 
 ---
 
+## Scénario 16 — Trois comptes, trois services
+
+**Situation** — Sans rien régler : on prend tour à tour les comptes de Nadia, de Camille et
+d'Hélène pour voir ce que chaque service peut faire, et ce que l'usager en perçoit.
+
+| # | Qui | Action | Constat |
+| --- | --- | --- | --- |
+| 1 | Nadia | Tableau de bord, puis **Réservations** › **À traiter**. | Sa file ne contient que les demandes de particuliers et d'entreprises (Service des fêtes) ; le filtre des services affiche **Mes services**. |
+| 2 | Nadia | Ouvrez R260008 (association), via **Tous les services**. | Elle le lit ; la décision revient à la Vie associative. |
+| 3 | Nadia | Ouvrez une demande d'un particulier, **Approuver**. | Acceptée. Dans la console, le courriel à l'usager est signé « Service des fêtes, Ville de Châtillon », avec le courriel du service. |
+| 4 | Usager du dossier | Portail : le dossier, puis **Lire la convention (PDF)**. | « Votre interlocuteur : Service des fêtes » sur le dossier ; « Dossier suivi par : Service des fêtes » sur la convention. |
+| 5 | Camille | **Réservations**. | Aucun dossier ne lui est confié : la Communication n'a pas de dossiers en propre. Avec **Tous les services**, elle consulte ceux des salles et peut écrire dans leur fil. |
+| 6 | Hélène | **Paiements** : enregistrez un règlement. Puis ouvrez le dossier correspondant. | Elle encaisse pour tous les services (elle n'en a aucun) ; sur le dossier, aucun bouton de décision. |
+| 7 | Sophie | Sur R260008 : la carte **Circuit** indique l'échéance du visa attendu de l'élu. | — |
+| 8 | Vous | Laissez passer l'échéance, ou avancez-la en base, puis lancez `pnpm tsx scripts/executer-tache.ts relances_etapes`. | « 1 étape(s) en retard relancée(s) » ; relancée une seconde fois : 0. |
+| 9 | Pierre | Tableau de bord, cloche, **Mes étapes**. | Alerte « 1 étape de circuit en retard », notification « En retard · Visa de l'élu… », échéance en rouge. |
+| 10 | Sophie | Cloche, puis historique de R260008. | « Étape en retard · R260008 » (elle est responsable du service) ; l'historique porte « Étape en retard relancée ». |
+
+**Règles illustrées** — la file de travail suit les services de l'agent ; un agent sans service
+garde la vue d'ensemble, encaisse, mais ne décide pas ; l'usager connaît le service qui suit son
+dossier ; une échéance dépassée relance sans rien décider.
+
+---
+
 ## Grille de suivi
 
 À remplir au fil de l'eau : **OK**, **KO** (l'application ne fait pas ce qui est écrit) ou
@@ -696,6 +726,7 @@ mêmes droits pendant sa période.
 | 13 | Administration | | | | |
 | 14 | Décrire un circuit | | | | |
 | 15 | Deux services, les mêmes salles | | | | |
+| 16 | Trois comptes, trois services | | | | |
 
 ### Les écarts rencontrés
 

@@ -296,7 +296,7 @@ Quand un seul espace est affiché, un bouton **Feuille de salle** apparaît à c
 
 **À quoi ça sert** — Organiser chaque saison l'attribution des créneaux hebdomadaires : les associations déposent leurs vœux sur le portail, la Ville arbitre les conflits par priorité et attribue en lot.
 
-**Qui** — Les agents qui ont le droit d'écriture sur les réservations ; la suppression d'une campagne demande le droit de suppression. Le module Campagnes doit être activé.
+**Qui** — Les agents qui ont le droit d'écriture sur les réservations ; la suppression d'une campagne demande le droit de suppression. Le module Campagnes doit être activé. Un agent ne voit que les campagnes qui touchent ses espaces, et ne **conduit** (ouvrir, modifier, arbitrer, prévenir, supprimer) que celles dont tous les espaces sont dans son périmètre et dont il fait partie du service (chapitre 12).
 
 ![Liste des campagnes](captures/campagnes.webp)
 
@@ -326,6 +326,10 @@ Quand un seul espace est affiché, un bouton **Feuille de salle** apparaît à c
 
 - La date limite est indicative : c'est vous qui closez le dépôt depuis la fiche.
 - Les vœux sont contrôlés par les règles de l'espace au moment du dépôt.
+- Le formulaire ne propose que les espaces de votre périmètre ; si vous n'en cochez aucun, la campagne porte sur tous ceux-là (et sur tous les espaces publics pour un agent sans périmètre).
+- Si la Ville a déclaré ses services, la campagne est **conduite par un service** : le vôtre si vous n'en avez qu'un, sinon celui que vous choisissez. Les autres agents la consultent.
+- **Plusieurs campagnes peuvent être ouvertes en même temps** (les gymnases par le Service des sports, les salles par la Vie associative), à condition de ne partager aucun espace : l'ouverture est refusée sinon.
+- Décider d'un vœu reste réglé par espace : il faut avoir la charge de l'espace du vœu.
 
 ## 3.13 Instruire une campagne
 

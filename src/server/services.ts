@@ -5,8 +5,15 @@
  */
 
 import { todayParisISO } from "@/lib/paris-time";
-import { type ServiceBrut, servicesAgis } from "@/lib/services";
+import {
+  type ServiceBrut,
+  type ServiceUsagers,
+  serviceReference,
+  servicesAgis,
+} from "@/lib/services";
+import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
+import { enabledIn } from "@/server/features";
 
 const jour = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : null);
 
@@ -36,4 +43,27 @@ export async function servicesBruts(): Promise<ServiceBrut[]> {
 /** Les services pour lesquels un agent agit aujourd'hui (suppléances en cours comprises). */
 export async function servicesDe(userId: string): Promise<number[]> {
   return servicesAgis(userId, await servicesBruts(), todayParisISO());
+}
+
+/** Les services et les usagers qu'ils suivent, pour calculer le service de référence. */
+export async function servicesUsagers(): Promise<ServiceUsagers[]> {
+  return prisma.service.findMany({
+    select: {
+      id: true,
+      name: true,
+      isActive: true,
+      position: true,
+      usagerTypes: true,
+      usagersSportifs: true,
+    },
+  });
+}
+
+/** Le service de référence d'une organisation (null : aucun, ou module coupé). */
+export async function referenceDe(org: {
+  type: string;
+  sportive: boolean;
+}): Promise<ServiceUsagers | null> {
+  if (!enabledIn(await getSettings(), "processus")) return null;
+  return serviceReference(org, await servicesUsagers());
 }

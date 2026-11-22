@@ -236,6 +236,17 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
                 pleine
               />
             ) : null}
+            {r.service && features.processus ? (
+              <Lu
+                label="Votre interlocuteur"
+                valeur={`${r.service.name}${
+                  r.service.email || r.service.phone
+                    ? ` · ${[r.service.email, r.service.phone].filter(Boolean).join(" · ")}`
+                    : ""
+                }`}
+                pleine
+              />
+            ) : null}
           </Lus>
         </Section>
 

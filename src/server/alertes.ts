@@ -15,6 +15,7 @@ import { allFlagsIn } from "@/server/features";
 import type { CurrentUser } from "@/server/guards";
 import { controlesEnRetard } from "@/server/materiel-stock";
 import { compterARepondre } from "@/server/messages-attente";
+import { usagersAValider } from "@/server/nav";
 import { nbCreneauxACouvrir } from "@/server/personnel";
 import { organisationsSansConvention } from "@/server/valorisation";
 
@@ -264,8 +265,28 @@ export async function alertes(
       });
   }
 
+  if (features.processus) {
+    const { etapesEnAttente } = await import("@/server/circuits");
+    const maintenant = Date.now();
+    const n = (await etapesEnAttente(user).catch(() => [])).filter(
+      (e) => e.echeanceAt && e.echeanceAt.getTime() < maintenant,
+    ).length;
+    if (n)
+      out.push({
+        cle: "etapes_en_retard",
+        niveau: "warning",
+        icone: "list-checks",
+        titre: `${n} étape${n > 1 ? "s" : ""} de circuit en retard`,
+        detail: "Un service attend votre relecture, votre avis ou votre visa.",
+        nb: n,
+        href: "/etapes",
+      });
+  }
+
   if (user.canView("usagers")) {
-    const n = await prisma.organisation.count({ where: { validatedAt: null, isActive: true } });
+    const n = user.fileDeTravail
+      ? await usagersAValider(user)
+      : await prisma.organisation.count({ where: { validatedAt: null, isActive: true } });
     if (n)
       out.push({
         cle: "usagers_a_valider",

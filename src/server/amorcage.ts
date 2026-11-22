@@ -12,7 +12,12 @@ import { PERMISSION_CATEGORIES, REFERENTIAL_SEEDS, ROLE_SEEDS } from "@/lib/cons
 import { seedSaison } from "@/server/calendrier";
 import { getSettings, saveSettings, seedFromEnv } from "@/server/config-store";
 import { prisma } from "@/server/db";
-import { EMAIL_TEMPLATE_ANCIENS, EMAIL_TEMPLATE_SEEDS } from "@/server/email-templates";
+import {
+  EMAIL_TEMPLATE_ANCIENS,
+  EMAIL_TEMPLATE_SEEDS,
+  SIGNATURE,
+  SIGNATURE_AVANT,
+} from "@/server/email-templates";
 import { hashPassword, verifyPassword } from "@/server/password";
 
 export async function seedRoles(): Promise<void> {
@@ -78,9 +83,14 @@ export async function seedEmailTemplates(): Promise<void> {
       });
       continue;
     }
-    const perime = (EMAIL_TEMPLATE_ANCIENS[s.key] ?? []).some(
-      (a) => a.subject === existe.subject && a.body === existe.body,
-    );
+    // Périmé : une ancienne version connue, ou la version courante avec l'ancienne signature.
+    const perime =
+      (EMAIL_TEMPLATE_ANCIENS[s.key] ?? []).some(
+        (a) => a.subject === existe.subject && a.body === existe.body,
+      ) ||
+      (existe.subject === s.subject &&
+        existe.body !== s.body &&
+        existe.body === s.body.split(SIGNATURE).join(SIGNATURE_AVANT));
     if (perime)
       await prisma.emailTemplate.update({
         where: { id: existe.id },

@@ -45,6 +45,7 @@ export function variablesDe(...textes: string[]): string[] {
 export function exemplesVariables(baseUrl: string, collectivite: string): Record<string, string> {
   return {
     collectivite,
+    signature: collectivite,
     base_url: baseUrl,
     prenom: "Camille",
     numero: "R260042",

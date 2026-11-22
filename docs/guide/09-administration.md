@@ -570,6 +570,7 @@ Le jeu de démonstration ajoute un rôle **Agent instructeur** : celui de l'agen
 | Planning de service envoyé au personnel | 6 h 45, le jour choisi | Envoie à chaque personne de service ayant une adresse ses vacations de la semaine en PDF | module Personnel de service et planning de service par courriel activés |
 | Personnel de service : affectation ou proposition | 6 h 50 | Sur les créneaux réservés des 30 prochains jours sans personne de service, affecte d'office (sites en affectation automatique) ou propose au gestionnaire une personne disponible | module Personnel de service activé |
 | Alertes d'expiration des pièces justificatives | 7 h 50 | Prévient les usagers dont une pièce expire bientôt ou aujourd'hui | module Pièces jointes activé |
+| Processus : relance des étapes de circuit en retard | 8 h | Relance une fois les personnes attendues sur une étape dont le délai est dépassé, et prévient le responsable du service | module Processus et circuits activé |
 
 **Comment faire**
 

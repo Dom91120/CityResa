@@ -1,5 +1,5 @@
 import { organisationDe } from "@/modules/portail/catalogue";
-import { campagneOuverte, retirerVoeu } from "@/server/campagnes";
+import { campagnesOuvertes, retirerVoeu } from "@/server/campagnes";
 import { UserFacingError } from "@/server/errors";
 import { require as requireFeature } from "@/server/features";
 import { requireUsager } from "@/server/guards";
@@ -19,7 +19,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       const org = await organisationDe(user);
       if (!org) return interdit();
       try {
-        const c = await campagneOuverte();
+        const c = (await campagnesOuvertes()).find((x) => x.voeux.some((v) => v.id === id));
         if (!c) throw new UserFacingError("Le dépôt des vœux est clos.");
         await retirerVoeu(c, id, org.id);
         return redirigerAvecMessage(`${ICI}#voeux`, "Vœu retiré.", "success");

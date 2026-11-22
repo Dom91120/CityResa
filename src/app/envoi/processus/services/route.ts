@@ -1,3 +1,4 @@
+import { ORGANISATION_TYPES } from "@/lib/constantes";
 import { champ, champOuNull, coche, emailValide, idOuNull, parseDate } from "@/lib/forms-util";
 import { auditRecord } from "@/server/audit";
 import { prisma } from "@/server/db";
@@ -40,6 +41,7 @@ export async function POST(req: Request) {
           "La suppléance se termine avant de commencer.",
           "danger",
         );
+      const sportifs = champ(form, "usagers_sportifs");
       const data = {
         name,
         description: champOuNull(form, "description")?.slice(0, 300) ?? null,
@@ -49,6 +51,10 @@ export async function POST(req: Request) {
         suppleantId: suppleantId && suppleantId !== id ? suppleantId : null,
         suppleanceDu: suppleantId ? du : null,
         suppleanceAu: suppleantId ? au : null,
+        usagerTypes: [...new Set(form.getAll("usager_types").map(String))].filter(
+          (t) => t in ORGANISATION_TYPES,
+        ),
+        usagersSportifs: sportifs === "1" ? true : sportifs === "0" ? false : null,
         isActive: coche(form, "is_active"),
       };
       const s = id

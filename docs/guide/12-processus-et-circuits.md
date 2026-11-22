@@ -50,6 +50,7 @@ Les trois natures d'étape :
 - Une seule réponse suffit : la première personne attendue qui répond clôt l'étape.
 - Vous êtes prévenu par la cloche quand une étape vous est demandée ; l'agent qui l'a demandée l'est quand vous répondez.
 - Une étape ne s'attend plus sur un dossier refusé ou annulé.
+- **En retard** : quand le délai indicatif d'une étape est dépassé, vous êtes relancé une fois par la cloche, le responsable du service du dossier et l'agent assigné sont prévenus, et le tableau de bord vous signale « N étapes de circuit en retard ». L'échéance reste indicative : rien n'est décidé à votre place. La relance part chaque matin (tâche **Processus : relance des étapes de circuit en retard**, chapitre 9.20).
 
 ![Circuits en service](captures/etapes-circuits.webp)
 
@@ -94,6 +95,8 @@ Les trois natures d'étape :
 - **Facturer et encaisser** les factures du dossier.
 - **Être prévenu** : une nouvelle demande, un message de l'usager ou une annulation préviennent les personnes du service, plus les gestionnaires de l'espace.
 
+**Ce que l'usager voit du service** — Le service auquel son dossier est confié signe les courriels qu'il reçoit (« Service des fêtes, Ville de Châtillon », avec son courriel et son téléphone), figure sur la convention (« Dossier suivi par… ») et sur son dossier du portail (« Votre interlocuteur »). Les modèles de courriel disposent pour cela des variables `{{service}}`, `{{service_contact}}` et `{{{signature}}}`.
+
 **Ce qui reste ouvert à tous les agents du périmètre**
 
 - **Consulter** le dossier et le planning : deux services qui partagent une salle voient l'occupation l'un de l'autre.
@@ -108,7 +111,7 @@ Les trois natures d'étape :
 - Un agent qui n'appartient à **aucun service** garde la vue d'ensemble mais ne décide pas sur un dossier confié à un service. Il encaisse en revanche toutes les factures : c'est le cas de la régie ou des finances.
 - Un **administrateur** agit sur tous les dossiers.
 - Un agent ne crée pas directement « Acceptée » ou « Confirmée » une demande qui revient à un autre service : il l'enregistre « À traiter ».
-- Présences, personnel de service, fermetures et campagnes de créneaux restent réglés par espace.
+- Présences, personnel de service et fermetures restent réglés par espace.
 
 ## 12.5 Les services et les délégations
 
@@ -130,6 +133,16 @@ Les trois natures d'étape :
 ![Délégations](captures/processus-delegations.webp)
 
 *Figure — la délégation « Sports, vie associative et fêtes », confiée à Pierre Durand.*
+
+**Les usagers d'un service** — Dans la fiche d'un service, **Usagers dont ce service est le référent** coche les types d'organisation qu'il suit (associations, entreprises, particuliers…), et **Parmi les associations** précise au besoin « sportives seulement » ou « non sportives seulement ». Le service de référence d'un usager est le premier service, dans l'ordre de la liste, qui suit son type. Il en découle trois choses :
+
+- il est **prévenu** de l'inscription de l'usager ;
+- il est seul (avec les administrateurs) à **valider sa fiche** ;
+- les onglets **À valider** et **Pièces à vérifier** de la liste des usagers, le compteur du menu et l'alerte du tableau de bord ne montrent à un agent que les usagers de ses services, et ceux qui n'ont pas de référent.
+
+Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écriture sur les usagers : une même association peut réserver un gymnase et une salle.
+
+**Les campagnes de créneaux d'un service** — Une campagne de créneaux est conduite par un service (chapitre 3.12) : ses membres l'ouvrent, la modifient, l'arbitrent et préviennent les demandeurs. Deux services peuvent mener leur campagne en même temps, sur des espaces distincts.
 
 **Comment faire — une délégation** — Onglet **Délégations des élus**, bouton **Nouvelle délégation** : l'**Intitulé**, l'**Élu** et, si besoin, son **Suppléant**, qui est sollicité avec lui.
 

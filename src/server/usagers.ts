@@ -11,6 +11,7 @@ import { UserFacingError } from "@/server/errors";
 import { envoyerDepuisModele } from "@/server/mailer";
 import { notifierAgents } from "@/server/notifications";
 import { reprocheMotDePasse } from "@/server/password";
+import { referenceDe } from "@/server/services";
 
 /** Les codes postaux de la commune, déduits de l'adresse de la collectivité. */
 export async function codesPostauxCommune(): Promise<string[]> {
@@ -132,6 +133,7 @@ export async function creerCompteUsager(
       `Nouvel usager : ${nomOrg}`,
       `${e.firstName} ${e.lastName} · ${email}`,
       `/usagers/${org.id}`,
+      (await referenceDe(org))?.id ?? null,
     );
   }
   return u.id;

@@ -42,6 +42,7 @@ import { prisma } from "@/server/db";
 import { docCategories, forParent } from "@/server/documents";
 import { idDeRoute } from "@/server/guards";
 import { contexteModule } from "@/server/module";
+import { referenceDe } from "@/server/services";
 
 export const metadata = { title: "Usager - CityRésa" };
 
@@ -57,6 +58,7 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
   if (!org) notFound();
   const { user, csrf, features } = page;
   const peutEditer = user.canEdit("usagers");
+  const reference = await referenceDe(org);
   const peutAnonymiser = user.canDelete("usagers");
   const regles = reglesDe(user.settings);
   const manques = manquesDossier(org, org.users.find((u) => u.isActive) ?? null);
@@ -123,7 +125,7 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
         actions={
           peutEditer ? (
             <>
-              {!org.validatedAt && org.isActive ? (
+              {!org.validatedAt && org.isActive && user.agitPour(reference?.id) ? (
                 <form method="POST" action={`${ici}/valider`} className="d-inline">
                   <input type="hidden" name="csrf_token" value={csrf} />
                   <button type="submit" className="btn btn-primary">
@@ -243,6 +245,7 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
                   }
                 />
               ) : null}
+              <Lu label="Service de référence" valeur={reference?.name} />
               <Lu
                 label="Validée le"
                 valeur={

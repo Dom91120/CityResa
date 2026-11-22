@@ -265,7 +265,7 @@ const CAPTURES = [
 
   // Usagers, équipe, messages
   { nom: "usagers", compte: "gestionnaire", url: "/usagers", hauteur: 1500 },
-  { nom: "usager-a-valider", compte: "gestionnaire", url: "/usagers/1", hauteur: 2600 },
+  { nom: "usager-a-valider", compte: "agent", url: "/usagers/1", hauteur: 2600 },
   { nom: "usager-fiche", compte: "gestionnaire", url: "/usagers/11", hauteur: 2600 },
   { nom: "usager-nouveau", compte: "gestionnaire", url: "/usagers/nouveau", hauteur: 2400 },
   { nom: "messages", compte: "gestionnaire", url: "/messages", hauteur: 1200 },

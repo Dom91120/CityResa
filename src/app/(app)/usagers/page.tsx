@@ -5,10 +5,12 @@ import { nomRepresentant } from "@/lib/dossier-usager";
 import { dateCourte } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
 import { type EtatValidite, pireEtat } from "@/lib/pieces";
+import { serviceReference } from "@/lib/services";
 import { nomComplet } from "@/modules/utilisateurs/server";
 import { prisma } from "@/server/db";
 import { contexteModule } from "@/server/module";
 import { paginate, param, resolvePerPage, textSearch } from "@/server/paging";
+import { servicesUsagers } from "@/server/services";
 
 export const metadata = { title: "Usagers - CityRésa" };
 
@@ -42,11 +44,16 @@ export default async function UsagersPage({
   const etatPieces = new Map<number, EtatValidite | null>(
     tous.map((o) => [o.id, o.isActive ? pireEtat(o.documents, today, seuil) : null]),
   );
+  // Fiches à valider et pièces à vérifier : la file de travail de l'agent, c'est-à-dire les
+  // usagers dont un de ses services est le référent, et ceux qui n'en ont pas.
+  const services = page.features.processus ? await servicesUsagers() : [];
+  const suivi = (o: { type: string; sportive: boolean }) =>
+    page.user.suitUsager(serviceReference(o, services)?.id);
   const aVerifier = tous.filter((o) => {
     const e = etatPieces.get(o.id);
-    return e === "expiree" || e === "bientot";
+    return (e === "expiree" || e === "bientot") && suivi(o);
   });
-  const aValider = tous.filter((o) => !o.validatedAt && o.isActive);
+  const aValider = tous.filter((o) => !o.validatedAt && o.isActive && suivi(o));
   let items = tous;
   if (onglet === "a_valider") items = aValider;
   else if (onglet === "pieces") items = aVerifier;

@@ -60,11 +60,11 @@ Ce chapitre présente le fichier des usagers (organisations et leurs comptes), l
 
 **À quoi ça sert** — Contrôler une organisation inscrite en ligne avant de lui accorder les tarifs de son profil et l'accès aux espaces réservés à ce profil.
 
-**Qui** — Agents et gestionnaires en écriture sur « Usagers ».
+**Qui** — Agents et gestionnaires en écriture sur « Usagers ». Si la Ville a déclaré ses services (chapitre 12.5), la validation revient au **service de référence** de l'usager, indiqué sur sa fiche ; les autres agents consultent la fiche sans le bouton **Valider**.
 
 ![Fiche d'une organisation à valider](captures/usager-a-valider.webp)
 
-*Figure — la fiche d'une association pas encore validée : bandeau d'explication, bouton Valider, pièces attendues manquantes.*
+*Figure — la fiche d'une association sportive pas encore validée, vue par Karim Benali, du Service des sports, son service de référence : bandeau d'explication, bouton Valider, pièces attendues manquantes.*
 
 **Ce que l'on voit**
 

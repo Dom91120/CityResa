@@ -4,7 +4,7 @@ import { Vide } from "@/components/liste";
 import { dateCourte } from "@/lib/libelles";
 import { ChampsCampagne, StatutCampagne } from "@/modules/campagnes/vues";
 import { saisons } from "@/server/calendrier";
-import { campagnes } from "@/server/campagnes";
+import { campagnes, voitCampagne } from "@/server/campagnes";
 import { prisma } from "@/server/db";
 import { contexteModule } from "@/server/module";
 
@@ -13,15 +13,28 @@ export const metadata = { title: "Campagnes de créneaux - CityRésa" };
 export default async function CampagnesPage() {
   const page = await contexteModule("reservations", "campagnes");
   const peutEditer = page.user.canEdit("reservations");
-  const [liste, listeSaisons, espaces] = await Promise.all([
+  const { user } = page;
+  const [toutes, listeSaisons, espaces, services] = await Promise.all([
     campagnes(),
     saisons(),
     prisma.espace.findMany({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        ...(user.espacesGeres.length ? { id: { in: user.espacesGeres } } : {}),
+      },
       include: { site: true },
       orderBy: [{ site: { name: "asc" } }, { name: "asc" }],
     }),
+    page.features.processus
+      ? prisma.service.findMany({
+          where: { isActive: true, ...(user.isAdmin ? {} : { id: { in: user.services } }) },
+          orderBy: [{ position: "asc" }, { name: "asc" }],
+        })
+      : [],
   ]);
+  // Un agent ne voit que les campagnes qui touchent ses espaces.
+  const liste = toutes.filter((c) => voitCampagne(user, c));
+  const choixServices = services.map((s) => [String(s.id), s.name] as [string, string]);
   const compte = (c: (typeof liste)[number], status: string) =>
     c.voeux.filter((v) => v.status === status).length;
 
@@ -72,7 +85,10 @@ export default async function CampagnesPage() {
                 liste.map((c) => (
                   <tr key={c.id}>
                     <td className="fw-medium">
-                      <a href={`/campagnes/${c.id}`}>{c.label}</a>
+                      <span className="cell2">
+                        <a href={`/campagnes/${c.id}`}>{c.label}</a>
+                        {c.service ? <small>{c.service.name}</small> : null}
+                      </span>
                     </td>
                     <td>{c.saison.label}</td>
                     <td>
@@ -124,6 +140,8 @@ export default async function CampagnesPage() {
             c={null}
             saisons={listeSaisons}
             espaces={espaces.map((e) => ({ id: e.id, name: e.name, siteName: e.site.name }))}
+            services={choixServices}
+            perimetreLimite={user.espacesGeres.length > 0}
           />
         </ModalAction>
       ) : null}

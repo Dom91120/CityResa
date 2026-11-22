@@ -2,7 +2,7 @@ import { decrireCreneauHebdo } from "@/lib/campagnes";
 import { lireVoeu } from "@/modules/campagnes/routes";
 import { organisationDe } from "@/modules/portail/catalogue";
 import { auditRecord } from "@/server/audit";
-import { campagneOuverte, deposerVoeu } from "@/server/campagnes";
+import { campagnePourEspace, deposerVoeu } from "@/server/campagnes";
 import { UserFacingError } from "@/server/errors";
 import { require as requireFeature } from "@/server/features";
 import { requireUsager } from "@/server/guards";
@@ -20,9 +20,10 @@ export async function POST(req: Request) {
       const org = await organisationDe(user);
       if (!org) return interdit();
       try {
-        const c = await campagneOuverte();
-        if (!c) throw new UserFacingError("Aucune campagne n'est ouverte au dépôt.");
         const e = lireVoeu(form);
+        const c = await campagnePourEspace(e.espaceId);
+        if (!c)
+          throw new UserFacingError("Aucune campagne n'est ouverte au dépôt pour cet espace.");
         await deposerVoeu(c, org, user.id, e);
         await auditRecord(
           "depot voeu",

@@ -371,6 +371,12 @@ async function affectationPersonnel(): Promise<Resultat> {
   return { ok: true, message: await affecterProchainsJours() };
 }
 
+async function relancesEtapes(): Promise<Resultat> {
+  const { relancerEtapesEnRetard } = await import("@/server/circuits");
+  const n = await relancerEtapesEnRetard();
+  return { ok: true, message: `${n} étape(s) en retard relancée(s)` };
+}
+
 async function sauvegarde(): Promise<Resultat> {
   const cfg = await getSettings();
   const chemin = await backupDatabase(cfg);
@@ -392,6 +398,7 @@ export const TACHES: Record<string, () => Promise<Resultat>> = {
   planning_personnel: planningPersonnel,
   affectation_personnel: affectationPersonnel,
   alertes_pieces: alertesPieces,
+  relances_etapes: relancesEtapes,
 };
 
 export const LIBELLES_TACHES: Record<string, string> = Object.fromEntries(

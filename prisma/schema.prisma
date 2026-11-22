@@ -1062,6 +1062,10 @@ model Campagne {
   closeDate DateTime? @map("close_date") @db.Date
   consignes String?
 
+  /// Service qui conduit la campagne (module Processus) ; null = les agents chargés des espaces.
+  serviceId Int?     @map("service_id")
+  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+
   espaces CampagneEspace[]
   voeux   Voeu[]
 
@@ -1432,28 +1436,33 @@ model Sequence {
 /// Un service de la collectivité (Service des sports, Vie associative…) : ses membres
 /// reçoivent les étapes qui lui sont confiées, et les dossiers qui lui sont aiguillés.
 model Service {
-  id            Int       @id @default(autoincrement())
-  name          String    @unique @db.VarChar(120)
-  description   String?   @db.VarChar(300)
-  email         String?   @db.VarChar(160)
-  phone         String?   @db.VarChar(40)
+  id              Int       @id @default(autoincrement())
+  name            String    @unique @db.VarChar(120)
+  description     String?   @db.VarChar(300)
+  email           String?   @db.VarChar(160)
+  phone           String?   @db.VarChar(40)
   /// Responsable du service (compte du back-office).
-  responsableId String?   @map("responsable_id")
-  responsable   User?     @relation("ServiceResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
+  responsableId   String?   @map("responsable_id")
+  responsable     User?     @relation("ServiceResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
   /// Suppléance datée : pendant la période, les membres du suppléant agissent aussi pour ce service.
-  suppleantId   Int?      @map("suppleant_id")
-  suppleant     Service?  @relation("ServiceSuppleant", fields: [suppleantId], references: [id], onDelete: SetNull)
-  supplees      Service[] @relation("ServiceSuppleant")
-  suppleanceDu  DateTime? @map("suppleance_du") @db.Date
-  suppleanceAu  DateTime? @map("suppleance_au") @db.Date
-  isActive      Boolean   @default(true) @map("is_active")
-  position      Int       @default(0)
-  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  suppleantId     Int?      @map("suppleant_id")
+  suppleant       Service?  @relation("ServiceSuppleant", fields: [suppleantId], references: [id], onDelete: SetNull)
+  supplees        Service[] @relation("ServiceSuppleant")
+  suppleanceDu    DateTime? @map("suppleance_du") @db.Date
+  suppleanceAu    DateTime? @map("suppleance_au") @db.Date
+  /// Usagers dont le service est le référent : types d organisation suivis (vide = aucun).
+  usagerTypes     String[]  @default([]) @map("usager_types")
+  /// Parmi eux : true = les seules associations sportives, false = les non sportives, null = toutes.
+  usagersSportifs Boolean?  @map("usagers_sportifs")
+  isActive        Boolean   @default(true) @map("is_active")
+  position        Int       @default(0)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   membres      ServiceMembre[]
   reservations Reservation[]
   subventions  Subvention[]
+  campagnes    Campagne[]
 
   @@map("service")
 }
@@ -1555,6 +1564,8 @@ model DossierEtape {
   ouvertAt         DateTime       @default(now()) @map("ouvert_at") @db.Timestamptz
   ouvertPar        String?        @map("ouvert_par") @db.VarChar(160)
   echeanceAt       DateTime?      @map("echeance_at") @db.Timestamptz
+  /// Relance envoyée une fois l'échéance dépassée (une seule par ouverture).
+  relanceAt        DateTime?      @map("relance_at") @db.Timestamptz
   closAt           DateTime?      @map("clos_at") @db.Timestamptz
   closPar          String?        @map("clos_par") @db.VarChar(160)
   commentaire      String?

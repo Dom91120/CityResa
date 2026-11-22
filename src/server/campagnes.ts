@@ -7,7 +7,10 @@ import type { Prisma } from "@/generated/prisma/client";
 import {
   arbitrer,
   type CampagneStatus,
+  campagneDansPerimetre,
+  campagneVisible,
   decrireCreneauHebdo,
+  espacesCommuns,
   prioriteDe,
   TRANSITIONS_CAMPAGNE,
   type VoeuArbitrable,
@@ -22,6 +25,7 @@ import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
 import { enabledIn } from "@/server/features";
+import type { CurrentUser } from "@/server/guards";
 import { horairesSaisonDe } from "@/server/horaires";
 import { envoyerDepuisModele } from "@/server/mailer";
 import { invalidateNavCounts } from "@/server/nav";
@@ -30,6 +34,7 @@ import { chargerReservation, creerReservation } from "@/server/reservations";
 
 export const INCLUDE_CAMPAGNE = {
   saison: true,
+  service: { select: { id: true, name: true } },
   espaces: { include: { espace: { include: { site: true } } } },
   voeux: {
     include: {
@@ -58,13 +63,53 @@ export async function campagnes(): Promise<CampagneComplete[]> {
   return prisma.campagne.findMany({ include: INCLUDE_CAMPAGNE, orderBy: { createdAt: "desc" } });
 }
 
-/** La campagne dont le dépôt est ouvert (une seule à la fois), pour le portail. */
-export async function campagneOuverte(): Promise<CampagneComplete | null> {
-  return prisma.campagne.findFirst({
+/**
+ * Les campagnes dont le dépôt est ouvert. Plusieurs services peuvent en conduire une en même
+ * temps (gymnases d'un côté, salles de l'autre), pourvu qu'elles ne partagent aucun espace.
+ */
+export async function campagnesOuvertes(): Promise<CampagneComplete[]> {
+  return prisma.campagne.findMany({
     where: { status: "ouverte" },
     include: INCLUDE_CAMPAGNE,
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: "asc" },
   });
+}
+
+/** La campagne ouverte qui reçoit les vœux d'un espace, s'il y en a une. */
+export async function campagnePourEspace(espaceId: number): Promise<CampagneComplete | null> {
+  for (const c of await campagnesOuvertes())
+    if ((await espacesDeCampagne(c)).some((e) => e.id === espaceId)) return c;
+  return null;
+}
+
+/** L'agent voit-il la campagne ? Dès qu'un de ses espaces est dans son périmètre. */
+export function voitCampagne(
+  user: Pick<CurrentUser, "espacesGeres">,
+  c: { espaces: { espaceId: number }[] },
+): boolean {
+  return campagneVisible(
+    c.espaces.map((e) => e.espaceId),
+    user.espacesGeres,
+  );
+}
+
+/**
+ * L'agent conduit-il la campagne (la modifier, l'ouvrir, l'arbitrer, prévenir, la supprimer) ?
+ * L'écriture sur les réservations, tous les espaces de la campagne dans son périmètre, et le
+ * service de la campagne s'il en a un. Les décisions vœu par vœu restent réglées par espace.
+ */
+export function gereCampagne(
+  user: Pick<CurrentUser, "canEdit" | "espacesGeres" | "agitPour">,
+  c: { serviceId: number | null; espaces: { espaceId: number }[] },
+): boolean {
+  return (
+    user.canEdit("reservations") &&
+    user.agitPour(c.serviceId) &&
+    campagneDansPerimetre(
+      c.espaces.map((e) => e.espaceId),
+      user.espacesGeres,
+    )
+  );
 }
 
 /** Les espaces où l'on peut déposer un vœu : ceux de la campagne, sinon tous les espaces actifs réservables. */
@@ -94,6 +139,8 @@ export type CampagneEntree = {
   closeDate: Date | null;
   consignes: string | null;
   espaceIds: number[];
+  /** Le service qui conduit la campagne ; null = les agents chargés des espaces. */
+  serviceId: number | null;
 };
 
 async function verifierEntree(e: CampagneEntree): Promise<void> {
@@ -110,6 +157,7 @@ export async function creerCampagne(e: CampagneEntree, acteur: string): Promise<
       label: e.label.trim().slice(0, 120),
       closeDate: e.closeDate,
       consignes: e.consignes,
+      serviceId: e.serviceId,
       createdBy: acteur,
       espaces: { create: e.espaceIds.map((espaceId) => ({ espaceId })) },
     },
@@ -132,6 +180,7 @@ export async function modifierCampagne(
         label: e.label.trim().slice(0, 120),
         closeDate: e.closeDate,
         consignes: e.consignes,
+        serviceId: e.serviceId,
       },
     }),
     prisma.campagneEspace.deleteMany({ where: { campagneId: id } }),
@@ -150,12 +199,19 @@ export async function changerStatutCampagne(
   const admis = TRANSITIONS_CAMPAGNE[c.status as CampagneStatus] ?? [];
   if (!admis.includes(nouveau)) throw new UserFacingError("Ce changement d'état est impossible.");
   if (nouveau === "ouverte") {
-    const autre = await prisma.campagne.findFirst({
-      where: { status: "ouverte", id: { not: c.id } },
-    });
+    // Deux campagnes ouvertes ne partagent aucun espace : un vœu sait à laquelle il appartient.
+    const miens = c.espaces.map((e) => e.espaceId);
+    const autre = (await campagnesOuvertes()).find(
+      (o) =>
+        o.id !== c.id &&
+        espacesCommuns(
+          miens,
+          o.espaces.map((e) => e.espaceId),
+        ),
+    );
     if (autre)
       throw new UserFacingError(
-        `La campagne « ${autre.label} » est déjà ouverte : clôturez-la d'abord.`,
+        `La campagne « ${autre.label} » est déjà ouverte sur des espaces de celle-ci : clôturez-la d'abord, ou retirez les espaces communs.`,
       );
   }
   if (nouveau === "cloturee" && c.voeux.some((v) => v.status === "en_attente"))

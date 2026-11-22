@@ -58,10 +58,16 @@ export function ChampsCampagne({
   c,
   saisons,
   espaces,
+  services = [],
+  perimetreLimite = false,
 }: {
   c: CampagneComplete | null;
   saisons: { id: number; label: string }[];
   espaces: { id: number; name: string; siteName: string }[];
+  /** Les services parmi lesquels l'agent peut choisir celui qui conduit la campagne. */
+  services?: [string, string][];
+  /** L'agent n'a qu'une partie des espaces : « aucun coché » veut dire tous les siens. */
+  perimetreLimite?: boolean;
 }) {
   return (
     <Grille colonnes={2}>
@@ -95,8 +101,23 @@ export function ChampsCampagne({
         rows={3}
         placeholder="Pièces à fournir, critères d'attribution, calendrier…"
       />
+      {services.length ? (
+        <Select
+          label="Service qui conduit la campagne"
+          name="service_id"
+          valeur={c ? c.serviceId : services.length === 1 ? services[0][0] : null}
+          options={services}
+          blank="— aucun : les agents chargés des espaces —"
+          pleine
+          aide="Seules les personnes de ce service ouvrent, modifient et arbitrent la campagne."
+        />
+      ) : null}
       <Coches
-        label="Espaces ouverts aux vœux (aucun coché = tous les espaces publics)"
+        label={
+          perimetreLimite
+            ? "Espaces ouverts aux vœux (aucun coché = tous les espaces de votre périmètre)"
+            : "Espaces ouverts aux vœux (aucun coché = tous les espaces publics)"
+        }
         name="espace"
         options={espaces.map((e) => ({ value: e.id, label: `${e.name} · ${e.siteName}` }))}
         cochees={c ? c.espaces.map((e) => e.espaceId) : []}

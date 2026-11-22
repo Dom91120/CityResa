@@ -79,3 +79,39 @@ export function fileDeTravail(a: Acteur): number[] | null {
 export function factureOuverte(a: Acteur, serviceId: number | null | undefined): boolean {
   return fileDeTravail(a) === null || agitPour(a, serviceId);
 }
+
+// ── Service de référence d'un usager ──
+
+export type ServiceUsagers = {
+  id: number;
+  name: string;
+  isActive: boolean;
+  position: number;
+  /** Types d'organisation suivis ; vide = le service ne suit aucun usager. */
+  usagerTypes: readonly string[];
+  /** true = les seules associations sportives, false = les non sportives, null = toutes. */
+  usagersSportifs: boolean | null;
+};
+
+/**
+ * Le service de référence d'une organisation : le premier service actif, dans l'ordre des
+ * positions, qui suit son type (et, s'il le précise, son caractère sportif). Null = aucun :
+ * la fiche reste l'affaire de tous les agents qui ont l'écriture sur les usagers.
+ */
+export function serviceReference<S extends ServiceUsagers>(
+  org: { type: string; sportive: boolean },
+  services: readonly S[],
+): S | null {
+  return (
+    [...services]
+      .filter((s) => s.isActive && s.usagerTypes.includes(org.type))
+      .filter((s) => s.usagersSportifs === null || s.usagersSportifs === org.sportive)
+      .sort((a, b) => a.position - b.position || a.id - b.id)[0] ?? null
+  );
+}
+
+/** L'usager entre-t-il dans la file de travail de la personne (fiches à valider, pièces) ? */
+export function usagerSuivi(a: Acteur, referenceId: number | null | undefined): boolean {
+  const file = fileDeTravail(a);
+  return file === null || !referenceId || file.includes(referenceId);
+}

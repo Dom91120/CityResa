@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   arbitrer,
+  campagneDansPerimetre,
+  campagneVisible,
   conflitsParVoeu,
   decrireCreneauHebdo,
+  espacesCommuns,
   libellePriorite,
   lireStatutCampagne,
   phraseBilanArbitrage,
@@ -152,5 +155,31 @@ describe("statuts et bilan", () => {
     expect(phraseBilanArbitrage({ attribues: 1, refuses: 0, erreurs: 1 })).toContain(
       "1 laissé en attente",
     );
+  });
+});
+
+describe("campagnes et périmètre", () => {
+  it("deux campagnes partagent un espace, ou l'une porte sur tous", () => {
+    expect(espacesCommuns([1, 2], [3, 4])).toBe(false);
+    expect(espacesCommuns([1, 2], [2, 3])).toBe(true);
+    expect(espacesCommuns([], [3])).toBe(true);
+    expect(espacesCommuns([1], [])).toBe(true);
+  });
+
+  it("un agent conduit la campagne si tous ses espaces sont dans son périmètre", () => {
+    expect(campagneDansPerimetre([1, 2], [1, 2, 3])).toBe(true);
+    expect(campagneDansPerimetre([1, 9], [1, 2, 3])).toBe(false);
+    // Une campagne « tous les espaces » échappe à un agent limité à certains.
+    expect(campagneDansPerimetre([], [1, 2, 3])).toBe(false);
+    // Un agent sans limite conduit toute campagne.
+    expect(campagneDansPerimetre([], [])).toBe(true);
+    expect(campagneDansPerimetre([7], [])).toBe(true);
+  });
+
+  it("un agent voit la campagne dès qu'un espace le concerne", () => {
+    expect(campagneVisible([1, 9], [1, 2])).toBe(true);
+    expect(campagneVisible([8, 9], [1, 2])).toBe(false);
+    expect(campagneVisible([], [1, 2])).toBe(true);
+    expect(campagneVisible([8], [])).toBe(true);
   });
 });

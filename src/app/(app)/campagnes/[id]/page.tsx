@@ -13,7 +13,13 @@ import { dateCourte, pluriel } from "@/lib/libelles";
 import { ChampsCampagne, StatutCampagne, TableauVoeux } from "@/modules/campagnes/vues";
 import { Onglets, Volet } from "@/modules/espaces/vues";
 import { saisons } from "@/server/calendrier";
-import { arbitrables, chargerCampagne, espacesDeCampagne } from "@/server/campagnes";
+import {
+  arbitrables,
+  chargerCampagne,
+  espacesDeCampagne,
+  gereCampagne,
+  voitCampagne,
+} from "@/server/campagnes";
 import { prisma } from "@/server/db";
 import { idDeRoute } from "@/server/guards";
 import { contexteModule } from "@/server/module";
@@ -26,18 +32,32 @@ export default async function CampagnePage({ params }: { params: Promise<{ id: s
   const id = idDeRoute((await params).id);
   const c = await chargerCampagne(id);
   if (!c) notFound();
+  if (!voitCampagne(user, c)) notFound();
+  // Conduire la campagne : son service et tous ses espaces ; décider d'un vœu : son espace.
   const peutEditer = user.canEdit("reservations");
-  const peutSupprimer = user.canDelete("reservations");
+  const peutGerer = gereCampagne(user, c);
+  const peutSupprimer = peutGerer && user.canDelete("reservations");
   const ici = `/campagnes/${c.id}`;
   const [listeSaisons, tousEspaces, ouverts] = await Promise.all([
     saisons(),
     prisma.espace.findMany({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        ...(user.espacesGeres.length ? { id: { in: user.espacesGeres } } : {}),
+      },
       include: { site: true },
       orderBy: [{ site: { name: "asc" } }, { name: "asc" }],
     }),
     espacesDeCampagne(c),
   ]);
+  const choixServices = page.features.processus
+    ? (
+        await prisma.service.findMany({
+          where: { isActive: true, ...(user.isAdmin ? {} : { id: { in: user.services } }) },
+          orderBy: [{ position: "asc" }, { name: "asc" }],
+        })
+      ).map((s) => [String(s.id), s.name] as [string, string])
+    : [];
   const conflits = conflitsParVoeu(arbitrables(c));
   const nb = (status: string) => c.voeux.filter((v) => v.status === status).length;
   const aPrevenir = c.voeux.filter((v) => v.status !== "en_attente" && !v.notifiedAt).length;
@@ -62,7 +82,7 @@ export default async function CampagnePage({ params }: { params: Promise<{ id: s
         badges={<StatutCampagne status={c.status} lg />}
         sousTitre={
           <>
-            Saison {c.saison.label}
+            {c.service ? `${c.service.name} · ` : ""}Saison {c.saison.label}
             {c.closeDate ? ` · dépôt jusqu'au ${dateCourte(c.closeDate)}` : ""} ·{" "}
             {pluriel(c.voeux.length, "vœu", "vœux")} de{" "}
             {pluriel(organisations, "organisation", "organisations")}
@@ -70,7 +90,7 @@ export default async function CampagnePage({ params }: { params: Promise<{ id: s
         }
         retour="/campagnes"
         actions={
-          peutEditer ? (
+          peutGerer ? (
             <>
               {c.status === "instruction" && nb("en_attente") ? (
                 <form method="POST" action={`${ici}/arbitrer`} className="d-inline">
@@ -106,7 +126,7 @@ export default async function CampagnePage({ params }: { params: Promise<{ id: s
           ) : undefined
         }
         menu={
-          peutEditer
+          peutGerer
             ? [
                 ...transitions.map((t) => (
                   <MenuPost
@@ -214,7 +234,7 @@ export default async function CampagnePage({ params }: { params: Promise<{ id: s
         </div>
       )}
 
-      {peutEditer ? (
+      {peutGerer ? (
         <ModalAction
           id="modal-campagne"
           titre="Modifier la campagne"
@@ -228,6 +248,8 @@ export default async function CampagnePage({ params }: { params: Promise<{ id: s
             c={c}
             saisons={listeSaisons}
             espaces={tousEspaces.map((e) => ({ id: e.id, name: e.name, siteName: e.site.name }))}
+            services={choixServices}
+            perimetreLimite={user.espacesGeres.length > 0}
           />
         </ModalAction>
       ) : null}

@@ -672,12 +672,12 @@ rencontre.
 | E3 | **Élus dans les circuits** de réservation. | L'élu n'agit que sur les subventions. Sur les réservations, les campagnes de créneaux, la gratuité, les dérogations et les réquisitions, il lit sans pouvoir donner d'avis ni valider. | Arrêter la liste des décisions soumises à un élu ; **avis ou visa d'un élu** sur un dossier de réservation (comme l'avis de subvention), demandé par l'agent, tracé dans l'historique, bloquant ou non selon le cas. |
 | E4 *(traité, § 9 lots 1 et 3)* | **Élu de délégation** (sports, vie associative, fêtes…). | Un élu est transversal : il voit tout et peut donner un avis sur toute demande de subvention. Le « secteur d'instruction » d'un dossier de subvention (Sport, Culture, Solidarité…) est une étiquette, sans effet sur qui est sollicité ; l'élu n'est pas notifié quand un dossier attend son avis. | Délégation portée par le compte de l'élu ; avis demandé aux seuls élus concernés ; notification à l'élu. |
 | E5 *(traité, § 9 lot 3)* | **Subventions : quel service instruit ?** Les associations sportives relèvent du Service des sports, les autres de la Vie associative. | Les droits sur les subventions tiennent au **rôle** (Gestionnaire : tout ; Agent : lecture), pas au service. Un seul service de contact se règle dans les paramètres (« Service de la vie associative »). | Répartition de l'instruction par service selon la case « association sportive » ou le secteur d'instruction ; contact du service instructeur sur le dossier. |
-| E6 | **Usagers : service de référence.** | Le fichier des usagers est commun à tous les agents : tout agent en écriture valide une fiche, vérifie des pièces ou modifie une organisation, quel que soit son secteur. | Service de référence déduit du type (et de la case « sportive ») ; fiches à valider et pièces à vérifier présentées au bon service. |
-| E7 | **Nommer les services** dans les écrans et les documents. | Les services n'existent pas en tant que tels : l'application connaît deux secteurs (Salles, Sports) et la fonction saisie sur chaque compte. Convention, courriels et factures portent l'identité de la collectivité, pas celle du service. | Référentiel des services (nom, courriel, téléphone) ; service affiché sur le dossier, la convention et les courriels. |
+| E6 *(traité, § 9 lot 4)* | **Usagers : service de référence.** | Le fichier des usagers est commun à tous les agents : tout agent en écriture valide une fiche, vérifie des pièces ou modifie une organisation, quel que soit son secteur. | Service de référence déduit du type (et de la case « sportive ») ; fiches à valider et pièces à vérifier présentées au bon service. |
+| E7 *(traité, § 9 lots 1 et 5)* | **Nommer les services** dans les écrans et les documents. | Les services n'existent pas en tant que tels : l'application connaît deux secteurs (Salles, Sports) et la fonction saisie sur chaque compte. Convention, courriels et factures portent l'identité de la collectivité, pas celle du service. | Référentiel des services (nom, courriel, téléphone) ; service affiché sur le dossier, la convention et les courriels. |
 | E8 | **Gratuité des associations : périmètre exact.** | La gratuité tient à la grille : nulle pour une association de la commune, payante pour une association extérieure (150 € la journée salle Gabriel Péri dans le jeu de démonstration). | Confirmer la règle de la Ville : gratuité pour toutes les associations ou pour les seules associations châtillonnaises ; avec ou sans plafond annuel. |
 | E9 *(traité, § 9 lot 2)* | **Facturation réservée au Service des fêtes.** | Les rôles Agent et Gestionnaire ont l'écriture sur les paiements dans les deux secteurs. | Droit « Paiements » par service, ou confirmation que la règle actuelle convient. |
-| E10 | **Comptes de démonstration** par service. | Le jeu de démonstration compte une gestionnaire du secteur Salles (qui tient à la fois la Vie associative et le Service des fêtes), un agent du secteur Sports et un élu ; aucun compte Communication, aucun financier. | Un compte par service et par niveau, un élu par délégation, pour dérouler les scénarios à plusieurs mains. |
-| E11 | **Campagnes de créneaux par service.** Le Service des sports mène celle des gymnases, la Vie associative celle des salles. | Les campagnes ne suivent pas le secteur : tout agent en écriture voit toutes les campagnes et peut ouvrir aux vœux n'importe quel espace. Seule la décision sur un vœu est limitée aux espaces dont l'agent a la charge. | Campagne rattachée à un secteur (ou à un service) ; liste des campagnes et choix des espaces limités au périmètre de l'agent. |
+| E10 *(traité, § 9 lot 5)* | **Comptes de démonstration** par service. | Le jeu de démonstration compte une gestionnaire du secteur Salles (qui tient à la fois la Vie associative et le Service des fêtes), un agent du secteur Sports et un élu ; aucun compte Communication, aucun financier. | Un compte par service et par niveau, un élu par délégation, pour dérouler les scénarios à plusieurs mains. |
+| E11 *(traité, § 9 lot 4)* | **Campagnes de créneaux par service.** Le Service des sports mène celle des gymnases, la Vie associative celle des salles. | Les campagnes ne suivent pas le secteur : tout agent en écriture voit toutes les campagnes et peut ouvrir aux vœux n'importe quel espace. Seule la décision sur un vœu est limitée aux espaces dont l'agent a la charge. | Campagne rattachée à un secteur (ou à un service) ; liste des campagnes et choix des espaces limités au périmètre de l'agent. |
 
 Tant que ces écarts ne sont pas traités, la séparation entre Vie associative, Service des fêtes
 et Communication repose sur l'organisation du travail (filtres, agent assigné, vues
@@ -913,18 +913,50 @@ réservée au service du dossier).
 Écarts traités : **E5** (service instructeur selon l'association) et **E4** (élu de
 délégation, notification de l'avis attendu), pour les réservations comme pour les subventions.
 
+**Lot 4, livré** — campagnes de créneaux et usagers :
+
+- **campagnes de créneaux** : une campagne est conduite par un service ; un agent ne voit que
+  les campagnes qui touchent ses espaces et ne conduit (ouvrir, modifier, arbitrer, prévenir,
+  supprimer) que celles dont tous les espaces sont dans son périmètre ; le formulaire ne
+  propose que ses espaces ; décider d'un vœu reste réglé par espace ;
+- **plusieurs campagnes ouvertes à la fois**, pourvu qu'elles ne partagent aucun espace ; le
+  portail les présente ensemble et un vœu rejoint la campagne de l'espace choisi ;
+- **service de référence d'un usager** : chaque service déclare les types d'organisation qu'il
+  suit (et, pour les associations, sportives ou non) ; le premier service qui suit le type de
+  l'usager est son référent ;
+- le service de référence est prévenu d'une inscription et valide seul la fiche ; fiches à
+  valider, pièces à vérifier, compteur du menu et alerte du tableau de bord suivent la file de
+  travail de l'agent ; consulter et modifier une fiche restent ouverts.
+
+Écarts traités : **E11** (campagnes par service) et **E6** (service de référence des usagers).
+
+**Lot 5, livré** — service nommé, échéances, comptes de démonstration :
+
+- **service nommé** : le service du dossier signe les courriels adressés à l'usager (variable
+  `{{{signature}}}`, avec `{{service}}` et `{{service_contact}}` pour les modèles), figure sur
+  la convention et sur le dossier du portail ;
+- **échéances** : une tâche quotidienne relance une fois les personnes attendues sur une étape
+  en retard, prévient le responsable du service et l'agent assigné, et l'inscrit à
+  l'historique ; le tableau de bord signale à chacun ses étapes en retard ;
+- **comptes de démonstration par service** : un agent du Service des fêtes, une chargée de
+  communication (responsable du service Communication), une régisseuse sans service.
+
+Écarts traités : **E7** (services nommés dans les écrans et les documents) et **E10** (comptes
+de démonstration par service). Reste **E8**, qui est une règle tarifaire à confirmer par la
+Ville, pas un manque de l'application.
+
 **Reste à faire**
 
 | Sujet | Écart |
 | --- | --- |
 | Droits par service sur ce qui reste réglé **par espace** : présences, personnel de service, fermetures, planning (filtre par service) | E1 |
-| Circuits des **campagnes de créneaux**, de la **validation d'une fiche d'usager**, de la retenue sur caution et de l'annulation | E6, E11 |
+| Étapes de circuit (visa, avis) sur l'**attribution des créneaux** d'une campagne, la retenue sur caution et l'annulation | E3 |
 | Subventions : étapes **bloquantes avant le vote** (visa, relecture), filtre par service de la liste, contact du service instructeur dans les courriels et le PDF du dossier | E5, E7 |
 | Autres **moments** d'insertion : avant un refus, une annulation, une réquisition, l'émission d'une facture | E3, E9 |
 | Règle de réunion **tous / majorité** (aujourd'hui : une seule réponse suffit) | — |
-| **Échéance** : relance, alerte au responsable, passage d'office ou transmission au suppléant (aujourd'hui : l'échéance est affichée, en rouge une fois dépassée) | — |
+| **Échéance** : passage d'office à l'étape suivante ou transmission au suppléant (aujourd'hui : une relance, l'alerte au responsable, et l'échéance en rouge) ; relance des avis sur les subventions | — |
 | **Effets** paramétrables d'une étape (modèle de courriel, mise en copie, document) ; courriel en plus de la cloche | E2 |
-| Service nommé sur la **convention** et les **courriels** ; filtre « service » des listes | E7 |
+| Filtre « service » des listes de subventions et du planning ; service sur les factures | E7 |
 | **Bascule** d'un dossier en cours sur une nouvelle version ; **export / import** d'un circuit | — |
 | Catégorie de permission « **Processus** » (aujourd'hui : administrateur seul) | — |
 | **Statistiques** de délai par étape et par service | — |

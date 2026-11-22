@@ -5,6 +5,7 @@ import { Icone } from "@/components/icones";
 import { SegTabs, VideBloc } from "@/components/liste";
 import { Chip } from "@/components/macros";
 import { decrireCondition, lireDefinition, lireObjet, OBJETS } from "@/lib/circuits";
+import { ORGANISATION_TYPES } from "@/lib/constantes";
 import { isoDate } from "@/lib/forms-util";
 import { dateCourte } from "@/lib/libelles";
 import { contexteAdmin } from "@/modules/admin/server";
@@ -241,6 +242,30 @@ export default async function ProcessusPage({
                   name="membres"
                   options={agents.map((a) => ({ value: a.id, label: nom(a) }))}
                   cochees={s?.membres.map((m) => m.userId) ?? []}
+                />
+                <Coches
+                  label="Usagers dont ce service est le référent (aucun coché = aucun)"
+                  name="usager_types"
+                  options={Object.entries(ORGANISATION_TYPES).map(([value, label]) => ({
+                    value,
+                    label,
+                  }))}
+                  cochees={s?.usagerTypes ?? []}
+                />
+                <Select
+                  label="Parmi les associations"
+                  name="usagers_sportifs"
+                  id={`s-sportifs-${s?.id ?? 0}`}
+                  options={[
+                    ["1", "Les associations sportives seulement"],
+                    ["0", "Les associations non sportives seulement"],
+                  ]}
+                  valeur={
+                    s?.usagersSportifs === true ? "1" : s?.usagersSportifs === false ? "0" : null
+                  }
+                  blank="Toutes"
+                  pleine
+                  aide="Le service de référence valide la fiche de l'usager et suit ses pièces ; il est prévenu de son inscription."
                 />
                 <Select
                   label="Suppléé par"

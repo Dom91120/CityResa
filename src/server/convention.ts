@@ -63,6 +63,8 @@ export async function htmlConvention(r: ReservationComplete): Promise<string> {
 <p><strong>${p(cfg.COLLECTIVITE_NOM)}</strong>, représentée par ${p(cfg.COLLECTIVITE_SIGNATAIRE || cfg.COLLECTIVITE_SIGNATAIRE_QUALITE)}${cfg.COLLECTIVITE_SIGNATAIRE ? `, ${p(cfg.COLLECTIVITE_SIGNATAIRE_QUALITE)}` : ""}, ci-après « la collectivité »,</p>
 <p>et <strong>${occupant}</strong>${adresse ? `, ${p(adresse)}` : ""}${r.user?.email ? ` (${p(r.user.email)})` : ""}, ci-après « l'occupant ».</p>
 
+${r.service ? `<p class="muted">Dossier suivi par : <strong>${p(r.service.name)}</strong>${r.service.email || r.service.phone ? ` (${p([r.service.email, r.service.phone].filter(Boolean).join(" · "))})` : ""}.</p>` : ""}
+
 <h2>Objet</h2>
 <div class="grille">
 <div><span class="muted">Espace</span><br><strong>${p(r.espace.name)}</strong>, ${p(r.espace.site.name)}${r.espace.site.address ? `<br>${p(r.espace.site.address)}, ${p(r.espace.site.postalCode)} ${p(r.espace.site.city)}` : ""}</div>

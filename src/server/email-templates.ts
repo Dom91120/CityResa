@@ -11,7 +11,13 @@ export type ModeleSeed = {
   aide: string;
 };
 
-const SIGNATURE = "<p>Cordialement,<br>{{collectivite}}</p>";
+/**
+ * La signature des courriels. `{{{signature}}}` vaut le nom de la collectivité, précédé du
+ * service auquel le dossier est confié quand il y en a un (module Processus et circuits).
+ */
+export const SIGNATURE = "<p>Cordialement,<br>{{{signature}}}</p>";
+/** La signature d'avant les services : un modèle qui la porte encore intacte est mis à jour. */
+export const SIGNATURE_AVANT = "<p>Cordialement,<br>{{collectivite}}</p>";
 
 export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
   {

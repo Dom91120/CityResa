@@ -3,10 +3,12 @@
  * valider, factures à payer, subventions à instruire, notifications non lues. Calculés
  * au plus une fois par minute (cache process), puis filtrés selon les droits.
  */
+import { serviceReference } from "@/lib/services";
 import { prisma } from "@/server/db";
 import { enabledIn } from "@/server/features";
 import type { CurrentUser } from "@/server/guards";
 import { compterARepondre } from "@/server/messages-attente";
+import { servicesUsagers } from "@/server/services";
 
 const TTL_MS = process.env.CITYRESA_TEST ? 0 : 30_000;
 type Cache = { at: number; counts: Record<string, number> };
@@ -31,6 +33,18 @@ export function clauseServices(file: number[] | null): {
   OR?: ({ serviceId: null } | { serviceId: { in: number[] } })[];
 } {
   return file ? { OR: [{ serviceId: null }, { serviceId: { in: file } }] } : {};
+}
+
+/** Les fiches à valider de la file de travail d'un agent (ses usagers et ceux sans référent). */
+export async function usagersAValider(user: CurrentUser): Promise<number> {
+  const [orgs, services] = await Promise.all([
+    prisma.organisation.findMany({
+      where: { validatedAt: null, isActive: true },
+      select: { type: true, sportive: true },
+    }),
+    servicesUsagers(),
+  ]);
+  return orgs.filter((o) => user.suitUsager(serviceReference(o, services)?.id)).length;
 }
 
 export function invalidateNavCounts(): void {
@@ -90,7 +104,10 @@ export async function navCounts(user: CurrentUser): Promise<Record<string, numbe
         : c.a_traiter;
   }
   if (user.canView("messages")) counts.messages = c.messages;
-  if (user.canView("usagers")) counts.usagers_a_valider = c.usagers_a_valider;
+  if (user.canView("usagers"))
+    counts.usagers_a_valider = user.fileDeTravail
+      ? await usagersAValider(user).catch(() => c.usagers_a_valider)
+      : c.usagers_a_valider;
   if (user.canView("paiements")) counts.factures_a_payer = c.factures_a_payer;
   if (user.canView("subventions"))
     counts.subventions_a_traiter = user.fileDeTravail

@@ -50,7 +50,7 @@ import { profilParDefaut } from "@/server/usagers";
 import { VACANCES_ZONE_C } from "./calendrier-zone-c";
 import { ASSOCIATIONS_SPORTIVES, type OrgSpec } from "./seed-associations";
 import { creerCampagneDemo } from "./seed-demo-campagne";
-import { creerProcessusDemo } from "./seed-processus";
+import { COMPTES_SERVICES, creerProcessusDemo } from "./seed-processus";
 
 const MOT_DE_PASSE = "Demo-2026!!";
 /** Code de signature posé sur les dossiers « acceptée » : l'usager peut signer avec. */
@@ -314,6 +314,7 @@ const EMAILS_AGENTS_DEMO = [
   "sophie.martin@exemple.fr",
   "karim.benali@exemple.fr",
   "pierre.durand@exemple.fr",
+  ...COMPTES_SERVICES.map((c) => c.email),
 ];
 
 async function remettreAZero(): Promise<void> {
@@ -4458,7 +4459,7 @@ async function main(): Promise<void> {
   await creerNotificationsEtJournal(ctx, parStatut);
   // En dernier : services, circuits et aiguillage des dossiers (aucun tirage aléatoire).
   console.log("→ Processus et circuits…");
-  const processus = await creerProcessusDemo();
+  const processus = await creerProcessusDemo(MOT_DE_PASSE);
   compteurs.services = processus.services;
   compteurs.circuits = processus.circuits;
 

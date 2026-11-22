@@ -8,7 +8,7 @@ import { dateCourte } from "@/lib/libelles";
 import { StatutVoeu } from "@/modules/campagnes/vues";
 import { organisationDe } from "@/modules/portail/catalogue";
 import { BlocVide } from "@/modules/portail/vues";
-import { campagneOuverte, espacesDeCampagne, voeuxDe } from "@/server/campagnes";
+import { campagnesOuvertes, espacesDeCampagne, voeuxDe } from "@/server/campagnes";
 import { contexteUsager } from "@/server/page";
 
 export const metadata = { title: "Mes vœux de créneaux - CityRésa" };
@@ -18,13 +18,27 @@ export default async function MesVoeuxPage() {
   if (!page.features.campagnes) notFound();
   const { user, csrf } = page;
   const org = await organisationDe(user);
-  const [ouverte, voeux] = await Promise.all([
-    campagneOuverte(),
+  const [ouvertes, voeux] = await Promise.all([
+    campagnesOuvertes(),
     org ? voeuxDe(org.id) : Promise.resolve([]),
   ]);
-  const espaces = ouverte ? await espacesDeCampagne(ouverte) : [];
-  const enCours = ouverte ? voeux.filter((v) => v.campagneId === ouverte.id) : [];
-  const autres = voeux.filter((v) => !ouverte || v.campagneId !== ouverte.id);
+  // Plusieurs campagnes peuvent être ouvertes à la fois (gymnases, salles) : leurs espaces ne
+  // se recoupent pas, un vœu rejoint donc la campagne de l'espace choisi.
+  const espaces = (
+    await Promise.all(
+      ouvertes.map(async (c) =>
+        (
+          await espacesDeCampagne(c)
+        ).map((e) => ({
+          ...e,
+          campagne: ouvertes.length > 1 ? c.label : null,
+        })),
+      ),
+    )
+  ).flat();
+  const idsOuvertes = new Set(ouvertes.map((c) => c.id));
+  const enCours = voeux.filter((v) => idsOuvertes.has(v.campagneId));
+  const autres = voeux.filter((v) => !idsOuvertes.has(v.campagneId));
   // Regroupés par campagne, les plus récentes d'abord (l'ordre de voeuxDe).
   const parCampagne = new Map<number, typeof autres>();
   for (const v of autres)
@@ -50,22 +64,25 @@ export default async function MesVoeuxPage() {
             texte="Les vœux de créneaux se déposent au nom d'une association ou d'une structure."
           />
         </div>
-      ) : ouverte ? (
+      ) : ouvertes.length ? (
         <>
-          <div className="astuce mb-3">
-            <Icone nom="megaphone" taille={18} />
-            <div>
-              <strong>{ouverte.label}</strong> · saison {ouverte.saison.label}
-              {ouverte.closeDate ? ` · dépôt jusqu'au ${dateCourte(ouverte.closeDate)}` : ""}
-              {ouverte.consignes ? (
-                <div style={{ whiteSpace: "pre-wrap" }}>{ouverte.consignes}</div>
-              ) : null}
+          {ouvertes.map((ouverte) => (
+            <div className="astuce mb-3" key={ouverte.id}>
+              <Icone nom="megaphone" taille={18} />
+              <div>
+                <strong>{ouverte.label}</strong> · saison {ouverte.saison.label}
+                {ouverte.closeDate ? ` · dépôt jusqu'au ${dateCourte(ouverte.closeDate)}` : ""}
+                {ouverte.consignes ? (
+                  <div style={{ whiteSpace: "pre-wrap" }}>{ouverte.consignes}</div>
+                ) : null}
+              </div>
             </div>
-          </div>
+          ))}
 
           <div className="data-card p-4 mb-3" id="voeux">
             <h2 className="h5 mb-3">
-              <Icone nom="calendar-check" taille={18} /> Vos vœux pour {ouverte.label}
+              <Icone nom="calendar-check" taille={18} />{" "}
+              {ouvertes.length === 1 ? `Vos vœux pour ${ouvertes[0].label}` : "Vos vœux en cours"}
             </h2>
             {enCours.length ? (
               <table className="table align-middle">
@@ -122,7 +139,10 @@ export default async function MesVoeuxPage() {
               <Select
                 label="Espace souhaité"
                 name="espace_id"
-                options={espaces.map((e) => [String(e.id), `${e.name} · ${e.siteName}`])}
+                options={espaces.map((e) => [
+                  String(e.id),
+                  `${e.name} · ${e.siteName}${e.campagne ? ` — ${e.campagne}` : ""}`,
+                ])}
                 requis
                 blank="Choisir…"
               />

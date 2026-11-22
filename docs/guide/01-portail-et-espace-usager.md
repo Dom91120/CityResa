@@ -448,6 +448,7 @@ Pendant le dépôt (la figure montre la page après sa clôture) :
   4. autres associations ;
   5. entreprises, particuliers et autres.
 - Un vœu attribué devient une réservation pour toute la saison, visible dans « Mes réservations » : à signer, ou déjà confirmée si aucune signature n'est attendue.
+- Quand plusieurs campagnes sont ouvertes à la fois (gymnases et salles, par exemple), la page affiche le bandeau de chacune ; la liste **Espace souhaité** précise alors la campagne de chaque espace, et le vœu rejoint celle de l'espace choisi.
 - Hors campagne, ou une fois le dépôt clos, la page affiche « Aucune campagne n'est ouverte au dépôt pour l'instant » ; vos vœux des campagnes passées restent listés avec leur sort : **Attribué** et le numéro du dossier créé, ou **Refusé** et le motif.
 
 ## 1.18 Mes subventions

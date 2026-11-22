@@ -219,3 +219,33 @@ export function phraseBilanArbitrage(b: BilanArbitrage): string {
     );
   return `Arbitrage terminé : ${parts.join(", ")}.`;
 }
+
+// ── Campagnes et périmètre ──
+
+/**
+ * Deux campagnes partagent-elles un espace ? Une liste vide veut dire « tous les espaces ».
+ * Deux campagnes ouvertes en même temps ne doivent partager aucun espace : un vœu doit
+ * savoir à quelle campagne il appartient.
+ */
+export function espacesCommuns(a: readonly number[], b: readonly number[]): boolean {
+  if (!a.length || !b.length) return true;
+  return a.some((x) => b.includes(x));
+}
+
+/**
+ * Un agent conduit-il la campagne (l'ouvrir, la modifier, l'arbitrer, prévenir) ? Tous ses
+ * espaces doivent être dans son périmètre ; `perimetre` vide = agent sans limite.
+ */
+export function campagneDansPerimetre(
+  espaces: readonly number[],
+  perimetre: readonly number[],
+): boolean {
+  if (!perimetre.length) return true;
+  return espaces.length > 0 && espaces.every((e) => perimetre.includes(e));
+}
+
+/** Un agent voit-il la campagne ? Dès qu'un de ses espaces est dans son périmètre. */
+export function campagneVisible(espaces: readonly number[], perimetre: readonly number[]): boolean {
+  if (!perimetre.length || !espaces.length) return true;
+  return espaces.some((e) => perimetre.includes(e));
+}

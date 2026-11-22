@@ -8,6 +8,7 @@
  *   pnpm tsx prisma/seed-processus.ts
  */
 import "dotenv/config";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { Prisma } from "@/generated/prisma/client";
 import {
@@ -17,7 +18,7 @@ import {
   type Etape,
   lireDefinition,
 } from "@/lib/circuits";
-import { seedCircuitStandard } from "@/server/amorcage";
+import { poserMotDePasse, seedCircuitStandard } from "@/server/amorcage";
 import { circuitsEnService, faitsReservation } from "@/server/circuits";
 import { faitsSubvention } from "@/server/circuits-subvention";
 import { prisma } from "@/server/db";
@@ -225,12 +226,97 @@ async function creerRoleInstructeur(): Promise<void> {
   });
 }
 
-export async function creerProcessusDemo(): Promise<Record<string, number>> {
+/**
+ * Un compte par service, pour dérouler les scénarios à plusieurs mains sans passer par
+ * l'administration : un agent du Service des fêtes, une chargée de communication, une
+ * régisseuse (sans service : elle encaisse pour tous). Créés en fin de jeu, sans tirage
+ * aléatoire, ils ne décalent aucune autre donnée.
+ */
+export const COMPTES_SERVICES = [
+  {
+    email: "nadia.lefevre@exemple.fr",
+    prenom: "Nadia",
+    nom: "Lefèvre",
+    role: "agent",
+    secteur: "salle",
+    fonction: "Chargée de la location de salles",
+    phone: "01 46 57 03 35",
+    service: "Service des fêtes",
+    responsable: false,
+  },
+  {
+    email: "camille.roche@exemple.fr",
+    prenom: "Camille",
+    nom: "Roche",
+    role: "agent",
+    secteur: "salle",
+    fonction: "Chargée de communication",
+    phone: "01 46 57 03 12",
+    service: "Communication",
+    responsable: true,
+  },
+  {
+    email: "helene.petit@exemple.fr",
+    prenom: "Hélène",
+    nom: "Petit",
+    role: "financier",
+    secteur: null,
+    fonction: "Régisseuse de recettes",
+    phone: "01 46 57 03 08",
+    service: null,
+    responsable: false,
+  },
+] as const;
+
+/** Le mot de passe commun des comptes de démonstration, tel que le README l'annonce. */
+function motDePasseDemo(): string {
+  const lu = /mot de passe commun \*\*`([^`]+)`\*\*/.exec(readFileSync("README.md", "utf8"))?.[1];
+  if (!lu) throw new Error("Mot de passe de démonstration introuvable dans le README.");
+  return lu;
+}
+
+async function creerComptesServices(motDePasse?: string): Promise<number> {
+  let crees = 0;
+  for (const c of COMPTES_SERVICES) {
+    let u = await prisma.user.findUnique({ where: { email: c.email }, select: { id: true } });
+    if (!u) {
+      u = await prisma.user.create({
+        data: {
+          email: c.email,
+          name: `${c.prenom} ${c.nom}`,
+          firstName: c.prenom,
+          lastName: c.nom,
+          phone: c.phone,
+          fonction: c.fonction,
+          kind: "agent",
+          role: c.role,
+          secteur: c.secteur,
+        },
+        select: { id: true },
+      });
+      await poserMotDePasse(u.id, motDePasse ?? motDePasseDemo());
+      crees += 1;
+    }
+    if (!c.service) continue;
+    const s = await prisma.service.findUnique({ where: { name: c.service } });
+    if (!s) continue;
+    await prisma.serviceMembre.createMany({
+      data: [{ serviceId: s.id, userId: u.id }],
+      skipDuplicates: true,
+    });
+    if (c.responsable && !s.responsableId)
+      await prisma.service.update({ where: { id: s.id }, data: { responsableId: u.id } });
+  }
+  return crees;
+}
+
+export async function creerProcessusDemo(motDePasse?: string): Promise<Record<string, number>> {
   await seedCircuitStandard();
   await creerRoleInstructeur();
   if ((await prisma.service.count()) > 0)
     return {
       services: 0,
+      comptes: await creerComptesServices(motDePasse),
       circuits: await creerCircuitsSubventionDemo(),
       dossiers: 0,
       etapes: await creerEtapeDemo(),
@@ -249,6 +335,8 @@ export async function creerProcessusDemo(): Promise<Record<string, number>> {
     description: string,
     email: string,
     membre: string | null,
+    usagerTypes: string[] = [],
+    usagersSportifs: boolean | null = null,
   ) =>
     prisma.service.create({
       data: {
@@ -256,6 +344,8 @@ export async function creerProcessusDemo(): Promise<Record<string, number>> {
         description,
         email,
         position,
+        usagerTypes,
+        usagersSportifs,
         responsableId: membre,
         membres: membre ? { create: { userId: membre } } : undefined,
       },
@@ -266,6 +356,8 @@ export async function creerProcessusDemo(): Promise<Record<string, number>> {
     "Équipements sportifs et créneaux des associations sportives, personnel de service",
     "sports@exemple.fr",
     karim,
+    ["association"],
+    true,
   );
   const vieAsso = await service(
     2,
@@ -273,6 +365,8 @@ export async function creerProcessusDemo(): Promise<Record<string, number>> {
     "Salles municipales mises à disposition des associations, subventions",
     "vie.associative@exemple.fr",
     sophie,
+    ["association"],
+    false,
   );
   const fetes = await service(
     3,
@@ -280,6 +374,7 @@ export async function creerProcessusDemo(): Promise<Record<string, number>> {
     "Location des salles municipales aux particuliers et aux entreprises",
     "fetes@exemple.fr",
     sophie,
+    ["particulier", "entreprise"],
   );
   await service(
     4,
@@ -350,6 +445,7 @@ export async function creerProcessusDemo(): Promise<Record<string, number>> {
     },
   );
 
+  await prisma.campagne.updateMany({ where: { serviceId: null }, data: { serviceId: vieAsso.id } });
   // Les dossiers déjà créés rejoignent leur circuit et leur service, sans trace dans leur historique.
   const circuits = await circuitsEnService("reservation");
   const dossiers = await prisma.reservation.findMany({
@@ -366,6 +462,7 @@ export async function creerProcessusDemo(): Promise<Record<string, number>> {
   }
   return {
     services: 4,
+    comptes: await creerComptesServices(motDePasse),
     circuits: 3 + (await creerCircuitsSubventionDemo()),
     dossiers: dossiers.length,
     etapes: await creerEtapeDemo(),

@@ -27,7 +27,7 @@ import {
   NATURES,
   type Referentiel,
 } from "@/lib/circuits";
-import { plage } from "@/lib/libelles";
+import { dateCourte, plage } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
 import { suppleanceEnCours } from "@/lib/services";
 import { auditRecord } from "@/server/audit";
@@ -614,6 +614,77 @@ export async function libelleUsagerEnCours(reservationId: number): Promise<strin
     if (e?.libelleUsager.trim()) return e.libelleUsager.trim();
   }
   return null;
+}
+
+/**
+ * Relance, une fois, chaque étape dont l'échéance est dépassée : les personnes attendues sont
+ * prévenues de nouveau, ainsi que le responsable du service du dossier et l'agent qui a
+ * demandé l'étape. L'échéance reste indicative : rien n'est décidé d'office.
+ */
+export async function relancerEtapesEnRetard(now = new Date()): Promise<number> {
+  if (!(await processusActif())) return 0;
+  const enRetard = await prisma.dossierEtape.findMany({
+    where: { objet: "reservation", status: "ouverte", echeanceAt: { lt: now }, relanceAt: null },
+    include: { circuitVersion: true },
+    orderBy: { echeanceAt: "asc" },
+  });
+  let relancees = 0;
+  for (const o of enRetard) {
+    const r = await prisma.reservation.findUnique({
+      where: { id: o.objetId },
+      select: {
+        id: true,
+        numero: true,
+        title: true,
+        status: true,
+        serviceId: true,
+        agentId: true,
+        service: { select: { responsableId: true } },
+      },
+    });
+    if (!r || !["a_traiter", "en_traitement"].includes(r.status)) continue;
+    const def = lireDefinition(o.circuitVersion.definition).etapes.find((e) => e.cle === o.cle);
+    if (!def) continue;
+    const attendus = await personnesDe(def.intervenant, r.serviceId);
+    const lien = `/reservations/${r.id}#circuit`;
+    const depuis = o.echeanceAt ? dateCourte(o.echeanceAt) : "";
+    await Promise.all(
+      attendus.map((p) =>
+        notifier(
+          p.id,
+          "reservation",
+          `En retard · ${o.libelle} · ${r.numero}`,
+          `${r.title} · attendu le ${depuis}`,
+          lien,
+        ),
+      ),
+    );
+    // Ceux qui attendent la réponse : le responsable du service et l'agent assigné.
+    const suiveurs = new Set(
+      [r.service?.responsableId, r.agentId].filter((x): x is string => Boolean(x)),
+    );
+    for (const p of attendus) suiveurs.delete(p.id);
+    await Promise.all(
+      [...suiveurs].map((id) =>
+        notifier(
+          id,
+          "reservation",
+          `Étape en retard · ${r.numero}`,
+          `${o.libelle} · attendue le ${depuis} · ${attendus.map((p) => p.name).join(", ") || "personne n'est désigné"}`,
+          lien,
+        ),
+      ),
+    );
+    await prisma.dossierEtape.update({ where: { id: o.id }, data: { relanceAt: now } });
+    await historiser(
+      r.id,
+      "Étape en retard relancée",
+      `${o.libelle} · attendue le ${depuis}`,
+      "automatique",
+    );
+    relancees += 1;
+  }
+  return relancees;
 }
 
 // ── Mes étapes en attente ──

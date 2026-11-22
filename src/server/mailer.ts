@@ -125,6 +125,8 @@ export async function variablesCommunes(): Promise<Record<string, string>> {
   const cfg = await getSettings();
   return {
     collectivite: cfg.COLLECTIVITE_NOM,
+    // Signature par défaut ; un courriel de dossier la remplace par celle de son service.
+    signature: escapeHtml(cfg.COLLECTIVITE_NOM),
     base_url: cfg.APP_BASE_URL,
   };
 }

@@ -32,6 +32,7 @@ import { auditRecord } from "@/server/audit";
 import { joursExclus } from "@/server/calendrier";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
+import { escapeHtml } from "@/server/email-templates";
 import { UserFacingError } from "@/server/errors";
 import { enabledIn } from "@/server/features";
 import type { CurrentUser } from "@/server/guards";
@@ -45,6 +46,7 @@ import { verifierPieces } from "@/server/pieces";
 export const INCLUDE_RESERVATION = {
   espace: { include: { site: true, parent: true, enfants: true } },
   organisation: { include: { profil: true } },
+  service: { select: { id: true, name: true, email: true, phone: true } },
   user: true,
   agent: true,
   nature: true,
@@ -612,6 +614,17 @@ export async function variablesDossier(r: ReservationComplete): Promise<Record<s
     lien: `${cfg.APP_BASE_URL}/portail/mes-reservations/${r.id}`,
     lien_bo: `${cfg.APP_BASE_URL}/reservations/${r.id}`,
     consignes: r.espace.instructions ?? "—",
+    // Le service auquel le dossier est confié (module Processus) : nom, contact, signature.
+    service: r.service?.name ?? cfg.COLLECTIVITE_NOM,
+    service_contact: r.service
+      ? [r.service.email, r.service.phone].filter(Boolean).join(" · ")
+      : "",
+    signature: r.service
+      ? [r.service.name, cfg.COLLECTIVITE_NOM, r.service.email, r.service.phone]
+          .filter((x): x is string => Boolean(x))
+          .map(escapeHtml)
+          .join("<br>")
+      : escapeHtml(cfg.COLLECTIVITE_NOM),
   };
 }
 

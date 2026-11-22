@@ -5,8 +5,11 @@ import {
   factureOuverte,
   fileDeTravail,
   type ServiceBrut,
+  type ServiceUsagers,
+  serviceReference,
   servicesAgis,
   suppleanceEnCours,
+  usagerSuivi,
 } from "@/lib/services";
 
 const service = (id: number, plus: Partial<ServiceBrut> = {}): ServiceBrut => ({
@@ -114,5 +117,54 @@ describe("droits qui découlent du service", () => {
     expect(factureOuverte(sophie, FETES)).toBe(true);
     expect(factureOuverte(sophie, SPORTS)).toBe(false);
     expect(factureOuverte(sophie, null)).toBe(true);
+  });
+});
+
+describe("service de référence d'un usager", () => {
+  const s = (id: number, plus: Partial<ServiceUsagers>): ServiceUsagers => ({
+    id,
+    name: `S${id}`,
+    isActive: true,
+    position: id,
+    usagerTypes: [],
+    usagersSportifs: null,
+    ...plus,
+  });
+  const sports = s(1, { usagerTypes: ["association"], usagersSportifs: true });
+  const vieAsso = s(2, { usagerTypes: ["association"], usagersSportifs: false });
+  const fetes = s(3, { usagerTypes: ["particulier", "entreprise"] });
+  const communication = s(4, {});
+  const tous = [fetes, vieAsso, sports, communication];
+
+  it("suit le type et le caractère sportif", () => {
+    expect(serviceReference({ type: "association", sportive: true }, tous)?.id).toBe(1);
+    expect(serviceReference({ type: "association", sportive: false }, tous)?.id).toBe(2);
+    expect(serviceReference({ type: "entreprise", sportive: false }, tous)?.id).toBe(3);
+    expect(serviceReference({ type: "particulier", sportive: false }, tous)?.id).toBe(3);
+  });
+
+  it("aucun service ne suit ce type : pas de référent", () => {
+    expect(serviceReference({ type: "collectivite", sportive: false }, tous)).toBeNull();
+  });
+
+  it("à égalité, l'ordre des services départage ; un service inactif ne compte pas", () => {
+    const toutes = s(5, { usagerTypes: ["association"], position: 0 });
+    expect(serviceReference({ type: "association", sportive: true }, [...tous, toutes])?.id).toBe(
+      5,
+    );
+    expect(
+      serviceReference({ type: "association", sportive: true }, [
+        { ...sports, isActive: false },
+        vieAsso,
+      ]),
+    ).toBeNull();
+  });
+
+  it("la file de travail d'un agent retient ses usagers et ceux sans référent", () => {
+    const sophie: Acteur = { actif: true, isAdmin: false, services: [2, 3] };
+    expect(usagerSuivi(sophie, 2)).toBe(true);
+    expect(usagerSuivi(sophie, 1)).toBe(false);
+    expect(usagerSuivi(sophie, null)).toBe(true);
+    expect(usagerSuivi({ actif: true, isAdmin: false, services: [] }, 1)).toBe(true);
   });
 });

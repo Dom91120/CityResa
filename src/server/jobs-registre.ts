@@ -89,6 +89,13 @@ export const TACHES: Tache[] = [
     minute: 50,
     actif: (c) => Boolean(c.DOCUMENTS_ENABLED),
   },
+  {
+    id: "relances_etapes",
+    label: "Processus : relance des étapes de circuit en retard",
+    heure: 8,
+    minute: 0,
+    actif: (c) => Boolean(c.PROCESSUS_ENABLED),
+  },
 ];
 
 export function tachesActives(cfg: AppSettings): Tache[] {

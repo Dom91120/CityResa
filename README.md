@@ -103,6 +103,9 @@ Chargés par `pnpm db:demo` (mot de passe commun **`Demo-2026!!`**, adresses fic
 | ---------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | Gestionnaire           | `sophie.martin@exemple.fr`       | Sophie Martin — Vie associative et location de salles (Espace Maison Blanche, salles de quartier)                                 |
 | Agent instructeur      | `karim.benali@exemple.fr`        | Karim Benali — équipements sportifs (gymnases, stade, salle sportive, terrain multisport), subventions des associations sportives |
+| Agent                  | `nadia.lefevre@exemple.fr`       | Nadia Lefèvre — Service des fêtes (location des salles aux particuliers et aux entreprises)                                       |
+| Agent                  | `camille.roche@exemple.fr`       | Camille Roche — responsable du service Communication                                                                              |
+| Financier              | `helene.petit@exemple.fr`        | Hélène Petit — régisseuse de recettes, sans service : encaisse pour tous                                                          |
 | Élu                    | `pierre.durand@exemple.fr`       | Pierre Durand — adjoint au maire (avis sur les subventions)                                                                       |
 | Association            | `redouane.el-bennane@exemple.fr` | Association sportive Châtillon Basket - ASCB (créneau hebdomadaire au gymnase les Sablons, subvention votée)                      |
 | Association            | `jean-luc.vandamme@exemple.fr`   | Tennis de Table Municipal de Châtillon - TTMC                                                                                     |

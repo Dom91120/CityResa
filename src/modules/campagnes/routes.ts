@@ -13,6 +13,7 @@ import {
   changerStatutCampagne,
   chargerCampagne,
   creerCampagne,
+  gereCampagne,
   modifierCampagne,
   notifierDecisions,
   refuserVoeu,
@@ -21,19 +22,36 @@ import {
   type VoeuEntree,
 } from "@/server/campagnes";
 import { UserFacingError } from "@/server/errors";
-import { require as requireFeature } from "@/server/features";
+import { enabledIn, require as requireFeature } from "@/server/features";
 import { type CurrentUser, requireDelete, requireEdit } from "@/server/guards";
 import { pasTrouve, redirigerAvecMessage } from "@/server/http";
 
-export function lireCampagne(form: FormData): CampagneEntree {
+/**
+ * La campagne saisie. Les espaces se limitent au périmètre de l'agent : s'il n'en coche aucun,
+ * la campagne porte sur tous ceux de son périmètre (et non sur tous les espaces de la Ville).
+ * Le service est l'un des siens ; un administrateur choisit librement.
+ */
+export function lireCampagne(form: FormData, user: CurrentUser): CampagneEntree {
   const saisonId = idOuNull(form, "saison_id");
   if (!saisonId) throw new UserFacingError("Choisissez la saison de la campagne.");
+  const perimetre = user.espacesGeres;
+  const coches = ids(form, "espace");
+  const hors = coches.filter((e) => perimetre.length > 0 && !perimetre.includes(e));
+  if (hors.length)
+    throw new UserFacingError("Un des espaces cochés n'est pas dans votre périmètre.");
+  const service = idOuNull(form, "service_id");
+  if (service && !user.agitPour(service))
+    throw new UserFacingError("Vous n'agissez pas pour ce service.");
   return {
     saisonId,
     label: champ(form, "label"),
     closeDate: parseDate(form.get("close_date")),
     consignes: champOuNull(form, "consignes"),
-    espaceIds: ids(form, "espace"),
+    espaceIds: coches.length ? coches : perimetre.filter((e) => e > 0),
+    serviceId:
+      enabledIn(user.settings, "processus") && (service || user.services.length !== 1)
+        ? service
+        : (user.services[0] ?? null),
   };
 }
 
@@ -62,7 +80,7 @@ export async function creer(form: FormData): Promise<Response> {
   await requireFeature("campagnes");
   const user = await requireEdit("reservations");
   try {
-    const id = await creerCampagne(lireCampagne(form), user.name);
+    const id = await creerCampagne(lireCampagne(form, user), user.name);
     return redirigerAvecMessage(
       `/campagnes/${id}`,
       "Campagne créée : elle reste en brouillon jusqu'à l'ouverture du dépôt.",
@@ -89,10 +107,19 @@ export async function actionCampagne(
   if (!c) return pasTrouve();
   const fiche = `/campagnes/${id}`;
   const acteur = { name: user.name, email: user.email };
+  // Conduire la campagne (tout sauf décider d'un vœu) : son service et tous ses espaces.
+  if (segments[0] !== "voeux" && !gereCampagne(user, c))
+    return redirigerAvecMessage(
+      fiche,
+      c.serviceId && !user.agitPour(c.serviceId)
+        ? `Cette campagne est conduite par ${c.service?.name ?? "un autre service"} : vous la consultez.`
+        : "Cette campagne porte sur des espaces hors de votre périmètre : vous la consultez.",
+      "danger",
+    );
   try {
     switch (cle) {
       case "modifier":
-        await modifierCampagne(id, lireCampagne(form), user.name);
+        await modifierCampagne(id, lireCampagne(form, user), user.name);
         return redirigerAvecMessage(fiche, "Campagne modifiée.", "success");
       case "statut": {
         const nouveau = lireStatutCampagne(champ(form, "statut"));
