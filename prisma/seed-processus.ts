@@ -16,10 +16,12 @@ import {
   type Condition,
   type Definition,
   type Etape,
+  libelleIntervenant,
   lireDefinition,
+  NATURES,
 } from "@/lib/circuits";
 import { poserMotDePasse, seedCircuitStandard } from "@/server/amorcage";
-import { circuitsEnService, faitsReservation } from "@/server/circuits";
+import { circuitsEnService, faitsReservation, referentiel } from "@/server/circuits";
 import { faitsSubvention } from "@/server/circuits-subvention";
 import { prisma } from "@/server/db";
 
@@ -112,6 +114,111 @@ async function creerEtapeDemo(): Promise<number> {
       },
     });
   return 1;
+}
+
+/**
+ * Des étapes déjà répondues, pour l'onglet « Délais » : un visa de gratuité sur un créneau
+ * sportif, deux visas du responsable sur des refus de location (dont un hors délai). Chacune
+ * se loge entre le dépôt du dossier et sa décision, déjà inscrits à l'historique.
+ */
+const ETAPES_PASSEES = [
+  {
+    numero: "R260027",
+    cle: "visa-gratuite",
+    decision: "Acceptée",
+    debut: 0.25,
+    par: "Karim Benali",
+    repond: "pierre.durand@exemple.fr",
+    contexte: "Gratuité demandée : créneau d'entraînement d'une association de la commune",
+  },
+  {
+    numero: "R260037",
+    cle: "visa-refus",
+    decision: "Refusée",
+    debut: 0.25,
+    par: "Nadia Lefèvre",
+    repond: "sophie.martin@exemple.fr",
+    contexte: "Refus envisagé : salle déjà promise ce jour-là",
+  },
+  {
+    numero: "R260039",
+    cle: "visa-refus",
+    decision: "Refusée",
+    debut: 0.08,
+    par: "Nadia Lefèvre",
+    repond: "sophie.martin@exemple.fr",
+    contexte: "Refus envisagé : capacité de la salle insuffisante",
+  },
+] as const;
+
+async function creerEtapesPasseesDemo(): Promise<number> {
+  if ((await prisma.dossierEtape.count({ where: { status: { not: "ouverte" } } })) > 0) return 0;
+  const ref = await referentiel();
+  let n = 0;
+  for (const x of ETAPES_PASSEES) {
+    const r = await prisma.reservation.findUnique({
+      where: { numero: x.numero },
+      include: { circuitVersion: true, histories: { orderBy: { performedAt: "asc" } } },
+    });
+    const repondant = await prisma.user.findUnique({ where: { email: x.repond } });
+    const etape = r?.circuitVersion
+      ? lireDefinition(r.circuitVersion.definition).etapes.find((e) => e.cle === x.cle)
+      : null;
+    const decision = r?.histories.find((h) => h.action === x.decision);
+    const depot = r?.histories[0];
+    if (!r?.circuitVersion || !etape || !decision || !depot || !repondant) continue;
+    const t0 = depot.performedAt.getTime();
+    const ouvertAt = new Date(t0 + (decision.performedAt.getTime() - t0) * x.debut);
+    const closAt = new Date(decision.performedAt.getTime() - 30 * 60_000);
+    const qui = libelleIntervenant(etape.intervenant, ref);
+    const issue = NATURES[etape.nature].issues[0];
+    await prisma.dossierEtape.create({
+      data: {
+        objet: "reservation",
+        objetId: r.id,
+        circuitVersionId: r.circuitVersion.id,
+        cle: etape.cle,
+        libelle: etape.libelle,
+        nature: etape.nature,
+        intervenant: { libelle: qui },
+        status: "validee",
+        contexte: x.contexte,
+        ouvertAt,
+        ouvertPar: x.par,
+        echeanceAt: new Date(ouvertAt.getTime() + etape.delaiJours * 86_400_000),
+        closAt,
+        closPar: repondant.name,
+        reponses: {
+          create: {
+            userId: repondant.id,
+            userName: repondant.name,
+            accord: true,
+            createdAt: closAt,
+          },
+        },
+      },
+    });
+    await prisma.reservationHistory.createMany({
+      data: [
+        {
+          reservationId: r.id,
+          action: "Visa demandé",
+          comment: `${etape.libelle} · ${qui} · ${x.contexte}`,
+          performedBy: x.par,
+          performedAt: ouvertAt,
+        },
+        {
+          reservationId: r.id,
+          action: issue,
+          comment: etape.libelle,
+          performedBy: repondant.name,
+          performedAt: closAt,
+        },
+      ],
+    });
+    n += 1;
+  }
+  return n;
 }
 
 /**
@@ -398,7 +505,7 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
       comptes: await creerComptesServices(motDePasse),
       circuits: (await creerCircuitsSubventionDemo()) + (await creerCircuitCampagneDemo()),
       dossiers: 0,
-      etapes: await creerEtapeDemo(),
+      etapes: (await creerEtapeDemo()) + (await creerEtapesPasseesDemo()),
     };
   const compte = async (email: string) =>
     (await prisma.user.findUnique({ where: { email }, select: { id: true } }))?.id ?? null;
@@ -568,7 +675,7 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
     comptes: await creerComptesServices(motDePasse),
     circuits: 3 + (await creerCircuitsSubventionDemo()) + (await creerCircuitCampagneDemo()),
     dossiers: dossiers.length,
-    etapes: await creerEtapeDemo(),
+    etapes: (await creerEtapeDemo()) + (await creerEtapesPasseesDemo()),
   };
 }
 

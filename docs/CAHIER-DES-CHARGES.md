@@ -992,6 +992,17 @@ L'écart **E3** est ainsi traité aussi pour les campagnes de créneaux.
 - la carte Circuit liste les réponses reçues ; la relance des retards ne vise que ceux qui
   n'ont pas répondu ; sans effet sur l'avis des élus d'une subvention, donné par chacun.
 
+**Lot 10, livré** — statistiques de délai :
+
+- onglet **Délais** de « Mes étapes », ouvert à tous les agents : sur les étapes demandées
+  depuis 3, 6 ou 12 mois, réponses reçues, délai médian, moyen et le plus long, réponses hors
+  délai, étapes en attente et en retard ;
+- les mêmes chiffres **par étape** et **par service du dossier** ;
+- le jeu de démonstration porte trois étapes déjà répondues, dont une hors délai.
+
+Limites : délais en jours calendaires ; l'avis des élus sur une subvention n'est pas compté ;
+pas d'export.
+
 **Reste à faire**
 
 | Sujet | Écart |
@@ -1005,7 +1016,6 @@ L'écart **E3** est ainsi traité aussi pour les campagnes de créneaux.
 | Filtre « service » des listes de subventions et du planning ; service sur les factures | E7 |
 | **Bascule** d'un dossier en cours sur une nouvelle version ; **export / import** d'un circuit | — |
 | Catégorie de permission « **Processus** » (aujourd'hui : administrateur seul) | — |
-| **Statistiques** de délai par étape et par service | — |
 
 ### Limites voulues
 

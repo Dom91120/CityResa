@@ -80,6 +80,7 @@ const CAPTURES = [
   },
   { nom: "etapes-elu", compte: "elu", url: "/etapes", hauteur: 900 },
   { nom: "etapes-circuits", compte: "gestionnaire", url: "/etapes?vue=circuits", hauteur: 1500 },
+  { nom: "etapes-delais", compte: "gestionnaire", url: "/etapes?vue=delais", hauteur: 1100 },
   { nom: "reservation-circuit", compte: "gestionnaire", url: "/reservations/8", hauteur: 1300 },
 
   // Accès

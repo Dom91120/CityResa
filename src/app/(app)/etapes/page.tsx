@@ -5,7 +5,9 @@ import { Icone } from "@/components/icones";
 import { SegTabs, VideBloc } from "@/components/liste";
 import { Chip } from "@/components/macros";
 import { NATURES, OBJETS } from "@/lib/circuits";
+import { lirePeriodeDelais } from "@/lib/circuits-delais";
 import { dateCourte, depuis, montant } from "@/lib/libelles";
+import { VueDelais } from "@/modules/processus/delais";
 import { Logigramme, PastilleNature } from "@/modules/processus/vues";
 import {
   circuitsEnService,
@@ -22,11 +24,12 @@ export const metadata = { title: "Mes étapes - CityRésa" };
 export default async function EtapesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ vue?: string }>;
+  searchParams: Promise<{ vue?: string; mois?: string }>;
 }) {
   const page = await contextePage();
   if (!page.features.processus) notFound();
-  const vue = (await searchParams).vue ?? "miennes";
+  const params = await searchParams;
+  const vue = params.vue ?? "miennes";
   const toutes = await etapesEnAttente(page.user, true);
   const miennes = toutes.filter((e) => e.pourMoi);
   const liste = vue === "toutes" ? toutes : miennes;
@@ -85,10 +88,13 @@ export default async function EtapesPage({
             label: "Circuits en service",
             active: vue === "circuits",
           },
+          { href: "/etapes?vue=delais", label: "Délais", active: vue === "delais" },
         ]}
       />
 
-      {vue === "circuits" && ref && options ? (
+      {vue === "delais" ? (
+        <VueDelais mois={lirePeriodeDelais(params.mois)} />
+      ) : vue === "circuits" && ref && options ? (
         <div className="data-card">
           {[...circuits]
             .sort(

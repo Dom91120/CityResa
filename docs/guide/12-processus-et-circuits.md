@@ -65,6 +65,17 @@ Une étape précède l'un de quatre gestes sur une réservation :
 
 *Figure — l'onglet « Circuits en service » : chaque circuit en logigramme, consultable par tous les agents.*
 
+**L'onglet Délais** — Il mesure le temps que mettent les relectures, avis et visas à recevoir leur réponse, sur les étapes demandées depuis 3, 6 ou 12 mois.
+
+![Délais des étapes](captures/etapes-delais.webp)
+
+*Figure — l'onglet « Délais » : les réponses reçues et leur délai, par étape et par service.*
+
+- Quatre cartes résument la période : réponses reçues (accords et refus), délai médian, réponses arrivées **hors délai** (après l'échéance indicative de l'étape), étapes encore en attente et, parmi elles, celles en retard.
+- Deux tableaux détaillent les mêmes chiffres **par étape** et **par service du dossier** : délai médian, délai moyen, délai le plus long.
+- Le délai court de la demande de l'étape à la réponse qui la clôt, jours non ouvrés compris. Une étape redemandée compte pour chaque demande ; une étape annulée ne compte pas. L'avis des élus sur une subvention, donné sur le dossier, n'y figure pas.
+- L'onglet est ouvert à tous les agents, comme « Toutes les étapes en attente ».
+
 ## 12.3 Le circuit sur la fiche d'un dossier
 
 **À quoi ça sert** — Savoir à quel service le dossier est confié, quelles étapes son circuit lui impose et où elles en sont.

@@ -103,6 +103,10 @@ Un circuit « Campagnes de créneaux » demande le visa de l'élu avant que les 
 campagne soient prévenus (scénario 5). Toutes les étapes du jeu se closent à la première
 réponse ; le scénario 14 montre les règles « tous » et « majorité ».
 
+Trois étapes ont déjà reçu leur réponse (un visa de gratuité sur R260027, deux visas du
+responsable sur les refus R260037 et R260039, dont un hors délai) : elles alimentent l'onglet
+**Délais** de « Mes étapes ».
+
 ### Comment lire un scénario
 
 - **Qui** : la personne dont vous prenez le compte à cette étape. Un changement de personne
@@ -661,6 +665,14 @@ le décrit, on le simule, on le publie, on le vérifie.
 | 12 | Administrateur | Service **Service des fêtes** : **Suppléé par** Communication, du jour à dans une semaine. Ajoutez au circuit « Salles · particuliers et entreprises » une étape adressée au « service du dossier », publiez, provoquez-la. | Les comptes Communication reçoivent l'étape du Service des fêtes pendant la période, plus après. |
 | 13 | Administrateur | Ajoutez une étape « Visa de l'élu » sur le critère « Demande hors du délai de l'espace », publiez ; avec Sophie, saisissez une réservation en **passant outre le délai**, statut initial « Acceptée ». | Le dossier naît « À traiter » et attend le visa. |
 | 14 | Administrateur | **Paramètres › Modules** : désactivez **Processus et circuits**. | « Mes étapes » et la carte Circuit disparaissent ; une demande s'accepte sans étape. Réactivez. |
+
+**Variante — mesurer les délais** (ch. 12.2)
+
+| # | Qui | Action | Constat |
+| --- | --- | --- | --- |
+| a | Sophie | **Mes étapes** › onglet **Délais**. | Trois réponses reçues, un délai médian, une réponse hors délai, une étape en attente. Par étape : le visa de gratuité et le visa sur le refus ; par service : fêtes, sports, Vie associative. |
+| b | Sophie | Après les étapes 8 à 10 ci-dessus, revenez sur l'onglet. | La relecture de la Communication y figure, avec son délai de quelques minutes. |
+| c | Sophie | Boutons **3 mois**, **6 mois**. | La période se resserre sur les étapes demandées depuis cette date. |
 
 **Variante — une étape à plusieurs voix** (Service des fêtes : Sophie et Nadia)
 
