@@ -95,6 +95,32 @@ export default async function EtapePage({
                   doivent répondre.
                 </div>
               </div>
+              <div>
+                <label className="form-label" htmlFor="f-copie">
+                  En copie
+                </label>
+                <select
+                  name="copie"
+                  id="f-copie"
+                  className="form-select"
+                  defaultValue={e?.copie ? valeurIntervenant(e.copie) : ""}
+                >
+                  <option value="">— personne —</option>
+                  {intervenants.map((g) => (
+                    <optgroup key={g.groupe} label={g.groupe}>
+                      {g.options.map(([v, l]) => (
+                        <option key={v} value={v}>
+                          {l}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                <div className="form-text">
+                  Prévenus de la demande et de la réponse, sans avoir à répondre : un service qui
+                  suit, un responsable.
+                </div>
+              </div>
               <Select
                 label="Réponses attendues"
                 name="reunion"

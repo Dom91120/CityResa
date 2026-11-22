@@ -500,6 +500,8 @@ export type Etape = {
   reunion: Reunion;
   /** À l'échéance sans réponse : une relance, ou l'étape tenue pour accordée. */
   aEcheance: AEcheance;
+  /** Mis en copie : prévenus de la demande et de la réponse, sans avoir à répondre. */
+  copie?: Intervenant | null;
 };
 
 export type Definition = {
@@ -573,6 +575,7 @@ export function lireDefinition(brut: unknown): Definition {
       delaiJours: Math.max(0, Math.min(365, Math.trunc(Number(x.delaiJours) || 0))),
       reunion: lireReunion(x.reunion),
       aEcheance: lireAEcheance(x.aEcheance),
+      copie: lireIntervenant(x.copie),
     });
   }
   const serviceId = Number(b.serviceId);
@@ -793,7 +796,11 @@ export function comparer(avant: Definition, apres: Definition, ref: Referentiel)
   for (const e of apres.etapes) {
     const a = avant.etapes.find((x) => x.cle === e.cle);
     if (!a) out.push(`Étape ajoutée : ${e.libelle} (${libelleIntervenant(e.intervenant, ref)}).`);
-    else if (JSON.stringify(a) !== JSON.stringify(e)) out.push(`Étape modifiée : ${e.libelle}.`);
+    else if (
+      JSON.stringify({ ...a, copie: a.copie ?? null }) !==
+      JSON.stringify({ ...e, copie: e.copie ?? null })
+    )
+      out.push(`Étape modifiée : ${e.libelle}.`);
   }
   for (const a of avant.etapes)
     if (!apres.etapes.some((e) => e.cle === a.cle)) out.push(`Étape retirée : ${a.libelle}.`);
@@ -902,11 +909,13 @@ export function exporterCircuit(
     if (id && s) services[String(id)] = s.name;
   };
   service(def.serviceId);
-  for (const e of def.etapes) {
-    if (e.intervenant.type === "service") service(e.intervenant.id);
-    if (e.intervenant.type === "delegation") {
-      const d = ref.delegations.get(e.intervenant.id);
-      if (d) delegations[String(e.intervenant.id)] = d.label;
+  for (const i of def.etapes.flatMap((e) =>
+    e.copie ? [e.intervenant, e.copie] : [e.intervenant],
+  )) {
+    if (i.type === "service") service(i.id);
+    if (i.type === "delegation") {
+      const d = ref.delegations.get(i.id);
+      if (d) delegations[String(i.id)] = d.label;
     }
   }
   return {
@@ -968,17 +977,22 @@ export function lireImportCircuit(
       avertissements.push(`Étape « ${e.libelle} » écartée : son moment ne convient pas à ce type.`);
       continue;
     }
-    let intervenant: Intervenant | null = e.intervenant;
-    if (e.intervenant.type === "service") {
-      const id = retrouver(e.intervenant.id, noms.services, ref.services, "Le service");
-      intervenant = id ? { type: "service", id } : null;
-    } else if (e.intervenant.type === "delegation") {
-      const id = retrouver(e.intervenant.id, noms.delegations, ref.delegations, "La délégation");
-      intervenant = id ? { type: "delegation", id } : null;
-    } else if (e.intervenant.type === "role" && !ref.roles.has(e.intervenant.role)) {
-      erreurs.push(`Le rôle « ${e.intervenant.role} » n'existe pas ici.`);
-    }
-    if (intervenant) etapes.push({ ...e, intervenant });
+    const ici = (i: Intervenant): Intervenant | null => {
+      if (i.type === "service") {
+        const id = retrouver(i.id, noms.services, ref.services, "Le service");
+        return id ? { type: "service", id } : null;
+      }
+      if (i.type === "delegation") {
+        const id = retrouver(i.id, noms.delegations, ref.delegations, "La délégation");
+        return id ? { type: "delegation", id } : null;
+      }
+      if (i.type === "role" && !ref.roles.has(i.role))
+        erreurs.push(`Le rôle « ${i.role} » n'existe pas ici.`);
+      return i;
+    };
+    const intervenant = ici(e.intervenant);
+    const copie = e.copie ? ici(e.copie) : null;
+    if (intervenant) etapes.push({ ...e, intervenant, copie });
   }
   const brutes = Array.isArray(b.definition?.etapes) ? b.definition.etapes.length : 0;
   if (brutes > lue.etapes.length)

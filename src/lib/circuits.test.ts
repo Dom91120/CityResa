@@ -618,6 +618,31 @@ describe("export et import d'un circuit", () => {
     expect(r).toEqual({ definition, avertissements: [] });
   });
 
+  it("lit, exporte et réimporte la mise en copie", () => {
+    const avecCopie = lireDefinition({
+      etapes: [
+        {
+          ...etape({ cle: "a" }),
+          intervenant: { type: "delegation", id: 3 },
+          copie: { type: "service", id: 7 },
+        },
+      ],
+    });
+    expect(avecCopie.etapes[0].copie).toEqual({ type: "service", id: 7 });
+    expect(
+      lireDefinition({ etapes: [{ ...etape({ cle: "a" }), copie: "x" }] }).etapes[0].copie,
+    ).toBeNull();
+    const f = exporterCircuit(
+      { objet: "reservation", name: "C", description: null },
+      avecCopie,
+      ici,
+    );
+    expect(f.references.services).toEqual({ "7": "Vie associative" });
+    const r = lireImportCircuit(f, "reservation", ailleurs);
+    if ("erreurs" in r) throw new Error(r.erreurs.join(" "));
+    expect(r.definition.etapes[0].copie).toEqual({ type: "service", id: 42 });
+  });
+
   it("retrouve services et délégations par leur nom dans une autre base", () => {
     const r = lireImportCircuit(fichier, "reservation", ailleurs);
     if ("erreurs" in r) throw new Error(r.erreurs.join(" "));

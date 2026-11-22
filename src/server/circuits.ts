@@ -361,6 +361,8 @@ export type EtapeDossier = Etape & {
   bloquante: boolean;
   attendus: Personne[];
   libelleIntervenant: string;
+  /** Les personnes mises en copie, hors celles qui répondent. */
+  enCopie: Personne[];
   /** Dernière ouverture de l'étape sur ce dossier. */
   derniere: {
     id: number;
@@ -493,11 +495,18 @@ export async function etatCircuit(d: Dossier): Promise<EtatCircuit | null> {
     // Une étape déjà ouverte reste affichée même si sa condition n'est plus vraie.
     const applicable = etapesApplicables({ ...def, etapes: [e] }, p.faits).length > 0;
     if (!applicable && (!derniere || derniere.status === "annulee")) continue;
+    const attendus = await personnesDe(e.intervenant, p.serviceId);
+    const enCopie = e.copie
+      ? (await personnesDe(e.copie, p.serviceId)).filter(
+          (c) => !attendus.some((a) => a.id === c.id),
+        )
+      : [];
     etapes.push({
       ...e,
       etat: etatEtape(derniere),
       bloquante: NATURES[e.nature].bloquante && applicable,
-      attendus: await personnesDe(e.intervenant, p.serviceId),
+      attendus,
+      enCopie,
       libelleIntervenant: libelleIntervenant(e.intervenant, ref),
       derniere,
     });
@@ -611,6 +620,18 @@ export async function ouvrirEtape(
         typeNotif(p),
         `${NATURES[e.nature].label} attendu${e.nature === "relecture" ? "e" : ""} · ${p.numero}`,
         `${e.libelle} · ${p.titre} · ${p.detail}`,
+        `${p.lien}#circuit`,
+      ),
+    ),
+  );
+  // Les personnes en copie sont informées par la cloche, sans courriel ni réponse attendue.
+  await Promise.all(
+    e.enCopie.map((a) =>
+      notifier(
+        a.id,
+        typeNotif(p),
+        `Pour information · ${e.libelle} · ${p.numero}`,
+        `${NATURES[e.nature].label} demandé${e.nature === "relecture" ? "e" : ""} à ${e.libelleIntervenant} · ${p.titre}`,
         `${p.lien}#circuit`,
       ),
     ),
@@ -879,8 +900,9 @@ export async function repondreEtape(
       user.name,
     );
   await auditRecord(`etape ${conclusion}`, `${p.numero} · ${e.libelle}`, module, user.email);
-  // Le demandeur de l'étape et ceux qui suivent le dossier sont prévenus de la réponse.
-  const aPrevenir = new Set<string>(p.suiveurs);
+  // Le demandeur de l'étape, ceux qui suivent le dossier et les personnes en copie sont
+  // prévenus de la réponse.
+  const aPrevenir = new Set<string>([...p.suiveurs, ...e.enCopie.map((c) => c.id)]);
   if (ouverture.ouvertPar) {
     const u = await prisma.user.findFirst({
       where: { ...AGENT_ACTIF, name: ouverture.ouvertPar },

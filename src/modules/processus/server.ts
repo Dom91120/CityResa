@@ -55,6 +55,17 @@ export function intervenantDuFormulaire(form: FormData): Intervenant {
   throw new UserFacingError("Choisissez qui répond à cette étape.");
 }
 
+/** Lit la mise en copie d'une étape (même forme que « qui répond ») ; vide = personne. */
+export function copieDuFormulaire(form: FormData): Intervenant | null {
+  const [type, valeur] = champ(form, "copie").split(":");
+  const id = Number(valeur);
+  if (type === "service" && id > 0) return { type, id };
+  if (type === "delegation" && id > 0) return { type, id };
+  if (type === "role" && valeur) return { type, role: valeur };
+  if (type === "service_dossier" || type === "responsable_dossier") return { type };
+  return null;
+}
+
 export function valeurIntervenant(i: Intervenant): string {
   if (i.type === "service" || i.type === "delegation") return `${i.type}:${i.id}`;
   if (i.type === "role") return `role:${i.role}`;
@@ -94,6 +105,7 @@ export function etapeDuFormulaire(
     delaiJours: Math.max(0, Math.min(365, parseInt_(form.get("delai_jours"), 0) ?? 0)),
     reunion: lireReunion(champ(form, "reunion")),
     aEcheance: lireAEcheance(champ(form, "a_echeance")),
+    copie: copieDuFormulaire(form),
   };
 }
 

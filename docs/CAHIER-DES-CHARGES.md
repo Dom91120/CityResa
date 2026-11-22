@@ -1121,13 +1121,23 @@ L'écart **E7** (le service nommé à l'usager) est ainsi traité de bout en bou
   (frais d'annulation) ne sont pas retenues ;
 - démonstration : la régie vise la facturation d'une location d'au moins 1 000 €.
 
+**Lot 24, livré** — mise en copie d'une étape :
+
+- une étape peut nommer des personnes **en copie** (service, délégation, rôle, service ou
+  responsable du dossier) : prévenues par la cloche de la demande puis de la réponse, sans
+  avoir à répondre ; la carte Circuit et le logigramme les nomment ;
+- l'export et l'import d'un circuit retrouvent la copie par le nom, comme « qui répond » ;
+- la mise en copie n'ouvre aucun droit de lecture sur le dossier.
+
+Pour l'écart **E2**, la Communication peut ainsi suivre une décision sans la retenir.
+
 **Reste à faire**
 
 | Sujet | Écart |
 | --- | --- |
 | Droits par service sur ce qui reste réglé **par espace** : présences, personnel de service, fermetures | E1 |
 | Autres **moments** d'insertion : avant une fermeture exceptionnelle | E3 |
-| **Effets** paramétrables d'une étape (modèle de courriel propre à l'étape, mise en copie, document) | E2 |
+| **Effets** paramétrables d'une étape (modèle de courriel propre à l'étape, document joint) | E2 |
 
 ### Limites voulues
 

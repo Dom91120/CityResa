@@ -119,6 +119,9 @@ export function CarteCircuit({
                     ? ` · ${REUNIONS[e.reunion].court}`
                     : ""}
                   {e.bloquante ? "" : " · ne retient rien"}
+                  {e.enCopie.length
+                    ? ` · en copie : ${e.enCopie.map((p) => p.name).join(", ")}`
+                    : ""}
                 </div>
                 {d && e.etat !== "a_demander" ? (
                   <div className="circuit-etape-suivi">
