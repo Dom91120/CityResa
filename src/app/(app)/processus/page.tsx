@@ -120,8 +120,8 @@ export default async function ProcessusPage({
                   <tbody>
                     {services.map((s) => (
                       <tr key={s.id}>
-                        <td>
-                          <span className="cell2">
+                        <td className="col-souple col-souple--large">
+                          <span className="cell2" style={{ whiteSpace: "normal" }}>
                             <strong>
                               {s.name}
                               {s.isActive ? null : (
