@@ -97,7 +97,8 @@ et fêtes » est confiée à Pierre Durand. Le dossier R260008 attend déjà son
 Deux circuits de subvention complètent le jeu : les demandes des **associations sportives** sont
 instruites par le Service des sports (Karim), les **autres** par la Vie associative (Sophie) ;
 dans les deux cas l'avis est demandé à l'élu de la délégation. Pour les « autres associations »,
-la Communication relit en plus, avant le vote, toute demande d'au moins 2 500 €.
+la Communication relit en plus, avant le vote, toute demande d'au moins 2 500 €, et la régie
+(Hélène, rôle Financier) vise le versement.
 
 Un circuit « Campagnes de créneaux » demande le visa de l'élu avant que les demandeurs d'une
 campagne soient prévenus (scénario 5). Toutes les étapes du jeu se closent à la première
@@ -487,7 +488,9 @@ vote puis le versement sont enregistrés.
 | 13 | Pierre | Avis « Avec réserve », montant proposé inférieur au montant demandé, commentaire. Puis **Modifier mon avis**. | Un seul avis par personne : le second remplace le premier. |
 | 14 | Sophie | **Voter la subvention**. | Le montant accordé est pré-rempli avec la moyenne des montants proposés. Ajoutez une note (délibération). Statut **Votée** ; courriel et notification à l'association. Si la demande atteint 2 500 €, voir la variante « relecture avant le vote » ci-dessous. |
 | 15 | Pierre | Rouvrez le dossier. | Les avis sont clos. |
-| 16 | Sophie | **Marquer versée**, date du jour. | Statut **Versée**, dossier clos. |
+| 16 | Sophie | **Marquer versée**, date du jour. | Versement **retenu** : message jaune, le « Visa de la régie avant le versement » est demandé d'office avec le montant accordé. |
+| 16a | Hélène | **Mes étapes** : ouvrez le dossier, puis **Visa accordé**. | Elle lit le dossier sans pouvoir l'instruire ; Sophie est prévenue par la cloche. |
+| 16b | Sophie | **Marquer versée** de nouveau. | Statut **Versée**, dossier clos. |
 | 17 | Madeleine | **Mes subventions**, puis le dossier (ch. 1.20). | Pastille « Versée le … » ; bandeau « Subvention versée le … : montant » puis le parcours ; bloc Décision ; **Dossier PDF** en aperçu. |
 | 18 | Sophie | **Valorisation**, exercice concerné. | La subvention votée s'ajoute aux avantages en nature dans le **total des aides**. |
 

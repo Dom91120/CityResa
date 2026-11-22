@@ -1040,13 +1040,20 @@ L'écart **E7** est ainsi traité pour les subventions.
   l'inscrit à l'historique du dossier ;
 - rien n'est décidé d'office : un avis ne retient pas le vote.
 
+**Lot 15, livré** — étapes avant le versement d'une subvention :
+
+- un circuit de subvention admet un troisième moment, **avant le versement** : une relecture
+  ou un visa retient « Marquer versée » sur une subvention votée, un avis non ;
+- le versement retenu demande l'étape d'office avec le montant accordé ; la carte Circuit du
+  dossier permet de la demander à l'avance ;
+- démonstration : la régie (rôle Financier) vise le versement des « autres associations ».
+
 **Reste à faire**
 
 | Sujet | Écart |
 | --- | --- |
 | Droits par service sur ce qui reste réglé **par espace** : présences, personnel de service, fermetures | E1 |
 | Étapes de circuit (visa, avis) sur la retenue sur caution ; simulation d'une campagne | E3 |
-| Subventions : étapes avant le versement | E5 |
 | Autres **moments** d'insertion : avant l'émission d'une facture, une retenue sur caution, une fermeture exceptionnelle | E3 |
 | **Échéance** : passage d'office à l'étape suivante ou transmission au suppléant (aujourd'hui : une relance, l'alerte au responsable, et l'échéance en rouge) | — |
 | **Effets** paramétrables d'une étape (modèle de courriel propre à l'étape, mise en copie, document) | E2 |

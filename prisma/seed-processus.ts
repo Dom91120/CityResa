@@ -246,6 +246,18 @@ async function creerCircuitsSubventionDemo(): Promise<number> {
     delaiJours: 15,
     reunion: "un",
   };
+  // Avant de verser, la régie vise : le rôle Financier (Hélène Petit dans le jeu).
+  const visaVersement: Etape = {
+    cle: "visa-versement",
+    libelle: "Visa de la régie avant le versement",
+    libelleUsager: "",
+    nature: "visa",
+    moment: "avant_versement",
+    intervenant: { type: "role", role: "financier" },
+    condition: null,
+    delaiJours: 5,
+    reunion: "un",
+  };
   const circuit = (
     position: number,
     name: string,
@@ -310,8 +322,9 @@ async function creerCircuitsSubventionDemo(): Promise<number> {
               delaiJours: 5,
               reunion: "un",
             },
+            visaVersement,
           ]
-        : [avisElu],
+        : [avisElu, visaVersement],
     },
   );
   const circuits = await circuitsEnService("subvention");

@@ -6,6 +6,7 @@ import { STATUTS_DU_MOMENT } from "@/lib/circuits";
 import { SUBVENTION_STATUS } from "@/lib/constantes";
 import { estFiche } from "@/lib/dossier-subvention";
 import { champ, champOuNull, idOuNull, parseInt_ } from "@/lib/forms-util";
+import { montant } from "@/lib/libelles";
 import {
   changerStatutSubvention,
   donnerAvis,
@@ -101,6 +102,30 @@ export async function statut(user: CurrentUser, id: number, form: FormData): Pro
           throw e;
         }
       } else await cloreEtapesOuvertes(id, user.name, "subvention");
+    }
+    if (nouveau === "versee") {
+      // Le circuit peut soumettre le versement à un visa (régie, élu aux finances…).
+      const { verifierAvant } = await import("@/server/circuits");
+      const { porteurSubventionParId } = await import("@/server/circuits-subvention");
+      const p = await porteurSubventionParId(id);
+      try {
+        if (p) {
+          const v = await prisma.subvention.findUnique({
+            where: { id },
+            select: { montantAccorde: true },
+          });
+          await verifierAvant(
+            p,
+            "avant_versement",
+            user,
+            `Versement envisagé : ${montant(v?.montantAccorde ?? 0)} accordés à ${p.demandeur}`,
+          );
+        }
+      } catch (e) {
+        if (e instanceof UserFacingError)
+          return redirigerAvecMessage(`/subventions/${id}#circuit`, e.message, "warning");
+        throw e;
+      }
     }
     const s = await changerStatutSubvention(id, nouveau, user, opts);
     const messages: Record<string, string> = {

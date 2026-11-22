@@ -152,7 +152,7 @@ L'association remplit normalement son dossier elle-même depuis « Mes subventio
 
 **Comment faire — enregistrer le versement**
 
-1. Sur une demande **Votée**, cliquez sur **Marquer versée**.
+1. Sur une demande **Votée**, cliquez sur **Marquer versée**. Si le circuit du dossier prévoit un visa avant le versement (chapitre 12.7), il est retenu : l'étape est demandée d'office, et vous enregistrez le versement une fois l'accord donné.
 2. Indiquez la **Date du versement** (par défaut aujourd'hui, jamais dans le futur).
 3. Cliquez sur **Marquer versée**. Le dossier est clos.
 

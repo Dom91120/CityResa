@@ -195,7 +195,7 @@ export function Logigramme({
   const service = definition.serviceId ? referentiel.services.get(definition.serviceId) : null;
   const cycle = CYCLES[objet];
   // Les étapes d'une annulation ou d'une réquisition viennent après l'acceptation.
-  const tardifs: readonly Moment[] = ["avant_annulation", "avant_requisition"];
+  const tardifs: readonly Moment[] = ["avant_annulation", "avant_requisition", "avant_versement"];
   const avant = definition.etapes.filter((e) => !tardifs.includes(e.moment));
   const apres = definition.etapes.filter((e) => tardifs.includes(e.moment));
   const noeud = (e: Etape) => {

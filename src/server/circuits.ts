@@ -695,6 +695,12 @@ const VERROUS: Record<Moment, { fait: string; impossible: string; reste: string;
       reste: "il restera à voter",
       sinon: "Revoyez le dossier puis redemandez l'étape, ou refusez la demande.",
     },
+    avant_versement: {
+      fait: "La subvention n'est pas encore versée",
+      impossible: "Versement impossible",
+      reste: "il restera à enregistrer le versement",
+      sinon: "Voyez avec la personne qui a répondu, puis redemandez l'étape.",
+    },
   };
 
 /**

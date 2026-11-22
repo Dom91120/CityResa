@@ -240,6 +240,7 @@ Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écrit
 - son **aiguillage**, sur des critères propres aux subventions : association sportive, association conventionnée, type de subvention, première demande ou renouvellement, secteur d'instruction, montant demandé ;
 - le **service instructeur** ;
 - les **avis demandés aux élus** : une ou plusieurs étapes d'avis, chacune adressée à une délégation (ou à un service, à un rôle), sous condition ou toujours ;
+- des **étapes avant le versement** : un visa ou une relecture qui retient l'enregistrement du versement d'une subvention votée ;
 - des **étapes avant le vote** : une relecture ou un visa qui retient le vote, ou un avis qui ne le retient pas, comme pour une réservation.
 
 **Ce qui change sur un dossier**
@@ -262,6 +263,7 @@ Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écrit
 - Un dossier garde le circuit de son dépôt ; il n'en change plus une fois soumis aux élus.
 - L'avis d'un élu a une **échéance** quand son étape porte un délai : elle se compte à partir de la soumission aux élus et s'affiche dans **Mes étapes** (« Attendu le », puis « En retard »). Passé ce délai, l'élu est relancé une fois par la cloche et par courriel, le responsable du service instructeur est prévenu, et l'historique du dossier porte « Avis en retard relancé ». Un dossier soumis de nouveau aux élus repart d'une échéance neuve.
 - Les avis des élus ne retiennent pas le vote : le service instructeur vote quand il l'estime utile, la carte Circuit lui montre les avis encore attendus.
+- Une étape **avant le versement** retient **Marquer versée** de la même façon, sur une subvention votée : l'étape est demandée d'office avec le montant accordé, et le versement s'enregistre une fois l'accord donné. Dans le jeu de démonstration, la régie (rôle Financier) vise le versement des « autres associations ».
 - Une étape **avant le vote** se comporte comme sur une réservation : si une relecture ou un visa s'applique, **Voter la subvention** est retenu, l'étape est demandée d'office avec le montant envisagé, et le vote se refait une fois l'accord donné. Elle se demande aussi à l'avance depuis la carte Circuit, se retrouve dans **Mes étapes** de la personne attendue et se relance en cas de retard. Un refus de la demande clôt les étapes encore ouvertes. Dans le jeu de démonstration, la Communication relit avant le vote toute demande d'au moins 2 500 €.
 - L'association connaît son interlocuteur : les courriels du dossier (accusé de réception, dossier à compléter, décision) sont signés du service instructeur, avec son courriel et son téléphone ; le bandeau du dossier sur le portail indique « Votre interlocuteur » ; le PDF du dossier et la notice sur les données personnelles nomment ce service. Une coordonnée que le service n'a pas reprend celle des réglages des subventions. Un dossier encore en rédaction n'a pas de service : le contact général s'affiche.
 - Un élu donne un avis, il n'instruit jamais, même membre d'un service.

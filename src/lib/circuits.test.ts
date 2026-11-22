@@ -265,7 +265,10 @@ describe("types de dossier", () => {
   });
 
   it("une subvention admet l'avis des élus et des étapes avant le vote", () => {
-    expect(INSERTION.subvention.moments).toEqual(["avis_elus", "avant_vote"]);
+    expect(INSERTION.subvention.moments).toEqual(["avis_elus", "avant_vote", "avant_versement"]);
+    expect(STATUTS_DU_MOMENT.avant_versement).toEqual(["votee"]);
+    expect(lireMoment("avant_versement", "subvention")).toBe("avant_versement");
+    expect(lireMoment("avant_versement")).toBe("avant_acceptation");
     const d = lireDefinition({
       etapes: [
         { ...etape({ cle: "a", nature: "avis" }), moment: "avis_elus" },

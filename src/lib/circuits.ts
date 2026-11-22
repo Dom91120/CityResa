@@ -315,6 +315,7 @@ export const MOMENTS = {
   avant_requisition: "Avant une réquisition pour la Ville",
   avis_elus: "À l'avis des élus",
   avant_vote: "Avant le vote de la subvention",
+  avant_versement: "Avant le versement de la subvention",
   avant_notification: "Avant de prévenir les demandeurs",
 } as const;
 export type Moment = keyof typeof MOMENTS;
@@ -327,6 +328,7 @@ export const RETENU: Record<Moment, string> = {
   avant_requisition: "la réquisition",
   avis_elus: "le vote",
   avant_vote: "le vote",
+  avant_versement: "le versement",
   avant_notification: "l'envoi des décisions",
 };
 
@@ -342,6 +344,7 @@ export const STATUTS_DU_MOMENT: Record<Moment, readonly string[]> = {
   avant_requisition: ["acceptee", "signee", "confirmee"],
   avis_elus: [],
   avant_vote: ["deposee", "instruction", "avis"],
+  avant_versement: ["votee"],
   // Une campagne se nomme « instruction » pendant l'arbitrage ; les décisions partent ensuite.
   avant_notification: ["instruction"],
 };
@@ -362,9 +365,9 @@ export const INSERTION: Record<
     titre: "Étapes du circuit",
   },
   subvention: {
-    moments: ["avis_elus", "avant_vote"],
+    moments: ["avis_elus", "avant_vote", "avant_versement"],
     natures: ["avis", "relecture", "visa"],
-    titre: "Avis des élus et étapes avant le vote",
+    titre: "Avis des élus, étapes avant le vote et avant le versement",
   },
   campagne: {
     moments: ["avant_notification"],
