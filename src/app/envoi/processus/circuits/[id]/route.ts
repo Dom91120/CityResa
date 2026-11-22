@@ -11,7 +11,7 @@ import { brouillonDe, enregistrerBrouillon, referentiel } from "@/server/circuit
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
 import * as features from "@/server/features";
-import { requireAdmin } from "@/server/guards";
+import { requireEdit } from "@/server/guards";
 import { idDe, pasTrouve, redirigerAvecMessage, traiterFormulaire } from "@/server/http";
 
 /**
@@ -26,7 +26,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   return traiterFormulaire(
     req,
     async (form) => {
-      const admin = await requireAdmin();
+      const admin = await requireEdit("processus");
       await features.require("processus");
       const c = await chargerCircuit(id);
       if (!c) return pasTrouve();
@@ -188,6 +188,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             return ok(`Version ${v.numero} reprise en brouillon.`);
           }
           case "supprimer": {
+            if (!admin.canDelete("processus"))
+              throw new UserFacingError(
+                "Supprimer un circuit demande le droit de suppression sur « Processus et circuits ».",
+              );
             const nb =
               (await prisma.reservation.count({ where: { circuitVersion: { circuitId: id } } })) +
               (await prisma.subvention.count({ where: { circuitVersion: { circuitId: id } } })) +

@@ -8,9 +8,9 @@ import { decrireCondition, lireDefinition, lireObjet, OBJETS } from "@/lib/circu
 import { ORGANISATION_TYPES } from "@/lib/constantes";
 import { isoDate } from "@/lib/forms-util";
 import { dateCourte } from "@/lib/libelles";
-import { contexteAdmin } from "@/modules/admin/server";
 import { libellesDe, optionsCriteres, referentiel } from "@/server/circuits";
 import { prisma } from "@/server/db";
+import { contexteModule } from "@/server/module";
 
 export const metadata = { title: "Processus et circuits - CityRésa" };
 
@@ -22,8 +22,10 @@ export default async function ProcessusPage({
 }: {
   searchParams: Promise<{ onglet?: string }>;
 }) {
-  const page = await contexteAdmin();
+  const page = await contexteModule("processus", "processus");
   if (!page.features.processus) notFound();
+  /** L'écriture sur « Processus et circuits » : sans elle, la page se consulte. */
+  const ecrit = page.user.canEdit("processus");
   const onglet = (await searchParams).onglet ?? "circuits";
   const [circuits, services, delegations, agents, ref, options] = await Promise.all([
     prisma.circuit.findMany({
@@ -69,7 +71,7 @@ export default async function ProcessusPage({
           <a href="/processus/simulation" className="btn btn-outline-secondary">
             <Icone nom="flask-conical" taille={14} /> Simuler
           </a>
-          {onglet === "services" ? (
+          {!ecrit ? null : onglet === "services" ? (
             <BoutonOuvrir cible="modal-service-0" libelle="Nouveau service" icone="plus" />
           ) : onglet === "delegations" ? (
             <BoutonOuvrir cible="modal-delegation-0" libelle="Nouvelle délégation" icone="plus" />
@@ -168,13 +170,15 @@ export default async function ProcessusPage({
                           {s._count.reservations + s._count.subventions}
                         </td>
                         <td className="text-end">
-                          <BoutonOuvrir
-                            cible={`modal-service-${s.id}`}
-                            libelle={`Modifier ${s.name}`}
-                            icone="pencil"
-                            classe="btn-ghost btn-sm"
-                            sansTexte
-                          />
+                          {ecrit ? (
+                            <BoutonOuvrir
+                              cible={`modal-service-${s.id}`}
+                              libelle={`Modifier ${s.name}`}
+                              icone="pencil"
+                              classe="btn-ghost btn-sm"
+                              sansTexte
+                            />
+                          ) : null}
                         </td>
                       </tr>
                     ))}
@@ -189,7 +193,7 @@ export default async function ProcessusPage({
               />
             )}
           </div>
-          {[null, ...services].map((s) => (
+          {(ecrit ? [null, ...services] : []).map((s) => (
             <ModalAction
               key={s?.id ?? 0}
               id={`modal-service-${s?.id ?? 0}`}
@@ -332,13 +336,15 @@ export default async function ProcessusPage({
                         <td>{nom(d.user) || <Chip teinte="amber">Aucun élu</Chip>}</td>
                         <td>{nom(d.suppleant) || <span className="text-faint">—</span>}</td>
                         <td className="text-end">
-                          <BoutonOuvrir
-                            cible={`modal-delegation-${d.id}`}
-                            libelle={`Modifier ${d.label}`}
-                            icone="pencil"
-                            classe="btn-ghost btn-sm"
-                            sansTexte
-                          />
+                          {ecrit ? (
+                            <BoutonOuvrir
+                              cible={`modal-delegation-${d.id}`}
+                              libelle={`Modifier ${d.label}`}
+                              icone="pencil"
+                              classe="btn-ghost btn-sm"
+                              sansTexte
+                            />
+                          ) : null}
                         </td>
                       </tr>
                     ))}
@@ -353,7 +359,7 @@ export default async function ProcessusPage({
               />
             )}
           </div>
-          {[null, ...delegations].map((d) => (
+          {(ecrit ? [null, ...delegations] : []).map((d) => (
             <ModalAction
               key={d?.id ?? 0}
               id={`modal-delegation-${d?.id ?? 0}`}
@@ -487,41 +493,43 @@ export default async function ProcessusPage({
               </table>
             </div>
           </div>
-          <ModalAction
-            id="modal-circuit"
-            titre="Nouveau circuit"
-            action="/processus/circuits"
-            csrf={page.csrf}
-            bouton="Créer le circuit"
-            icone="plus"
-            aide="Le circuit est créé en brouillon : vous réglez ensuite sa règle d'aiguillage, son service et ses étapes, puis vous le publiez."
-          >
-            <Grille colonnes={2}>
-              <Select
-                label="Type de dossier"
-                name="objet"
-                id="c-objet"
-                pleine
-                options={Object.entries(OBJETS)}
-                valeur="reservation"
-              />
-              <Champ
-                label="Nom"
-                name="name"
-                id="c-name"
-                requis
-                pleine
-                placeholder="Salles · associations"
-              />
-              <Champ
-                label="Description"
-                name="description"
-                id="c-desc"
-                pleine
-                placeholder="Ce que ce circuit prend en charge"
-              />
-            </Grille>
-          </ModalAction>
+          {ecrit ? (
+            <ModalAction
+              id="modal-circuit"
+              titre="Nouveau circuit"
+              action="/processus/circuits"
+              csrf={page.csrf}
+              bouton="Créer le circuit"
+              icone="plus"
+              aide="Le circuit est créé en brouillon : vous réglez ensuite sa règle d'aiguillage, son service et ses étapes, puis vous le publiez."
+            >
+              <Grille colonnes={2}>
+                <Select
+                  label="Type de dossier"
+                  name="objet"
+                  id="c-objet"
+                  pleine
+                  options={Object.entries(OBJETS)}
+                  valeur="reservation"
+                />
+                <Champ
+                  label="Nom"
+                  name="name"
+                  id="c-name"
+                  requis
+                  pleine
+                  placeholder="Salles · associations"
+                />
+                <Champ
+                  label="Description"
+                  name="description"
+                  id="c-desc"
+                  pleine
+                  placeholder="Ce que ce circuit prend en charge"
+                />
+              </Grille>
+            </ModalAction>
+          ) : null}
         </>
       )}
     </>

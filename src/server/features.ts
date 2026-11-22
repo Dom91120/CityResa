@@ -78,6 +78,7 @@ export const MODULE_CATEGORIES: Record<string, PermissionCategory> = {
   paiements: "paiements",
   subventions: "subventions",
   personnel: "personnel",
+  processus: "processus",
 };
 
 export type FeatureFlags = Record<FeatureName, boolean>;

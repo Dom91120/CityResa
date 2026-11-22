@@ -95,8 +95,7 @@ export const ADMINISTRATION: NavDomaine = {
     { ...e("/utilisateurs", "Comptes", "user-cog"), admin: true, teinte: "sky" },
     { ...e("/roles", "Rôles & permissions", "shield"), admin: true, teinte: "red" },
     {
-      ...e("/processus", "Processus et circuits", "workflow", null, null, "processus"),
-      admin: true,
+      ...e("/processus", "Processus et circuits", "workflow", "processus", null, "processus"),
       teinte: "sky",
     },
     { ...e("/referentiels", "Référentiels", "list"), admin: true, teinte: "amber" },

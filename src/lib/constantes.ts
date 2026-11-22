@@ -19,6 +19,7 @@ export const PERMISSION_CATEGORIES = [
   "subventions",
   "equipe",
   "personnel",
+  "processus",
 ] as const;
 export type PermissionCategory = (typeof PERMISSION_CATEGORIES)[number];
 
@@ -33,6 +34,7 @@ export const CATEGORY_LABELS: Record<PermissionCategory, string> = {
   subventions: "Subventions",
   equipe: "Mon équipe",
   personnel: "Personnel de service",
+  processus: "Processus et circuits",
 };
 /** Niveaux : 0 aucun, 1 lecture, 2 écriture, 3 suppression (cumulatifs). */
 export const PERMISSION_LEVELS: Record<number, string> = {
@@ -66,7 +68,7 @@ export const ROLE_SEEDS: {
       "Traite les demandes, gère les espaces, le matériel, les usagers et les paiements.",
     isAdmin: false,
     isUsager: false,
-    level: () => 3,
+    level: (c) => (c === "processus" ? 1 : 3),
   },
   {
     name: "agent",
@@ -74,7 +76,7 @@ export const ROLE_SEEDS: {
     description: "Traite les demandes des espaces dont il a la charge ; pas de suppression.",
     isAdmin: false,
     isUsager: false,
-    level: (c) => (c === "equipe" ? 0 : c === "subventions" ? 1 : 2),
+    level: (c) => (c === "equipe" || c === "processus" ? 0 : c === "subventions" ? 1 : 2),
   },
   {
     name: "financier",
@@ -82,7 +84,7 @@ export const ROLE_SEEDS: {
     description: "Suit les factures et les paiements, consulte le reste.",
     isAdmin: false,
     isUsager: false,
-    level: (c) => (c === "equipe" ? 0 : c === "paiements" ? 3 : 1),
+    level: (c) => (c === "equipe" || c === "processus" ? 0 : c === "paiements" ? 3 : 1),
   },
   {
     name: "elu",
@@ -90,7 +92,7 @@ export const ROLE_SEEDS: {
     description: "Consulte l'activité et donne un avis sur les demandes de subvention.",
     isAdmin: false,
     isUsager: false,
-    level: (c) => (c === "equipe" ? 0 : c === "subventions" ? 2 : 1),
+    level: (c) => (c === "equipe" || c === "processus" ? 0 : c === "subventions" ? 2 : 1),
   },
   {
     name: "lecteur",
@@ -98,7 +100,7 @@ export const ROLE_SEEDS: {
     description: "Lecture seule.",
     isAdmin: false,
     isUsager: false,
-    level: (c) => (c === "equipe" ? 0 : 1),
+    level: (c) => (c === "equipe" || c === "processus" ? 0 : 1),
   },
   {
     name: "usager",

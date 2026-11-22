@@ -1082,6 +1082,15 @@ L'écart **E7** est ainsi traité pour les subventions.
   étapes en attente disparues sont annulées, le dossier prend le service de la nouvelle
   version ; le passage est inscrit à l'historique.
 
+**Lot 20, livré** — permission « Processus et circuits » :
+
+- nouveau domaine de permission : **lecture** (consulter services, délégations, circuits,
+  simulation ; exporter), **écriture** (créer, modifier, publier, importer), **suppression**
+  (supprimer un circuit) ; l'administrateur n'est plus le seul à pouvoir décrire un circuit ;
+- niveaux de départ : lecture pour le Gestionnaire, aucun accès pour les autres rôles ;
+- sans l'écriture, les pages se consultent : aucun bouton ni fenêtre de saisie, les routes
+  refusent ; l'entrée du menu suit le droit.
+
 **Reste à faire**
 
 | Sujet | Écart |
@@ -1091,7 +1100,6 @@ L'écart **E7** est ainsi traité pour les subventions.
 | **Échéance** : passage d'office à l'étape suivante ou transmission au suppléant (aujourd'hui : une relance, l'alerte au responsable, et l'échéance en rouge) | — |
 | **Effets** paramétrables d'une étape (modèle de courriel propre à l'étape, mise en copie, document) | E2 |
 | Service sur les factures | E7 |
-| Catégorie de permission « **Processus** » (aujourd'hui : administrateur seul) | — |
 
 ### Limites voulues
 

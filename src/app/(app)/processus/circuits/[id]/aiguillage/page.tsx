@@ -1,17 +1,24 @@
 import { notFound } from "next/navigation";
 import { EnteteForm, PiedForm, SectionForm, Select } from "@/components/formulaire";
 import { CYCLES } from "@/lib/circuits";
-import { contexteAdmin } from "@/modules/admin/server";
 import { chargerCircuit } from "@/modules/processus/server";
 import { ChampsCondition } from "@/modules/processus/vues";
 import { optionsCriteres } from "@/server/circuits";
 import { prisma } from "@/server/db";
+import { redirigerAvecFlashDepuisRendu } from "@/server/flash";
 import { idDeRoute } from "@/server/guards";
+import { contexteModule } from "@/server/module";
 
 export const metadata = { title: "Aiguillage du circuit - CityRésa" };
 
 export default async function AiguillagePage({ params }: { params: Promise<{ id: string }> }) {
-  const page = await contexteAdmin();
+  const page = await contexteModule("processus", "processus");
+  if (!page.user.canEdit("processus"))
+    redirigerAvecFlashDepuisRendu(
+      "/processus",
+      "Vous consultez les circuits : les modifier demande l'écriture sur « Processus et circuits ».",
+      "danger",
+    );
   if (!page.features.processus) notFound();
   const c = await chargerCircuit(idDeRoute((await params).id));
   if (!c) notFound();

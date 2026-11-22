@@ -3,7 +3,7 @@ import { champ, champOuNull, coche, emailValide, idOuNull, parseDate } from "@/l
 import { auditRecord } from "@/server/audit";
 import { prisma } from "@/server/db";
 import * as features from "@/server/features";
-import { requireAdmin } from "@/server/guards";
+import { requireEdit } from "@/server/guards";
 import { redirigerAvecMessage, traiterFormulaire } from "@/server/http";
 
 const RETOUR = "/processus?onglet=services";
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   return traiterFormulaire(
     req,
     async (form) => {
-      const admin = await requireAdmin();
+      const admin = await requireEdit("processus");
       await features.require("processus");
       const id = idOuNull(form, "id");
       const name = champ(form, "name").slice(0, 120);

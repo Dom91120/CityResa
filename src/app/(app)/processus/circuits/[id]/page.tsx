@@ -23,12 +23,12 @@ import {
   OBJETS,
 } from "@/lib/circuits";
 import { dateHeure } from "@/lib/libelles";
-import { contexteAdmin } from "@/modules/admin/server";
 import { chargerCircuit } from "@/modules/processus/server";
 import { Logigramme, PastilleNature } from "@/modules/processus/vues";
 import { libellesDe, optionsCriteres, referentiel } from "@/server/circuits";
 import { prisma } from "@/server/db";
 import { idDeRoute } from "@/server/guards";
+import { contexteModule } from "@/server/module";
 
 export const metadata = { title: "Circuit - CityRésa" };
 
@@ -39,8 +39,9 @@ const STATUTS: Record<string, [string, string]> = {
 };
 
 export default async function CircuitPage({ params }: { params: Promise<{ id: string }> }) {
-  const page = await contexteAdmin();
+  const page = await contexteModule("processus", "processus");
   if (!page.features.processus) notFound();
+  const ecrit = page.user.canEdit("processus");
   const id = idDeRoute((await params).id);
   const c = await chargerCircuit(id);
   if (!c) notFound();
@@ -64,22 +65,23 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
   const changements =
     c.brouillon && c.definitionPubliee ? comparer(c.definitionPubliee, def, ref) : [];
   const service = def.serviceId ? ref.services.get(def.serviceId) : null;
-  const bouton = (action: string, cle: string, icone: string, titre: string, danger = false) => (
-    <form method="POST" action={ici} className="d-inline">
-      <input type="hidden" name="csrf_token" value={page.csrf} />
-      <input type="hidden" name="action" value={action} />
-      <input type="hidden" name="cle" value={cle} />
-      <button
-        type="submit"
-        className={`btn btn-ghost btn-icone btn-sm${danger ? " btn-ghost-danger" : ""}`}
-        title={titre}
-        aria-label={titre}
-        data-confirm={danger ? `${titre} ?` : undefined}
-      >
-        <Icone nom={icone} taille={14} />
-      </button>
-    </form>
-  );
+  const bouton = (action: string, cle: string, icone: string, titre: string, danger = false) =>
+    !ecrit ? null : (
+      <form method="POST" action={ici} className="d-inline">
+        <input type="hidden" name="csrf_token" value={page.csrf} />
+        <input type="hidden" name="action" value={action} />
+        <input type="hidden" name="cle" value={cle} />
+        <button
+          type="submit"
+          className={`btn btn-ghost btn-icone btn-sm${danger ? " btn-ghost-danger" : ""}`}
+          title={titre}
+          aria-label={titre}
+          data-confirm={danger ? `${titre} ?` : undefined}
+        >
+          <Icone nom={icone} taille={14} />
+        </button>
+      </form>
+    );
 
   return (
     <>
@@ -105,17 +107,19 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
         }
         sousTitre={c.description ?? CYCLES[c.objet].sousTitre}
         actions={
-          <>
-            <BoutonOuvrir
-              cible="modal-identite"
-              libelle="Modifier"
-              icone="pencil"
-              classe="btn-outline-secondary"
-            />
-            {c.brouillon ? (
-              <BoutonOuvrir cible="modal-publier" libelle="Publier" icone="send" />
-            ) : null}
-          </>
+          !ecrit ? null : (
+            <>
+              <BoutonOuvrir
+                cible="modal-identite"
+                libelle="Modifier"
+                icone="pencil"
+                classe="btn-outline-secondary"
+              />
+              {c.brouillon ? (
+                <BoutonOuvrir cible="modal-publier" libelle="Publier" icone="send" />
+              ) : null}
+            </>
+          )
         }
         menu={[
           <MenuLien
@@ -124,24 +128,26 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
             libelle={c.brouillon ? "Exporter le brouillon (fichier)" : "Exporter (fichier)"}
             icone="download"
           />,
-          <li key="import">
-            <button
-              type="button"
-              className="dropdown-item"
-              data-bs-toggle="modal"
-              data-bs-target="#modal-importer"
-            >
-              <Icone nom="upload" taille={14} />
-              Importer un fichier…
-            </button>
-          </li>,
+          !ecrit ? null : (
+            <li key="import">
+              <button
+                type="button"
+                className="dropdown-item"
+                data-bs-toggle="modal"
+                data-bs-target="#modal-importer"
+              >
+                <Icone nom="upload" taille={14} />
+                Importer un fichier…
+              </button>
+            </li>
+          ),
           <MenuLien
             key="sim"
             url={`/processus/simulation?brouillons=1`}
             libelle="Simuler avec les brouillons"
             icone="flask-conical"
           />,
-          c.brouillon && c.publiee ? (
+          ecrit && c.brouillon && c.publiee ? (
             <MenuPost
               key="abandon"
               url={ici}
@@ -152,7 +158,7 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
               confirm="Abandonner les modifications en cours et revenir à la version en service ?"
             />
           ) : null,
-          nbDossiers === 0 ? (
+          nbDossiers === 0 && page.user.canDelete("processus") ? (
             <MenuPost
               key="sup"
               url={ici}
@@ -203,9 +209,11 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
             titre="Aiguillage"
             icone="git-fork"
             droite={
-              <a href={`${ici}/aiguillage`} className="btn btn-sm btn-outline-secondary">
-                <Icone nom="pencil" taille={13} /> Modifier
-              </a>
+              ecrit ? (
+                <a href={`${ici}/aiguillage`} className="btn btn-sm btn-outline-secondary">
+                  <Icone nom="pencil" taille={13} /> Modifier
+                </a>
+              ) : undefined
             }
           >
             <Lus colonnes={1} intitule="110px">
@@ -231,9 +239,11 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
             icone="list-checks"
             nb={def.etapes.length}
             droite={
-              <a href={`${ici}/etape`} className="btn btn-sm btn-outline-secondary">
-                <Icone nom="plus" taille={13} /> Ajouter
-              </a>
+              ecrit ? (
+                <a href={`${ici}/etape`} className="btn btn-sm btn-outline-secondary">
+                  <Icone nom="plus" taille={13} /> Ajouter
+                </a>
+              ) : undefined
             }
           >
             {def.etapes.length ? (
@@ -294,7 +304,7 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
                       {v.note ? ` · ${v.note}` : ""}
                     </small>
                   </span>
-                  {v.status === "archivee" && !c.brouillon ? (
+                  {ecrit && v.status === "archivee" && !c.brouillon ? (
                     <form method="POST" action={ici}>
                       <input type="hidden" name="csrf_token" value={page.csrf} />
                       <input type="hidden" name="action" value="reprendre" />
@@ -326,83 +336,97 @@ export default async function CircuitPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      <ModalAction id="modal-identite" titre="Modifier le circuit" action={ici} csrf={page.csrf}>
-        <input type="hidden" name="action" value="identite" />
-        <Grille colonnes={2}>
-          <Champ label="Nom" name="name" id="ci-name" requis pleine valeur={c.name} />
-          <Champ
-            label="Description"
-            name="description"
-            id="ci-desc"
-            pleine
-            valeur={c.description}
-          />
-          <Champ
-            label="Ordre d'examen"
-            name="position"
-            id="ci-pos"
-            type="number"
-            min={0}
-            valeur={c.position}
-            aide="Du plus petit au plus grand ; le premier circuit dont la règle s'applique reçoit le dossier."
-          />
-          <div>
-            <Interrupteur
-              label="Circuit par défaut"
-              name="par_defaut"
-              id="ci-defaut"
-              coche={c.parDefaut}
-              aide="Reçoit ce qu'aucune règle ne prend. Un seul par type de dossier."
-            />
-            <Interrupteur label="Circuit actif" name="is_active" id="ci-actif" coche={c.isActive} />
-          </div>
-        </Grille>
-      </ModalAction>
+      {ecrit ? (
+        <>
+          <ModalAction
+            id="modal-identite"
+            titre="Modifier le circuit"
+            action={ici}
+            csrf={page.csrf}
+          >
+            <input type="hidden" name="action" value="identite" />
+            <Grille colonnes={2}>
+              <Champ label="Nom" name="name" id="ci-name" requis pleine valeur={c.name} />
+              <Champ
+                label="Description"
+                name="description"
+                id="ci-desc"
+                pleine
+                valeur={c.description}
+              />
+              <Champ
+                label="Ordre d'examen"
+                name="position"
+                id="ci-pos"
+                type="number"
+                min={0}
+                valeur={c.position}
+                aide="Du plus petit au plus grand ; le premier circuit dont la règle s'applique reçoit le dossier."
+              />
+              <div>
+                <Interrupteur
+                  label="Circuit par défaut"
+                  name="par_defaut"
+                  id="ci-defaut"
+                  coche={c.parDefaut}
+                  aide="Reçoit ce qu'aucune règle ne prend. Un seul par type de dossier."
+                />
+                <Interrupteur
+                  label="Circuit actif"
+                  name="is_active"
+                  id="ci-actif"
+                  coche={c.isActive}
+                />
+              </div>
+            </Grille>
+          </ModalAction>
 
-      {c.brouillon ? (
-        <ModalAction
-          id="modal-publier"
-          titre={`Publier la version ${c.brouillon.numero}`}
-          action={ici}
-          csrf={page.csrf}
-          bouton="Publier"
-          icone="send"
-          aide="La version publiée s'applique aux demandes créées à partir de maintenant. Les dossiers en cours gardent la leur."
-        >
-          <input type="hidden" name="action" value="publier" />
-          <Champ
-            label="Note de version"
-            name="note"
-            id="cp-note"
-            placeholder="Ce qui change, et pourquoi"
-          />
-        </ModalAction>
+          {c.brouillon ? (
+            <ModalAction
+              id="modal-publier"
+              titre={`Publier la version ${c.brouillon.numero}`}
+              action={ici}
+              csrf={page.csrf}
+              bouton="Publier"
+              icone="send"
+              aide="La version publiée s'applique aux demandes créées à partir de maintenant. Les dossiers en cours gardent la leur."
+            >
+              <input type="hidden" name="action" value="publier" />
+              <Champ
+                label="Note de version"
+                name="note"
+                id="cp-note"
+                placeholder="Ce qui change, et pourquoi"
+              />
+            </ModalAction>
+          ) : null}
+          <ModalAction
+            id="modal-importer"
+            titre="Importer un circuit"
+            action={ici}
+            csrf={page.csrf}
+            bouton="Importer dans le brouillon"
+            icone="upload"
+            multipart
+            aide="Le fichier remplace l'aiguillage et les étapes du brouillon (créé au besoin). Rien ne s'applique aux dossiers avant la publication ; services et délégations sont retrouvés par leur nom."
+          >
+            <input type="hidden" name="action" value="importer" />
+            <div>
+              <label className="form-label" htmlFor="ci-fichier">
+                Fichier exporté (JSON)
+              </label>
+              <input
+                type="file"
+                name="fichier"
+                id="ci-fichier"
+                className="form-control"
+                accept="application/json,.json"
+                required
+              />
+            </div>
+          </ModalAction>
+        </>
       ) : null}
-      <ModalAction
-        id="modal-importer"
-        titre="Importer un circuit"
-        action={ici}
-        csrf={page.csrf}
-        bouton="Importer dans le brouillon"
-        icone="upload"
-        multipart
-        aide="Le fichier remplace l'aiguillage et les étapes du brouillon (créé au besoin). Rien ne s'applique aux dossiers avant la publication ; services et délégations sont retrouvés par leur nom."
-      >
-        <input type="hidden" name="action" value="importer" />
-        <div>
-          <label className="form-label" htmlFor="ci-fichier">
-            Fichier exporté (JSON)
-          </label>
-          <input
-            type="file"
-            name="fichier"
-            id="ci-fichier"
-            className="form-control"
-            accept="application/json,.json"
-            required
-          />
-        </div>
-      </ModalAction>
     </>
   );
 }

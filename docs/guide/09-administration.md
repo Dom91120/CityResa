@@ -351,7 +351,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 
 - Le bouton **Nouveau rôle**.
 - Un encadré : les rôles **Administrateur** (accès total, Paramètres et Comptes compris) et **Usager** (portail) sont fixes ; un agent perd un domaine entier quand le module correspondant est désactivé.
-- Une ligne par rôle (nom, puis nombre de comptes ayant ce rôle et description ; survolez la description pour la lire en entier) et une colonne par domaine : **Réservations**, **Planning**, **Sites et espaces**, **Matériel**, **Usagers**, **Messages**, **Paiements**, **Subventions**, **Mon équipe**, **Personnel de service**. Sur un écran étroit, faites défiler le tableau vers la droite pour voir les derniers domaines.
+- Une ligne par rôle (nom, puis nombre de comptes ayant ce rôle et description ; survolez la description pour la lire en entier) et une colonne par domaine : **Réservations**, **Planning**, **Sites et espaces**, **Matériel**, **Usagers**, **Messages**, **Paiements**, **Subventions**, **Mon équipe**, **Personnel de service**, **Processus et circuits**. Sur un écran étroit, faites défiler le tableau vers la droite pour voir les derniers domaines.
 - Pour les rôles figés, le niveau est une étiquette ; pour les autres, une liste déroulante.
 
 **Les quatre niveaux** (cumulatifs : chaque niveau comprend les précédents)

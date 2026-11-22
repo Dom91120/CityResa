@@ -18,7 +18,6 @@ import {
   RETENU,
 } from "@/lib/circuits";
 import { montant, plage } from "@/lib/libelles";
-import { contexteAdmin } from "@/modules/admin/server";
 import { PastilleNature } from "@/modules/processus/vues";
 import {
   circuitsEnService,
@@ -31,6 +30,7 @@ import {
 import { porteurCampagneParId } from "@/server/circuits-campagne";
 import { faitsSubvention } from "@/server/circuits-subvention";
 import { prisma } from "@/server/db";
+import { contexteModule } from "@/server/module";
 import { INCLUDE_RESERVATION } from "@/server/reservations";
 
 export const metadata = { title: "Simulation d'un circuit - CityRésa" };
@@ -114,7 +114,7 @@ export default async function SimulationPage({
     gratuit?: string;
   }>;
 }) {
-  const page = await contexteAdmin();
+  const page = await contexteModule("processus", "processus");
   if (!page.features.processus) notFound();
   const sp = await searchParams;
   const numero = (sp.numero ?? "").trim().toUpperCase();

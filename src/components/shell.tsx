@@ -238,7 +238,7 @@ export function Shell({
               );
             })}
           </div>
-          {user.isAdmin ? (
+          {ADMINISTRATION.entries.some(visible) ? (
             <details
               className="sidebar-section sidebar-section--repliable"
               data-section="administration"

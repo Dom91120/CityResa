@@ -2,7 +2,7 @@ import { exporterCircuit } from "@/lib/circuits";
 import { chargerCircuit } from "@/modules/processus/server";
 import { referentiel } from "@/server/circuits";
 import * as features from "@/server/features";
-import { requireAdmin } from "@/server/guards";
+import { requireView } from "@/server/guards";
 import { idDe, pasTrouve } from "@/server/http";
 
 /**
@@ -10,7 +10,7 @@ import { idDe, pasTrouve } from "@/server/http";
  * s'il y en a un, sinon la version en service), en fichier à conserver ou à réimporter.
  */
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  await requireView("processus");
   await features.require("processus");
   const id = idDe((await params).id);
   const c = id ? await chargerCircuit(id) : null;

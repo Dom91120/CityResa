@@ -141,7 +141,7 @@ Une étape précède l'un de cinq gestes sur une réservation :
 
 **À quoi ça sert** — Déclarer les services de la Ville et les délégations des élus, sur lesquels les circuits s'appuient.
 
-**Qui** — Administrateurs (Administration › **Processus et circuits**).
+**Qui** — Les comptes qui ont un droit sur le domaine **Processus et circuits** (Administration › **Processus et circuits**) : la **lecture** pour consulter les services, les délégations, les circuits et la simulation, et pour exporter un circuit ; l'**écriture** pour les créer, les modifier, publier et importer ; la **suppression** pour supprimer un circuit. L'administrateur a tout ; le rôle Gestionnaire fourni a la lecture ; les autres rôles n'y ont pas accès, ce qui ne change rien à **Mes étapes**, ouvert à tous les agents.
 
 ![Services](captures/processus-services.webp)
 
@@ -179,7 +179,7 @@ Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écrit
 
 **À quoi ça sert** — Décrire, pour chaque famille de demandes, le service qui les reçoit et les étapes qui précèdent l'acceptation.
 
-**Qui** — Administrateurs.
+**Qui** — Les comptes qui ont l'écriture sur **Processus et circuits** (chapitre 12.5) ; la lecture suffit pour consulter.
 
 ![Liste des circuits](captures/processus-circuits.webp)
 
@@ -306,7 +306,7 @@ Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écrit
 
 **À quoi ça sert** — Vérifier, avant de publier, ce qui arriverait à un dossier.
 
-**Qui** — Administrateurs.
+**Qui** — Les comptes qui ont la lecture sur **Processus et circuits**.
 
 ![Simulation](captures/processus-simulation.webp)
 

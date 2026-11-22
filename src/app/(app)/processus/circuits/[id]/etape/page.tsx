@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import { Champ, EnteteForm, Grille, PiedForm, SectionForm, Select } from "@/components/formulaire";
 import { INSERTION, MOMENTS, NATURES, REUNIONS } from "@/lib/circuits";
-import { contexteAdmin } from "@/modules/admin/server";
 import { chargerCircuit, choixIntervenants, valeurIntervenant } from "@/modules/processus/server";
 import { ChampsCondition } from "@/modules/processus/vues";
 import { optionsCriteres } from "@/server/circuits";
+import { redirigerAvecFlashDepuisRendu } from "@/server/flash";
 import { idDeRoute } from "@/server/guards";
+import { contexteModule } from "@/server/module";
 
 export const metadata = { title: "Étape du circuit - CityRésa" };
 
@@ -16,7 +17,13 @@ export default async function EtapePage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ cle?: string }>;
 }) {
-  const page = await contexteAdmin();
+  const page = await contexteModule("processus", "processus");
+  if (!page.user.canEdit("processus"))
+    redirigerAvecFlashDepuisRendu(
+      "/processus",
+      "Vous consultez les circuits : les modifier demande l'écriture sur « Processus et circuits ».",
+      "danger",
+    );
   if (!page.features.processus) notFound();
   const c = await chargerCircuit(idDeRoute((await params).id));
   if (!c) notFound();

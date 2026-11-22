@@ -4,7 +4,7 @@ import { champ, champOuNull } from "@/lib/forms-util";
 import { auditRecord } from "@/server/audit";
 import { prisma } from "@/server/db";
 import * as features from "@/server/features";
-import { requireAdmin } from "@/server/guards";
+import { requireEdit } from "@/server/guards";
 import { redirigerAvecMessage, traiterFormulaire } from "@/server/http";
 
 /** POST /processus/circuits : création d'un circuit, en brouillon. */
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   return traiterFormulaire(
     req,
     async (form) => {
-      const admin = await requireAdmin();
+      const admin = await requireEdit("processus");
       await features.require("processus");
       const name = champ(form, "name").slice(0, 120);
       if (!name) return redirigerAvecMessage("/processus", "Indiquez le nom du circuit.", "danger");
