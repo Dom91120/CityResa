@@ -42,7 +42,7 @@
     "@fontsource/poppins": "^5.2.6",
     "@tailwindcss/postcss": "^4.3.5",
     "@types/node": "^26.6.1",
-    "@types/nodemailer": "^7.0.4",
+    "@types/nodemailer": "^8.0.2",
     "@types/qrcode": "1.5.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
