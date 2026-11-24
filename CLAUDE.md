@@ -28,6 +28,7 @@ pnpm tsx scripts/apercu-editions.ts <espaceId> <lundi> <dossier>   # PDF + PNG d
 pnpm tsx scripts/executer-tache.ts <id>   # lance une tâche planifiée hors interface (ex. options, rappels_usagers, rgpd, planning_hebdo, planning_personnel, affectation_personnel)
 node scripts/captures-guide.mjs [nom…]   # captures du guide (serveur dev + démo ; GUIDE_ADMIN / GUIDE_ADMIN_MDP pour l'administration)
 node scripts/guide-pdf.mjs   # rassemble docs/guide en CityResa-guide-utilisateur.pdf
+node scripts/scenarios-pdf.mjs   # met docs/SCENARIOS.md en page dans docs/CityResa-scenarios.pdf
 pnpm tsx scripts/audit-accessibilite.ts [pages…]   # audit d'accessibilité (règles RGAA maison, Chromium) ; AUDIT_EMAIL / AUDIT_MDP pour les pages connectées
 ```
 
