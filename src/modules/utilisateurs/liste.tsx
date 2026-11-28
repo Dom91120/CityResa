@@ -3,6 +3,7 @@ import { Icone } from "@/components/icones";
 import { Barre, PaginationBar, SegTabs, Th, trier, urlAvec, Vide } from "@/components/liste";
 import { Avatar, Chip } from "@/components/macros";
 import { ROLE_LABELS, SECTEURS } from "@/lib/constantes";
+import { ecarts, lireNiveaux, resumeEcarts } from "@/lib/droits";
 import { depuis } from "@/lib/libelles";
 import { collegue, libelleSecteur, rattachable } from "@/lib/secteurs";
 import { nomComplet } from "@/modules/utilisateurs/server";
@@ -75,6 +76,7 @@ export async function ListeComptes({
     : new Map<string, RattachementNomme[]>();
   const libelleRole = Object.fromEntries(roles.map((r) => [r.name, r.label]));
   const rolesAdmin = new Set(roles.filter((r) => r.isAdmin).map((r) => r.name));
+  const droitsParRole = new Map(roles.map((r) => [r.name, lireNiveaux(r.permissions)]));
   const moi = page.user.secteur;
   // Un administrateur voit tous les agents. Les autres voient leur équipe : les collègues du
   // même secteur et les agents transversaux, sans les administrateurs.
@@ -91,6 +93,10 @@ export async function ListeComptes({
     secteurNom: libelleSecteur(a.secteur),
     services: servicesPar.get(a.id) ?? [],
     servicesNom: (servicesPar.get(a.id) ?? []).map((s) => s.name).join(", "),
+    // Ce qui diffère de son rôle sur ce compte (un administrateur n'a pas de dérogations).
+    droitsPerso: rolesAdmin.has(a.role)
+      ? ""
+      : resumeEcarts(ecarts(droitsParRole.get(a.role) ?? {}, lireNiveaux(a.permissions))),
   }));
   const filtres = textSearch(enrichis, q, [
     "nom",
@@ -236,6 +242,17 @@ export async function ListeComptes({
                       </td>
                       <td>
                         <Chip teinte={rolesAdmin.has(a.role) ? "rose" : "sky"}>{a.roleNom}</Chip>
+                        {a.droitsPerso ? (
+                          <span
+                            className="chip chip-amber ms-1"
+                            title={`Droits personnalisés : ${a.droitsPerso}`}
+                          >
+                            <Icone nom="key-round" taille={12} />
+                            <span className="visually-hidden">
+                              Droits personnalisés : {a.droitsPerso}
+                            </span>
+                          </span>
+                        ) : null}
                       </td>
                       <td>
                         {a.secteur ? (

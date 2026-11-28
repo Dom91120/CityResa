@@ -334,6 +334,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 - **En-tête** : le nom, l'étiquette du rôle, le courriel et la fonction ; les boutons **Modifier** et **…** (autres actions).
 - **Compte** : nature (agent de la collectivité ou usager), rôle, secteur d'un agent (Salles, Sports ou Transversal), ses **services** quand le module Processus et circuits est en service (une pastille par service, avec le titre auquel il agit : responsable, membre ou suppléance en cours ; « Aucun » sinon), courriel, téléphone, fonction, compte actif ou non, date de création, dernière connexion, sessions ouvertes. Le secteur se change par **Modifier** ; le changement est refusé tant que l'agent est rattaché à des espaces d'un autre secteur, et le message les nomme.
 - **Sécurité** : double authentification, notifications par courriel, lien d'agenda personnel (Oui / Non).
+- **Droits** (agents) : pour chaque domaine, le niveau donné par le **rôle** et celui de **ce compte**. Tout est sur « Comme le rôle » tant que le compte n'a pas de droits personnalisés ; un domaine dérogé a son menu cerclé d'orange, et l'en-tête porte alors la pastille **Droits personnalisés**. Un administrateur a tous les droits : rien n'y est proposé.
 - **Espaces en charge** : les espaces confiés à l'agent et son rôle sur chacun (ici « gestionnaire »). Si la liste est vide, l'agent intervient sur tous les espaces selon son rôle.
 - **Données liées** : par exemple « 9 réservation(s) assignée(s) », et l'indication que le compte ne peut pas être supprimé.
 - **Journal** (replié) : les actions enregistrées pour ce compte.
@@ -344,6 +345,12 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 1. Cliquez sur **Modifier**.
 2. Corrigez l'identité (y compris le courriel) et, pour un agent, le **Rôle**.
 3. Enregistrez.
+
+*Donner à un compte des droits différents de son rôle*
+1. Dans la section **Droits**, sur la ligne du domaine, choisissez le niveau voulu dans **Ce compte** : **Aucun**, **Lecture**, **Écriture** ou **Suppression**. Vous pouvez ouvrir un domaine que le rôle ferme, ou en retirer un qu'il donne.
+2. Laissez **Comme le rôle** sur les autres domaines : ils suivront le rôle, y compris s'il change plus tard.
+3. Cliquez sur **Enregistrer les droits**. Le changement vaut dès la page suivante de l'agent, sans qu'il se reconnecte.
+4. **Revenir aux droits du rôle** efface toutes les dérogations du compte.
 
 *Autres actions (menu **…**)*
 - **Envoyer un lien de réinitialisation** : la personne reçoit par courriel un lien pour choisir un nouveau mot de passe.
@@ -357,6 +364,9 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 - Un compte lié à des réservations ou à d'autres données ne se supprime pas : désactivez-le.
 - Les espaces confiés à un agent se règlent depuis **Comptes** ou **Mon équipe** (icône de porte), pas depuis cette fiche.
 - Les services d'un agent se règlent dans **Processus et circuits** (chapitre 12) : la pastille de la fiche y mène.
+- Les droits personnalisés disent ce qu'un agent peut **faire** dans un domaine ; son secteur, ses espaces en charge et ses services continuent de dire **sur quoi**. Donner l'écriture sur les réservations à un compte ne lui ouvre pas les espaces d'un autre secteur.
+- Préférez un **rôle** dès que plusieurs agents doivent avoir les mêmes droits (9.14) : les droits personnalisés sont faits pour l'exception. Dans la liste des comptes, une petite clé orange à côté du rôle signale les comptes qui en ont ; survolez-la pour lire ce qui diffère.
+- Chaque changement de droits est inscrit au journal d'audit, avec le détail des domaines.
 
 ## 9.14 Rôles et permissions
 
@@ -371,6 +381,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 
 - Le bouton **Nouveau rôle**.
 - Un encadré : les rôles **Administrateur** (accès total, Paramètres et Comptes compris) et **Usager** (portail) sont fixes ; un agent perd un domaine entier quand le module correspondant est désactivé.
+- Ce tableau règle les droits de tous les comptes d'un rôle. Pour un seul agent, la section **Droits** de la fiche de son compte (9.13) permet d'y déroger sans créer de rôle.
 - Une ligne par rôle (nom, puis nombre de comptes ayant ce rôle et description ; survolez la description pour la lire en entier) et une colonne par domaine : **Réservations**, **Planning**, **Sites et espaces**, **Matériel**, **Usagers**, **Messages**, **Paiements**, **Subventions**, **Mon équipe**, **Personnel de service**, **Processus et circuits**. Sur un écran étroit, faites défiler le tableau vers la droite pour voir les derniers domaines.
 - Pour les rôles figés, le niveau est une étiquette ; pour les autres, une liste déroulante.
 

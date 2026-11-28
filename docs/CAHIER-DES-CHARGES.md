@@ -61,6 +61,15 @@ lecture, écriture, suppression). Un agent peut en plus être rattaché à des e
 (gestionnaire, lecteur ou simplement notifié) : c'est la **gestion des accès par service ou
 par lieu** demandée par le cahier des charges.
 
+**Droits propres à un compte.** L'administrateur peut déroger au rôle d'un agent, catégorie par
+catégorie, depuis la fiche de son compte : ouvrir un domaine que le rôle ferme, ou en retirer un
+qu'il donne. Ce qui n'est pas dérogé suit le rôle, y compris s'il change ensuite. Les comptes
+concernés sont signalés (pastille « Droits personnalisés » sur la fiche, clé orange dans la
+liste), l'écart avec le rôle est affiché, et chaque changement est tracé à l'audit. Les
+administrateurs (accès total) et les usagers n'ont pas de dérogations. Ces droits disent ce que
+l'agent peut faire, pas sur quoi : secteur, espaces et services s'appliquent toujours. Règle
+pure et testée (`niveauEffectif`, `src/lib/droits.ts`).
+
 Chaque agent porte un **secteur** (Salles ou Sports), ou aucun : il est alors transversal
 (administrateur, financier, élu). Un agent d'un secteur ne se rattache qu'aux espaces de ce
 secteur ; sans aucun rattachement, son périmètre est l'ensemble des espaces de son secteur

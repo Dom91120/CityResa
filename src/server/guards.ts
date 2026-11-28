@@ -14,6 +14,7 @@ import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import type { Role as RoleRow, User as UserRow } from "@/generated/prisma/client";
 import { PERMISSION_CATEGORIES, type PermissionCategory } from "@/lib/constantes";
+import { lireNiveaux, niveauEffectif } from "@/lib/droits";
 import { conditionsAAccepter, connexionOuverte, PAGE_CONDITIONS } from "@/lib/portail";
 import { dansPerimetre, perimetreDeConsultation } from "@/lib/secteurs";
 import {
@@ -150,8 +151,12 @@ export function buildCurrentUser(
     if (!categoryEnabledIn(settings, category)) return 0;
     if (roleObj) {
       if (roleObj.isAdmin) return 3;
-      const perms = (roleObj.permissions as Record<string, number> | null) ?? {};
-      return Number(perms[category] ?? 0) || 0;
+      // Les droits du rôle, corrigés par les dérogations propres au compte (src/lib/droits.ts).
+      return niveauEffectif(
+        lireNiveaux(roleObj.permissions),
+        lireNiveaux(row.permissions),
+        category,
+      );
     }
     return row.role === "admin" ? 3 : 1;
   };

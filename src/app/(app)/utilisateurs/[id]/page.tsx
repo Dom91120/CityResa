@@ -2,7 +2,13 @@ import { notFound } from "next/navigation";
 import { Entete, Lu, Lus, MenuPost, MenuSep, Section } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { Chip, OuiNon } from "@/components/macros";
-import { ROLE_LABELS } from "@/lib/constantes";
+import {
+  CATEGORY_LABELS,
+  PERMISSION_CATEGORIES,
+  PERMISSION_LEVELS,
+  ROLE_LABELS,
+} from "@/lib/constantes";
+import { ecarts, lireNiveaux, resumeEcarts as resumerEcarts, TEINTES_NIVEAU } from "@/lib/droits";
 import { dateHeure, depuis, nomCourt } from "@/lib/libelles";
 import { libelleSecteur } from "@/lib/secteurs";
 import { contexteAdmin } from "@/modules/admin/server";
@@ -39,6 +45,13 @@ export default async function UtilisateurPage({ params }: { params: Promise<{ id
   const soiMeme = u.id === page.user.id;
   const nom = nomComplet(u);
   const supprimable = !liees.length && !soiMeme;
+  // Les droits du rôle et ce qui en diffère sur ce compte (src/lib/droits.ts).
+  const droitsRole = lireNiveaux(role?.permissions);
+  const ecartsDroits =
+    u.kind === "agent" && role && !role.isAdmin
+      ? ecarts(droitsRole, lireNiveaux(u.permissions))
+      : [];
+  const resumeEcarts = resumerEcarts(ecartsDroits);
   return (
     <>
       <Entete
@@ -64,6 +77,11 @@ export default async function UtilisateurPage({ params }: { params: Promise<{ id
             >
               {role?.label ?? ROLE_LABELS[u.role] ?? u.role}
             </Chip>
+            {ecartsDroits.length ? (
+              <a href="#droits" className="chip chip-amber ms-1" title={resumeEcarts}>
+                Droits personnalisés
+              </a>
+            ) : null}
             {!u.isActive ? (
               <Chip teinte="slate" classes="ms-1">
                 Inactif
@@ -204,6 +222,95 @@ export default async function UtilisateurPage({ params }: { params: Promise<{ id
           </Section>
 
           {u.kind === "agent" ? (
+            <Section titre="Droits" icone="key-round" id="droits" nb={ecartsDroits.length || null}>
+              {role?.isAdmin ? (
+                <p className="text-muted small mb-0">
+                  Un administrateur a tous les droits : rien à personnaliser.
+                </p>
+              ) : (
+                <form method="POST" action={`${ici}/droits`} data-double-envoi>
+                  <input type="hidden" name="csrf_token" value={csrf} />
+                  <p className="text-muted small mb-2">
+                    Ce compte a les droits de son rôle, <strong>{role?.label ?? u.role}</strong>.
+                    Vous pouvez y déroger domaine par domaine, pour ouvrir ou pour retirer un accès
+                    ; ce qui reste sur « Comme le rôle » suivra le rôle s'il change.
+                  </p>
+                  <div className="table-responsive">
+                    <table className="table table-sm align-middle mb-2">
+                      <thead>
+                        <tr>
+                          <th>Domaine</th>
+                          <th>Rôle</th>
+                          <th>Ce compte</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {PERMISSION_CATEGORIES.map((c) => {
+                          const duRole = droitsRole[c] ?? 0;
+                          const derogation = ecartsDroits.find((e) => e.categorie === c);
+                          return (
+                            <tr key={c}>
+                              <td>
+                                <label htmlFor={`droit-${c}`} className="mb-0">
+                                  {CATEGORY_LABELS[c]}
+                                </label>
+                              </td>
+                              <td>
+                                <Chip teinte={TEINTES_NIVEAU[duRole]}>
+                                  {PERMISSION_LEVELS[duRole]}
+                                </Chip>
+                              </td>
+                              <td>
+                                <select
+                                  name={`droit_${c}`}
+                                  id={`droit-${c}`}
+                                  className={`form-select form-select-sm${derogation ? " border-warning" : ""}`}
+                                  style={{ minWidth: 150 }}
+                                  defaultValue={derogation ? String(derogation.compte) : ""}
+                                >
+                                  <option value="">Comme le rôle</option>
+                                  {[0, 1, 2, 3]
+                                    .filter((n) => n !== duRole)
+                                    .map((n) => (
+                                      <option key={n} value={n}>
+                                        {PERMISSION_LEVELS[n]}
+                                      </option>
+                                    ))}
+                                </select>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="d-flex gap-2 flex-wrap">
+                    <button type="submit" className="btn btn-primary btn-sm">
+                      <Icone nom="check" taille={14} /> Enregistrer les droits
+                    </button>
+                    {ecartsDroits.length ? (
+                      // Formulaire à part (plus bas) : la confirmation renvoie un formulaire
+                      // entier, sans dire quel bouton l'a déclenchée.
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary btn-sm"
+                        data-confirm={`Rendre à ${nom} les droits de son rôle, sans aucune dérogation ?`}
+                        data-confirm-form="#form-droits-retablir"
+                      >
+                        <Icone nom="rotate-ccw" taille={14} /> Revenir aux droits du rôle
+                      </button>
+                    ) : null}
+                  </div>
+                  <p className="text-muted small mt-2 mb-0">
+                    Le secteur, les espaces en charge et les services du compte continuent de
+                    s'appliquer : ces droits disent ce qu'il peut faire, pas sur quoi.
+                  </p>
+                </form>
+              )}
+            </Section>
+          ) : null}
+
+          {u.kind === "agent" ? (
             <Section titre="Espaces en charge" icone="door-open" nb={espaces.length}>
               {espaces.length ? (
                 <div className="coches">
@@ -250,6 +357,19 @@ export default async function UtilisateurPage({ params }: { params: Promise<{ id
               </p>
             )}
           </Section>
+
+          {ecartsDroits.length ? (
+            <form
+              method="POST"
+              action={`${ici}/droits`}
+              id="form-droits-retablir"
+              className="d-none"
+              aria-hidden="true"
+            >
+              <input type="hidden" name="csrf_token" value={csrf} />
+              <input type="hidden" name="retablir" value="1" />
+            </form>
+          ) : null}
 
           <Section titre="Journal" icone="history" nb={journal.length} ouverte={false}>
             {journal.length ? (

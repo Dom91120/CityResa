@@ -2,6 +2,7 @@
  * Les tâches planifiées, et leur exécution tracée (scheduler_run).
  */
 import { DOCUMENT_KINDS, STATUTS_FERMES } from "@/lib/constantes";
+import { lireNiveaux, niveauEffectif } from "@/lib/droits";
 import { dateCourte, dateHeure, montant } from "@/lib/libelles";
 import { STATUTS_OPTION, trierOptions } from "@/lib/options";
 import { addParisDays, parisMidnight, todayParisISO } from "@/lib/paris-time";
@@ -197,17 +198,23 @@ async function digest(): Promise<Resultat> {
       },
     }),
   ]);
-  // Les rôles qui traitent les réservations (écriture), quel que soit leur nom.
-  const roles = (await prisma.role.findMany({ where: { isUsager: false } }))
-    .filter(
-      (r) =>
-        r.isAdmin ||
-        Number((r.permissions as Record<string, number> | null)?.reservations ?? 0) >= 2,
-    )
-    .map((r) => r.name);
-  const agents = await prisma.user.findMany({
-    where: { kind: "agent", isActive: true, notifEmail: true, role: { in: roles } },
-    select: { email: true },
+  // Les agents qui traitent les réservations (écriture), quel que soit le nom de leur rôle :
+  // les droits du rôle, corrigés par les dérogations du compte.
+  const roles = new Map(
+    (await prisma.role.findMany({ where: { isUsager: false } })).map((r) => [r.name, r]),
+  );
+  const agents = (
+    await prisma.user.findMany({
+      where: { kind: "agent", isActive: true, notifEmail: true },
+      select: { email: true, role: true, permissions: true },
+    })
+  ).filter((a) => {
+    const role = roles.get(a.role);
+    if (!role) return false;
+    return (
+      role.isAdmin ||
+      niveauEffectif(lireNiveaux(role.permissions), lireNiveaux(a.permissions), "reservations") >= 2
+    );
   });
   if (!agents.length) return { ok: true, message: "aucun destinataire" };
   await envoyerDepuisModele(

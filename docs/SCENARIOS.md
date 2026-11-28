@@ -650,6 +650,25 @@ obligatoire, au-delà de 153 000 € les comptes doivent être certifiés.
 | 9 | Administrateur | **Sauvegardes** (ch. 9.21) : lancez-en une, téléchargez-la. | Un fichier daté. |
 | 10 | Administrateur | Ouvrez un dossier refusé ou annulé : menu « … » › **Supprimer le dossier**. Vérifiez avec Sophie que ce menu ne lui est pas proposé. | La suppression d'un dossier est réservée à l'administrateur, pour un brouillon, un refus ou une annulation. |
 
+**Variante — des droits propres à un compte**
+
+Nadia a le rôle Agent, comme Camille. On veut qu'elle voie l'équipe sans pouvoir toucher aux
+paiements, sans créer de rôle pour elle seule (guide 9.13).
+
+| # | Qui | Action | Constat |
+| --- | --- | --- | --- |
+| a | Nadia | Connectez-vous ; lisez le menu. | **Paiements** y figure ; **Mon équipe** n'y est pas. |
+| b | Administrateur | **Comptes** › Nadia Lefèvre › section **Droits**. | Onze domaines, avec le niveau du rôle Agent ; tout est sur **Comme le rôle**. |
+| c | Administrateur | **Paiements** : **Aucun** ; **Mon équipe** : **Lecture** ; **Enregistrer les droits**. | « 2 domaines différents de son rôle ». L'en-tête porte la pastille **Droits personnalisés** ; les deux menus sont cerclés d'orange. |
+| d | Administrateur | Revenez à **Comptes**. | Une clé orange à côté du rôle de Nadia ; au survol : « Paiements : Aucun (rôle : Écriture), Mon équipe : Lecture (rôle : Aucun) ». Camille, même rôle, n'en a pas. |
+| e | Nadia | Rechargez la page ; ouvrez **Mon équipe**, puis l'adresse `/paiements`. | Sans se reconnecter : **Paiements** a disparu du menu, **Mon équipe** est apparu. L'équipe se lit, sans le bouton de répartition des espaces ; `/paiements` renvoie « Accès non autorisé à cette section ». |
+| f | Administrateur | **Journal d'audit**. | Une ligne « droits du compte » nomme les deux domaines et les deux niveaux. |
+| g | Administrateur | Fiche de Nadia › **Revenir aux droits du rôle**, confirmez. | « Nadia Lefèvre a de nouveau les droits de son rôle » ; la pastille et la clé disparaissent, son menu redevient celui d'un Agent. |
+
+**Règles illustrées** — un compte suit son rôle, sauf sur les domaines où l'administrateur y
+déroge, dans un sens ou dans l'autre ; les droits disent ce que l'agent peut faire, son secteur,
+ses espaces et ses services disent toujours sur quoi.
+
 ---
 
 ## Scénario 14 — Administrateur : décrire un circuit
