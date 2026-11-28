@@ -8,7 +8,9 @@
  * GUIDE_ADMIN / GUIDE_ADMIN_MDP (défaut : ADMIN_EMAIL du .env ; mot de passe à fournir).
  * Sans argument, refait toutes les captures ; sinon seulement celles nommées.
  *
- * Variables facultatives : CITYRESA_URL (défaut http://localhost:3000), CHROME_PATH.
+ * Variables facultatives : CITYRESA_URL (défaut http://localhost:3000), CHROME_PATH,
+ * GUIDE_SI_TEXTE (ne refait que les écrans où ce texte apparaît), GUIDE_SANS_ADMIN (laisse de
+ * côté les écrans d'administration quand on n'a pas le mot de passe de l'administrateur).
  * Pour ajouter un écran : une ligne dans CAPTURES ci-dessous, puis la référencer dans le guide.
  */
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
@@ -428,7 +430,9 @@ async function seConnecter(page, cle) {
 }
 
 const demandes = process.argv.slice(2);
-const liste = demandes.length ? CAPTURES.filter((c) => demandes.includes(c.nom)) : CAPTURES;
+const liste = (
+  demandes.length ? CAPTURES.filter((c) => demandes.includes(c.nom)) : CAPTURES
+).filter((c) => !(process.env.GUIDE_SANS_ADMIN && c.compte === "admin"));
 mkdirSync(SORTIE, { recursive: true });
 
 const browser = await puppeteer.launch({ executablePath: cheminChrome(), headless: true });
@@ -483,6 +487,17 @@ try {
       await new Promise((r) => setTimeout(r, 400));
     }
     await new Promise((r) => setTimeout(r, 600));
+    // GUIDE_SI_TEXTE : ne refaire que les écrans qui affichent ce texte (un nom de service
+    // qui a changé, par exemple) ; les autres captures sont conservées telles quelles.
+    if (
+      process.env.GUIDE_SI_TEXTE &&
+      !(await page.evaluate(
+        // biome-ignore lint/performance/useDomNodeTextContent: seul le texte AFFICHÉ compte (pas celui des fenêtres et menus fermés)
+        (t) => document.body.innerText.includes(t),
+        process.env.GUIDE_SI_TEXTE,
+      ))
+    )
+      continue;
     const png = c.selecteur
       ? await (await page.$(c.selecteur)).screenshot()
       : await (async () => {

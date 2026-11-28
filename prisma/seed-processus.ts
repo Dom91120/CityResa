@@ -138,7 +138,7 @@ const ETAPES_PASSEES = [
     decision: "Refusée",
     debut: 0.25,
     par: "Nadia Lefèvre",
-    repond: "sophie.martin@exemple.fr",
+    repond: "camille.roche@exemple.fr",
     contexte: "Refus envisagé : salle déjà promise ce jour-là",
   },
   {
@@ -147,7 +147,7 @@ const ETAPES_PASSEES = [
     decision: "Refusée",
     debut: 0.08,
     par: "Nadia Lefèvre",
-    repond: "sophie.martin@exemple.fr",
+    repond: "camille.roche@exemple.fr",
     contexte: "Refus envisagé : capacité de la salle insuffisante",
   },
 ] as const;
@@ -432,8 +432,9 @@ async function creerRoleInstructeur(): Promise<void> {
 
 /**
  * Un compte par service, pour dérouler les scénarios à plusieurs mains sans passer par
- * l'administration : un agent du Service des fêtes, une chargée de communication, une
- * régisseuse (sans service : elle encaisse pour tous). Créés en fin de jeu, sans tirage
+ * l'administration : deux agents de la Communication (la location des salles aux particuliers
+ * et aux entreprises, l'ancien Service des fêtes, lui est rattachée), dont sa responsable, et
+ * une régisseuse (sans service : elle encaisse pour tous). Créés en fin de jeu, sans tirage
  * aléatoire, ils ne décalent aucune autre donnée.
  */
 export const COMPTES_SERVICES = [
@@ -445,7 +446,7 @@ export const COMPTES_SERVICES = [
     secteur: "salle",
     fonction: "Chargée de la location de salles",
     phone: "01 46 57 03 35",
-    service: "Service des fêtes",
+    service: "Communication",
     responsable: false,
   },
   {
@@ -515,22 +516,93 @@ async function creerComptesServices(motDePasse?: string): Promise<number> {
 }
 
 /**
- * Le signataire des conventions de la Vie associative : la directrice de la communication
- * (personnage fictif). Les autres services n'en ont pas : le signataire de la collectivité signe.
- * Un signataire déjà saisi n'est jamais remplacé.
+ * La directrice de la communication (personnage fictif) signe les conventions de son service et
+ * celles de la Vie associative, qui travaille avec lui. Le Service des sports n'a pas de
+ * signataire : celui de la collectivité signe. Un signataire déjà saisi n'est jamais remplacé.
  */
 async function poserSignatairesDemo(): Promise<void> {
   await prisma.service.updateMany({
-    where: { name: "Vie associative", signataire: null, signataireQualite: null },
+    where: {
+      name: { in: ["Vie associative", "Communication"] },
+      signataire: null,
+      signataireQualite: null,
+    },
     data: { signataire: "Claire Vasseur", signataireQualite: "Directrice de la communication" },
   });
+}
+
+const DESCRIPTION_COMMUNICATION =
+  "Location des salles municipales aux particuliers et aux entreprises ; suit et relit les dossiers de la Vie associative, la remplace au besoin";
+
+/**
+ * Une base chargée avant la réorganisation porte encore un « Service des fêtes » : il a été
+ * absorbé par la Communication. Ses dossiers, ses membres, ses usagers de référence et son
+ * circuit passent à la Communication, puis il disparaît. Sans effet sur une base à jour.
+ */
+async function fusionnerServiceDesFetes(): Promise<boolean> {
+  const [fetes, com] = await Promise.all([
+    prisma.service.findUnique({ where: { name: "Service des fêtes" }, include: { membres: true } }),
+    prisma.service.findUnique({ where: { name: "Communication" } }),
+  ]);
+  if (!fetes || !com) return false;
+  await prisma.$transaction([
+    prisma.reservation.updateMany({ where: { serviceId: fetes.id }, data: { serviceId: com.id } }),
+    prisma.subvention.updateMany({ where: { serviceId: fetes.id }, data: { serviceId: com.id } }),
+    prisma.campagne.updateMany({ where: { serviceId: fetes.id }, data: { serviceId: com.id } }),
+    prisma.serviceMembre.createMany({
+      data: fetes.membres.map((m) => ({ serviceId: com.id, userId: m.userId })),
+      skipDuplicates: true,
+    }),
+    // Plus personne ne supplée ni n'est suppléé par le service qui disparaît.
+    prisma.service.updateMany({
+      where: { suppleantId: fetes.id },
+      data: { suppleantId: null, suppleanceDu: null, suppleanceAu: null },
+    }),
+    prisma.service.update({
+      where: { id: com.id },
+      data: {
+        description: DESCRIPTION_COMMUNICATION,
+        usagerTypes: [...new Set([...com.usagerTypes, ...fetes.usagerTypes])],
+        position: Math.min(com.position, fetes.position),
+      },
+    }),
+  ]);
+  // Les circuits qui confiaient les dossiers au Service des fêtes les confient à la Communication.
+  // Il en va de même des étapes (relecture, avis) qui lui étaient adressées.
+  type Brut = {
+    serviceId?: number | null;
+    etapes?: { intervenant?: { type?: string; id?: number } }[];
+  };
+  const versions = await prisma.circuitVersion.findMany();
+  for (const v of versions) {
+    const def = v.definition as Brut | null;
+    if (!def) continue;
+    const vise = (e: NonNullable<Brut["etapes"]>[number]) =>
+      e.intervenant?.type === "service" && e.intervenant.id === fetes.id;
+    if (def.serviceId !== fetes.id && !def.etapes?.some(vise)) continue;
+    const corrigee: Brut = {
+      ...def,
+      serviceId: def.serviceId === fetes.id ? com.id : def.serviceId,
+      etapes: def.etapes?.map((e) =>
+        vise(e) ? { ...e, intervenant: { ...e.intervenant, id: com.id } } : e,
+      ),
+    };
+    await prisma.circuitVersion.update({
+      where: { id: v.id },
+      data: { definition: corrigee as Prisma.InputJsonValue },
+    });
+  }
+  await prisma.service.delete({ where: { id: fetes.id } });
+  return true;
 }
 
 export async function creerProcessusDemo(motDePasse?: string): Promise<Record<string, number>> {
   await seedCircuitStandard();
   await creerRoleInstructeur();
   if ((await prisma.service.count()) > 0) {
+    const fusion = await fusionnerServiceDesFetes();
     await poserSignatairesDemo();
+    if (fusion) console.log("Service des fêtes absorbé par la Communication.");
     return {
       services: 0,
       comptes: await creerComptesServices(motDePasse),
@@ -555,6 +627,7 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
     membre: string | null,
     usagerTypes: string[] = [],
     usagersSportifs: boolean | null = null,
+    responsable = true,
   ) =>
     prisma.service.create({
       data: {
@@ -564,7 +637,7 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
         position,
         usagerTypes,
         usagersSportifs,
-        responsableId: membre,
+        responsableId: responsable ? membre : null,
         membres: membre ? { create: { userId: membre } } : undefined,
       },
     });
@@ -586,20 +659,18 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
     ["association"],
     false,
   );
-  const fetes = await service(
+  // La Communication a absorbé le Service des fêtes : elle loue les salles aux particuliers et
+  // aux entreprises, et travaille avec la Vie associative. Sophie en est membre (elle traite les
+  // deux), sa responsable est Camille Roche, rattachée plus bas avec Nadia Lefèvre.
+  const communication = await service(
     3,
-    "Service des fêtes",
-    "Location des salles municipales aux particuliers et aux entreprises",
-    "fetes@exemple.fr",
+    "Communication",
+    DESCRIPTION_COMMUNICATION,
+    "communication@exemple.fr",
     sophie,
     ["particulier", "entreprise"],
-  );
-  await service(
-    4,
-    "Communication",
-    "Suit et relit les dossiers de la Vie associative et du Service des fêtes, les remplace au besoin",
-    "communication@exemple.fr",
     null,
+    false,
   );
   await poserSignatairesDemo();
   const delegation = await prisma.delegation.create({
@@ -685,7 +756,7 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
         { champ: "secteur", op: "parmi", valeur: ["salle"] },
         { champ: "type_demandeur", op: "parmi", valeur: ["particulier", "entreprise"] },
       ),
-      serviceId: fetes.id,
+      serviceId: communication.id,
       etapes: [
         ...etapes,
         visaRefus,
@@ -735,7 +806,7 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
       });
   }
   return {
-    services: 4,
+    services: 3,
     comptes: await creerComptesServices(motDePasse),
     circuits: 3 + (await creerCircuitsSubventionDemo()) + (await creerCircuitCampagneDemo()),
     dossiers: dossiers.length,

@@ -8,7 +8,7 @@ Le cycle d'un dossier ne change pas : le module y **insère** des étapes, il ne
 
 | Notion | Ce que c'est |
 | --- | --- |
-| **Service** | Un service de la Ville (Service des sports, Vie associative, Service des fêtes, Communication…), avec ses membres, son responsable et, au besoin, un service qui le supplée pendant une période. |
+| **Service** | Un service de la Ville (Service des sports, Vie associative, Communication…), avec ses membres, son responsable et, au besoin, un service qui le supplée pendant une période. |
 | **Délégation** | Le domaine d'un élu. Une étape s'adresse à une délégation, pas à une personne : l'élu peut changer sans toucher aux circuits. |
 | **Circuit** | Pour un type de demandes : le service auquel elles sont confiées et les étapes qui précèdent leur acceptation. |
 | **Règle d'aiguillage** | La condition qui fait qu'un circuit reçoit une demande (« une salle demandée par une association »). |
@@ -113,7 +113,7 @@ Une étape précède l'un de six gestes sur une réservation :
 
 ## 12.4 Ce que le service change pour un agent
 
-**À quoi ça sert** — Séparer le travail de services qui partagent les mêmes espaces (la Vie associative et le Service des fêtes sur les salles), sans cacher à l'un l'occupation décidée par l'autre.
+**À quoi ça sert** — Séparer le travail de services qui partagent les mêmes espaces (la Vie associative et la Communication sur les salles), sans cacher à l'un l'occupation décidée par l'autre.
 
 **Qui** — Les agents qui appartiennent à un service. Un agent agit pour un service s'il en est **membre** ou **responsable**, ou s'il est du service qui le **supplée** pendant la période de suppléance.
 
@@ -125,7 +125,7 @@ Une étape précède l'un de six gestes sur une réservation :
 - **Annuler des créneaux par une fermeture** : une fermeture exceptionnelle reste l'affaire de l'espace, tout agent qui en a la charge la pose ; mais elle n'annule que les créneaux des dossiers de son service. Ceux d'un autre service sont signalés dans l'aperçu (« … · décide de l'annulation »), laissés en place, et ce service est prévenu par la cloche pour annuler ou reporter.
 - **Être prévenu** : une nouvelle demande, un message de l'usager ou une annulation préviennent les personnes du service, plus les gestionnaires de l'espace.
 
-**Ce que l'usager voit du service** — Le service auquel son dossier est confié signe les courriels qu'il reçoit (« Service des fêtes, Ville de Châtillon », avec son courriel et son téléphone), figure sur la convention (« Dossier suivi par… ») et sur son dossier du portail (« Votre interlocuteur »). Les modèles de courriel disposent pour cela des variables `{{service}}`, `{{service_contact}}` et `{{{signature}}}`.
+**Ce que l'usager voit du service** — Le service auquel son dossier est confié signe les courriels qu'il reçoit (« Communication, Ville de Châtillon », avec son courriel et son téléphone), figure sur la convention (« Dossier suivi par… ») et sur son dossier du portail (« Votre interlocuteur »). Les modèles de courriel disposent pour cela des variables `{{service}}`, `{{service_contact}}` et `{{{signature}}}`.
 
 **Ce qui reste ouvert à tous les agents du périmètre**
 
@@ -151,7 +151,7 @@ Une étape précède l'un de six gestes sur une réservation :
 
 ![Services](captures/processus-services.webp)
 
-*Figure — les quatre services du jeu de démonstration, avec leur responsable, leurs membres et le nombre de dossiers qui leur sont confiés.*
+*Figure — les trois services du jeu de démonstration, avec leur responsable, leurs membres et le nombre de dossiers qui leur sont confiés.*
 
 **Comment faire — un service**
 

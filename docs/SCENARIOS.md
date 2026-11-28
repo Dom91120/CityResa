@@ -63,9 +63,9 @@ l'administrateur est celui affiché par `pnpm db:init`.
 
 | Qui | Compte | Rôle dans l'application | Service joué dans les scénarios |
 | --- | --- | --- | --- |
-| Sophie Martin | `sophie.martin@exemple.fr` | Gestionnaire, secteur Salles | **Vie associative** et **Service des fêtes** (voir l'écart E1) |
+| Sophie Martin | `sophie.martin@exemple.fr` | Gestionnaire, secteur Salles | **Vie associative** (responsable) et **Communication** |
 | Karim Benali | `karim.benali@exemple.fr` | Agent instructeur, secteur Sports | **Service des sports** |
-| Nadia Lefèvre | `nadia.lefevre@exemple.fr` | Agent, secteur Salles | **Service des fêtes** |
+| Nadia Lefèvre | `nadia.lefevre@exemple.fr` | Agent, secteur Salles | **Communication** (location des salles) |
 | Camille Roche | `camille.roche@exemple.fr` | Agent, secteur Salles | **Communication** (responsable) |
 | Hélène Petit | `helene.petit@exemple.fr` | Financier, transversal | Régie : aucun service, encaisse pour tous |
 | Pierre Durand | `pierre.durand@exemple.fr` | Élu, transversal | **Élu** |
@@ -80,24 +80,28 @@ l'administrateur est celui affiché par `pnpm db:init`.
 | Josette Nickels | `josette.nickels@exemple.fr` | Usager | Association extérieure (GAMA), fiche à valider |
 | Léa Fontaine | `lea.fontaine@exemple.fr` | Usager | Service interne (Service Culturel) |
 
-Sophie Martin est responsable des deux services des salles : elle décide partout. Pour voir la
-séparation des services sans passer par l'administration, prenez Nadia (Service des fêtes
-seulement) ou Camille (Communication seulement).
+Il n'y a plus de Service des fêtes : la **Communication** l'a absorbé et loue désormais les
+salles aux particuliers et aux entreprises. Sophie Martin est responsable de la Vie associative
+et membre de la Communication : elle décide sur toutes les salles. Pour voir la séparation des
+services sans passer par l'administration, prenez Nadia ou Camille (Communication seulement).
 
 ### Les services et circuits de démonstration
 
-Le jeu de démonstration contient quatre services et quatre circuits (module Processus et
+Le jeu de démonstration contient trois services et quatre circuits (module Processus et
 circuits, guide chapitre 12) :
 
 | Circuit | Reçoit | Service | Étape |
 | --- | --- | --- | --- |
 | Équipements sportifs | Tout espace du secteur Sports | Service des sports (Karim) | Visa de l'élu si la gratuité est accordée à la main |
 | Salles · associations | Une salle demandée par une association | Vie associative (Sophie) | Idem, et visa de l'élu **avant une réquisition** |
-| Salles · particuliers et entreprises | Une salle demandée par un particulier ou une entreprise | Service des fêtes (Sophie, Nadia) | Idem, visa du responsable **avant un refus**, visa de l'élu **avant une retenue sur caution** et visa de la régie **avant de facturer** un dossier d'au moins 1 000 € |
+| Salles · particuliers et entreprises | Une salle demandée par un particulier ou une entreprise | Communication (Camille, Nadia, Sophie) | Idem, visa du responsable **avant un refus**, visa de l'élu **avant une retenue sur caution** et visa de la régie **avant de facturer** un dossier d'au moins 1 000 € |
 | Circuit standard | Tout le reste (services de la Ville…) | — | Aucune |
 
-Le service Communication existe mais n'a aucun membre ; la délégation « Sports, vie associative
-et fêtes » est confiée à Pierre Durand. Le dossier R260008 attend déjà son visa.
+Camille Roche est responsable de la Communication. La directrice de la communication, Claire
+Vasseur (personnage fictif, sans compte), signe les conventions de la Communication et celles de
+la Vie associative ; le Service des sports n'a pas de signataire, celui de la collectivité signe
+pour lui. La délégation « Sports, vie associative et fêtes » est confiée à Pierre Durand. Le
+dossier R260008 attend déjà son visa.
 
 Deux circuits de subvention complètent le jeu : les demandes des **associations sportives** sont
 instruites par le Service des sports (Karim), les **autres** par la Vie associative (Sophie) ;
@@ -127,8 +131,8 @@ responsable sur les refus R260037 et R260039, dont un hors délai) : elles alime
 | # | Scénario | Service | Durée | Ce que l'on apprend |
 | --- | --- | --- | --- | --- |
 | 1 | Tour d'horizon : qui voit quoi | Tous | 15 min | Rôles, secteurs, périmètres |
-| 2 | Un particulier loue une salle | Service des fêtes | 40 min | Le cycle complet d'une réservation payante |
-| 3 | Une entreprise réserve, modifie, annule | Service des fêtes | 30 min | Devis, option, avenant, frais d'annulation |
+| 2 | Un particulier loue une salle | Communication | 40 min | Le cycle complet d'une réservation payante |
+| 3 | Une entreprise réserve, modifie, annule | Communication | 30 min | Devis, option, avenant, frais d'annulation |
 | 4 | Une association réserve une salle | Vie associative | 25 min | Gratuité, pièces, validation d'une fiche |
 | 5 | Les créneaux de la saison | Service des sports | 35 min | Campagne de vœux, arbitrage, dossier récurrent |
 | 6 | Le personnel de service | Service des sports | 30 min | Vacations, couverture, absences, propositions |
@@ -136,7 +140,7 @@ responsable sur les refus R260037 et R260039, dont un hors délai) : elles alime
 | 8 | Une demande de subvention | Vie associative, élu | 40 min | Dépôt, instruction, avis, vote, versement |
 | 9 | Ce que voit et fait un élu | Élu | 10 min | Lecture, avis, limites |
 | 10 | La Communication suit et remplace | Communication | 20 min | Création de comptes, suivi, suppléance |
-| 11 | Encaisser, relancer, corriger | Service des fêtes | 20 min | Paiements, avoirs, export |
+| 11 | Encaisser, relancer, corriger | Communication | 20 min | Paiements, avoirs, export |
 | 12 | La fin de l'année | Vie associative | 15 min | Valorisation, statistiques |
 | 13 | Faire vivre l'outil | Administrateur | 20 min | Paramètres, tâches planifiées, journal |
 | 14 | Décrire un circuit | Administrateur | 30 min | Services, aiguillage, étapes, simulation, versions |
@@ -155,7 +159,7 @@ chacun. Les mêmes données ne donnent pas les mêmes écrans.
 | --- | --- | --- | --- |
 | 1 | Sophie | Connectez-vous au back-office ; lisez le tableau de bord (ch. 8). | Demandes à traiter, alertes, sept prochains jours : uniquement des **salles**. Le menu de gauche est complet (Réservations … Statistiques), sans la rubrique Administration. |
 | 2 | Sophie | Ouvrez **Espaces**. | Les huit salles ; aucun gymnase. Le filtre « Secteur » ne propose rien d'utile : elle n'a qu'un secteur. |
-| 3 | Sophie | Ouvrez **Mon équipe** (ch. 5). | Les agents du secteur Salles (elle-même, Nadia, Camille) et les agents transversaux (Pierre, Hélène). La colonne **Service** nomme le ou les services de chacun (Sophie : Vie associative et Service des fêtes ; un tiret pour Pierre et Hélène). Karim, du secteur Sports, n'y est pas. |
+| 3 | Sophie | Ouvrez **Mon équipe** (ch. 5). | Les agents du secteur Salles (elle-même, Nadia, Camille) et les agents transversaux (Pierre, Hélène). La colonne **Service** nomme le ou les services de chacun (Sophie : Vie associative et Communication ; un tiret pour Pierre et Hélène). Karim, du secteur Sports, n'y est pas. |
 | 4 | Karim | Connectez-vous ; lisez le tableau de bord. | Uniquement des **équipements sportifs**. Pas d'entrée **Mon équipe** dans son menu. |
 | 5 | Karim | Ouvrez **Réservations**, puis cherchez « R260017 » avec Ctrl K (un dossier de salle). | Le dossier d'une salle n'est pas dans sa liste ; s'il l'atteint, il lit « Vous n'avez pas la main sur cet espace ». |
 | 6 | Karim | Ouvrez **Subventions**, puis un dossier d'Around dance et celui du TTMC. | Son rôle « Agent instructeur » a l'écriture sur les subventions, mais il n'instruit que les dossiers de son service : aucun bouton sur Around dance (Vie associative), les boutons d'instruction sur le TTMC (association sportive). |
@@ -174,18 +178,18 @@ chacun. Les mêmes données ne donnent pas les mêmes écrans.
 > **Écart E1, traité** — Chaque dossier est confié à un service, et seul ce service le décide
 > (guide 12.4). Dans le jeu de démonstration, Sophie appartient aux deux services des salles :
 > elle décide donc partout, et son filtre des services affiche **Mes services**. Le scénario 15
-> la retire du Service des fêtes pour voir la séparation.
+> la retire de la Communication pour voir la séparation.
 
 ---
 
-## Scénario 2 — Service des fêtes : un particulier loue une salle
+## Scénario 2 — Communication : un particulier loue une salle
 
 **Situation** — Martine Dupont, habitante de Châtillon, veut la Salle Gabriel Péri pour un
-anniversaire. Le Service des fêtes instruit, fait signer la convention, encaisse l'acompte,
+anniversaire. La Communication instruit, fait signer la convention, encaisse l'acompte,
 remet les clés, puis solde le dossier. C'est le cycle de référence : tous les autres en sont
 des variantes.
 
-**Comptes** — Martine (portail), Sophie (back-office, pour le Service des fêtes).
+**Comptes** — Martine (portail), Sophie (back-office, pour la Communication).
 
 ### A. La demande
 
@@ -244,7 +248,7 @@ les manquants ne sont pas facturés d'office.
 - Avec **Antoine Garcia** (particulier extérieur), même salle : le devis applique le tarif
   « extérieur » (400 € la journée).
 - Avec **Nadia**, **Décliner** une demande avec un motif : le refus est retenu, le circuit
-  demande le visa du responsable du service (Sophie, dans **Mes étapes**). Une fois accordé,
+  demande le visa de la responsable du service (Camille, dans **Mes étapes**). Une fois accordé,
   déclinez de nouveau, puis **Rouvrir** : la demande repasse « À traiter ».
 - Sur un dossier accepté, **Marquer signée (papier)** au lieu de la signature en ligne.
 - Demandez un créneau **déjà pris** : le portail propose la liste d'attente et des créneaux
@@ -252,7 +256,7 @@ les manquants ne sont pas facturés d'office.
 
 ---
 
-## Scénario 3 — Service des fêtes : une entreprise réserve, modifie, annule
+## Scénario 3 — Communication : une entreprise réserve, modifie, annule
 
 **Situation** — Atelier Numérique SAS veut la grande salle de l'Espace Maison Blanche pour un
 séminaire. La date n'est pas ferme : le service pose une option. L'entreprise change ensuite
@@ -337,11 +341,11 @@ gratuit est quand même **valorisé** en fin d'année.
 > ou pour les seules associations châtillonnaises ? Est-elle plafonnée dans l'année ?
 >
 > **Écart E1, traité** — À l'étape 4, la carte **Circuit** indique « Dossier confié à Vie
-> associative » ; les dossiers du scénario 2 le sont au Service des fêtes (scénario 15).
+> associative » ; les dossiers du scénario 2 le sont à la Communication (scénario 15).
 >
 > **Écart E6, traité** — La fiche d'un usager est validée par son service de référence (guide
 > 12.5) : une association sportive par le Service des sports, une autre association par la Vie
-> associative, un particulier ou une entreprise par le Service des fêtes.
+> associative, un particulier ou une entreprise par la Communication.
 
 ---
 
@@ -562,9 +566,10 @@ budget.
 
 ## Scénario 10 — La Communication suit, relit, remplace
 
-**Situation** — Le service Communication suit les dossiers de la Vie associative et du Service
-des fêtes, et les traite quand l'un des deux est absent. Le jeu de démonstration a déjà Camille Roche ; on crée ici deux comptes de plus,
-ce qui fait découvrir l'administration des comptes.
+**Situation** — Outre la location des salles, qu'elle a reprise du Service des fêtes, la
+Communication suit les dossiers de la Vie associative et les traite quand celle-ci est absente.
+Le jeu de démonstration a déjà Camille Roche et Nadia Lefèvre ; on crée ici deux comptes de
+plus, ce qui fait découvrir l'administration des comptes.
 
 **Comptes** — Administrateur, puis les deux comptes créés.
 
@@ -585,14 +590,14 @@ ce qui fait découvrir l'administration des comptes.
 >
 > - la relecture porte sur l'**acceptation** d'une demande, pas encore sur une réponse dans le
 >   fil, une facture ou un refus ;
-> - le compte de suivi voit **tout** le secteur Salles, sans distinguer Vie associative et
->   Service des fêtes (écart E1).
+> - le compte de suivi voit **tout** le secteur Salles, sans distinguer les dossiers de la Vie
+>   associative de ceux de la Communication (écart E1).
 >
 > Notez ce que la Communication relit réellement : c'est ce qui dira quelles étapes ajouter.
 
 ---
 
-## Scénario 11 — Service des fêtes : encaisser, relancer, corriger
+## Scénario 11 — Communication : encaisser, relancer, corriger
 
 **Situation** — La régie fait le point sur les factures.
 
@@ -674,7 +679,7 @@ ses espaces et ses services disent toujours sur quoi.
 ## Scénario 14 — Administrateur : décrire un circuit
 
 **Situation** — La Ville décide que la Communication relit l'acceptation de tout événement
-ouvert au public dans une salle, et qu'elle supplée le Service des fêtes pendant ses congés. On
+ouvert au public dans une salle, et qu'elle supplée la Vie associative pendant ses congés. On
 le décrit, on le simule, on le publie, on le vérifie.
 
 **Comptes** — Administrateur, les comptes Communication du scénario 10, Sophie, Sandra.
@@ -682,9 +687,9 @@ le décrit, on le simule, on le publie, on le vérifie.
 | # | Qui | Action | Constat |
 | --- | --- | --- | --- |
 | 1 | Administrateur | **Processus et circuits** (ch. 12.6) : lisez les quatre circuits et leur ordre. | Trois circuits à règle, puis le Circuit standard « par défaut ». |
-| 2 | Administrateur | Onglet **Services** › crayon de **Communication** : cochez les deux comptes du scénario 10, choisissez un responsable. | Le service n'affiche plus « Aucun membre ». |
+| 2 | Administrateur | Onglet **Services** › crayon de **Communication** : cochez les deux comptes du scénario 10. | Ils s'ajoutent à Camille, Nadia et Sophie dans la colonne des membres. |
 | 3 | Administrateur | Circuit **Salles · associations** › **Étapes** › **Ajouter** : « Relecture par la Communication », nature Relecture, qui répond : le service Communication, délai 3 jours ; critère « Événement ouvert au public » : Oui. | Le circuit passe en **Brouillon v2** ; le bandeau dit « prêt à être publié » et ce qui a changé ; le logigramme montre la nouvelle étape. |
-| 4 | Administrateur | Avant l'étape 2, tentez la même étape avec un service sans membre, puis **Publier**. | Publication refusée : « le service n'a aucun membre ». |
+| 4 | Administrateur | Créez un service d'essai sans membre, tentez la même étape avec lui, puis **Publier**. Supprimez ensuite l'étape d'essai. | Publication refusée : « le service n'a aucun membre ». |
 | 5 | Administrateur | **Simuler**, numéro d'un dossier d'association ouvert au public, case **Avec les brouillons**. | Circuit retenu, raison de l'écart des autres, étape « Relecture » qui s'ouvrirait et personnes sollicitées. Sans la case : l'étape n'apparaît pas. |
 | 5a | Administrateur | Toujours dans **Simuler** : videz le numéro et choisissez la campagne « Créneaux annuels 2026-2027 ». | Circuit « Campagnes de créneaux », conduite par la Vie associative, visa de l'élu avant de prévenir les demandeurs. |
 | 6 | Administrateur | **Publier**, avec une note de version. | « v2 en service ». Section Versions : v1 archivée. |
@@ -695,7 +700,7 @@ le décrit, on le simule, on le publie, on le vérifie.
 | 10a | Administrateur | Sur le circuit, menu « … » › **Exporter (fichier)**. Créez un circuit « Salles · essai » (réservations), puis menu « … » › **Importer un fichier…** avec le fichier téléchargé. | Le nouveau circuit reçoit en **brouillon** l'aiguillage et les étapes du premier ; rien n'est en service tant qu'il n'est pas publié. Importé dans un circuit de subvention, le fichier est refusé. Supprimez le circuit d'essai. |
 | 11 | Sophie | Ouvrez un dossier d'association **créé avant** la publication. | Sa carte Circuit affiche toujours **v1** et indique « la version 2 est en service ». |
 | 11a | Sophie | Sur ce dossier : **Passer à la version 2**, confirmez. | La carte affiche **v2** ; une étape déjà demandée y figure toujours avec sa réponse ; l'historique porte « Circuit : passage à la version 2 ». La relecture ajoutée à l'étape 3 s'applique désormais à ce dossier s'il est ouvert au public. |
-| 12 | Administrateur | Service **Service des fêtes** : **Suppléé par** Communication, du jour à dans une semaine. Ajoutez au circuit « Salles · particuliers et entreprises » une étape adressée au « service du dossier », publiez, provoquez-la. | Les comptes Communication reçoivent l'étape du Service des fêtes pendant la période, plus après. |
+| 12 | Administrateur | Service **Vie associative** : **Suppléé par** Communication, du jour à dans une semaine. Ajoutez au circuit « Salles · associations » une étape adressée au « service du dossier », publiez, provoquez-la. | Les comptes de la Communication reçoivent l'étape de la Vie associative pendant la période, plus après. |
 | 13 | Administrateur | Ajoutez une étape « Visa de l'élu » sur le critère « Demande hors du délai de l'espace », publiez ; avec Sophie, saisissez une réservation en **passant outre le délai**, statut initial « Acceptée ». | Le dossier naît « À traiter » et attend le visa. |
 | 13a | Administrateur | Sur l'étape « Visa de l'élu sur la gratuité » du circuit **Salles · associations** : **En copie** : Communication. **Publier** ; Sophie fait passer R260008 sur la nouvelle version. | La carte Circuit du dossier indique « en copie : Camille Roche ». Quand Pierre répond, Camille reçoit la réponse par la cloche ; quand l'étape est redemandée, elle reçoit « Pour information ». Rien n'apparaît dans ses **Mes étapes**. |
 | 13b | Administrateur, puis Sophie | Circuit **Salles · associations** : étape « Visa de l'élu avant d'annuler », moment **Avant une annulation par la collectivité**, **Publier** ; R260003 passe sur la nouvelle version. Sophie bloque la **Salle de la Folie Desmares** du 9 au 10 décembre, motif « Dégât des eaux ». | L'aperçu indique pour R260003 « Avant l'annulation : Visa de l'élu avant d'annuler ». Après **Fermer l'espace** : le créneau de R260022 est annulé, celui de R260003 reste en place, et Pierre reçoit le visa avec la période et le motif. |
@@ -706,18 +711,18 @@ le décrit, on le simule, on le publie, on le vérifie.
 
 | # | Qui | Action | Constat |
 | --- | --- | --- | --- |
-| a | Sophie | **Mes étapes** › onglet **Délais**. | Trois réponses reçues, un délai médian, une réponse hors délai, une étape en attente. Par étape : le visa de gratuité et le visa sur le refus ; par service : fêtes, sports, Vie associative. |
+| a | Sophie | **Mes étapes** › onglet **Délais**. | Trois réponses reçues, un délai médian, une réponse hors délai, une étape en attente. Par étape : le visa de gratuité et le visa sur le refus ; par service : Communication, sports, Vie associative. |
 | b | Sophie | Après les étapes 8 à 10 ci-dessus, revenez sur l'onglet. | La relecture de la Communication y figure, avec son délai de quelques minutes. |
 | c | Sophie | Boutons **3 mois**, **6 mois**. | La période se resserre sur les étapes demandées depuis cette date. |
 
-**Variante — une étape à plusieurs voix** (Service des fêtes : Sophie et Nadia)
+**Variante — une étape à plusieurs voix** (Communication : Camille, Nadia et Sophie)
 
 | # | Qui | Action | Constat |
 | --- | --- | --- | --- |
-| a | Administrateur | Circuit **Salles · particuliers et entreprises** › crayon de l'étape « Visa du responsable sur le refus » : **Qui répond** : le service Service des fêtes ; **Réponses attendues** : **Tous doivent répondre**. **Publier**. | Le logigramme porte « accord de tous » sur l'étape. |
-| b | Sophie | Portail (Martine) ou back-office : une nouvelle demande de salle d'un particulier, puis **Décliner** avec un motif. | Refus **retenu** : le visa est demandé d'office. La carte Circuit indique « Service des fêtes : Sophie Martin, Nadia Lefèvre · accord de tous ». |
-| c | Sophie | Carte **Circuit** › **Visa accordé**. | « Visa accordé · accord de tous : 1 réponse encore attendue ». L'étape reste **En attente**, la carte liste « Réponses (1 sur 2) », les boutons de Sophie ont disparu et l'étape a quitté ses **Mes étapes**. **Décliner** est toujours retenu. |
-| d | Nadia | **Mes étapes** › **Visa accordé**. | L'étape est validée ; Sophie est prévenue par la cloche. L'historique porte les deux réponses puis « Visa accordé (accord de tous) ». |
+| a | Administrateur | Circuit **Salles · particuliers et entreprises** › crayon de l'étape « Visa du responsable sur le refus » : **Qui répond** : le service Communication ; **Réponses attendues** : **Tous doivent répondre**. **Publier**. | Le logigramme porte « accord de tous » sur l'étape. |
+| b | Sophie | Portail (Martine) ou back-office : une nouvelle demande de salle d'un particulier, puis **Décliner** avec un motif. | Refus **retenu** : le visa est demandé d'office. La carte Circuit nomme les trois membres de la Communication et indique « accord de tous ». |
+| c | Sophie | Carte **Circuit** › **Visa accordé**. | « Visa accordé · accord de tous : 2 réponses encore attendues ». L'étape reste **En attente**, la carte liste « Réponses (1 sur 3) », les boutons de Sophie ont disparu et l'étape a quitté ses **Mes étapes**. **Décliner** est toujours retenu. |
+| d | Nadia, puis Camille | Chacune : **Mes étapes** › **Visa accordé**. | Après Nadia, une réponse est encore attendue ; après Camille, l'étape est validée et Sophie est prévenue par la cloche. L'historique porte les trois réponses puis « Visa accordé (accord de tous) ». |
 | e | Sophie | **Décliner** de nouveau. | **Refusée**. |
 | f | Administrateur | Passez la même étape à **La majorité**, publiez ; refaites b avec une autre demande, puis Sophie répond **Visa refusé** avec un motif. | À deux, un refus suffit : la majorité n'est plus atteignable, l'étape est refusée sans attendre Nadia. Avec trois membres, il faudrait deux accords ou deux refus. |
 
@@ -731,27 +736,28 @@ majorité), chacun ne répondant qu'une fois.
 
 ## Scénario 15 — Deux services, les mêmes salles
 
-**Situation** — La Vie associative et le Service des fêtes partagent les salles. On donne à
-chacun son agent, puis on vérifie que chacun décide chez lui, voit chez l'autre, et que la
-Communication remplace le Service des fêtes pendant ses congés.
+**Situation** — La Vie associative et la Communication partagent les salles : l'une pour les
+associations, l'autre pour les particuliers et les entreprises. On sépare leurs agents, puis on
+vérifie que chacun décide chez lui, voit chez l'autre, et que la Communication remplace la Vie
+associative pendant ses congés.
 
-**Comptes** — Administrateur, Sophie, les comptes Communication du scénario 10.
+**Comptes** — Administrateur, Sophie, Nadia.
 
 | # | Qui | Action | Constat |
 | --- | --- | --- | --- |
 | 1 | Sophie | Notez le compteur **Réservations** du menu ; ouvrez **Réservations** › **À traiter**. | Le filtre des services affiche **Mes services** : elle est des deux services des salles. |
-| 2 | Administrateur | **Processus et circuits** › **Services** › **Service des fêtes** : décochez Sophie, retirez-la comme responsable ; cochez à la place le compte « Communication – suppléance » du scénario 10, puis créez-lui un service à part si vous préférez. | Sophie n'agit plus que pour la Vie associative. |
+| 2 | Administrateur | **Processus et circuits** › **Services** › **Communication** : décochez Sophie. | Sophie n'agit plus que pour la Vie associative ; Camille et Nadia restent à la Communication. |
 | 3 | Sophie | Rechargez le tableau de bord. | Le compteur **Réservations** et le bloc « À traiter » ont baissé : seules restent les demandes des associations et celles sans service. |
-| 4 | Sophie | **Réservations** › **À traiter**, puis filtre des services › **Tous les services**. | Par défaut, ses dossiers ; avec « Tous les services », ceux du Service des fêtes réapparaissent. |
-| 5 | Sophie | Ouvrez une demande d'un **particulier**. | Elle la lit en entier ; la carte de décision n'a plus de bouton et indique « Ce dossier est confié à Service des fêtes : la décision lui revient ». |
+| 4 | Sophie | **Réservations** › **À traiter**, puis filtre des services › **Tous les services**. | Par défaut, ses dossiers ; avec « Tous les services », ceux de la Communication réapparaissent. |
+| 5 | Sophie | Ouvrez une demande d'un **particulier**. | Elle la lit en entier ; la carte de décision n'a plus de bouton et indique « Ce dossier est confié à Communication : la décision lui revient ». |
 | 6 | Sophie | Écrivez une note interne dans le fil du dossier. | Acceptée : le fil reste ouvert. |
 | 7 | Sophie | **Paiements** : ouvrez une facture d'un particulier, **Enregistrer un paiement**. | Refus : « Cette facture relève d'un dossier confié à un autre service ». |
-| 8 | Sophie | **+ Nouvelle réservation** pour un particulier, statut initial « Acceptée ». | Refus : la demande revient au Service des fêtes ; avec « À traiter », elle est enregistrée. |
-| 9 | Sophie | **Planning**. | Tous les créneaux des salles, ceux du Service des fêtes compris. |
-| 10 | Communication (suppléance) | Connectez-vous : tableau de bord, puis une demande d'un particulier. | Sa file contient les dossiers du Service des fêtes ; elle approuve. |
+| 8 | Sophie | **+ Nouvelle réservation** pour un particulier, statut initial « Acceptée ». | Refus : la demande revient à la Communication ; avec « À traiter », elle est enregistrée. |
+| 9 | Sophie | **Planning**. | Tous les créneaux des salles, ceux de la Communication compris. |
+| 10 | Nadia | Connectez-vous : tableau de bord, puis une demande d'un particulier. | Sa file contient les dossiers de la Communication ; elle approuve. |
 | 11 | Martine | Portail : nouvelle demande de salle. | — |
-| 12 | Sophie, puis Communication | Regardez la cloche de chacun. | Seul le compte du Service des fêtes est prévenu de la nouvelle demande. |
-| 13 | Administrateur | Remettez Sophie dans le Service des fêtes. Puis, sur ce service : **Suppléé par** Communication, du jour à dans une semaine, et retirez-en le compte Communication. | Le compte Communication continue d'agir pour le Service des fêtes, par suppléance ; passé la date, il ne le pourra plus. |
+| 12 | Sophie, puis Nadia | Regardez la cloche de chacune. | Seuls les comptes de la Communication sont prévenus de la nouvelle demande. |
+| 13 | Administrateur | Sur le service **Vie associative** : **Suppléé par** Communication, du jour à dans une semaine. Vérifiez avec Nadia, puis remettez Sophie dans la Communication. | Pendant la période, Nadia et Camille agissent aussi pour la Vie associative : ses demandes entrent dans leur file et elles les décident. Passé la date, elles ne le pourront plus. |
 | 14 | Administrateur | Créez un compte **Financier** sans service (scénario 10), enregistrez un paiement avec lui. | Accepté : un agent sans service encaisse pour tous, mais ne décide sur aucun dossier confié à un service. |
 
 **Variante — la Vie associative voit aussi les gymnases**
@@ -784,15 +790,15 @@ d'Hélène pour voir ce que chaque service peut faire, et ce que l'usager en per
 
 | # | Qui | Action | Constat |
 | --- | --- | --- | --- |
-| 1 | Nadia | Tableau de bord, puis **Réservations** › **À traiter**. | Sa file ne contient que les demandes de particuliers et d'entreprises (Service des fêtes) ; le filtre des services affiche **Mes services**. |
+| 1 | Nadia | Tableau de bord, puis **Réservations** › **À traiter**. | Sa file ne contient que les demandes de particuliers et d'entreprises (Communication) ; le filtre des services affiche **Mes services**. |
 | 2 | Nadia | Ouvrez R260008 (association), via **Tous les services**. | Elle le lit ; la décision revient à la Vie associative. |
-| 3 | Nadia | Ouvrez une demande d'un particulier, **Approuver**. | Acceptée. Dans la console, le courriel à l'usager est signé « Service des fêtes, Ville de Châtillon », avec le courriel du service. |
-| 4 | Usager du dossier | Portail : le dossier, puis **Lire la convention (PDF)**. | « Votre interlocuteur : Service des fêtes » sur le dossier ; « Dossier suivi par : Service des fêtes » sur la convention. |
-| 4b | Sophie | Ouvrez R260008 (Vie associative) › **Régénérer la convention**, puis l'**Aperçu PDF**. Comparez avec la convention de l'étape 4. | La convention de la Vie associative est « représentée par Claire Vasseur, Directrice de la communication », qui figure aussi dans le bloc « Pour la collectivité » : c'est le signataire saisi sur ce service (Administration › Processus et circuits › Services). Celle du Service des fêtes, qui n'en a pas, porte le signataire de la collectivité. |
+| 3 | Nadia | Ouvrez une demande d'un particulier, **Approuver**. | Acceptée. Dans la console, le courriel à l'usager est signé « Communication, Ville de Châtillon », avec le courriel du service. |
+| 4 | Usager du dossier | Portail : le dossier, puis **Lire la convention (PDF)**. | « Votre interlocuteur : Communication » sur le dossier ; « Dossier suivi par : Communication » sur la convention. |
+| 4b | Sophie, puis Karim | Sophie : ouvrez R260008 (Vie associative) › **Régénérer la convention**, puis l'**Aperçu PDF**. Karim : faites de même sur un dossier d'un gymnase. | La convention de la Vie associative est « représentée par Claire Vasseur, Directrice de la communication », qui figure aussi dans le bloc « Pour la collectivité » : c'est le signataire saisi sur ce service et sur la Communication (Administration › Processus et circuits › Services). Celle du Service des sports, qui n'en a pas, porte le signataire de la collectivité. |
 | 4a | Nadia | **Planning** › **Présences**, puis bloquez la **Salle de la Folie Desmares** du mercredi 9 décembre 17 h au jeudi 10 décembre 23 h. | Les créneaux de la Vie associative n'apparaissent pas dans ses présences. L'aperçu de fermeture marque R260003 « Vie associative · décide de l'annulation » ; après **Fermer l'espace**, seul le créneau sans service est annulé et Sophie reçoit « Fermeture exceptionnelle · R260003 ». |
 | 5 | Camille | **Réservations**. | Aucun dossier ne lui est confié : la Communication n'a pas de dossiers en propre. Avec **Tous les services**, elle consulte ceux des salles et peut écrire dans leur fil. |
 | 5b | Sophie, puis Hélène | Sophie : sur R260015 (1 141 €), section Factures › **Facturer l'acompte**. Hélène : **Mes étapes** › **Visa accordé**. Sophie : **Facturer l'acompte** de nouveau. | Émission **retenue**, le « Visa de la régie avant de facturer » est demandé d'office ; après l'accord, la facture part. Sur R260016 (735 €), la facture part sans visa. |
-| 5a | Hélène | **Paiements** › onglet **Toutes** › filtre **Service des fêtes** ; ouvrez une facture, puis son PDF. | Seules les factures des dossiers de ce service ; chaque ligne nomme le service sous le dossier ; le PDF porte « Dossier suivi par : Service des fêtes ». |
+| 5a | Hélène | **Paiements** › onglet **Toutes** › filtre **Communication** ; ouvrez une facture, puis son PDF. | Seules les factures des dossiers de ce service ; chaque ligne nomme le service sous le dossier ; le PDF porte « Dossier suivi par : Communication ». |
 | 6 | Hélène | **Paiements** : enregistrez un règlement. Puis ouvrez le dossier correspondant. | Elle encaisse pour tous les services (elle n'en a aucun) ; sur le dossier, aucun bouton de décision. |
 | 6a | Sophie | **Planning** › bouton des filtres › **Service du dossier** : cochez **Vie associative**. | Seuls restent les créneaux des dossiers de ce service ; le résumé « Service : Vie associative » s'affiche sous la barre, et le PDF de la semaine le reprend. |
 | 6b | Sophie | **Subventions** › onglet **Toutes** › filtre **Service des sports**, puis **Sans service**. | Les dossiers des associations sportives ; puis le seul brouillon, qui n'a pas encore de service. |
@@ -919,7 +925,7 @@ un compte créé par la collectivité accepte les conditions avant d'entrer.
 
 | Écart | Où on le rencontre | Constaté ? | Ce que la Ville attend |
 | --- | --- | --- | --- |
-| E1 — Vie associative et Service des fêtes non séparés | Scénarios 1, 4, 10 | | |
+| E1 — Vie associative et location des salles (Communication, ex-Service des fêtes) non séparées | Scénarios 1, 4, 10 | | |
 | E2 — Communication : pas de relecture, pas de suppléance datée | Scénario 10 | | |
 | E3 — Élus absents des circuits de réservation | Scénarios 5, 7, 9 | | |
 | E4 — Élu de délégation, notification de l'avis attendu | Scénario 8 | | |

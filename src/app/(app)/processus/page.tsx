@@ -205,7 +205,7 @@ export default async function ProcessusPage({
               <VideBloc
                 icone="building-2"
                 titre="Aucun service"
-                texte="Créez les services de la collectivité (Service des sports, Vie associative, Service des fêtes…) : les circuits leur confient les demandes et leurs étapes."
+                texte="Créez les services de la collectivité (Service des sports, Vie associative, Communication…) : les circuits leur confient les demandes et leurs étapes."
               />
             )}
           </div>

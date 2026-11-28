@@ -101,7 +101,7 @@ testée (`perimetreDeConsultation`, `src/lib/secteurs.ts`).
 ### Organisation des services de la Ville
 
 Les acteurs ci-dessus sont des **rôles** dans l'application. Dans l'organisation de la Ville, ils
-se répartissent entre quatre services, des élus et trois populations d'usagers. Ce paragraphe
+se répartissent entre trois services, des élus et trois populations d'usagers. Ce paragraphe
 décrit l'organisation telle qu'elle est ; ce que l'application en couvre aujourd'hui, et ce
 qu'elle n'en couvre pas encore, figure au § 8.
 
@@ -109,17 +109,23 @@ qu'elle n'en couvre pas encore, figure au § 8.
 | --- | --- | --- | --- |
 | **Service des sports** | Les **équipements sportifs** (gymnases, stade, complexes, salle sportive, terrain multisport) : créneaux de la saison et créneaux ponctuels. Il planifie le **personnel de service** (gardiens, agents d'accueil, vacataires) en regard de ces créneaux. | Les **associations sportives** | Mise à disposition, avec personnel de service sur place |
 | **Vie associative** | Les **salles municipales** réservées par les associations (réunions, assemblées générales, activités, manifestations) ; le suivi des associations (fiche, pièces) ; les demandes de **subvention**. | Les **associations** | **Gratuité** |
-| **Service des fêtes** | Les **salles municipales** louées pour des événements privés ou professionnels : convention, **facturation** (acompte, solde, caution), états des lieux. | Les **particuliers** et les **entreprises** | **Payant** |
-| **Communication** | Le **suivi** des dossiers du Service des fêtes et de la Vie associative, leur **relecture**, et le **remplacement** de ces deux services (suppléance : le service traite à leur place). | Les deux services ci-dessus | — |
+| **Communication** | Les **salles municipales** louées pour des événements privés ou professionnels : convention, **facturation** (acompte, solde, caution), états des lieux. C'était la mission du **Service des fêtes**, que la Communication a absorbé. Elle **suit** et **relit** aussi les dossiers de la Vie associative, et la **remplace** au besoin (suppléance : le service traite à sa place). | Les **particuliers** et les **entreprises** ; la Vie associative | **Payant** |
 
-- Les **mêmes salles** servent à la Vie associative et au Service des fêtes : ce qui distingue
+- Il n'y a plus de Service des fêtes : la **Communication** en a repris la mission. Son
+  directeur signe les conventions de la Communication et celles de la **Vie associative** ; les
+  deux services travaillent ensemble.
+- Les **mêmes salles** servent à la Vie associative et à la Communication : ce qui distingue
   les deux services n'est pas le lieu mais le **type de demandeur** (association d'un côté,
   particulier ou entreprise de l'autre) et le caractère gratuit ou payant de la mise à
   disposition.
-- Le Service des sports travaille sur des lieux qui lui sont propres ; c'est le seul des quatre
-  dont le périmètre se confond avec un ensemble d'espaces.
-- La Communication n'a ni espaces ni usagers en propre : son périmètre est celui des deux
-  services qu'elle suit.
+- Le Service des sports travaille sur des lieux qui lui sont propres ; c'est le seul des trois
+  dont le périmètre se confond avec un ensemble d'espaces. La Vie associative a néanmoins besoin
+  de **voir** l'occupation de tous les équipements, sportifs compris (« Voir n'est pas décider »,
+  plus haut).
+- Le signataire des conventions du Service des sports n'est pas encore connu : tant qu'il ne
+  l'est pas, c'est celui de la collectivité qui signe.
+- Dans un premier temps, le **portail est fermé** pour tous les secteurs : les services
+  saisissent les demandes à la place des usagers (« Fonctionner sans portail », § 4).
 
 **Les élus** interviennent dans les circuits, sans traiter eux-mêmes les dossiers : ils donnent
 leur avis sur les demandes de subvention avant le vote, et sont associés aux décisions qui
@@ -135,8 +141,8 @@ les associations sportives formant un cas à part ; chacune a son service de ré
 | --- | --- | --- |
 | **Associations sportives** | Créneaux hebdomadaires de la saison et créneaux ponctuels dans les équipements sportifs ; subvention | Service des sports |
 | **Associations** (sportives ou non) | Salles municipales, gratuitement ; subvention | Vie associative |
-| **Entreprises** | Salles municipales pour séminaires, formations, événements ; factures | Service des fêtes |
-| **Particuliers** | Salles municipales pour fêtes familiales ; factures, caution | Service des fêtes |
+| **Entreprises** | Salles municipales pour séminaires, formations, événements ; factures | Communication |
+| **Particuliers** | Salles municipales pour fêtes familiales ; factures, caution | Communication |
 
 Une même association peut donc relever de deux services : le Service des sports pour ses
 entraînements au gymnase, la Vie associative pour son assemblée générale en salle.
@@ -701,8 +707,8 @@ autres réglages). Fermé, l'application reste un outil de back-office complet :
 - **Hébergement et conformité** : auto-hébergement Docker (voir `docs/DEPLOY.md`), données en
   France sous la responsabilité de la collectivité ; registre RGPD, mentions légales et
   accessibilité (RGAA) à compléter par la collectivité ; sauvegardes quotidiennes incluses.
-- **Organisation par service** (Service des sports, Vie associative, Service des fêtes,
-  Communication, élus de délégation) : couverte en partie seulement, voir § 8.
+- **Organisation par service** (Service des sports, Vie associative, Communication, élus de
+  délégation) : voir § 2, § 8 et § 9.
 
 ---
 
@@ -722,13 +728,19 @@ rencontre.
 | Créneaux de la saison des associations sportives | **Campagnes de créneaux** : vœux déposés sur le portail, arbitrage par priorité, attribution en lot, un dossier récurrent par créneau attribué. |
 | Personnel de service du Service des sports | Module **Personnel de service** : vacations par site, couverture des créneaux, affectation automatique ou proposée, absences, contrats, planning PDF et courriel hebdomadaire. Le module vaut aussi pour les salles. |
 | Vie associative : gratuité pour les associations | Profil tarifaire **Association de la commune** au tarif nul sur chaque espace : le devis affiche « Gratuit » et aucune facture n'est émise. La **gratuité accordée** à la main, avec son fondement, couvre les cas hors grille. Les mises à disposition gratuites sont chiffrées dans la **valorisation** annuelle. |
-| Service des fêtes : location payante | Grilles tarifaires **Particulier** (commune / extérieur) et **Entreprise**, devis, convention signée par code, factures d'acompte, de solde et de caution, états des lieux, frais d'annulation. |
+| Communication (ancien Service des fêtes) : location payante | Grilles tarifaires **Particulier** (commune / extérieur) et **Entreprise**, devis, convention signée par code, factures d'acompte, de solde et de caution, états des lieux, frais d'annulation. |
 | Subventions des associations | Module **Subventions** : campagne, dossier en ligne, instruction, avis des élus, vote, versement. |
 | Élus : avis sur les subventions | Rôle **Élu** : écriture sur les subventions (avis, montant proposé, commentaire), lecture sur tout le reste, tableau de bord. |
 | Distinguer les associations sportives | Case **Association sportive** de la fiche de l'organisation (variante du dossier de subvention et du plan de budget). |
 | Suivre sans traiter, ou traiter à la place d'un service | Un compte au rôle **Lecteur** (suivi) ou **Agent** / **Gestionnaire** (remplacement) du secteur Salles. |
 
 ### Écarts
+
+> **Réorganisation** — Ce tableau a été dressé quand la Ville comptait un Service des fêtes.
+> Celui-ci a depuis été absorbé par la **Communication** (§ 2) : là où les écarts ci-dessous et
+> les lots du § 9 nomment le Service des fêtes, il faut lire la Communication. Le découpage
+> lui-même ne change pas : les salles restent partagées entre deux services, que le type de
+> demandeur distingue.
 
 | N° | Besoin de l'organisation | Aujourd'hui | Évolution à étudier |
 | --- | --- | --- | --- |
@@ -837,7 +849,7 @@ Ces exemples ne sont pas des décisions : ils servent à vérifier que le module
 la Ville pourra vouloir.
 
 - Une demande de salle déposée par une **association** va à la Vie associative ; par un
-  **particulier** ou une **entreprise**, au Service des fêtes ; une demande d'équipement sportif,
+  **particulier** ou une **entreprise**, à la Communication ; une demande d'équipement sportif,
   au Service des sports.
 - Avant l'envoi de l'acceptation, une étape de **relecture** par la Communication si l'événement
   est ouvert au public.
@@ -845,7 +857,7 @@ la Ville pourra vouloir.
   passe outre le délai de réservation.
 - L'**avis des élus** sur une subvention demandé aux seuls élus de la délégation du secteur
   d'instruction, avec relance au bout de dix jours.
-- Du 1er au 15 août, la Communication **supplée** le Service des fêtes : ses agents reçoivent
+- Du 1er au 15 août, la Communication **supplée** la Vie associative : ses agents reçoivent
   les étapes et les notifications du service remplacé.
 - Une demande de subvention d'une **association sportive** est instruite par le Service des
   sports, les autres par la Vie associative.
@@ -1003,8 +1015,9 @@ délégation, notification de l'avis attendu), pour les réservations comme pour
 - **échéances** : une tâche quotidienne relance une fois les personnes attendues sur une étape
   en retard, prévient le responsable du service et l'agent assigné, et l'inscrit à
   l'historique ; le tableau de bord signale à chacun ses étapes en retard ;
-- **comptes de démonstration par service** : un agent du Service des fêtes, une chargée de
-  communication (responsable du service Communication), une régisseuse sans service.
+- **comptes de démonstration par service** : deux agents de la Communication (dont sa
+  responsable ; l'une tenait la location des salles au Service des fêtes, absorbé depuis), une
+  régisseuse sans service.
 
 Écarts traités : **E7** (services nommés dans les écrans et les documents) et **E10** (comptes
 de démonstration par service). Reste **E8**, qui est une règle tarifaire à confirmer par la
