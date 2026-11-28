@@ -131,5 +131,9 @@ export async function navCounts(user: CurrentUser): Promise<Record<string, numbe
     const { nbPropositions } = await import("@/server/affectation");
     counts.propositions_personnel = await nbPropositions(user).catch(() => 0);
   }
+  // Les alertes rouges du tableau de bord : le menu les signale par une icône, sans chiffre
+  // (le bloc Alertes compte, lui, toutes les alertes).
+  const { nbAlertesUrgentes } = await import("@/server/alertes");
+  counts.alertes_urgentes = await nbAlertesUrgentes(user, user.settings).catch(() => 0);
   return counts;
 }

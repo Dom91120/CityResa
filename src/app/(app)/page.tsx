@@ -438,7 +438,9 @@ export default async function DashboardPage({
         </div>
 
         <div className="dash-col">
-          <div className="data-card">
+          {/* En écran étroit (une seule colonne), ce bloc remonte sous les chiffres du mois :
+              voir .dash-alertes dans cityresa.css. */}
+          <div className="data-card dash-alertes">
             <div className="card-header-custom">
               <h6>
                 <Icone nom="triangle-alert" taille={16} classes="text-ambre" /> Alertes

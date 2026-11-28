@@ -63,6 +63,103 @@ export function organisationsParEtat(
   return { expirees, bientot };
 }
 
+const pluriel = (n: number, s: string, p: string) => (n > 1 ? p : s);
+
+/** Rappel permanent, pour l'administrateur : il reste tant qu'aucun texte n'est saisi. */
+function alerteConditions(user: CurrentUser, cfg: AppSettings): Alerte[] {
+  if (!user.isAdmin || cfg.PORTAIL_CONDITIONS.trim()) return [];
+  const ouvert = allFlagsIn(cfg).portail;
+  return [
+    {
+      cle: "conditions_manquantes",
+      niveau: ouvert ? "danger" : "warning",
+      icone: "file-text",
+      titre: "Aucune condition d'utilisation n'est saisie",
+      detail: ouvert
+        ? "Le portail est ouvert sans conditions : les usagers n'ont rien à lire ni à accepter. À saisir dans Paramètres › Portail."
+        : "À saisir dans Paramètres › Portail avant d'ouvrir le portail : les usagers les accepteront à leur première connexion.",
+      nb: 1,
+      href: "/parametres#portail",
+    },
+  ];
+}
+
+/** Pièces datées des usagers : expirées (urgent) et bientôt expirées. */
+async function alertesPieces(
+  user: CurrentUser,
+  cfg: AppSettings,
+  today: string,
+): Promise<Alerte[]> {
+  if (!allFlagsIn(cfg).documents || !user.canView("usagers")) return [];
+  const seuil = cfg.ALERTE_PIECES_JOURS ?? 30;
+  const { expirees, bientot } = organisationsParEtat(await piecesDatees(), today, seuil);
+  const out: Alerte[] = [];
+  if (expirees.size)
+    out.push({
+      cle: "pieces_expirees",
+      niveau: "danger",
+      icone: "triangle-alert",
+      titre: `${expirees.size} ${pluriel(expirees.size, "usager a une pièce expirée", "usagers ont une pièce expirée")}`,
+      detail: "Attestation d'assurance ou autre pièce datée à renouveler.",
+      nb: expirees.size,
+      href: "/usagers?type=pieces",
+    });
+  if (bientot.size)
+    out.push({
+      cle: "pieces_bientot",
+      niveau: "warning",
+      icone: "clock",
+      titre: `${bientot.size} ${pluriel(bientot.size, "pièce expire", "pièces expirent")} dans moins de ${seuil} jours`,
+      detail: "Les usagers concernés sont prévenus par courriel.",
+      nb: bientot.size,
+      href: "/usagers?type=pieces",
+    });
+  return out;
+}
+
+/** Factures dont l'échéance est dépassée. */
+async function alerteFactures(
+  user: CurrentUser,
+  cfg: AppSettings,
+  today: string,
+): Promise<Alerte[]> {
+  if (!allFlagsIn(cfg).paiements || !user.canView("paiements")) return [];
+  const n = await prisma.facture.count({
+    where: { status: "a_payer", dueAt: { lt: parseYmdUtc(today) } },
+  });
+  if (!n) return [];
+  return [
+    {
+      cle: "factures_echues",
+      niveau: "danger",
+      icone: "receipt",
+      titre: `${n} facture${n > 1 ? "s" : ""} échue${n > 1 ? "s" : ""} non réglée${n > 1 ? "s" : ""}`,
+      detail: "Échéance dépassée : relance ou encaissement à saisir.",
+      nb: n,
+      href: "/paiements?statut=retard",
+    },
+  ];
+}
+
+/**
+ * Le nombre d'alertes URGENTES (rouges) de l'agent : celles que le menu signale par une icône
+ * sur « Tableau de bord ». Ne calcule que les alertes qui peuvent être rouges, pour rester léger
+ * (appelé à chaque page) ; ce sont les mêmes fonctions que le bloc Alertes, donc les mêmes règles.
+ */
+export async function nbAlertesUrgentes(
+  user: CurrentUser,
+  cfg: AppSettings,
+  now = new Date(),
+): Promise<number> {
+  const today = todayParisISO(now);
+  const toutes = [
+    ...alerteConditions(user, cfg),
+    ...(await alertesPieces(user, cfg, today)),
+    ...(await alerteFactures(user, cfg, today)),
+  ];
+  return toutes.filter((a) => a.niveau === "danger").length;
+}
+
 export async function alertes(
   user: CurrentUser,
   cfg: AppSettings,
@@ -71,47 +168,10 @@ export async function alertes(
   const features = allFlagsIn(cfg);
   const today = todayParisISO(now);
   const minuit = parisMidnight(today);
-  const seuil = cfg.ALERTE_PIECES_JOURS ?? 30;
   const out: Alerte[] = [];
-  const pluriel = (n: number, s: string, p: string) => (n > 1 ? p : s);
 
-  // Rappel permanent, pour l'administrateur : il reste tant qu'aucun texte n'est saisi.
-  if (user.isAdmin && !cfg.PORTAIL_CONDITIONS.trim())
-    out.push({
-      cle: "conditions_manquantes",
-      niveau: features.portail ? "danger" : "warning",
-      icone: "file-text",
-      titre: "Aucune condition d'utilisation n'est saisie",
-      detail: features.portail
-        ? "Le portail est ouvert sans conditions : les usagers n'ont rien à lire ni à accepter. À saisir dans Paramètres › Portail."
-        : "À saisir dans Paramètres › Portail avant d'ouvrir le portail : les usagers les accepteront à leur première connexion.",
-      nb: 1,
-      href: "/parametres#portail",
-    });
-
-  if (features.documents && user.canView("usagers")) {
-    const { expirees, bientot } = organisationsParEtat(await piecesDatees(), today, seuil);
-    if (expirees.size)
-      out.push({
-        cle: "pieces_expirees",
-        niveau: "danger",
-        icone: "triangle-alert",
-        titre: `${expirees.size} ${pluriel(expirees.size, "usager a une pièce expirée", "usagers ont une pièce expirée")}`,
-        detail: "Attestation d'assurance ou autre pièce datée à renouveler.",
-        nb: expirees.size,
-        href: "/usagers?type=pieces",
-      });
-    if (bientot.size)
-      out.push({
-        cle: "pieces_bientot",
-        niveau: "warning",
-        icone: "clock",
-        titre: `${bientot.size} ${pluriel(bientot.size, "pièce expire", "pièces expirent")} dans moins de ${seuil} jours`,
-        detail: "Les usagers concernés sont prévenus par courriel.",
-        nb: bientot.size,
-        href: "/usagers?type=pieces",
-      });
-  }
+  out.push(...alerteConditions(user, cfg));
+  out.push(...(await alertesPieces(user, cfg, today)));
 
   if (features.subventions && user.canView("subventions")) {
     const n = await organisationsSansConvention(cfg).catch(() => 0);
@@ -168,21 +228,7 @@ export async function alertes(
       });
   }
 
-  if (features.paiements && user.canView("paiements")) {
-    const n = await prisma.facture.count({
-      where: { status: "a_payer", dueAt: { lt: parseYmdUtc(today) } },
-    });
-    if (n)
-      out.push({
-        cle: "factures_echues",
-        niveau: "danger",
-        icone: "receipt",
-        titre: `${n} facture${n > 1 ? "s" : ""} échue${n > 1 ? "s" : ""} non réglée${n > 1 ? "s" : ""}`,
-        detail: "Échéance dépassée : relance ou encaissement à saisir.",
-        nb: n,
-        href: "/paiements?statut=retard",
-      });
-  }
+  out.push(...(await alerteFactures(user, cfg, today)));
 
   if (features.signature && user.canView("reservations")) {
     const limite = addParisDays(minuit, -(cfg.RELANCE_SIGNATURE_JOURS || 3));

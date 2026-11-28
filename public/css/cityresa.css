@@ -180,6 +180,10 @@ details.sidebar-section--repliable[open] > summary .lucide { transform: rotate(9
 .sidebar-link.active { background: var(--primary-soft); color: var(--primary); }
 .sidebar-link.active .lucide { color: var(--ico, var(--primary)); }
 .sidebar-link .nb { margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--radius-pill); background: var(--primary); color: #fff; font-size: 0.7rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; }
+/* L'icône d'alerte de « Tableau de bord » : présente dès qu'une alerte rouge attend, sans chiffre. */
+.sidebar-link .alerte-menu { margin-left: auto; display: inline-flex; align-items: center; }
+.sidebar-link .alerte-menu .lucide,
+.sidebar-link.active .alerte-menu .lucide { width: 16px; height: 16px; color: var(--bs-danger, #dc2626); }
 .sidebar-link .nb.nb-muted { background: var(--slate-dim); color: var(--slate-text); }
 .sidebar-link .tag { margin-left: auto; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em; background: #fef08a; color: #713f12; border-radius: 6px; padding: 2px 6px; }
 .sidebar-sub { padding-left: 14px; border-left: 2px solid var(--line); margin: 2px 0 6px 18px; }
@@ -689,7 +693,14 @@ a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); c
 .delta-down { background: var(--red-dim); color: var(--red-text); }
 .delta-flat { background: var(--slate-dim); color: var(--slate-text); }
 .dash-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 1fr); gap: 16px; }
-@media (max-width: 1199px) { .dash-grid { grid-template-columns: 1fr; } }
+/* Une seule colonne quand la largeur manque : les deux colonnes se fondent dans la grille pour
+   que les alertes, en tête de la colonne de droite sur grand écran, remontent sous les chiffres
+   du mois au lieu de passer après les graphiques. Le reste garde son ordre. */
+@media (max-width: 1199px) {
+  .dash-grid { grid-template-columns: 1fr; }
+  .dash-grid > .dash-col { display: contents; }
+  .dash-grid .dash-alertes { order: -1; }
+}
 .dash-col { display: flex; flex-direction: column; gap: 16px; }
 /* Listes de la colonne de droite (alertes, notifications, prochains jours, en un coup d'œil) : texte resserré. */
 .dash-col:last-child .liste-simple,

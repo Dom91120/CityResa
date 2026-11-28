@@ -218,6 +218,10 @@ export function Shell({
             <div className="sidebar-section-title">{GENERAL.label}</div>
             {GENERAL.entries.filter(visible).map((e) => {
               const n = e.count ? counts[e.count] : 0;
+              // Tableau de bord : une icône, sans chiffre, dès qu'une alerte rouge attend.
+              const urgentes = e.href === "/" ? (counts.alertes_urgentes ?? 0) : 0;
+              const texteUrgentes =
+                urgentes > 1 ? `${urgentes} alertes urgentes` : "1 alerte urgente";
               return (
                 <a
                   key={e.href}
@@ -227,6 +231,12 @@ export function Shell({
                 >
                   <Icone nom={e.icon} />
                   <span>{e.label}</span>
+                  {urgentes ? (
+                    <span className="alerte-menu" title={texteUrgentes}>
+                      <Icone nom="triangle-alert" taille={16} />
+                      <span className="visually-hidden">{texteUrgentes}</span>
+                    </span>
+                  ) : null}
                   {n ? (
                     <span
                       className={`nb${e.count === "messages" || e.count === "a_traiter" ? "" : " nb-muted"}`}
