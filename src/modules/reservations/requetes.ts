@@ -21,9 +21,14 @@ import { normaliser, type Params, param } from "@/server/paging";
 
 // ── Périmètre ──
 
-/** Un agent rattaché à des espaces ne voit que ceux-là ; vide = tous. */
-export function perimetre(user: CurrentUser): Prisma.ReservationWhereInput {
-  return user.espacesGeres.length ? { espaceId: { in: user.espacesGeres } } : {};
+/**
+ * Un agent rattaché à des espaces ne voit que ceux-là ; vide = tous. `etendu` prend son
+ * périmètre de CONSULTATION (un service qui « voit tous les espaces ») au lieu de celui de
+ * gestion : pour la vue d'ensemble, pas pour la file de travail.
+ */
+export function perimetre(user: CurrentUser, etendu = false): Prisma.ReservationWhereInput {
+  const espaces = etendu ? user.espacesVus : user.espacesGeres;
+  return espaces.length ? { espaceId: { in: espaces } } : {};
 }
 
 export function voitEspace(user: CurrentUser, espaceId: number): boolean {
@@ -139,7 +144,9 @@ export function servicesRetenus(f: Filtres, user: CurrentUser): string[] | null 
 /** La clause WHERE des filtres (hors statut), périmètre compris. */
 export function whereListe(f: Filtres, user: CurrentUser): Prisma.ReservationWhereInput {
   const and: Prisma.ReservationWhereInput[] = [];
-  const per = perimetre(user);
+  // « Tous les services » est la vue d'ensemble : elle s'étend au périmètre de consultation.
+  // La file de travail (filtre par défaut) reste sur les espaces que l'agent gère.
+  const per = perimetre(user, f.services.includes("tous"));
   if (Object.keys(per).length) and.push(per);
   if (f.espaces.length) and.push({ espaceId: { in: f.espaces } });
   if (f.sites.length) and.push({ espace: { siteId: { in: f.sites } } });

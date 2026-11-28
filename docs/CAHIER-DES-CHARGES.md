@@ -79,6 +79,16 @@ Le périmètre d'un agent s'applique aussi aux écrans **Espaces** et **Sites** 
 modifie et ne supprime que les espaces de son périmètre, ne crée que des espaces de son
 secteur, et ne voit que les sites qui portent au moins un de ses espaces (ou aucun espace).
 
+**Voir n'est pas décider.** Un service peut « consulter tous les espaces, tous secteurs
+confondus » (réglage du service, module Processus et circuits) : ses agents ont alors un
+périmètre de **consultation** plus large que leur périmètre de **gestion**. Ils lisent le
+planning, les fiches d'espace et de site et, par le filtre « Tous les services », les dossiers de
+tous les espaces ; ils ne réservent, ne modifient et ne décident toujours que sur les espaces
+dont ils ont la charge et sur les dossiers de leurs services. La file de travail (compteurs,
+alertes, liste par défaut, messages, présences) reste celle du périmètre de gestion. C'est ce
+qui permet à la Vie associative de suivre l'occupation des équipements sportifs. Règle pure et
+testée (`perimetreDeConsultation`, `src/lib/secteurs.ts`).
+
 ### Organisation des services de la Ville
 
 Les acteurs ci-dessus sont des **rôles** dans l'application. Dans l'organisation de la Ville, ils

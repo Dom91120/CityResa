@@ -47,7 +47,7 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
   const page = await contexteModule("espaces");
   const id = idDeRoute((await params).id);
   const e = await chargerEspace(id);
-  if (!e || !page.user.voitEspace(id)) notFound();
+  if (!e || !page.user.consulteEspace(id)) notFound();
   const enVigueur = new Set(grilleEnVigueur(e.tarifs, new Date()).map((t) => t.id));
   const attente = await entreesEspace(id);
   const [photos, refs, prochains, blocages, occupation] = await Promise.all([
@@ -57,8 +57,9 @@ export default async function EspacePage({ params }: { params: Promise<{ id: str
     indisponibilitesAVenir(id),
     occupation30Jours(id),
   ]);
-  const peutEditer = page.user.canEdit("espaces");
-  const peutSupprimer = page.user.canDelete("espaces");
+  // Hors du périmètre de gestion (service qui « voit tous les espaces »), la fiche se lit.
+  const peutEditer = page.user.canEdit("espaces") && page.user.voitEspace(id);
+  const peutSupprimer = page.user.canDelete("espaces") && page.user.voitEspace(id);
   const agents = peutEditer
     ? await agentsDisponibles(
         e.gestionnaires.map((g) => g.userId),

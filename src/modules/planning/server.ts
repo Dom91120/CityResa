@@ -221,7 +221,12 @@ export const INCLUDE_ESPACE_PLANNING = {
   horairesSaisons: { include: { saison: { select: { startDate: true, endDate: true } } } },
 } satisfies Prisma.EspaceInclude;
 
-export type EspacePlanning = Prisma.EspaceGetPayload<{ include: typeof INCLUDE_ESPACE_PLANNING }>;
+export type EspacePlanning = Prisma.EspaceGetPayload<{
+  include: typeof INCLUDE_ESPACE_PLANNING;
+}> & {
+  /** L'agent consulte cet espace sans le gérer : ni réservation, ni déplacement, ni blocage. */
+  lectureSeule?: boolean;
+};
 
 export type EvtResa = {
   id: number;
@@ -246,29 +251,39 @@ export type Blocage = {
   motif: string | null;
 };
 
-/** Les espaces visibles par l'agent (périmètre, site, sélection). */
+/**
+ * Les espaces visibles par l'agent (périmètre, site, sélection). Le planning se LIT sur le
+ * périmètre de consultation : un espace que l'agent consulte sans le gérer porte
+ * `lectureSeule`, et les vues n'y proposent ni réservation, ni déplacement, ni blocage.
+ */
 export async function espacesPlanning(
   user: CurrentUser,
   f: FiltresPlanning,
 ): Promise<EspacePlanning[]> {
   const and: Prisma.EspaceWhereInput[] = [{ isActive: true }];
-  if (user.espacesGeres.length) and.push({ id: { in: user.espacesGeres } });
+  if (user.espacesVus.length) and.push({ id: { in: user.espacesVus } });
   if (f.sites.length) and.push({ siteId: { in: f.sites } });
   if (f.espaces.length) and.push({ id: { in: f.espaces } });
   if (f.secteur) and.push({ secteur: f.secteur });
-  return prisma.espace.findMany({
+  const espaces = await prisma.espace.findMany({
     where: { AND: and },
     include: INCLUDE_ESPACE_PLANNING,
     orderBy: [{ site: { position: "asc" } }, { position: "asc" }, { name: "asc" }],
   });
+  return espaces.map((e) => ({ ...e, lectureSeule: !user.voitEspace(e.id) }));
 }
 
-/** Tous les espaces du périmètre (pour le filtre), sans tenir compte de la sélection. */
-export async function espacesDuPerimetre(user: CurrentUser) {
+/**
+ * Tous les espaces du périmètre (pour le filtre), sans tenir compte de la sélection.
+ * `consultation` : le périmètre de lecture (planning, liste des dossiers) plutôt que celui de
+ * gestion (présences, saisie).
+ */
+export async function espacesDuPerimetre(user: CurrentUser, consultation = false) {
+  const perimetre = consultation ? user.espacesVus : user.espacesGeres;
   return prisma.espace.findMany({
     where: {
       isActive: true,
-      ...(user.espacesGeres.length ? { id: { in: user.espacesGeres } } : {}),
+      ...(perimetre.length ? { id: { in: perimetre } } : {}),
     },
     include: { site: true },
     orderBy: [{ site: { position: "asc" } }, { position: "asc" }, { name: "asc" }],

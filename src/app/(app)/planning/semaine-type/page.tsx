@@ -31,7 +31,7 @@ export default async function SemaineTypePage({
   const filtres = lireFiltresPlanning(params);
   const [espaces, tous, toutesSaisons, active] = await Promise.all([
     espacesPlanning(page.user, filtres),
-    espacesDuPerimetre(page.user),
+    espacesDuPerimetre(page.user, true),
     saisons(),
     saisonActive(),
   ]);

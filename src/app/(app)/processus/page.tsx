@@ -143,6 +143,9 @@ export default async function ProcessusPage({
                             <small>
                               {[s.email, s.phone, s.description].filter(Boolean).join(" · ") || "—"}
                             </small>
+                            {s.voitTousEspaces ? (
+                              <small>Consulte tous les espaces, tous secteurs confondus</small>
+                            ) : null}
                             {s.signataire || s.signataireQualite ? (
                               <small>
                                 Signataire :{" "}
@@ -325,6 +328,15 @@ export default async function ProcessusPage({
                     id={`s-au-${s?.id ?? 0}`}
                     type="date"
                     valeur={isoDate(s?.suppleanceAu)}
+                  />
+                </div>
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <Interrupteur
+                    label="Consulte tous les espaces, tous secteurs confondus"
+                    name="voit_tous_espaces"
+                    id={`s-voit-${s?.id ?? 0}`}
+                    coche={s?.voitTousEspaces ?? false}
+                    aide="Les agents du service voient le planning, les fiches et les dossiers de tous les espaces, au-delà de leur périmètre. Ils ne réservent et ne décident toujours que sur les espaces dont ils ont la charge."
                   />
                 </div>
                 <Interrupteur

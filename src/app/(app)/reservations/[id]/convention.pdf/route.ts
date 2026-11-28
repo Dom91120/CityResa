@@ -1,4 +1,3 @@
-import { voitEspace } from "@/modules/reservations/requetes";
 import { pdfConvention } from "@/server/convention";
 import { prisma } from "@/server/db";
 import { requireView } from "@/server/guards";
@@ -15,7 +14,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     select: { numero: true, espaceId: true },
   });
   if (!r) return pasTrouve();
-  if (!voitEspace(user, r.espaceId)) return interdit();
+  // Lecture : le périmètre de consultation suffit.
+  if (!user.consulteEspace(r.espaceId)) return interdit();
   const pdf = await pdfConvention(id);
   if (!pdf) return pasTrouve();
   return reponsePdf(pdf, `convention-${r.numero}.pdf`);

@@ -33,7 +33,7 @@ export default async function ReservationsPage({
   const [{ rows, onglet, compteurs }, options, espaces] = await Promise.all([
     chargerListe(f, page.user),
     optionsFiltres(),
-    espacesDuPerimetre(page.user),
+    espacesDuPerimetre(page.user, true),
   ]);
   /** La page sans l'un de ses filtres (et revenue à la première page). */
   const sans = (cle: string) => urlAvec(page.pathname, page.search, { [cle]: null, page: null });
@@ -62,7 +62,9 @@ export default async function ReservationsPage({
           </h1>
           <p className="page-subtitle">
             {page.user.espacesGeres.length
-              ? "Les dossiers des espaces dont vous avez la charge."
+              ? page.user.espacesVus.length
+                ? "Les dossiers des espaces dont vous avez la charge."
+                : "Les dossiers des espaces dont vous avez la charge ; « Tous les services » montre aussi, en lecture, ceux des autres espaces."
               : "Toutes les demandes et réservations d'espaces."}
             {compteurs.a_traiter
               ? ` ${compteurs.a_traiter} demande${compteurs.a_traiter > 1 ? "s" : ""} à traiter.`

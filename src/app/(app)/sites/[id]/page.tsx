@@ -21,16 +21,22 @@ export default async function SitePage({ params }: { params: Promise<{ id: strin
   const complet = await chargerSite(id);
   if (!complet) notFound();
   const idsEspaces = complet.espaces.map((e) => e.id);
-  if (!siteVisible(page.user.espacesGeres, idsEspaces)) notFound();
-  // La fiche ne montre que les espaces du périmètre ; le site ne se supprime que si on les voit tous.
-  const site = { ...complet, espaces: complet.espaces.filter((e) => page.user.voitEspace(e.id)) };
-  const toutVu = site.espaces.length === complet.espaces.length;
+  if (!siteVisible(page.user.espacesVus, idsEspaces)) notFound();
+  // La fiche montre les espaces que l'agent consulte ; le site ne se supprime que s'il les GÈRE
+  // tous (les voir ne suffit pas).
+  const site = {
+    ...complet,
+    espaces: complet.espaces.filter((e) => page.user.consulteEspace(e.id)),
+  };
+  const toutGere = complet.espaces.every((e) => page.user.voitEspace(e.id));
   const [photos, vignettes] = await Promise.all([
     forParent("site", id, { kinds: ["photo"] }),
     premieresPhotos(site.espaces.map((e) => e.id)),
   ]);
-  const peutEditer = page.user.canEdit("espaces");
-  const peutSupprimer = page.user.canDelete("espaces") && toutVu;
+  // Un site seulement consulté (service qui « voit tous les espaces ») ne se modifie pas.
+  const peutEditer =
+    page.user.canEdit("espaces") && siteVisible(page.user.espacesGeres, idsEspaces);
+  const peutSupprimer = page.user.canDelete("espaces") && toutGere;
   const carte = lienCarte(site);
   const adresse = adresseComplete(site);
   const retour = `/sites/${id}`;

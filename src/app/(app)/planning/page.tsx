@@ -66,7 +66,7 @@ export default async function PlanningPage({
   const qsActuelle = qsVue(page.search);
   const [espaces, tous, services] = await Promise.all([
     espacesPlanning(page.user, filtres),
-    espacesDuPerimetre(page.user),
+    espacesDuPerimetre(page.user, true),
     optionsServices(),
   ]);
   const occupations = await occupationsPlanning(

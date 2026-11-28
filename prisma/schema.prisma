@@ -1449,6 +1449,10 @@ model Service {
   /// collectivité (Paramètres › Collectivité) signe.
   signataire        String? @db.VarChar(120)
   signataireQualite String? @map("signataire_qualite") @db.VarChar(160)
+  /// Les agents du service CONSULTENT tous les espaces, tous secteurs confondus (planning,
+  /// fiches, dossiers), au-delà de leur périmètre. Ils ne décident toujours que sur leur
+  /// périmètre et sur les dossiers de leurs services.
+  voitTousEspaces   Boolean @default(false) @map("voit_tous_espaces")
   /// Responsable du service (compte du back-office).
   responsableId   String?   @map("responsable_id")
   responsable     User?     @relation("ServiceResponsable", fields: [responsableId], references: [id], onDelete: SetNull)

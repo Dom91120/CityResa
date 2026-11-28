@@ -2,13 +2,42 @@ import { describe, expect, it } from "vitest";
 import {
   agentsHorsSecteur,
   collegue,
+  dansPerimetre,
   espacesHorsSecteur,
   libelleSecteur,
   lireSecteur,
+  perimetreDeConsultation,
   rattachable,
   secteurDeduit,
   siteVisible,
 } from "@/lib/secteurs";
+
+describe("voir n'est pas décider", () => {
+  const salles = [5, 6, 7];
+
+  it("sans service qui voit tout, on consulte ce que l'on gère", () => {
+    expect(perimetreDeConsultation(salles, false)).toEqual(salles);
+  });
+
+  it("un service qui voit tous les espaces ouvre la consultation à tout", () => {
+    const vus = perimetreDeConsultation(salles, true);
+    expect(vus).toEqual([]);
+    expect(dansPerimetre(vus, 12)).toBe(true);
+    // Le périmètre de gestion, lui, ne bouge pas : le gymnase 12 reste hors de portée.
+    expect(dansPerimetre(salles, 12)).toBe(false);
+    expect(dansPerimetre(salles, 6)).toBe(true);
+  });
+
+  it("un agent sans périmètre voyait déjà tout", () => {
+    expect(perimetreDeConsultation([], false)).toEqual([]);
+    expect(dansPerimetre([], 99)).toBe(true);
+  });
+
+  it("un secteur sans espace (périmètre [0]) ne voit rien, sauf service qui voit tout", () => {
+    expect(dansPerimetre(perimetreDeConsultation([0], false), 3)).toBe(false);
+    expect(dansPerimetre(perimetreDeConsultation([0], true), 3)).toBe(true);
+  });
+});
 
 describe("lecture et libellé", () => {
   it("ne retient qu'un secteur connu, sinon aucun", () => {

@@ -21,7 +21,8 @@ export default async function SitesPage({ searchParams }: { searchParams: Promis
   });
   // Un agent voit les sites qui portent au moins un espace de son périmètre (ou aucun espace),
   // et n'y compte que ses espaces.
-  const perimetre = page.user.espacesGeres;
+  // (Périmètre de consultation : un service qui « voit tous les espaces » voit aussi leurs sites.)
+  const perimetre = page.user.espacesVus;
   let items = tous
     .filter((s) =>
       siteVisible(
@@ -32,7 +33,12 @@ export default async function SitesPage({ searchParams }: { searchParams: Promis
     .map((s) => ({
       ...s,
       adresse: adresseComplete(s),
-      nbEspaces: s.espaces.filter((e) => page.user.voitEspace(e.id)).length,
+      nbEspaces: s.espaces.filter((e) => page.user.consulteEspace(e.id)).length,
+      // Modifier un site demande d'y gérer un espace (ou qu'il n'en ait encore aucun).
+      modifiable: siteVisible(
+        page.user.espacesGeres,
+        s.espaces.map((e) => e.id),
+      ),
     }));
   if (etat === "actifs") items = items.filter((s) => s.isActive);
   if (etat === "inactifs") items = items.filter((s) => !s.isActive);
@@ -157,7 +163,7 @@ export default async function SitesPage({ searchParams }: { searchParams: Promis
                         >
                           <Icone nom="eye" taille={14} />
                         </a>
-                        {peutEditer ? (
+                        {peutEditer && s.modifiable ? (
                           <a
                             href={`/sites/${s.id}/modifier`}
                             className="btn btn-ghost btn-icone btn-sm"

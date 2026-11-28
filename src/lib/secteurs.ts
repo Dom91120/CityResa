@@ -49,6 +49,25 @@ export function siteVisible(
   return espacesDuSite.some((id) => perimetre.includes(id));
 }
 
+/**
+ * VOIR n'est pas DÉCIDER. Le périmètre de GESTION d'un agent (ses rattachements, sinon son
+ * secteur) borne ce sur quoi il agit. Son périmètre de CONSULTATION borne ce qu'il lit :
+ * planning, fiches d'espace et de site, dossiers. Il vaut le périmètre de gestion, sauf si l'un
+ * des services de l'agent « voit tous les espaces » : il lit alors tout (liste vide), sans rien
+ * pouvoir décider de plus. La Vie associative suit ainsi l'occupation des salles sportives.
+ */
+export function perimetreDeConsultation(
+  perimetreDeGestion: readonly number[],
+  voitTousEspaces: boolean,
+): number[] {
+  return voitTousEspaces ? [] : [...perimetreDeGestion];
+}
+
+/** L'espace est-il dans ce périmètre ? Une liste vide vaut « tous les espaces ». */
+export function dansPerimetre(perimetre: readonly number[], espaceId: number): boolean {
+  return perimetre.length === 0 || perimetre.includes(espaceId);
+}
+
 /** Parmi des espaces, ceux qui interdisent de donner ce secteur à l'agent qui y est rattaché. */
 export function espacesHorsSecteur<T extends { secteur: string }>(
   secteurVoulu: string | null,

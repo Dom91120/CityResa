@@ -735,10 +735,26 @@ Communication remplace le Service des fêtes pendant ses congés.
 | 13 | Administrateur | Remettez Sophie dans le Service des fêtes. Puis, sur ce service : **Suppléé par** Communication, du jour à dans une semaine, et retirez-en le compte Communication. | Le compte Communication continue d'agir pour le Service des fêtes, par suppléance ; passé la date, il ne le pourra plus. |
 | 14 | Administrateur | Créez un compte **Financier** sans service (scénario 10), enregistrez un paiement avec lui. | Accepté : un agent sans service encaisse pour tous, mais ne décide sur aucun dossier confié à un service. |
 
+**Variante — la Vie associative voit aussi les gymnases**
+
+La Vie associative a besoin de suivre l'occupation de tous les équipements, sportifs compris,
+sans y décider.
+
+| # | Qui | Action | Constat |
+| --- | --- | --- | --- |
+| a | Sophie | **Espaces**, puis **Planning**. | Les huit salles seulement ; aucun gymnase. |
+| b | Administrateur | **Processus et circuits** › **Services** › **Vie associative** : cochez **Consulte tous les espaces, tous secteurs confondus**, enregistrez. | La liste des services rappelle « Consulte tous les espaces » sous le nom du service. |
+| c | Sophie | Rechargez **Espaces**, **Sites** et **Planning**. | Les gymnases et leurs sites apparaissent. Sur le planning, les cases des gymnases ne proposent pas de réserver et leurs créneaux ne se déplacent pas ; celles des salles restent comme avant. |
+| d | Sophie | Ouvrez la fiche d'un gymnase. | Elle se lit ; ni **Modifier**, ni ajout d'indisponibilité. |
+| e | Sophie | Tableau de bord, compteur **Réservations**, **Messages**. | Inchangés : la file de travail reste celle des salles. |
+| f | Sophie | **Réservations** › filtre des services › **Tous les services** ; ouvrez un dossier d'un gymnase. | Les dossiers des équipements sportifs s'ajoutent à la liste. Le dossier porte « Vous consultez ce dossier » : aucun bouton de décision, pas de message à écrire, pas de pièce à déposer. |
+| g | Sophie | **+ Nouvelle réservation** : cherchez un gymnase dans la liste des espaces. | Les gymnases n'y sont pas : on ne réserve que sur les espaces dont on a la charge. |
+| h | Administrateur | Décochez l'interrupteur. | Sophie ne voit plus que les salles. |
+
 **Règles illustrées** — le service d'un dossier vient de son circuit, donc du type de demandeur ;
 décider et facturer reviennent au service ; consulter, écrire dans le fil et voir le planning
 restent ouverts ; la file de travail suit les services de l'agent ; la suppléance ouvre les
-mêmes droits pendant sa période.
+mêmes droits pendant sa période ; un service peut voir tous les espaces sans rien y décider.
 
 ---
 

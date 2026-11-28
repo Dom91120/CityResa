@@ -94,6 +94,18 @@ export function libelleRattachement(r: RattachementNomme): string {
 }
 
 /**
+ * L'un de ces services (actifs) consulte-t-il tous les espaces ? Ses agents lisent alors le
+ * planning, les fiches et les dossiers de tous les secteurs, sans y décider.
+ */
+export async function voientTousEspaces(serviceIds: readonly number[]): Promise<boolean> {
+  if (!serviceIds.length) return false;
+  const n = await prisma.service.count({
+    where: { id: { in: [...serviceIds] }, isActive: true, voitTousEspaces: true },
+  });
+  return n > 0;
+}
+
+/**
  * Qui signe pour la collectivité les documents d'un dossier confié à ce service (convention,
  * avenant) : le signataire du service, sinon celui de Paramètres › Collectivité.
  */

@@ -58,10 +58,10 @@ export default async function EspacesPage({ searchParams }: { searchParams: Prom
       select: { id: true, name: true },
     }),
   ]);
-  // Un agent ne voit que les espaces de son périmètre, et les sites qui en portent.
-  const espaces = tousEspaces.filter((e) => page.user.voitEspace(e.id));
+  // Un agent ne voit que les espaces de son périmètre de consultation, et les sites qui en portent.
+  const espaces = tousEspaces.filter((e) => page.user.consulteEspace(e.id));
   const sitesVus = new Set(espaces.map((e) => e.siteId));
-  const sites = page.user.espacesGeres.length
+  const sites = page.user.espacesVus.length
     ? tousSites.filter((s) => sitesVus.has(s.id))
     : tousSites;
   const libelles = libellesProfils(refs.profils);

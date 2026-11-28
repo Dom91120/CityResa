@@ -57,6 +57,7 @@ export async function POST(req: Request) {
           (t) => t in ORGANISATION_TYPES,
         ),
         usagersSportifs: sportifs === "1" ? true : sportifs === "0" ? false : null,
+        voitTousEspaces: coche(form, "voit_tous_espaces"),
         isActive: coche(form, "is_active"),
       };
       const s = id

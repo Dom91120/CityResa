@@ -15,6 +15,7 @@ import { cache } from "react";
 import type { Role as RoleRow, User as UserRow } from "@/generated/prisma/client";
 import { PERMISSION_CATEGORIES, type PermissionCategory } from "@/lib/constantes";
 import { conditionsAAccepter, connexionOuverte, PAGE_CONDITIONS } from "@/lib/portail";
+import { dansPerimetre, perimetreDeConsultation } from "@/lib/secteurs";
 import {
   type Acteur,
   agitPour,
@@ -28,7 +29,7 @@ import { type AppSettings, getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { categoryEnabledIn, enabledIn } from "@/server/features";
 import { redirigerAvecFlashDepuisRendu } from "@/server/flash";
-import { servicesDe } from "@/server/services";
+import { servicesDe, voientTousEspaces } from "@/server/services";
 
 const TOUCH_THROTTLE_MS = 60_000;
 
@@ -102,8 +103,18 @@ export type CurrentUser = {
   canDelete: (category: string) => boolean;
   /** L'agent peut-il décider sur cet espace (droit + périmètre) ? */
   gereEspace: (espaceId: number) => boolean;
-  /** L'espace est-il dans le périmètre de l'agent (sans condition de droit) ? */
+  /**
+   * L'espace est-il dans le périmètre de GESTION de l'agent (sans condition de droit) ? C'est
+   * la porte de tout ce qui modifie : fiche d'espace, saisie d'une réservation.
+   */
   voitEspace: (espaceId: number) => boolean;
+  /**
+   * Le périmètre de CONSULTATION (vide = tous) : celui de gestion, ou tout quand un service de
+   * l'agent « voit tous les espaces ». Il borne ce qui se lit : planning, fiches, dossiers.
+   */
+  espacesVus: number[];
+  /** L'agent peut-il CONSULTER cet espace (lecture seule au-delà de son périmètre de gestion) ? */
+  consulteEspace: (espaceId: number) => boolean;
   /** Les services pour lesquels l'agent agit aujourd'hui (membre, responsable, suppléant). */
   services: number[];
   /** L'agent agit-il pour ce service ? Vrai sans service, pour un administrateur, module coupé. */
@@ -127,7 +138,9 @@ export function buildCurrentUser(
   espacesGeres: number[] = [],
   perimetreExplicite = espacesGeres.length > 0,
   services: number[] = [],
+  voitTousEspaces = false,
 ): CurrentUser {
+  const espacesVus = perimetreDeConsultation(espacesGeres, voitTousEspaces);
   const isAdmin = roleObj ? Boolean(roleObj.isAdmin) : row.role === "admin";
   const acteur: Acteur = { actif: enabledIn(settings, "processus"), isAdmin, services };
   const isUsager = roleObj ? Boolean(roleObj.isUsager) : row.kind === "usager";
@@ -184,7 +197,9 @@ export function buildCurrentUser(
     canDelete: (category) => permLevel(category) >= 3,
     gereEspace: (espaceId) =>
       canEdit("reservations") && (espacesGeres.length === 0 || espacesGeres.includes(espaceId)),
-    voitEspace: (espaceId) => espacesGeres.length === 0 || espacesGeres.includes(espaceId),
+    voitEspace: (espaceId) => dansPerimetre(espacesGeres, espaceId),
+    espacesVus,
+    consulteEspace: (espaceId) => dansPerimetre(espacesVus, espaceId),
     services,
     agitPour: (serviceId) => agitPour(acteur, serviceId),
     gereDossier: (d) =>
@@ -209,13 +224,17 @@ export async function loadUser(userId: string): Promise<CurrentUser | null> {
     row.role ? prisma.role.findUnique({ where: { name: row.role } }) : null,
     prisma.espaceGestionnaire.findMany({ where: { userId }, select: { espaceId: true } }),
   ]);
+  const services =
+    row.kind === "agent" && enabledIn(settings, "processus") ? await servicesDe(row.id) : [];
   return buildCurrentUser(
     row,
     roleObj,
     settings,
     await perimetre(row, espaces),
     espaces.length > 0,
-    row.kind === "agent" && enabledIn(settings, "processus") ? await servicesDe(row.id) : [],
+    services,
+    // Un de ses services consulte tous les espaces : sa vue s'élargit, pas ses décisions.
+    services.length > 0 && (await voientTousEspaces(services)),
   );
 }
 

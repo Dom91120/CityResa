@@ -204,7 +204,6 @@ export function VueSemaine({
   couleur = "espace",
   groupe = "",
 }: VueProps) {
-  const deplacable = peutEditer;
   return (
     <div className="planning">
       <table>
@@ -235,6 +234,8 @@ export function VueSemaine({
                   <EspaceCell e={e} retour={retour} />
                 </td>
                 {fen.jours.map((j) => {
+                  // Un espace seulement consulté ne se réserve ni ne se modifie d'ici.
+                  const editable = peutEditer && !e.lectureSeule;
                   const evts = duJour(
                     creneaux.filter((c) => c.espaceId === e.id),
                     j,
@@ -246,11 +247,11 @@ export function VueSemaine({
                   return (
                     <td
                       key={j}
-                      className={`${peutEditer ? "jour-cellule" : ""}${estWeekend(j) ? " weekend" : ""}`}
-                      data-creer={peutEditer ? urlCreer(e.id, j) : undefined}
-                      data-jour={peutEditer ? j : undefined}
-                      data-espace-id={peutEditer ? e.id : undefined}
-                      title={peutEditer ? "Cliquer pour réserver ce jour" : undefined}
+                      className={`${editable ? "jour-cellule" : ""}${estWeekend(j) ? " weekend" : ""}`}
+                      data-creer={editable ? urlCreer(e.id, j) : undefined}
+                      data-jour={editable ? j : undefined}
+                      data-espace-id={editable ? e.id : undefined}
+                      title={editable ? "Cliquer pour réserver ce jour" : undefined}
                     >
                       {blocs.map((b) => (
                         <Bloc
@@ -258,7 +259,7 @@ export function VueSemaine({
                           b={b}
                           jour={j}
                           csrf={csrf}
-                          peutEditer={peutEditer}
+                          peutEditer={editable}
                           retour={retour}
                         />
                       ))}
@@ -271,7 +272,7 @@ export function VueSemaine({
                           jour={j}
                           compact
                           couleur={couleur}
-                          deplacable={deplacable && STATUTS_DEPLACABLES.includes(ev.status)}
+                          deplacable={editable && STATUTS_DEPLACABLES.includes(ev.status)}
                         />
                       ))}
                     </td>
@@ -338,7 +339,7 @@ export function VueMois({
               <a href={urlJour(j)} title="Voir la journée" style={{ color: "inherit" }}>
                 {num}
               </a>
-              {unSeul && peutEditer ? (
+              {unSeul && peutEditer && !unSeul.lectureSeule ? (
                 <a
                   href={urlCreer(unSeul.id, j)}
                   className="text-muted"
@@ -406,7 +407,7 @@ export function VueMois({
                     b={b}
                     jour={j}
                     csrf={csrf}
-                    peutEditer={peutEditer}
+                    peutEditer={peutEditer && !unSeul.lectureSeule}
                     retour={retour}
                   />
                 ))}
@@ -530,7 +531,7 @@ export function VueJour({
             jour={jour}
             couleur={couleur}
             sansEspace
-            deplacable={peutEditer && STATUTS_DEPLACABLES.includes(ev.status)}
+            deplacable={peutEditer && !e.lectureSeule && STATUTS_DEPLACABLES.includes(ev.status)}
           />,
         ),
       ),
@@ -540,7 +541,13 @@ export function VueJour({
         poser(
           x,
           `b${x.id}`,
-          <Bloc b={x} jour={jour} csrf={csrf} peutEditer={peutEditer} retour={retour} />,
+          <Bloc
+            b={x}
+            jour={jour}
+            csrf={csrf}
+            peutEditer={peutEditer && !e.lectureSeule}
+            retour={retour}
+          />,
         ),
       ),
     ouverture: ouvertureDuJour(
@@ -590,7 +597,7 @@ export function VueJour({
                         }
                         bornes={bornes}
                         cases={
-                          peutEditer
+                          peutEditer && !l.espace.lectureSeule
                             ? {
                                 jour,
                                 espaceId: l.espace.id,

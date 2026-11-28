@@ -46,14 +46,17 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
   if (!r) notFound();
   // Une personne attendue sur une étape du circuit (relecteur, élu) ouvre le dossier même
   // hors de son périmètre d'espaces : elle le lit, sans pouvoir l'instruire.
-  if (!voitEspace(page.user, r.espaceId) && !(await attenduSur(page.user, r.id)))
+  // De même un agent dont le service « voit tous les espaces » : il consulte, sans plus.
+  if (!page.user.consulteEspace(r.espaceId) && !(await attenduSur(page.user, r.id)))
     redirigerAvecFlashDepuisRendu(
       "/reservations",
       "Ce dossier ne relève pas des espaces dont vous avez la charge.",
       "danger",
     );
   const { user, csrf, features } = page;
-  const peutEditer = user.canEdit("reservations");
+  // Hors de son périmètre de gestion, la fiche se lit : ni fil, ni pièce, ni modification.
+  const enConsultation = !voitEspace(user, r.espaceId);
+  const peutEditer = user.canEdit("reservations") && !enConsultation;
   const peutDecider = user.gereDossier(r);
   const aTraiter = r.status === "a_traiter" || r.status === "en_traitement";
 
@@ -195,6 +198,17 @@ export default async function ReservationPage({ params }: { params: Promise<{ id
           ) : null,
         ]}
       />
+
+      {enConsultation ? (
+        <div className="astuce mb-3">
+          <Icone nom="eye" taille={18} />
+          <div>
+            <strong>Vous consultez ce dossier.</strong> {r.espace.name} n'est pas dans les espaces
+            dont vous avez la charge : vous lisez le dossier, sans pouvoir le modifier ni le
+            décider.
+          </div>
+        </div>
+      ) : null}
 
       <div className="fiche-colonnes">
         <div className="d-flex flex-column gap-3">

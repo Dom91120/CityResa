@@ -175,6 +175,14 @@ Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écrit
 
 **Le signataire d'un service** — La convention et les avenants d'un dossier sont signés, pour la collectivité, par le signataire du **service auquel le dossier est confié** : son nom et sa qualité figurent dans « représentée par… » et dans le bloc de signature. Un service sans signataire, ou un dossier sans service, laisse signer le signataire de la collectivité (chapitre 9.2). Le changement vaut pour les conventions éditées ensuite ; une convention déjà éditée se réédite depuis la fiche du dossier (**Régénérer la convention**). L'attestation annuelle de valorisation reste signée par la collectivité. Dans la liste des services, le signataire est rappelé sous le nom du service.
 
+**Voir sans décider** — L'interrupteur **Consulte tous les espaces, tous secteurs confondus** élargit ce que les agents d'un service *voient*, sans rien changer à ce qu'ils *décident*. Coché sur la Vie associative, par exemple, ses agents suivent l'occupation des gymnases alors qu'ils ne gèrent que des salles :
+
+- le **Planning**, les listes **Espaces** et **Sites** et leurs fiches montrent tous les espaces ; sur ceux qu'ils ne gèrent pas, le planning ne propose ni réservation, ni déplacement, ni blocage, et les fiches n'ont pas de bouton de modification ;
+- dans **Réservations**, le filtre **Tous les services** montre aussi les dossiers de ces espaces ; ouverts, ils portent le bandeau « Vous consultez ce dossier » et se lisent, sans fil de discussion à écrire, sans pièce à déposer, sans décision ;
+- la file de travail ne change pas : compteurs du menu, alertes, liste par défaut, messages et présences restent ceux des espaces dont l'agent a la charge.
+
+Sur la liste des services, la mention « Consulte tous les espaces » est rappelée sous le nom du service.
+
 **Les campagnes de créneaux d'un service** — Une campagne de créneaux est conduite par un service (chapitre 3.12) : ses membres l'ouvrent, la modifient, l'arbitrent et préviennent les demandeurs. Deux services peuvent mener leur campagne en même temps, sur des espaces distincts.
 
 **Comment faire — une délégation** — Onglet **Délégations des élus**, bouton **Nouvelle délégation** : l'**Intitulé**, l'**Élu** et, si besoin, son **Suppléant**, qui est sollicité avec lui.
