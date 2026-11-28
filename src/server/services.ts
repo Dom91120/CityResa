@@ -6,6 +6,8 @@
 
 import { todayParisISO } from "@/lib/paris-time";
 import {
+  type Rattachement,
+  rattachements,
   type ServiceBrut,
   type ServiceUsagers,
   serviceReference,
@@ -44,6 +46,49 @@ export async function servicesBruts(): Promise<ServiceBrut[]> {
 /** Les services pour lesquels un agent agit aujourd'hui (suppléances en cours comprises). */
 export async function servicesDe(userId: string): Promise<number[]> {
   return servicesAgis(userId, await servicesBruts(), todayParisISO());
+}
+
+/**
+ * Les services d'un agent aujourd'hui, nommés, avec le titre auquel il agit pour chacun (fiche
+ * d'un compte) ; dans l'ordre d'affichage des services.
+ */
+export async function rattachementsDe(userId: string): Promise<RattachementNomme[]> {
+  return (await rattachementsParAgent([userId])).get(userId) ?? [];
+}
+
+export type RattachementNomme = Rattachement & { name: string; viaName: string | null };
+
+/** Les mêmes pour plusieurs agents à la fois (liste des comptes), par identifiant de compte. */
+export async function rattachementsParAgent(
+  userIds: readonly string[],
+): Promise<Map<string, RattachementNomme[]>> {
+  const [bruts, noms] = await Promise.all([
+    servicesBruts(),
+    prisma.service.findMany({
+      select: { id: true, name: true },
+      orderBy: [{ position: "asc" }, { name: "asc" }],
+    }),
+  ]);
+  const nom = new Map(noms.map((s) => [s.id, s.name]));
+  const rang = new Map(noms.map((s, i) => [s.id, i]));
+  const jour = todayParisISO();
+  return new Map(
+    userIds.map((userId) => [
+      userId,
+      rattachements(userId, bruts, jour)
+        .map((l) => ({
+          ...l,
+          name: nom.get(l.id) ?? "",
+          viaName: l.via ? (nom.get(l.via) ?? null) : null,
+        }))
+        .sort((a, b) => (rang.get(a.id) ?? 0) - (rang.get(b.id) ?? 0)),
+    ]),
+  );
+}
+
+/** Le titre auquel un agent agit pour un service, en clair. */
+export function libelleRattachement(r: RattachementNomme): string {
+  return r.lien === "suppleance" ? `supplée, par ${r.viaName}` : r.lien;
 }
 
 /** Les services et les usagers qu'ils suivent, pour calculer le service de référence. */

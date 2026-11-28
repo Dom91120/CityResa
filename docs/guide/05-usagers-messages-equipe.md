@@ -190,7 +190,7 @@ Ce chapitre présente le fichier des usagers (organisations et leurs comptes), l
 **Ce que l'on voit**
 
 - Une recherche par nom, courriel, fonction, rôle ou secteur. Si des comptes sont désactivés, deux onglets **Actifs** et **Inactifs** les séparent.
-- Pour chaque agent : son nom et sa fonction, son **Rôle** (Agent, Élu, Gestionnaire…), son **Secteur** (Salles, Sports ou **Transversal**), ses **Espaces gérés** (« 8 espaces » ; survolez la pastille pour voir la liste ; **Tous · Sports** s'il n'est rattaché à aucun espace de son secteur, ou **Tous** pour un agent transversal sans rattachement), son contact et sa **Dernière connexion**. Les colonnes portant deux flèches se trient d'un clic.
+- Pour chaque agent : son nom et sa fonction, son **Rôle** (Agent, Élu, Gestionnaire…), son **Secteur** (Salles, Sports ou **Transversal**), son **Service** (une pastille par service quand le module Processus et circuits est en service, un tiret s'il n'en a aucun), ses **Espaces gérés** (« 8 espaces » ; survolez la pastille pour voir la liste ; **Tous · Sports** s'il n'est rattaché à aucun espace de son secteur, ou **Tous** pour un agent transversal sans rattachement), son contact et sa **Dernière connexion**. Les colonnes portant deux flèches se trient d'un clic.
 - En bout de ligne, l'icône de porte (**Espaces gérés**) pour modifier son rattachement.
 
 **Comment faire — rattacher un agent à des espaces**

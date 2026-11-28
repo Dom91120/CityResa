@@ -273,7 +273,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 
 - Les boutons **Rôles** (vers 9.14) et **Nouveau compte**.
 - Un champ de recherche (nom, courriel, fonction, rôle, secteur) et, dès qu'un compte est désactivé, les onglets **Actifs** et **Inactifs**.
-- Le tableau : **Nom** (et fonction), **Rôle**, **Secteur** (Salles, Sports ou Transversal), **Espaces gérés**, **Contact**, **Sécurité** (pastille **2FA** si la double authentification est activée), **Dernière connexion**. Les colonnes portant deux flèches se trient d'un clic.
+- Le tableau : **Nom** (et fonction), **Rôle**, **Secteur** (Salles, Sports ou Transversal), **Service** (une pastille par service de l'agent, quand le module Processus et circuits est en service ; survolez-la pour lire à quel titre il agit ; un tiret s'il n'en a aucun), **Espaces gérés**, **Contact**, **Sécurité** (pastille **2FA** si la double authentification est activée), **Dernière connexion**. Les colonnes portant deux flèches se trient d'un clic.
 - En bout de ligne, l'icône de porte (**Espaces gérés**) pour répartir les espaces, comme dans Mon équipe (chapitre 5).
 - En bas : la pagination et le nombre de lignes par page.
 
@@ -313,7 +313,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 **Ce que l'on voit**
 
 - **En-tête** : le nom, l'étiquette du rôle, le courriel et la fonction ; les boutons **Modifier** et **…** (autres actions).
-- **Compte** : nature (agent de la collectivité ou usager), rôle, secteur d'un agent (Salles, Sports ou Transversal), courriel, téléphone, fonction, compte actif ou non, date de création, dernière connexion, sessions ouvertes. Le secteur se change par **Modifier** ; le changement est refusé tant que l'agent est rattaché à des espaces d'un autre secteur, et le message les nomme.
+- **Compte** : nature (agent de la collectivité ou usager), rôle, secteur d'un agent (Salles, Sports ou Transversal), ses **services** quand le module Processus et circuits est en service (une pastille par service, avec le titre auquel il agit : responsable, membre ou suppléance en cours ; « Aucun » sinon), courriel, téléphone, fonction, compte actif ou non, date de création, dernière connexion, sessions ouvertes. Le secteur se change par **Modifier** ; le changement est refusé tant que l'agent est rattaché à des espaces d'un autre secteur, et le message les nomme.
 - **Sécurité** : double authentification, notifications par courriel, lien d'agenda personnel (Oui / Non).
 - **Espaces en charge** : les espaces confiés à l'agent et son rôle sur chacun (ici « gestionnaire »). Si la liste est vide, l'agent intervient sur tous les espaces selon son rôle.
 - **Données liées** : par exemple « 9 réservation(s) assignée(s) », et l'indication que le compte ne peut pas être supprimé.
@@ -337,6 +337,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 - Vous ne pouvez ni changer votre propre rôle, ni désactiver votre propre compte.
 - Un compte lié à des réservations ou à d'autres données ne se supprime pas : désactivez-le.
 - Les espaces confiés à un agent se règlent depuis **Comptes** ou **Mon équipe** (icône de porte), pas depuis cette fiche.
+- Les services d'un agent se règlent dans **Processus et circuits** (chapitre 12) : la pastille de la fiche y mène.
 
 ## 9.14 Rôles et permissions
 

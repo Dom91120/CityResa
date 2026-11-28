@@ -9,6 +9,11 @@ import { nomComplet } from "@/modules/utilisateurs/server";
 import { prisma } from "@/server/db";
 import type { Page } from "@/server/page";
 import { paginate, param, resolvePerPage, textSearch } from "@/server/paging";
+import {
+  libelleRattachement,
+  type RattachementNomme,
+  rattachementsParAgent,
+} from "@/server/services";
 
 const ROLES_ESPACE: [string, string][] = [
   ["gestionnaire", "Gestionnaire : décide sur les demandes"],
@@ -63,6 +68,11 @@ export async function ListeComptes({
       ],
     }),
   ]);
+  // Le service de chacun n'a de sens qu'avec le module Processus et circuits.
+  const avecServices = page.features.processus;
+  const servicesPar = avecServices
+    ? await rattachementsParAgent(agents.map((a) => a.id))
+    : new Map<string, RattachementNomme[]>();
   const libelleRole = Object.fromEntries(roles.map((r) => [r.name, r.label]));
   const rolesAdmin = new Set(roles.filter((r) => r.isAdmin).map((r) => r.name));
   const moi = page.user.secteur;
@@ -79,8 +89,17 @@ export async function ListeComptes({
     nom: nomComplet(a),
     roleNom: libelleRole[a.role] ?? ROLE_LABELS[a.role] ?? a.role,
     secteurNom: libelleSecteur(a.secteur),
+    services: servicesPar.get(a.id) ?? [],
+    servicesNom: (servicesPar.get(a.id) ?? []).map((s) => s.name).join(", "),
   }));
-  const filtres = textSearch(enrichis, q, ["nom", "email", "fonction", "roleNom", "secteurNom"]);
+  const filtres = textSearch(enrichis, q, [
+    "nom",
+    "email",
+    "fonction",
+    "roleNom",
+    "secteurNom",
+    "servicesNom",
+  ]);
   const tries = trier(
     filtres,
     page.search,
@@ -88,6 +107,7 @@ export async function ListeComptes({
       nom: (a) => `${a.lastName} ${a.firstName}`,
       role: (a) => a.roleNom,
       secteur: (a) => a.secteurNom,
+      service: (a) => a.servicesNom,
       connexion: (a) => a.lastLoginAt,
     },
     "nom",
@@ -95,7 +115,7 @@ export async function ListeComptes({
   const perPage = await resolvePerPage(params, page.user, "equipe.list");
   const [rows, p] = paginate(tries, params, perPage);
   const peutEditer = page.user.canEdit("equipe");
-  const colonnes = 6 + (admin ? 1 : 0) + (peutEditer ? 1 : 0);
+  const colonnes = 6 + (avecServices ? 1 : 0) + (admin ? 1 : 0) + (peutEditer ? 1 : 0);
   const tabs = (
     [
       ["actifs", "Actifs", actifs.length],
@@ -155,7 +175,11 @@ export async function ListeComptes({
           pathname={page.pathname}
           search={page.search}
           hidden={{ vue: vue === "inactifs" ? vue : null }}
-          placeholder="Nom, courriel, rôle, secteur…"
+          placeholder={
+            avecServices
+              ? "Nom, courriel, rôle, secteur, service…"
+              : "Nom, courriel, rôle, secteur…"
+          }
         />
       </div>
       <div className="data-card">
@@ -166,6 +190,9 @@ export async function ListeComptes({
                 <Th col="nom" label="Nom" pathname={page.pathname} search={page.search} />
                 <Th col="role" label="Rôle" pathname={page.pathname} search={page.search} />
                 <Th col="secteur" label="Secteur" pathname={page.pathname} search={page.search} />
+                {avecServices ? (
+                  <Th col="service" label="Service" pathname={page.pathname} search={page.search} />
+                ) : null}
                 <th>Espaces gérés</th>
                 <th>Contact</th>
                 {admin ? <th>Sécurité</th> : null}
@@ -224,6 +251,30 @@ export async function ListeComptes({
                           </span>
                         )}
                       </td>
+                      {avecServices ? (
+                        <td>
+                          {a.services.length ? (
+                            <span className="d-flex flex-wrap gap-1">
+                              {a.services.map((s) => (
+                                <Chip
+                                  key={s.id}
+                                  teinte="emerald"
+                                  titre={`${s.name} : ${libelleRattachement(s)}`}
+                                >
+                                  {s.name}
+                                </Chip>
+                              ))}
+                            </span>
+                          ) : (
+                            <span
+                              className="text-faint small"
+                              title="Aucun service : l'agent garde la vue d'ensemble"
+                            >
+                              —
+                            </span>
+                          )}
+                        </td>
+                      ) : null}
                       <td>
                         {a.espaces.length ? (
                           <span className="chip chip-violet" title={noms.join("\n")}>

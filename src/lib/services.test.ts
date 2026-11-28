@@ -5,6 +5,7 @@ import {
   dossierOuvert,
   factureOuverte,
   fileDeTravail,
+  rattachements,
   type ServiceBrut,
   type ServiceUsagers,
   serviceReference,
@@ -71,6 +72,23 @@ describe("services pour lesquels une personne agit", () => {
     const chaine = [...services, service(4, { suppleantId: FETES, membres: ["zoe"] })];
     expect(servicesAgis("camille", chaine, "2026-08-10")).toEqual([FETES, COM]);
     expect(servicesAgis("sophie", chaine, "2026-08-10")).toEqual([FETES, 4]);
+  });
+
+  it("détaille le titre auquel la personne agit, comme servicesAgis", () => {
+    expect(rattachements("claire", services, "2026-06-01")).toEqual([
+      { id: COM, lien: "responsable", via: null },
+    ]);
+    expect(rattachements("camille", services, "2026-08-10")).toEqual([
+      { id: FETES, lien: "suppleance", via: COM },
+      { id: COM, lien: "membre", via: null },
+    ]);
+    expect(rattachements("camille", services, "2026-08-20")).toEqual([
+      { id: COM, lien: "membre", via: null },
+    ]);
+    for (const qui of ["sophie", "camille", "claire", "karim", "inconnu"])
+      expect(rattachements(qui, services, "2026-08-10").map((r) => r.id)).toEqual(
+        servicesAgis(qui, services, "2026-08-10"),
+      );
   });
 
   it("ignore les services inactifs, suppléants compris", () => {

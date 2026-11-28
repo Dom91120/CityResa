@@ -49,6 +49,39 @@ export function servicesAgis(
   return [...out].sort((a, b) => a - b);
 }
 
+export type Rattachement = {
+  id: number;
+  /** À quel titre la personne agit pour le service. */
+  lien: "responsable" | "membre" | "suppleance";
+  /** Pour une suppléance : le service de la personne, qui supplée celui-ci. */
+  via: number | null;
+};
+
+/**
+ * Les services (actifs) d'une personne ce jour-là et le titre auquel elle agit pour chacun :
+ * les mêmes que `servicesAgis`, détaillés pour l'affichage (fiche d'un compte).
+ */
+export function rattachements(
+  userId: string,
+  services: readonly ServiceBrut[],
+  jour: string,
+): Rattachement[] {
+  const actifs = services.filter((s) => s.isActive);
+  const directs = new Set(actifs.filter((s) => estDu(s, userId)).map((s) => s.id));
+  const out: Rattachement[] = [];
+  for (const s of actifs) {
+    if (directs.has(s.id))
+      out.push({
+        id: s.id,
+        lien: s.responsableId === userId ? "responsable" : "membre",
+        via: null,
+      });
+    else if (s.suppleantId && directs.has(s.suppleantId) && suppleanceEnCours(s, jour))
+      out.push({ id: s.id, lien: "suppleance", via: s.suppleantId });
+  }
+  return out.sort((a, b) => a.id - b.id);
+}
+
 export type Acteur = {
   /** Le module Processus et circuits est en service. */
   actif: boolean;

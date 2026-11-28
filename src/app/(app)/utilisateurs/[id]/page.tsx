@@ -8,6 +8,7 @@ import { libelleSecteur } from "@/lib/secteurs";
 import { contexteAdmin } from "@/modules/admin/server";
 import { donneesLiees, espacesGeresPar, nomComplet } from "@/modules/utilisateurs/server";
 import { prisma } from "@/server/db";
+import { libelleRattachement, rattachementsDe } from "@/server/services";
 
 export const metadata = { title: "Compte - CityRésa" };
 
@@ -22,10 +23,11 @@ export default async function UtilisateurPage({ params }: { params: Promise<{ id
     },
   });
   if (!u) notFound();
-  const [role, liees, espaces, journal] = await Promise.all([
+  const [role, liees, espaces, services, journal] = await Promise.all([
     prisma.role.findUnique({ where: { name: u.role } }),
     donneesLiees(id),
     u.kind === "agent" ? espacesGeresPar(id) : Promise.resolve([]),
+    u.kind === "agent" && page.features.processus ? rattachementsDe(id) : Promise.resolve([]),
     prisma.actionLog.findMany({
       where: { OR: [{ username: u.email }, { detail: { contains: u.email } }] },
       orderBy: { createdAt: "desc" },
@@ -136,6 +138,25 @@ export default async function UtilisateurPage({ params }: { params: Promise<{ id
               <Lu label="Rôle" valeur={role?.label ?? u.role} />
               {u.kind === "agent" ? (
                 <Lu label="Secteur" valeur={libelleSecteur(u.secteur)} />
+              ) : null}
+              {u.kind === "agent" && page.features.processus ? (
+                <Lu
+                  label={services.length > 1 ? "Services" : "Service"}
+                  valeur={
+                    services.length ? (
+                      <span className="coches">
+                        {services.map((s) => (
+                          <a key={s.id} href="/processus" className="chip chip-emerald">
+                            {s.name}
+                            <span className="text-faint"> ({libelleRattachement(s)})</span>
+                          </a>
+                        ))}
+                      </span>
+                    ) : (
+                      "Aucun"
+                    )
+                  }
+                />
               ) : null}
               <Lu label="Courriel" valeur={<a href={`mailto:${u.email}`}>{u.email}</a>} />
               <Lu label="Téléphone" valeur={u.phone} tiret />
