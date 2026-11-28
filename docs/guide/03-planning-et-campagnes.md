@@ -335,6 +335,11 @@ Quand un seul espace est affiché, un bouton **Feuille de salle** apparaît à c
 - **Plusieurs campagnes peuvent être ouvertes en même temps** (les gymnases par le Service des sports, les salles par la Vie associative), à condition de ne partager aucun espace : l'ouverture est refusée sinon.
 - Décider d'un vœu reste réglé par espace : il faut avoir la charge de l'espace du vœu.
 - **Saisir un vœu à la place d'une organisation** : sur la fiche d'une campagne au dépôt ouvert ou en instruction, le bouton **Saisir un vœu** enregistre la demande reçue sur papier, par téléphone ou au guichet (organisation, espace de votre périmètre, jour, horaire, activité). Le vœu est contrôlé par les mêmes règles et s'arbitre comme les autres. Tant que le dépôt est ouvert, la corbeille de la ligne retire un vœu saisi par erreur. C'est la seule façon de recueillir les vœux quand le portail est fermé.
+
+![Saisir un vœu pour une organisation](captures/campagne-voeu.webp)
+
+*Figure — la fenêtre « Saisir un vœu » : l'organisation, l'espace, le jour, l'horaire et l'activité, comme sur le formulaire du portail.*
+
 - **Portail fermé** : à « Prévenir les demandeurs », chaque organisation reçoit aussi, par courriel, la convention de chaque créneau attribué, à retourner signée.
 
 ## 3.13 Instruire une campagne

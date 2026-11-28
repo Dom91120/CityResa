@@ -253,6 +253,13 @@ const CAPTURES = [
   // Campagnes
   { nom: "campagnes", compte: "gestionnaire", url: "/campagnes", hauteur: 1100 },
   { nom: "campagne", compte: "gestionnaire", url: "/campagnes/1", hauteur: 2600 },
+  {
+    nom: "campagne-voeu",
+    compte: "gestionnaire",
+    url: "/campagnes/1",
+    clic: '[data-bs-target="#modal-voeu"]',
+    selecteur: "#modal-voeu .modal-content",
+  },
 
   // Sites, espaces, matériel
   { nom: "sites", compte: "gestionnaire", url: "/sites", hauteur: 1400 },

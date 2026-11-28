@@ -39,6 +39,10 @@ suite du projet.
    (`http://localhost:3000/portail`). Vous jouez ainsi l'agent et l'usager en même temps, sans
    vous déconnecter à chaque étape.
 
+4. Vérifiez que **le portail est ouvert** (Administration › Paramètres › Portail) : les scénarios
+   1 à 16 le supposent. Recharger le jeu de démonstration ne le rouvre pas, car ce réglage n'est
+   pas une donnée de démonstration ; le scénario 17, qui le ferme, se joue en dernier.
+
 ### Courriels, SMS et codes de signature
 
 Rien ne part réellement : les courriels et les SMS sont **simulés** et s'affichent dans la
@@ -46,7 +50,8 @@ console du serveur (lignes « Courriel (simulé) → … » et « SMS (simulé) 
 lisez :
 
 - le **code de signature** à six chiffres d'une convention ou d'une attestation ;
-- le texte des courriels reçus par l'usager (accusé de réception, acceptation, facture, rappel).
+- le texte des courriels reçus par l'usager (accusé de réception, acceptation, facture, rappel) ;
+- le **lien d'activation** d'un compte invité à l'ouverture du portail (scénario 17).
 
 Les dossiers « Acceptée » déjà présents dans le jeu de démonstration se signent avec le code
 indiqué dans le `README.md` (section « Comptes de démonstration »).
@@ -137,6 +142,7 @@ responsable sur les refus R260037 et R260039, dont un hors délai) : elles alime
 | 14 | Décrire un circuit | Administrateur | 30 min | Services, aiguillage, étapes, simulation, versions |
 | 15 | Deux services, les mêmes salles | Tous | 25 min | Droits par service, file de travail, suppléance |
 | 16 | Trois comptes, trois services | Tous | 20 min | Comptes par service, service nommé, étapes en retard |
+| 17 | Démarrer sans portail, puis l'ouvrir | Administrateur, Vie associative | 35 min | Portail fermé, saisie par les agents, invitations, conditions d'utilisation |
 
 ---
 
@@ -149,13 +155,13 @@ chacun. Les mêmes données ne donnent pas les mêmes écrans.
 | --- | --- | --- | --- |
 | 1 | Sophie | Connectez-vous au back-office ; lisez le tableau de bord (ch. 8). | Demandes à traiter, alertes, sept prochains jours : uniquement des **salles**. Le menu de gauche est complet (Réservations … Statistiques), sans la rubrique Administration. |
 | 2 | Sophie | Ouvrez **Espaces**. | Les huit salles ; aucun gymnase. Le filtre « Secteur » ne propose rien d'utile : elle n'a qu'un secteur. |
-| 3 | Sophie | Ouvrez **Mon équipe** (ch. 5). | Elle-même et l'élu (transversal). Karim, du secteur Sports, n'y est pas. |
+| 3 | Sophie | Ouvrez **Mon équipe** (ch. 5). | Les agents du secteur Salles (elle-même, Nadia, Camille) et les agents transversaux (Pierre, Hélène). La colonne **Service** nomme le ou les services de chacun (Sophie : Vie associative et Service des fêtes ; un tiret pour Pierre et Hélène). Karim, du secteur Sports, n'y est pas. |
 | 4 | Karim | Connectez-vous ; lisez le tableau de bord. | Uniquement des **équipements sportifs**. Pas d'entrée **Mon équipe** dans son menu. |
 | 5 | Karim | Ouvrez **Réservations**, puis cherchez « R260017 » avec Ctrl K (un dossier de salle). | Le dossier d'une salle n'est pas dans sa liste ; s'il l'atteint, il lit « Vous n'avez pas la main sur cet espace ». |
 | 6 | Karim | Ouvrez **Subventions**, puis un dossier d'Around dance et celui du TTMC. | Son rôle « Agent instructeur » a l'écriture sur les subventions, mais il n'instruit que les dossiers de son service : aucun bouton sur Around dance (Vie associative), les boutons d'instruction sur le TTMC (association sportive). |
 | 7 | Pierre | Connectez-vous. | Tableau de bord complet, salles et sports confondus ; pas de lien **+ Nouvelle réservation** dans la barre du haut. |
 | 8 | Pierre | Ouvrez une demande « À traiter ». | Aucun bouton **Approuver** ni **Décliner**. |
-| 9 | Administrateur | Connectez-vous ; ouvrez **Administration › Comptes** puis **Rôles & permissions** (ch. 9). | Les comptes du back-office avec rôle et secteur ; le tableau des droits par rôle et par domaine sur quatre niveaux. |
+| 9 | Administrateur | Connectez-vous ; ouvrez **Administration › Comptes** puis **Rôles & permissions** (ch. 9). | Les comptes du back-office avec rôle, secteur et **service** (la fiche d'un compte précise le titre : responsable, membre ou suppléance) ; le tableau des droits par rôle et par domaine sur quatre niveaux. |
 | 10 | Martine | Dans la fenêtre privée, connectez-vous au portail. | Menu Espaces, Mes réservations, Mes vœux, Mes messages ; pas de « Mes subventions » (réservé aux associations). |
 | 11 | Sandra | Connectez-vous au portail. | « Mes subventions » est présent ; « Mon organisation » (menu à son prénom) montre la fiche d'Around dance et ses pièces. |
 
@@ -785,6 +791,68 @@ dossier ; une échéance dépassée relance sans rien décider.
 
 ---
 
+## Scénario 17 — Démarrer sans portail, puis l'ouvrir
+
+**Situation** — La Ville met l'outil en service pour ses agents d'abord : pendant quelques mois,
+les usagers n'y entrent pas, et les services saisissent tout à leur place. Puis elle ouvre le
+portail et invite les usagers qu'elle a enregistrés entre-temps (guide 9.3).
+
+À faire en dernier : ce scénario ferme le portail, ce qui gêne tous les autres. Gardez la
+**console** du serveur visible, les courriels s'y lisent.
+
+### A. Fermer le portail
+
+| # | Qui | Action | Constat |
+| --- | --- | --- | --- |
+| 1 | Administrateur | **Paramètres** › onglet **Portail** : **Fermer le portail…**, lisez la fenêtre, confirmez. | Le bandeau de l'onglet indique « Le portail est fermé ». L'administrateur reste connecté. |
+| 2 | Martine | Fenêtre privée : connectez-vous au portail. | Refus : « L'espace en ligne des usagers n'est pas ouvert pour le moment… ». L'adresse `/portail` est introuvable ; la déclaration d'accessibilité (`/portail/accessibilite`) reste lisible. |
+| 3 | Sophie | Connectez-vous au back-office ; ouvrez **Astuces**. | Elle entre normalement. Un encadré rappelle que le portail est fermé et que les agents saisissent pour les usagers. |
+
+### B. Travailler sans portail
+
+| # | Qui | Action | Constat |
+| --- | --- | --- | --- |
+| 4 | Sophie | **Usagers** › **Créer un usager** : une association « Amicale des essais », avec un **Courriel de l'organisation** et un représentant (prénom, nom). | Le formulaire n'a plus la partie « Premier compte d'accès ». La fiche est créée « sans compte d'accès » ; la section Membres explique que le compte viendra à l'ouverture. Dans la liste, l'onglet **Sans compte** la contient. |
+| 5 | Sophie | **Campagnes** › « Créneaux annuels 2026-2027 » › **Saisir un vœu** : l'Amicale, Salle Henri Matisse, samedi, 14 h à 18 h, une activité. | « Vœu enregistré pour Amicale des essais ». Il apparaît « En attente » dans l'onglet de la salle et s'arbitre comme les autres. Un créneau de moins de quatre heures ou hors des horaires de la salle est refusé avec le motif, comme sur le portail. |
+| 6 | Sophie | Ouvrez R260017 (acceptée, à signer) : lisez la carte « Convention à signer », puis **Relancer l'usager**. | La carte dit que la signature se fait sur papier. Dans la console : « Convention à nous retourner signée… », avec `convention-R260017.pdf` en pièce jointe et aucun lien vers le portail. |
+| 7 | Sophie | Sur R260017 : **Marquer signée (papier)**, saisissez le nom du signataire. | Le dossier passe « Signée » (ou « Confirmée » sans acompte) ; l'historique porte la signature sur papier. |
+
+### C. Les conditions d'utilisation
+
+| # | Qui | Action | Constat |
+| --- | --- | --- | --- |
+| 8 | Administrateur | **Paramètres** › **Portail** : copiez le texte des **Conditions d'utilisation** dans un bloc-notes, videz le champ, **Enregistrer**. Ouvrez une autre page, puis le tableau de bord. | Un bandeau orange « Aucune condition d'utilisation n'est saisie » en haut de toutes les pages (sauf Paramètres, où l'encadré est sous le champ) ; la même alerte en tête du bloc **Alertes**. Sophie ne voit ni l'un ni l'autre. |
+| 9 | Administrateur | Recollez le texte, **Enregistrer**. | Le bandeau et l'alerte disparaissent. |
+
+### D. Ouvrir le portail et inviter
+
+| # | Qui | Action | Constat |
+| --- | --- | --- | --- |
+| 10 | Administrateur | **Paramètres** › **Portail** › **Ouvrir le portail…** : lisez la fenêtre. | Deux choix. Le premier compte **Association (1)** : l'Amicale ; les organisations de démonstration ont déjà un compte et ne seront pas réinvitées. |
+| 11 | Administrateur | Choisissez **Créer les comptes des usagers et leur envoyer l'invitation**, puis **Ouvrir le portail**. | « Portail ouvert. 1 compte créé et invité. » Dans la console : le courriel d'invitation, au prénom du représentant, avec un lien valable 14 jours et aucun mot de passe. |
+| 12 | L'invité | Fenêtre privée : ouvrez le lien de la console, choisissez un mot de passe, connectez-vous avec le courriel de l'Amicale. | Il arrive sur **Conditions d'utilisation**. Toute autre page de son espace (« Mes messages »…) l'y ramène tant qu'il n'a pas accepté. |
+| 13 | L'invité | Cochez « J'ai lu et j'accepte ces conditions », **Accepter et continuer**. | « Merci : votre espace est prêt », puis **Mes réservations**. Le lien **Conditions d'utilisation** du pied de page les rappelle, avec la date d'acceptation. |
+| 14 | Administrateur | Fiche de l'Amicale › le membre créé (ouvre la fiche du compte) ; puis **Journal d'audit**. | « CGU acceptées le… » sur le compte. Le journal porte « portail fermé », « portail ouvert », « invitation des usagers » et « acceptation des conditions ». |
+
+**Variante — ouvrir sans inviter, inviter plus tard**
+
+| # | Qui | Action | Constat |
+| --- | --- | --- | --- |
+| a | Administrateur | Refermez le portail, créez un second usager sans compte, puis **Ouvrir le portail…** › **Ouvrir le portail sans créer de compte**. | « Portail ouvert. Aucun compte créé… » ; aucun courriel dans la console. |
+| b | Administrateur | **Usagers** › onglet **Sans compte** › **Inviter les usagers sans compte**, confirmez. | « 1 compte créé et invité. » L'onglet et le bouton disparaissent quand toutes les fiches ont un compte. Relancée, l'opération n'invite personne une seconde fois. |
+| c | Administrateur | Créez un usager sans compte **sans courriel**, puis rouvrez la fenêtre d'invitation. | L'encadré jaune le nomme : « aucun courriel sur la fiche ». Il n'est pas invité tant que sa fiche n'est pas complétée. |
+
+**Règles illustrées** — fermer le portail ne touche jamais un agent ; portail fermé, l'agent
+saisit la demande, le vœu et la signature reçue sur papier ; aucun courriel ne renvoie vers un
+espace fermé ; l'invitation ne contient pas de mot de passe et n'est jamais envoyée deux fois ;
+un compte créé par la collectivité accepte les conditions avant d'entrer.
+
+> **À savoir** — L'ouverture est globale : on n'ouvre pas encore le portail à un seul secteur ou
+> à un seul type d'usager, mais on choisit les types d'usagers que l'on invite. La liste
+> d'attente et la réponse aux messages n'ont pas d'équivalent côté agent.
+
+---
+
 ## Grille de suivi
 
 À remplir au fil de l'eau : **OK**, **KO** (l'application ne fait pas ce qui est écrit) ou
@@ -809,6 +877,7 @@ dossier ; une échéance dépassée relance sans rien décider.
 | 14 | Décrire un circuit | | | | |
 | 15 | Deux services, les mêmes salles | | | | |
 | 16 | Trois comptes, trois services | | | | |
+| 17 | Démarrer sans portail, puis l'ouvrir | | | | |
 
 ### Les écarts rencontrés
 

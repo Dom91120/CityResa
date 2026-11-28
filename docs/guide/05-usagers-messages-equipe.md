@@ -186,7 +186,7 @@ Ce chapitre présente le fichier des usagers (organisations et leurs comptes), l
 
 ![Mon équipe](captures/equipe.webp)
 
-*Figure — l'équipe vue par Sophie Martin, du secteur Salles : elle-même et un agent transversal, avec leur rôle, leur secteur, les espaces gérés, leur contact et leur dernière connexion.*
+*Figure — l'équipe vue par Sophie Martin, du secteur Salles : les trois agents du secteur et les deux agents transversaux, avec leur rôle, leur secteur, leur service, les espaces gérés, leur contact et leur dernière connexion.*
 
 **Ce que l'on voit**
 

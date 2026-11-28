@@ -86,7 +86,9 @@ Ce chapitre présente les écrans qui vous servent tous les jours, quel que soit
 
 **Ce que l'on voit**
 
-- Le titre **Alertes** suivi du nombre d'alertes.
+- Le titre **Alertes** suivi du nombre d'alertes, toutes couleurs confondues.
+- Sur un grand écran, le bloc est en haut de la colonne de droite. Quand la largeur manque (fenêtre réduite, tablette), il se place juste **sous les quatre cartes indicateurs**, avant les graphiques.
+- Dans le menu, la ligne **Tableau de bord** porte un **triangle rouge**, sans chiffre, dès qu'une alerte rouge attend ; il est visible depuis toutes les pages et disparaît quand il n'en reste plus. Survolez-le pour lire le nombre d'alertes urgentes.
 - Une ligne par alerte : une icône colorée, un titre chiffré (par exemple « 4 conventions en attente de signature depuis plus de 3 jours »), une phrase d'explication en gris (« L'usager n'a pas signé malgré la relance. ») et une flèche à droite.
 - Sur cette figure, la liste **À traiter** ne contient que deux demandes (Gymnase les Sablons, Salle sportive Marcel Doret), car Karim Benali n'a que des équipements sportifs en charge. Elle affiche aussi les colonnes **Dates** et **Statut**.
 
@@ -102,6 +104,7 @@ Les alertes possibles, des plus urgentes (en rouge) aux simples informations :
 
 | Alerte | Quand elle apparaît | Où elle mène |
 |---|---|---|
+| Aucune condition d'utilisation saisie | Réservé aux administrateurs : le texte des conditions est vide (rouge si le portail est ouvert, orange s'il est fermé) ; un bandeau le rappelle aussi en haut de toutes les pages | Paramètres, onglet Portail |
 | Usagers avec une pièce expirée | Attestation d'assurance ou autre pièce datée dépassée | Usagers, filtre pièces |
 | Factures échues non réglées | Date d'échéance dépassée | Paiements, filtre retard |
 | Pièces qui expirent bientôt | Dans le délai réglé par l'administrateur (30 jours par défaut) ; les usagers sont prévenus par courriel | Usagers, filtre pièces |
@@ -115,6 +118,8 @@ Les alertes possibles, des plus urgentes (en rouge) aux simples informations :
 | Demandes sans réponse depuis plus de 7 jours | Demande à traiter ou en traitement depuis plus d'une semaine | Réservations à traiter |
 | Fiches d'usager à valider | Organisation inscrite mais pas encore validée | Usagers, filtre à valider |
 | Conversations à répondre | Fil de dossier où l'usager a écrit en dernier, sans réponse d'un agent | Messages |
+
+Les alertes rouges, celles que signale le triangle du menu, sont les pièces expirées, les factures échues et l'absence de conditions d'utilisation quand le portail est ouvert.
 
 Les alertes liées à un module (pièces jointes, matériel, paiements, signature, subventions) disparaissent si ce module est désactivé.
 
