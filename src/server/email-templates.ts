@@ -64,6 +64,24 @@ export const EMAIL_TEMPLATE_SEEDS: ModeleSeed[] = [
     aide: "Envoyé à l'acceptation quand la signature électronique est active.",
   },
   {
+    key: "convention_a_retourner",
+    label: "Convention à retourner signée (usager, portail fermé)",
+    subject: "Convention à nous retourner signée pour la réservation {{numero}}",
+    body:
+      "<p>Bonjour {{prenom}},</p><p>La convention de mise à disposition de <strong>{{espace}}</strong> ({{dates}}) est prête : vous la trouverez en pièce jointe.</p><p>Merci de la lire, de la signer et de nous la retourner, par courriel ou à l'accueil de nos services. Votre réservation sera confirmée à sa réception.</p>" +
+      SIGNATURE,
+    aide: "Remplace « Convention à signer » quand le portail est fermé : la convention part en pièce jointe et l'agent enregistre la signature reçue (signature manuelle).",
+  },
+  {
+    key: "compte_invitation",
+    label: "Invitation à ouvrir son espace (usager)",
+    subject: "{{collectivite}} : votre espace de réservation en ligne est ouvert",
+    body:
+      '<p>Bonjour {{prenom}},</p><p>{{collectivite}} ouvre son espace de réservation en ligne. Un compte y a été préparé pour <strong>{{organisation}}</strong>, à partir des coordonnées que vous avez déjà confiées à nos services : vous y retrouverez vos réservations et pourrez y déposer vos demandes.</p><p>Pour l\'activer, choisissez votre mot de passe en suivant ce lien (valable {{validite}}) : <a href="{{lien_activation}}">{{lien_activation}}</a></p><p>Passé ce délai, demandez un nouveau lien depuis « Mot de passe oublié » sur la page de connexion. Si vous ne souhaitez pas de compte, ignorez ce message ou écrivez-nous : nous le supprimerons.</p>' +
+      SIGNATURE,
+    aide: "Envoyé quand un administrateur crée les comptes des usagers à l'ouverture du portail. {{lien_activation}} mène au choix du mot de passe, {{validite}} dit combien de temps il vaut.",
+  },
+  {
     key: "signature_code",
     label: "Code de signature (usager)",
     subject: "Votre code de signature : {{code}}",

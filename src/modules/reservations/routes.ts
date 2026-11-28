@@ -46,7 +46,7 @@ import {
   ajouterMessage,
   changerStatut,
   chargerReservation,
-  courrielUsager,
+  courrielConventionASigner,
   creerReservation,
   historiser,
   leverOption,
@@ -542,7 +542,7 @@ async function relancerSignature({ user, r, fiche }: Contexte): Promise<Response
     throw new UserFacingError("Ce dossier n'est pas en attente de signature.");
   const to = r.user?.email ?? r.organisation?.email;
   if (!to) throw new UserFacingError("Aucune adresse de courriel connue pour l'usager.");
-  await courrielUsager(r, "convention_a_signer");
+  await courrielConventionASigner(r);
   await historiser(r.id, "Relance pour signature", `courriel à ${to}`, user.name);
   return redirigerAvecMessage(fiche, `Relance envoyée à ${to}.`, "success");
 }

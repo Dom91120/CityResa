@@ -14,6 +14,7 @@ import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import type { Role as RoleRow, User as UserRow } from "@/generated/prisma/client";
 import { PERMISSION_CATEGORIES, type PermissionCategory } from "@/lib/constantes";
+import { conditionsAAccepter, connexionOuverte, PAGE_CONDITIONS } from "@/lib/portail";
 import {
   type Acteur,
   agitPour,
@@ -71,6 +72,8 @@ export type CurrentUser = {
   role: string;
   roleObj: RoleRow | null;
   kind: string;
+  /** Date d'acceptation des conditions d'utilisation ; null = jamais acceptées. */
+  acceptedCguAt: Date | null;
   isAgent: boolean;
   isUsager: boolean;
   isAdmin: boolean;
@@ -157,6 +160,7 @@ export function buildCurrentUser(
     role: row.role,
     roleObj,
     kind: row.kind,
+    acceptedCguAt: row.acceptedCguAt ?? null,
     isAgent,
     isUsager,
     isAdmin,
@@ -234,7 +238,11 @@ async function perimetre(row: UserRow, rattachements: { espaceId: number }[]): P
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const session = await getSession();
   if (!session) return null;
-  return loadUser(session.user.id);
+  const user = await loadUser(session.user.id);
+  // Portail coupé : la session d'un usager ne vaut plus rien (il est traité comme déconnecté).
+  // Un agent n'est jamais concerné.
+  if (user && !connexionOuverte(user.kind, user.settings.PORTAIL_ENABLED)) return null;
+  return user;
 });
 
 /** Chemin courant, pour le paramètre `next` de la page de connexion. */
@@ -264,6 +272,17 @@ export async function requireAgent(): Promise<CurrentUser> {
 
 /** Un USAGER connecté (portail) ; un agent est renvoyé vers le back-office. */
 export async function requireUsager(): Promise<CurrentUser> {
+  const user = await requireUser();
+  if (user.isAgent) redirect("/");
+  // Un compte créé par la collectivité (ou invité) accepte les conditions avant tout le reste :
+  // pages comme routes d'écriture de son espace. La page d'acceptation, elle, n'appelle pas
+  // cette garde.
+  if (conditionsAAccepter(user, user.settings.PORTAIL_CONDITIONS)) redirect(PAGE_CONDITIONS);
+  return user;
+}
+
+/** Un USAGER connecté, qu'il ait accepté les conditions ou non (page et route d'acceptation). */
+export async function requireUsagerSansConditions(): Promise<CurrentUser> {
   const user = await requireUser();
   if (user.isAgent) redirect("/");
   return user;

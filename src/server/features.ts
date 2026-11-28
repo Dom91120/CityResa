@@ -93,6 +93,15 @@ export async function enabled(name: FeatureName): Promise<boolean> {
   return enabledIn(await getSettings(), name);
 }
 
+/**
+ * L'usager peut-il signer EN LIGNE (convention, avenant) ? Il faut le module de signature et un
+ * portail ouvert : portail coupé, la signature reste suivie mais se fait sur papier, et l'agent
+ * l'enregistre (« signature manuelle »).
+ */
+export function signatureEnLigneIn(settings: AppSettings): boolean {
+  return enabledIn(settings, "signature") && enabledIn(settings, "portail");
+}
+
 /** La catégorie de droit relève-t-elle d'un module actif ? */
 export function categoryEnabledIn(settings: AppSettings, category: string): boolean {
   return Object.entries(MODULE_CATEGORIES).every(

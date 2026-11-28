@@ -108,6 +108,20 @@ export default async function AidePage() {
         </div>
       </div>
 
+      {!page.features.portail ? (
+        <div className="astuce mb-3">
+          <Icone nom="lock" taille={18} />
+          <div>
+            <strong>Le portail est fermé aux usagers.</strong> Tout ce que cette page attribue à
+            l'usager « depuis son espace » passe par vous : vous saisissez sa demande (Nouvelle
+            réservation), ses vœux de campagne (« Saisir un vœu » sur la campagne) et son dossier de
+            subvention ; il reçoit sa convention en pièce jointe et vous la retourne signée, que
+            vous enregistrez par « Marquer signée ». Un nouvel usager se crée sans compte d'accès :
+            les comptes seront créés à l'ouverture du portail.
+          </div>
+        </div>
+      ) : null}
+
       <Section titre="Le parcours d'une demande" icone="clipboard-list">
         <div className="mb-3">
           <Frise status="signee" grande />

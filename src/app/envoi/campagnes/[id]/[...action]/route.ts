@@ -3,7 +3,8 @@ import { idDe, pasTrouve, traiterFormulaire } from "@/server/http";
 
 /**
  * POST /campagnes/<id>/modifier | statut | arbitrer | notifier | supprimer |
- * voeux/<vid>/attribuer | voeux/<vid>/refuser | voeux/<vid>/attente
+ * voeux/nouveau | voeux/<vid>/attribuer | voeux/<vid>/refuser | voeux/<vid>/attente |
+ * voeux/<vid>/retirer
  */
 export async function POST(
   req: Request,

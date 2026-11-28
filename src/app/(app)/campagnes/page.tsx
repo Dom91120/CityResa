@@ -116,7 +116,11 @@ export default async function CampagnesPage() {
               ) : (
                 <Vide
                   colonnes={9}
-                  message="Aucune campagne. Créez-en une pour la prochaine saison : les usagers déposeront leurs vœux depuis le portail."
+                  message={
+                    page.features.portail
+                      ? "Aucune campagne. Créez-en une pour la prochaine saison : les usagers déposeront leurs vœux depuis le portail."
+                      : "Aucune campagne. Créez-en une pour la prochaine saison : le portail étant fermé, vous saisirez les vœux des organisations depuis la campagne."
+                  }
                   icone="calendar-check"
                 />
               )}

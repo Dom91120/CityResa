@@ -50,6 +50,7 @@ import { profilParDefaut } from "@/server/usagers";
 import { VACANCES_ZONE_C } from "./calendrier-zone-c";
 import { ASSOCIATIONS_SPORTIVES, type OrgSpec } from "./seed-associations";
 import { creerCampagneDemo } from "./seed-demo-campagne";
+import { poserConditionsDemo } from "./seed-demo-conditions";
 import { COMPTES_SERVICES, creerProcessusDemo } from "./seed-processus";
 
 const MOT_DE_PASSE = "Demo-2026!!";
@@ -4421,6 +4422,8 @@ async function main(): Promise<void> {
   }
   await chargerReferentiels();
   await creerCalendrier();
+  if (await poserConditionsDemo())
+    console.log("→ Conditions d'utilisation d'exemple (Paramètres › Portail)…");
   const cfg = await getSettings();
   const adminRow = await prisma.user.findFirst({
     where: { kind: "agent", role: "admin" },

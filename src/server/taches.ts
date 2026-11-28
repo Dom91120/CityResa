@@ -17,7 +17,13 @@ import { compterARepondre } from "@/server/messages-attente";
 import { notifier, notifierAgents } from "@/server/notifications";
 import { envoyerPlanningsPersonnel } from "@/server/personnel";
 import { envoyerPlanningsHebdo } from "@/server/planning-hebdo";
-import { changerStatut, chargerReservation, courrielUsager } from "@/server/reservations";
+import {
+  changerStatut,
+  chargerReservation,
+  courrielConventionASigner,
+  courrielUsager,
+  MODELES_CONVENTION_A_SIGNER,
+} from "@/server/reservations";
 import { executerRgpd } from "@/server/rgpd";
 
 type Resultat = { ok: boolean; message: string };
@@ -71,12 +77,16 @@ async function relancesSignature(): Promise<Resultat> {
   let n = 0;
   for (const x of en_attente) {
     const deja = await prisma.mailLog.findFirst({
-      where: { templateKey: "convention_a_signer", reservationId: x.id, sentAt: { gte: seuil } },
+      where: {
+        templateKey: { in: MODELES_CONVENTION_A_SIGNER },
+        reservationId: x.id,
+        sentAt: { gte: seuil },
+      },
     });
     if (deja) continue;
     const r = await chargerReservation(x.id);
     if (!r) continue;
-    await courrielUsager(r, "convention_a_signer");
+    await courrielConventionASigner(r);
     n += 1;
   }
   // Les avenants non signés sont relancés au même rythme.
@@ -311,7 +321,9 @@ async function options(): Promise<Resultat> {
       echeance: dateHeure(r.optionExpiresAt),
       suite:
         r.status === "acceptee"
-          ? "Il vous reste à signer la convention depuis votre espace pour confirmer la réservation."
+          ? cfg.PORTAIL_ENABLED
+            ? "Il vous reste à signer la convention depuis votre espace pour confirmer la réservation."
+            : "Il vous reste à nous retourner la convention signée pour confirmer la réservation."
           : "La collectivité attend votre réponse ou les précisions demandées pour confirmer la réservation.",
     });
     await prisma.reservation.update({ where: { id }, data: { optionRelanceAt: now } });

@@ -1,3 +1,4 @@
+import { BoutonOuvrir, ModalAction } from "@/components/fiche";
 import { Icone } from "@/components/icones";
 import { Barre, PaginationBar, SegTabs, Th, trier, urlAvec, Vide } from "@/components/liste";
 import { Avatar, Chip, TypeOrganisation } from "@/components/macros";
@@ -6,8 +7,10 @@ import { dateCourte } from "@/lib/libelles";
 import { todayParisISO } from "@/lib/paris-time";
 import { type EtatValidite, pireEtat } from "@/lib/pieces";
 import { serviceReference } from "@/lib/services";
+import { ChampsInvitation } from "@/modules/usagers/invitations";
 import { nomComplet } from "@/modules/utilisateurs/server";
 import { prisma } from "@/server/db";
+import { apercuInvitations } from "@/server/invitations";
 import { contexteModule } from "@/server/module";
 import { paginate, param, resolvePerPage, textSearch } from "@/server/paging";
 import { servicesUsagers } from "@/server/services";
@@ -54,8 +57,13 @@ export default async function UsagersPage({
     return (e === "expiree" || e === "bientot") && suivi(o);
   });
   const aValider = tous.filter((o) => !o.validatedAt && o.isActive && suivi(o));
+  // Les fiches tenues sans compte d'accès (créées portail fermé) : à inviter à son ouverture.
+  const sansCompte = tous.filter((o) => o.isActive && !o.users.length);
+  const peutInviter = page.user.isAdmin && page.features.portail && sansCompte.length > 0;
+  const apercu = peutInviter ? await apercuInvitations() : null;
   let items = tous;
-  if (onglet === "a_valider") items = aValider;
+  if (onglet === "sans_compte") items = sansCompte;
+  else if (onglet === "a_valider") items = aValider;
   else if (onglet === "pieces") items = aVerifier;
   else {
     const def = ONGLETS.find(([k]) => k === onglet);
@@ -111,6 +119,17 @@ export default async function UsagersPage({
       teinte: aVerifier.length ? "red" : "muted",
       active: onglet === "pieces",
     },
+    ...(sansCompte.length || onglet === "sans_compte"
+      ? [
+          {
+            href: urlAvec(page.pathname, page.search, { type: "sans_compte", page: null }),
+            label: "Sans compte",
+            count: sansCompte.length,
+            teinte: "muted",
+            active: onglet === "sans_compte",
+          },
+        ]
+      : []),
   ];
   return (
     <>
@@ -124,6 +143,14 @@ export default async function UsagersPage({
           </p>
         </div>
         <div className="page-actions">
+          {apercu ? (
+            <BoutonOuvrir
+              cible="modal-inviter"
+              libelle="Inviter les usagers sans compte"
+              icone="send"
+              classe="btn-outline-primary"
+            />
+          ) : null}
           {peutEditer ? (
             <a href="/usagers/nouveau" className="btn btn-primary">
               <Icone nom="plus" taille={14} /> Créer un usager
@@ -228,11 +255,13 @@ export default async function UsagersPage({
                   message={
                     q
                       ? "Aucun usager ne correspond à cette recherche."
-                      : onglet === "a_valider"
-                        ? "Aucune organisation en attente de validation."
-                        : onglet === "pieces"
-                          ? "Aucune pièce expirée ni sur le point d'expirer."
-                          : "Aucun usager pour le moment."
+                      : onglet === "sans_compte"
+                        ? "Toutes les organisations actives ont un compte d'accès."
+                        : onglet === "a_valider"
+                          ? "Aucune organisation en attente de validation."
+                          : onglet === "pieces"
+                            ? "Aucune pièce expirée ni sur le point d'expirer."
+                            : "Aucun usager pour le moment."
                   }
                   urlAjout={peutEditer && !q ? "/usagers/nouveau" : null}
                   libelleAjout="Créer le premier usager"
@@ -243,6 +272,22 @@ export default async function UsagersPage({
         </div>
       </div>
       <PaginationBar p={p} pathname={page.pathname} search={page.search} />
+
+      {apercu ? (
+        <ModalAction
+          id="modal-inviter"
+          titre="Inviter les usagers sans compte"
+          action="/usagers/inviter"
+          csrf={page.csrf}
+          bouton="Créer les comptes et envoyer"
+          icone="send"
+          danger
+          taille="lg"
+          aide="Un compte est créé pour chaque organisation qui n'en a pas, et un courriel d'invitation lui est envoyé. Cet envoi ne se rattrape pas ; une organisation déjà invitée ne l'est jamais une seconde fois."
+        >
+          <ChampsInvitation apercu={apercu} prefixe="inv" />
+        </ModalAction>
+      ) : null}
     </>
   );
 }

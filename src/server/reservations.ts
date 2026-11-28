@@ -36,7 +36,7 @@ import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { escapeHtml } from "@/server/email-templates";
 import { UserFacingError } from "@/server/errors";
-import { enabledIn } from "@/server/features";
+import { enabledIn, signatureEnLigneIn } from "@/server/features";
 import type { CurrentUser } from "@/server/guards";
 import { horairesSaisonDe } from "@/server/horaires";
 import { type Attachment, envoyerDepuisModele } from "@/server/mailer";
@@ -670,6 +670,30 @@ export async function courrielUsager(
   }
 }
 
+/** Les deux modèles qui demandent la signature de la convention (en ligne, ou sur papier). */
+export const MODELES_CONVENTION_A_SIGNER = ["convention_a_signer", "convention_a_retourner"];
+
+/**
+ * Demande à l'usager de signer sa convention (premier envoi et relances) : en ligne quand il le
+ * peut ; sinon (portail coupé) la convention part en pièce jointe, à retourner signée.
+ */
+export async function courrielConventionASigner(r: ReservationComplete): Promise<void> {
+  if (signatureEnLigneIn(await getSettings())) return courrielUsager(r, "convention_a_signer");
+  const { pdfConvention } = await import("@/server/convention");
+  const pdf = await pdfConvention(r.id).catch((e) => {
+    console.error("[convention à retourner]", e);
+    return null;
+  });
+  await courrielUsager(
+    r,
+    "convention_a_retourner",
+    {},
+    pdf
+      ? [{ filename: `convention-${r.numero}.pdf`, content: pdf, contentType: "application/pdf" }]
+      : undefined,
+  );
+}
+
 /** Pose (ou déplace) l'échéance d'une option sur un dossier non acquis. */
 export async function poserOption(
   r: ReservationComplete,
@@ -839,9 +863,11 @@ export async function changerStatut(
     await genererConvention(maj, acteur.name);
     const apres = (await chargerReservation(id)) as ReservationComplete;
     await courrielUsager(apres, "reservation_acceptee", {
-      suite: "Il vous reste à signer la convention de mise à disposition depuis votre espace.",
+      suite: signatureEnLigneIn(cfg)
+        ? "Il vous reste à signer la convention de mise à disposition depuis votre espace."
+        : "Il vous reste à nous retourner signée la convention de mise à disposition, que vous recevez par un second message.",
     });
-    await courrielUsager(apres, "convention_a_signer");
+    await courrielConventionASigner(apres);
     return apres;
   }
   if (effectif === "confirmee") {

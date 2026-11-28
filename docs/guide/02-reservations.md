@@ -190,6 +190,7 @@ La carte de décision propose, selon le statut :
 
 1. L'usager signe depuis son espace avec un code reçu par SMS ou par courriel. Vous n'avez rien à faire, sinon le relancer avec **Relancer l'usager** si besoin.
 2. Si l'usager a signé sur papier, cliquez sur **Marquer signée (papier)**, saisissez le **Nom du signataire** puis **Marquer signée**. La convention signée est régénérée et le dossier avance.
+3. **Portail fermé** (chapitre 9.3) : l'usager ne peut pas signer en ligne. À l'acceptation, il reçoit la convention **en pièce jointe** d'un courriel, à retourner signée ; **Relancer l'usager** la renvoie de la même façon. À réception, enregistrez-la par **Marquer signée (papier)**.
 
 **Comment faire — la caution**
 

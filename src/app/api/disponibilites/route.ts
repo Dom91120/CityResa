@@ -1,5 +1,7 @@
 import { addParisDays, parisMidnight } from "@/lib/paris-time";
 import { prisma } from "@/server/db";
+import { enabled } from "@/server/features";
+import { getCurrentUser } from "@/server/guards";
 import { json } from "@/server/http";
 import { occupants } from "@/server/reservations";
 
@@ -20,6 +22,9 @@ export async function GET(req: Request) {
     select: { isPublic: true, isActive: true },
   });
   if (!espace?.isActive) return json({ error: "Espace inconnu." }, 404);
+  // Portail coupé : plus de calendrier public, seuls les agents (planning) lisent les occupations.
+  if (!(await enabled("portail")) && !(await getCurrentUser())?.isAgent)
+    return json({ error: "Espace inconnu." }, 404);
   const debut = parisMidnight(de);
   const fin = addParisDays(parisMidnight(a), 1);
   if (fin.getTime() - debut.getTime() > 120 * 86_400_000)

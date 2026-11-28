@@ -122,10 +122,12 @@ export async function creerCompteUsager(
     "usagers",
     acteur,
   );
-  await envoyerDepuisModele("compte_cree", email, {
-    prenom: e.firstName.trim(),
-    lien: `${cfg.APP_BASE_URL}/portail`,
-  });
+  // Portail fermé : le compte ne sert pas encore, on n'annonce rien à l'usager.
+  if (cfg.PORTAIL_ENABLED)
+    await envoyerDepuisModele("compte_cree", email, {
+      prenom: e.firstName.trim(),
+      lien: `${cfg.APP_BASE_URL}/portail`,
+    });
   if (!opts.parAgent) {
     await notifierAgents(
       null,
@@ -137,6 +139,69 @@ export async function creerCompteUsager(
     );
   }
   return u.id;
+}
+
+/**
+ * Crée une organisation SANS compte d'accès : portail fermé, l'agent tient la fiche et saisit
+ * pour l'usager. Le compte viendra à l'ouverture du portail (src/server/invitations.ts), d'après
+ * le courriel de l'organisation et le nom de son représentant. Renvoie l'identifiant.
+ */
+export async function creerOrganisationSeule(
+  e: {
+    type: string;
+    name: string;
+    address: string | null;
+    postalCode: string | null;
+    city: string | null;
+    siret: string | null;
+    rna: string | null;
+    email: string | null;
+    phone: string | null;
+    website: string | null;
+    legalFirstName: string | null;
+    legalLastName: string | null;
+    legalAppointedAt: Date | null;
+    conventionnee: boolean;
+    sportive: boolean;
+    profilId: number | null;
+    notes: string | null;
+  },
+  acteur: string,
+): Promise<number> {
+  const email = e.email?.trim().toLowerCase() || null;
+  if (email && !emailValide(email)) throw new UserFacingError("Adresse de courriel invalide.");
+  const representant = [e.legalFirstName, e.legalLastName].filter(Boolean).join(" ").trim();
+  const nom = e.name.trim() || (e.type === "particulier" ? representant : "");
+  if (!nom)
+    throw new UserFacingError(
+      e.type === "particulier"
+        ? "Indiquez le prénom et le nom de la personne."
+        : "Indiquez le nom de l'organisation.",
+    );
+  const org = await prisma.organisation.create({
+    data: {
+      type: e.type,
+      name: nom.slice(0, 160),
+      address: e.address,
+      postalCode: e.postalCode,
+      city: e.city,
+      email,
+      phone: e.phone,
+      website: e.website,
+      siret: e.siret,
+      rna: e.rna,
+      legalFirstName: e.legalFirstName,
+      legalLastName: e.legalLastName,
+      legalAppointedAt: e.legalAppointedAt,
+      conventionnee: e.conventionnee,
+      sportive: e.sportive,
+      notes: e.notes,
+      profilId: e.profilId ?? (await profilParDefaut(e.type, e.postalCode)),
+      validatedAt: new Date(),
+    },
+  });
+  await auditRecord("creation usager", `${nom} · sans compte (portail fermé)`, "usagers", acteur);
+  return org.id;
 }
 
 /** Valide une organisation (accès aux tarifs de son profil). */

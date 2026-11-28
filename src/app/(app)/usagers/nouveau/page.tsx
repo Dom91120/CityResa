@@ -23,12 +23,18 @@ export default async function NouvelUsagerPage() {
       "danger",
     );
   const listeProfils = await profils();
+  // Portail fermé : on crée la fiche sans compte d'accès, les agents saisissent pour l'usager.
+  const avecCompte = page.features.portail;
   return (
     <>
       <EnteteForm
         titre="Nouvel usager"
         retour="/usagers"
-        sousTitre="L'organisation et son premier compte d'accès au portail. Un mot de passe provisoire sera généré et affiché une seule fois."
+        sousTitre={
+          avecCompte
+            ? "L'organisation et son premier compte d'accès au portail. Un mot de passe provisoire sera généré et affiché une seule fois."
+            : "La fiche de l'organisation. Le portail est fermé : aucun compte d'accès n'est créé, les agents saisissent ses demandes."
+        }
         libelle="Créer l'usager"
       />
       <form
@@ -42,7 +48,11 @@ export default async function NouvelUsagerPage() {
         <SectionForm
           titre="Organisation"
           icone="building-2"
-          aide="Pour un particulier, le nom de l'organisation est facultatif : le compte portera son nom."
+          aide={
+            avecCompte
+              ? "Pour un particulier, le nom de l'organisation est facultatif : le compte portera son nom."
+              : "Pour un particulier, le nom de l'organisation est facultatif : la fiche portera le prénom et le nom saisis plus bas."
+          }
         >
           <Grille colonnes={3}>
             <Select
@@ -66,14 +76,27 @@ export default async function NouvelUsagerPage() {
             <Champ label="SIRET" name="siret" />
             <Champ label="RNA (associations)" name="rna" placeholder="W…" />
             <Champ label="Site web" name="website" type="url" placeholder="https://" />
-            <Champ label="Courriel de l'organisation" name="email_org" type="email" />
+            <Champ
+              label="Courriel de l'organisation"
+              name="email_org"
+              type="email"
+              aide={
+                avecCompte
+                  ? undefined
+                  : "Reçoit les courriels des dossiers (acceptation, convention, facture). Servira d'identifiant à l'ouverture du portail."
+              }
+            />
             <Champ label="Téléphone de l'organisation" name="phone_org" type="tel" />
           </Grille>
         </SectionForm>
         <SectionForm
-          titre="Représentant légal"
+          titre={avecCompte ? "Représentant légal" : "Représentant légal ou personne"}
           icone="user-check"
-          aide="Président(e) d'une association, dirigeant(e) d'une entreprise. Une association doit aussi indiquer la date de l'assemblée générale qui l'a nommé(e) : ces données sont exigées avant toute demande de réservation."
+          aide={
+            avecCompte
+              ? "Président(e) d'une association, dirigeant(e) d'une entreprise. Une association doit aussi indiquer la date de l'assemblée générale qui l'a nommé(e) : ces données sont exigées avant toute demande de réservation."
+              : "Président(e) d'une association, dirigeant(e) d'une entreprise, ou le particulier lui-même. Une association doit aussi indiquer la date de l'assemblée générale qui l'a nommé(e). C'est à ce nom que le compte sera créé à l'ouverture du portail."
+          }
         >
           <Grille colonnes={3}>
             <Champ label="Prénom" name="legal_first_name" />
@@ -102,19 +125,21 @@ export default async function NouvelUsagerPage() {
             </div>
           </Grille>
         </SectionForm>
-        <SectionForm
-          titre="Premier compte d'accès"
-          icone="circle-user"
-          aide="La personne qui déposera les demandes. Elle recevra le courriel de bienvenue à cette adresse."
-        >
-          <Grille colonnes={3}>
-            <Champ label="Prénom" name="first_name" requis />
-            <Champ label="Nom" name="last_name" requis />
-            <Champ label="Fonction" name="fonction" placeholder="Présidente, gérant…" />
-            <Champ label="Courriel (identifiant)" name="email" type="email" requis />
-            <Champ label="Téléphone" name="phone" type="tel" />
-          </Grille>
-        </SectionForm>
+        {avecCompte ? (
+          <SectionForm
+            titre="Premier compte d'accès"
+            icone="circle-user"
+            aide="La personne qui déposera les demandes. Elle recevra le courriel de bienvenue à cette adresse."
+          >
+            <Grille colonnes={3}>
+              <Champ label="Prénom" name="first_name" requis />
+              <Champ label="Nom" name="last_name" requis />
+              <Champ label="Fonction" name="fonction" placeholder="Présidente, gérant…" />
+              <Champ label="Courriel (identifiant)" name="email" type="email" requis />
+              <Champ label="Téléphone" name="phone" type="tel" />
+            </Grille>
+          </SectionForm>
+        ) : null}
         <PiedForm retour="/usagers" libelle="Créer l'usager" />
       </form>
     </>

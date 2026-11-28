@@ -75,6 +75,20 @@ export async function alertes(
   const out: Alerte[] = [];
   const pluriel = (n: number, s: string, p: string) => (n > 1 ? p : s);
 
+  // Rappel permanent, pour l'administrateur : il reste tant qu'aucun texte n'est saisi.
+  if (user.isAdmin && !cfg.PORTAIL_CONDITIONS.trim())
+    out.push({
+      cle: "conditions_manquantes",
+      niveau: features.portail ? "danger" : "warning",
+      icone: "file-text",
+      titre: "Aucune condition d'utilisation n'est saisie",
+      detail: features.portail
+        ? "Le portail est ouvert sans conditions : les usagers n'ont rien à lire ni à accepter. À saisir dans Paramètres › Portail."
+        : "À saisir dans Paramètres › Portail avant d'ouvrir le portail : les usagers les accepteront à leur première connexion.",
+      nb: 1,
+      href: "/parametres#portail",
+    });
+
   if (features.documents && user.canView("usagers")) {
     const { expirees, bientot } = organisationsParEtat(await piecesDatees(), today, seuil);
     if (expirees.size)

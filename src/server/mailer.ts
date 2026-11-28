@@ -4,6 +4,7 @@
  * avec le statut « simule ») : le développement ne perd rien et n'envoie rien.
  */
 import nodemailer from "nodemailer";
+import { sansLiensPortail } from "@/lib/portail";
 import { type AppSettings, getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { EMAIL_TEMPLATE_SEEDS, escapeHtml, rendre, versTexte } from "@/server/email-templates";
@@ -142,12 +143,15 @@ export async function envoyerDepuisModele(
   const m = await modele(key);
   if (!m.actif) return false;
   const toutes = { ...(await variablesCommunes()), ...vars };
+  const corps = rendre(m.body, toutes);
+  // Portail coupé : un courriel ne renvoie personne vers un espace en ligne fermé.
+  const ouvert = (await getSettings()).PORTAIL_ENABLED;
   return envoyerMail({
     to,
     subject: rendre(m.subject, toutes)
       .replace(/&quot;/g, '"')
       .replace(/&amp;/g, "&"),
-    html: rendre(m.body, toutes),
+    html: ouvert ? corps : sansLiensPortail(corps),
     templateKey: key,
     reservationId: opts.reservationId,
     attachments: opts.attachments,

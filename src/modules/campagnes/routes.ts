@@ -3,10 +3,11 @@
  * d'état, décisions sur les vœux, arbitrage automatique, courriel groupé, suppression.
  * Réservés aux agents qui écrivent sur les réservations.
  */
-import { lireStatutCampagne, phraseBilanArbitrage } from "@/lib/campagnes";
+import { decrireCreneauHebdo, lireStatutCampagne, phraseBilanArbitrage } from "@/lib/campagnes";
 import { STATUTS_DU_MOMENT } from "@/lib/circuits";
 import { champ, champOuNull, coche, idOuNull, ids, parseDate, parseInt_ } from "@/lib/forms-util";
 import { minutesDe } from "@/lib/paris-time";
+import { auditRecord } from "@/server/audit";
 import {
   arbitrerCampagne,
   attribuerVoeu,
@@ -14,14 +15,17 @@ import {
   changerStatutCampagne,
   chargerCampagne,
   creerCampagne,
+  deposerVoeu,
   gereCampagne,
   modifierCampagne,
   notifierDecisions,
   refuserVoeu,
   remettreEnAttente,
+  retirerVoeu,
   supprimerCampagne,
   type VoeuEntree,
 } from "@/server/campagnes";
+import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
 import { enabledIn, require as requireFeature } from "@/server/features";
 import { type CurrentUser, requireDelete, requireEdit } from "@/server/guards";
@@ -133,7 +137,9 @@ export async function actionCampagne(
         return redirigerAvecMessage(
           fiche,
           nouveau === "ouverte"
-            ? "Dépôt des vœux ouvert : les usagers peuvent déposer depuis « Mes vœux »."
+            ? enabledIn(user.settings, "portail")
+              ? "Dépôt des vœux ouvert : les usagers peuvent déposer depuis « Mes vœux »."
+              : "Dépôt des vœux ouvert : le portail étant fermé, saisissez les vœux des organisations par « Saisir un vœu »."
             : nouveau === "instruction"
               ? "Dépôt clos : arbitrez les vœux, puis prévenez les demandeurs."
               : nouveau === "cloturee"
@@ -212,6 +218,32 @@ export async function actionCampagne(
       case "supprimer":
         await supprimerCampagne(c, user.email);
         return redirigerAvecMessage("/campagnes", `Campagne « ${c.label} » supprimée.`, "success");
+      // Un agent saisit le vœu d'une organisation (dossier papier, téléphone, portail fermé).
+      case "voeux/nouveau": {
+        const e = lireVoeu(form);
+        if (!user.gereEspace(e.espaceId))
+          throw new UserFacingError("Cet espace est hors de votre périmètre.");
+        const orgId = idOuNull(form, "organisation_id");
+        const org = orgId
+          ? await prisma.organisation.findFirst({
+              where: { id: orgId, isActive: true },
+              select: { id: true, name: true },
+            })
+          : null;
+        if (!org) throw new UserFacingError("Choisissez l'organisation qui demande le créneau.");
+        await deposerVoeu(c, org, null, e, { parAgent: true });
+        await auditRecord(
+          "depot voeu (agent)",
+          `${c.label} · ${org.name} · ${decrireCreneauHebdo(e)}`,
+          "reservations",
+          user.email,
+        );
+        return redirigerAvecMessage(
+          `${fiche}#e${e.espaceId}`,
+          `Vœu enregistré pour ${org.name} : ${decrireCreneauHebdo(e)}.`,
+          "success",
+        );
+      }
       default: {
         if (segments[0] === "voeux" && segments.length === 3) {
           const vid = parseInt_(segments[1], null, 1);
@@ -229,6 +261,10 @@ export async function actionCampagne(
           if (segments[2] === "refuser") {
             await refuserVoeu(c, vid, champOuNull(form, "note"), acteur);
             return redirigerAvecMessage(fiche, "Vœu refusé.", "success");
+          }
+          if (segments[2] === "retirer") {
+            await retirerVoeu(c, vid, null);
+            return redirigerAvecMessage(fiche, "Vœu retiré.", "success");
           }
           if (segments[2] === "attente") {
             await remettreEnAttente(c, vid);

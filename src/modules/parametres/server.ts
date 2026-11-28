@@ -39,8 +39,9 @@ export const ONGLETS: Onglet[] = [
     cle: "portail",
     label: "Portail",
     icone: "globe",
+    // PORTAIL_ENABLED n'est pas ici : ouvrir ou fermer le portail passe par sa propre route
+    // (/parametres/portail), qui crée les comptes ou ferme les sessions des usagers.
     cles: [
-      "PORTAIL_ENABLED",
       "PORTAIL_TITRE",
       "PORTAIL_ACCROCHE",
       "PORTAIL_CONDITIONS",

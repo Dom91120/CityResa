@@ -40,9 +40,11 @@ export default async function ConnexionPage({
                 <small>{cfg.COLLECTIVITE_NOM}</small>
               </span>
             </div>
-            <a href="/portail" className="login-lien-portail">
-              <Icone nom="door-open" taille={15} /> Espaces
-            </a>
+            {cfg.PORTAIL_ENABLED ? (
+              <a href="/portail" className="login-lien-portail">
+                <Icone nom="door-open" taille={15} /> Espaces
+              </a>
+            ) : null}
           </div>
           <div className="login-form">
             <h1>Connexion à votre espace réservation</h1>

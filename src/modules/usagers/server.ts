@@ -110,10 +110,12 @@ export async function ajouterMembre(
   await poserMotDePasse(u.id, motDePasse);
   await auditRecord("ajout membre usager", `${email} · ${org.name}`, "usagers", acteur);
   const cfg = await getSettings();
-  await envoyerDepuisModele("compte_cree", email, {
-    prenom: ident.firstName,
-    lien: `${cfg.APP_BASE_URL}/portail`,
-  });
+  // Portail fermé : le compte ne sert pas encore, on n'annonce rien à l'usager.
+  if (cfg.PORTAIL_ENABLED)
+    await envoyerDepuisModele("compte_cree", email, {
+      prenom: ident.firstName,
+      lien: `${cfg.APP_BASE_URL}/portail`,
+    });
   return { id: u.id, motDePasse, email };
 }
 

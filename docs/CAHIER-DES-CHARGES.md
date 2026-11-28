@@ -472,6 +472,45 @@ disposition gracieuses accordées aux associations, top organisations ; export *
   subventions, mon organisation, mon compte), signature de convention, consultation des
   factures, annulation dans le délai, flux ICS personnel.
 
+### Fonctionner sans portail
+
+Le portail s'ouvre et se ferme depuis Paramètres › Portail (bouton à confirmation, à part des
+autres réglages). Fermé, l'application reste un outil de back-office complet :
+
+- **Ce qui se ferme** : le catalogue public, le dépôt en ligne, l'espace personnel des usagers
+  et leur **connexion** (message « l'espace en ligne n'est pas ouvert » après un mot de passe
+  juste ; les sessions ouvertes sont fermées). Les **agents et les administrateurs ne sont
+  jamais concernés** : ils se connectent par la même page (règle pure et testée,
+  `src/lib/portail.ts`). Les pages réglementaires (accessibilité, mentions légales, données
+  personnelles) restent lisibles.
+- **Les agents saisissent pour l'usager** : demande de réservation, **vœu de campagne**
+  (« Saisir un vœu » sur la campagne, ouverte ou en instruction), dossier de subvention.
+- **Usagers sans compte** : un usager se crée sans compte d'accès (la fiche seule, courriel et
+  représentant) ; l'ajout de membres est masqué.
+- **Signature** : la signature reste suivie mais se fait sur papier. La convention part en pièce
+  jointe (modèle « Convention à retourner signée »), l'agent enregistre la signature reçue
+  (« Marquer signée ») ; même principe pour les conventions d'une campagne et les avenants.
+- **Courriels** : aucun courriel ne renvoie vers l'espace en ligne (la phrase qui porte le lien
+  est retirée à l'envoi, les modèles ne sont pas à réécrire) ; le courriel « compte créé » ne
+  part pas.
+- **À l'ouverture** : une fenêtre de confirmation propose de **créer les comptes** des
+  organisations qui n'en ont pas et de leur **envoyer une invitation** (ou d'ouvrir sans inviter).
+  Un compte par organisation, à son courriel et au nom de son représentant ; aucun mot de passe
+  n'est envoyé, l'usager choisit le sien par un lien valable 14 jours. On peut limiter l'envoi à
+  certains types d'usagers. La fenêtre nomme les fiches laissées de côté (pas de courriel,
+  courriel déjà pris). L'opération se rejoue depuis Usagers (« Inviter les usagers sans
+  compte », administrateur) et n'invite jamais deux fois la même organisation.
+- **Conditions d'utilisation** : un usager dont le compte a été créé par la collectivité (agent,
+  invitation, collègue) les lit et les accepte à sa première connexion, avant tout accès à son
+  espace (pages et routes d'écriture) ; la date est posée sur le compte et tracée à l'audit.
+  Sans texte saisi dans Paramètres › Portail, rien n'est demandé ; un rappel reste alors affiché
+  à l'administrateur (bandeau en haut de toutes les pages du back-office, alertes du tableau de
+  bord, onglet Portail, fenêtre d'ouverture du portail) jusqu'à ce qu'un texte soit saisi. Une modification ultérieure du texte ne fait pas
+  réaccepter les usagers.
+- **Limites** : la liste d'attente et la réponse aux messages n'ont pas d'équivalent côté agent
+  (elles passent par le téléphone et le courriel) ; l'ouverture est globale, pas encore par
+  secteur ou par type d'usager.
+
 ### Flux ICS et exports
 
 - ICS public par espace (jeton), ICS personnel par usager (jeton révocable), ICS par personne

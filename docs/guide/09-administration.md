@@ -53,13 +53,13 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 
 **Ce que l'on voit**
 
-- Quatre interrupteurs :
-  - **Portail public actif** : le catalogue des espaces et le dépôt de demandes en ligne ;
+- Un bandeau qui dit si **le portail est ouvert ou fermé**, avec le bouton **Fermer le portail…** ou **Ouvrir le portail…** (voir « Ouvrir ou fermer le portail » ci-dessous). Ce réglage ne s'enregistre pas avec le reste de l'onglet.
+- Trois interrupteurs :
   - **Inscription libre des usagers** : désactivée, seuls les agents créent les comptes usagers ;
   - **Validation des nouvelles organisations par un agent** : tant qu'elle n'est pas validée, une organisation n'a pas accès aux tarifs de son profil ;
   - **Afficher les tarifs sur le portail**.
 - **Titre de la page d'accueil** et **Accroche** du portail.
-- **Conditions d'utilisation** : le texte affiché à l'inscription (laissez vide s'il n'y a pas de conditions particulières).
+- **Conditions d'utilisation** : le texte affiché à l'inscription et sur le formulaire de demande (laissez vide s'il n'y a pas de conditions particulières). Un usager dont le compte a été créé par la collectivité (par un agent, par invitation à l'ouverture du portail ou par un collègue) doit le **lire et l'accepter à sa première connexion**, avant d'accéder à son espace ; la date est enregistrée sur son compte (« CGU acceptées le », chapitre 9.13) et au journal d'audit. Si ce texte est vide, rien ne lui est demandé. **Tant qu'il est vide, un rappel reste affiché à l'administrateur** : un bandeau en haut de toutes les pages du back-office (rouge si le portail est ouvert, orange s'il est fermé), qui ne se ferme pas et mène à cet onglet ; un encadré sous ce champ ; une alerte en tête du tableau de bord ; un avertissement dans la fenêtre d'ouverture du portail. Les autres agents ne le voient pas.
 - Les pages réglementaires (liens en pied de page du portail) :
   - **État de conformité RGAA** (Non évalué, Non conforme, Partiellement conforme, Totalement conforme), **Taux de conformité (%)**, **Date de l'audit** et **Déclaration : non-conformités, dérogations, plan d'amélioration** ;
   - **Mentions légales** (éditeur, directeur de publication, hébergeur ; vide, l'éditeur et le contact sont repris de l'onglet Collectivité) ;
@@ -71,7 +71,26 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
 2. Activez ou désactivez les interrupteurs, complétez les textes.
 3. Cliquez sur **Enregistrer**.
 
-**Règles à connaître** — Les durées de conservation affichées sur la page « Données personnelles » du portail viennent de l'onglet **Données personnelles** (9.11).
+*Fermer le portail*
+1. Cliquez sur **Fermer le portail…**. La fenêtre rappelle ce qui se ferme.
+2. Confirmez par **Fermer le portail**. Le catalogue public disparaît, plus aucun usager ne peut se connecter et ceux qui l'étaient sont déconnectés. Leurs comptes et leurs dossiers sont conservés.
+
+*Ouvrir le portail*
+1. Cliquez sur **Ouvrir le portail…**.
+2. Choisissez entre **Créer les comptes des usagers et leur envoyer l'invitation** et **Ouvrir le portail sans créer de compte**. Le premier choix détaille, par type d'usager, le nombre de comptes qui seront créés : décochez les types à ne pas inviter (les particuliers venus louer une salle une fois, par exemple).
+3. Lisez l'encadré jaune : il nomme les organisations qui ne seront pas invitées et pourquoi (pas de courriel sur la fiche, courriel déjà utilisé par un autre compte). Corrigez leur fiche avant ou après.
+4. Confirmez par **Ouvrir le portail**. Les courriels partent aussitôt.
+
+**Règles à connaître**
+
+- Fermer le portail **ne bloque jamais un agent ni un administrateur** : ils se connectent par la même page et travaillent normalement.
+- Portail fermé, les agents saisissent à la place des usagers : réservations, vœux de campagne (« Saisir un vœu » sur la campagne), dossiers de subvention. Un nouvel usager se crée sans compte d'accès.
+- Portail fermé, la convention part en pièce jointe d'un courriel ; l'usager la retourne signée et l'agent l'enregistre par **Marquer signée**. Les courriels ne renvoient plus vers l'espace en ligne.
+- À sa première connexion, un usager invité lit et accepte les **Conditions d'utilisation** de cet onglet (si un texte y est saisi) ; tant qu'il ne l'a pas fait, son espace lui reste fermé.
+- L'invitation ne contient pas de mot de passe : l'usager choisit le sien par un lien valable 14 jours. Passé ce délai, il en obtient un nouveau par « Mot de passe oublié ».
+- L'envoi ne se rattrape pas, mais il se complète : **Usagers › Inviter les usagers sans compte** rejoue l'opération pour les fiches créées ou corrigées depuis. Une organisation qui a déjà un compte n'est jamais réinvitée.
+- Les pages réglementaires (accessibilité, mentions légales, données personnelles) restent lisibles portail fermé.
+- Les durées de conservation affichées sur la page « Données personnelles » du portail viennent de l'onglet **Données personnelles** (9.11).
 
 ## 9.4 Onglet Réservations
 

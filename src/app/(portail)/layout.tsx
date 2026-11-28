@@ -5,6 +5,7 @@ import { Avatar } from "@/components/macros";
 import { ConfirmModal, ScriptDiffere, ScriptsPage } from "@/components/scripts";
 import { FlashMessages } from "@/components/shell";
 import { ETATS_ACCESSIBILITE } from "@/lib/accessibilite";
+import { pagePortailOuverte } from "@/lib/portail";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { allFlagsIn } from "@/server/features";
@@ -22,8 +23,11 @@ import { whereUsager } from "@/server/reservations";
  */
 export default async function PortailLayout({ children }: { children: React.ReactNode }) {
   const [cfg, user, ctx] = await Promise.all([getSettings(), getCurrentUser(), contexteAnonyme()]);
-  const estEspaceUsager = /^\/portail\/(mes-|mon-)/.test(ctx.pathname);
-  if (!cfg.PORTAIL_ENABLED && !(user?.isUsager && estEspaceUsager)) notFound();
+  // Portail coupé : tout est fermé, espace personnel compris ; seules les pages réglementaires
+  // restent lisibles (src/lib/portail.ts).
+  const ouvert = cfg.PORTAIL_ENABLED;
+  if (!pagePortailOuverte(ctx.pathname, ouvert)) notFound();
+  const accueil = ouvert ? "/portail" : user?.isAgent ? "/" : "/connexion";
   const features = allFlagsIn(cfg);
   const usager = user?.isUsager ? user : null;
   const [counts, org, aSigner]: [Record<string, number>, { type: string } | null, number] = usager
@@ -45,7 +49,9 @@ export default async function PortailLayout({ children }: { children: React.Reac
   // c'est la seule entrée du menu. Un usager connecté le garde (repère parmi ses pages).
   const surCatalogue = ctx.pathname === "/portail";
   const liens: Lien[] =
-    user || !surCatalogue ? [{ href: "/portail", label: "Espaces", icone: "door-open" }] : [];
+    ouvert && (user || !surCatalogue)
+      ? [{ href: "/portail", label: "Espaces", icone: "door-open" }]
+      : [];
   if (usager) {
     liens.push({
       href: "/portail/mes-reservations",
@@ -99,7 +105,7 @@ export default async function PortailLayout({ children }: { children: React.Reac
       </a>
       <header className="portail-header">
         <div className="inner">
-          <a href="/portail" className="portail-brand">
+          <a href={accueil} className="portail-brand">
             {urlLogo(cfg) ? (
               <Blason logo={urlLogo(cfg)} taille={32} nom={cfg.COLLECTIVITE_NOM} />
             ) : (
@@ -144,7 +150,7 @@ export default async function PortailLayout({ children }: { children: React.Reac
                 <a href="/connexion">
                   <Icone nom="log-in" taille={15} /> Se connecter
                 </a>
-                {cfg.INSCRIPTION_ENABLED ? (
+                {cfg.INSCRIPTION_ENABLED && ouvert ? (
                   <a href="/inscription" className="btn btn-primary btn-sm ms-1 text-white">
                     Créer mon espace
                   </a>
@@ -180,7 +186,7 @@ export default async function PortailLayout({ children }: { children: React.Reac
                   <a href="/connexion" className="dropdown-item">
                     <Icone nom="log-in" taille={14} /> Se connecter
                   </a>
-                  {cfg.INSCRIPTION_ENABLED ? (
+                  {cfg.INSCRIPTION_ENABLED && ouvert ? (
                     <a href="/inscription" className="dropdown-item">
                       <Icone nom="user-plus" taille={14} /> Créer mon espace
                     </a>
@@ -226,6 +232,12 @@ export default async function PortailLayout({ children }: { children: React.Reac
           <a href="/portail/mentions-legales">Mentions légales</a>
           {" · "}
           <a href="/portail/donnees-personnelles">Données personnelles</a>
+          {usager && ouvert && cfg.PORTAIL_CONDITIONS.trim() ? (
+            <>
+              {" · "}
+              <a href="/portail/conditions">Conditions d'utilisation</a>
+            </>
+          ) : null}
         </nav>
         <div className="mt-2 text-faint">Propulsé par CityRésa</div>
       </footer>

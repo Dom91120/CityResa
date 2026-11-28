@@ -141,6 +141,8 @@ export function TableauVoeux({
   csrf: string;
 }) {
   const instruction = c.status === "instruction";
+  // Dépôt ouvert : un agent retire un vœu saisi par erreur, comme l'usager le fait sur le portail.
+  const depot = c.status === "ouverte";
   return (
     <div className="table-responsive">
       <table className="table table-hover align-middle">
@@ -151,7 +153,7 @@ export function TableauVoeux({
             <th>Activité</th>
             <th>Déposé le</th>
             <th>Décision</th>
-            {peutDecider && instruction ? <th className="actions" /> : null}
+            {peutDecider && (instruction || depot) ? <th className="actions" /> : null}
           </tr>
         </thead>
         <tbody>
@@ -196,6 +198,28 @@ export function TableauVoeux({
                   ) : null}
                   {v.decisionNote ? <div className="small text-muted">{v.decisionNote}</div> : null}
                 </td>
+                {peutDecider && depot ? (
+                  <td className="actions text-nowrap">
+                    {v.status === "en_attente" ? (
+                      <form
+                        method="POST"
+                        action={`/campagnes/${c.id}/voeux/${v.id}/retirer`}
+                        className="d-inline"
+                      >
+                        <input type="hidden" name="csrf_token" value={csrf} />
+                        <button
+                          type="submit"
+                          className="btn btn-ghost btn-ghost-danger btn-icone btn-sm"
+                          title="Retirer ce vœu"
+                          aria-label="Retirer ce vœu"
+                          data-confirm={`Retirer le vœu « ${decrireCreneauHebdo(v)} » de ${v.organisation.name} ?`}
+                        >
+                          <Icone nom="trash-2" taille={14} />
+                        </button>
+                      </form>
+                    ) : null}
+                  </td>
+                ) : null}
                 {peutDecider && instruction ? (
                   <td className="actions text-nowrap">
                     {v.status !== "attribue" ? (

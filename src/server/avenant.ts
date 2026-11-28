@@ -15,7 +15,7 @@ import { prisma } from "@/server/db";
 import { enregistrerPdf } from "@/server/documents";
 import { escapeHtml } from "@/server/email-templates";
 import { UserFacingError } from "@/server/errors";
-import { enabledIn } from "@/server/features";
+import { enabledIn, signatureEnLigneIn } from "@/server/features";
 import { type Attachment, envoyerDepuisModele } from "@/server/mailer";
 import { notifierAgents } from "@/server/notifications";
 import { CSS_EDITION, htmlVersPdf } from "@/server/pdf";
@@ -141,7 +141,7 @@ export async function courrielAvenantASigner(r: ReservationComplete, a: Avenant)
     {
       avenant: libelleAvenant(a),
       objet: a.objet,
-      suite: enabledIn(cfg, "signature")
+      suite: signatureEnLigneIn(cfg)
         ? "Signez-le en ligne depuis votre dossier, comme la convention : recevez un code, puis saisissez-le avec votre nom."
         : "Merci de nous le retourner signé ; nos services l'enregistreront sur votre dossier.",
     },

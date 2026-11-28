@@ -4,6 +4,7 @@
  */
 
 import { Blason } from "@/components/blason";
+import { BoutonOuvrir } from "@/components/fiche";
 import { Champ, Grille, Interrupteur, Select, Zone } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
 import { ETATS_ACCESSIBILITE } from "@/lib/accessibilite";
@@ -122,12 +123,26 @@ export function VoletPortail({ cfg }: { cfg: AppSettings }) {
   return (
     <>
       <div className="mb-3 d-flex flex-column gap-2">
-        <Interrupteur
-          label="Portail public actif"
-          name="PORTAIL_ENABLED"
-          coche={cfg.PORTAIL_ENABLED}
-          aide="Le catalogue des espaces et le dépôt de demandes en ligne."
-        />
+        {/* L'ouverture et la fermeture ne s'enregistrent pas avec l'onglet : elles ont leur propre
+            fenêtre de confirmation (comptes à créer, sessions à fermer). */}
+        <div className={`alert ${cfg.PORTAIL_ENABLED ? "alert-success" : "alert-warning"} mb-1`}>
+          <div className="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+            <div>
+              <strong>
+                {cfg.PORTAIL_ENABLED ? "Le portail est ouvert." : "Le portail est fermé."}
+              </strong>{" "}
+              {cfg.PORTAIL_ENABLED
+                ? "Les usagers consultent le catalogue, déposent leurs demandes et suivent leurs dossiers en ligne."
+                : "Aucun usager ne peut se connecter ni consulter le catalogue : les agents saisissent les demandes, les vœux et les dossiers à leur place. Les agents et les administrateurs se connectent normalement."}
+            </div>
+            <BoutonOuvrir
+              cible={cfg.PORTAIL_ENABLED ? "modal-portail-fermer" : "modal-portail-ouvrir"}
+              libelle={cfg.PORTAIL_ENABLED ? "Fermer le portail…" : "Ouvrir le portail…"}
+              icone={cfg.PORTAIL_ENABLED ? "lock" : "lock-open"}
+              classe={cfg.PORTAIL_ENABLED ? "btn-outline-danger" : "btn-primary"}
+            />
+          </div>
+        </div>
         <Interrupteur
           label="Inscription libre des usagers"
           name="INSCRIPTION_ENABLED"
@@ -159,8 +174,20 @@ export function VoletPortail({ cfg }: { cfg: AppSettings }) {
           name="PORTAIL_CONDITIONS"
           valeur={cfg.PORTAIL_CONDITIONS}
           rows={6}
-          aide="Texte affiché à l'inscription (CGU). Vide : aucune condition particulière."
+          aide="Texte affiché à l'inscription et sur le formulaire de demande. Un usager dont le compte a été créé par la collectivité l'accepte à sa première connexion."
         />
+        {/* Rappel permanent : il reste affiché tant que le texte est vide. */}
+        {!cfg.PORTAIL_CONDITIONS.trim() ? (
+          <div className="alert alert-warning mb-0" style={{ gridColumn: "1 / -1" }}>
+            <Icone nom="triangle-alert" taille={15} />{" "}
+            <strong>Aucune condition d'utilisation n'est saisie.</strong> Les usagers n'ont rien à
+            lire ni à accepter
+            {cfg.PORTAIL_ENABLED
+              ? ", alors que le portail est ouvert."
+              : " : saisissez-les avant d'ouvrir le portail."}{" "}
+            Ce rappel et celui du tableau de bord restent affichés tant que ce champ est vide.
+          </div>
+        ) : null}
       </Grille>
       <p className="form-section-aide mt-3">
         Pages réglementaires du portail (liens en pied de page) : déclaration d'accessibilité,

@@ -358,6 +358,30 @@ export function Shell({
       </header>
 
       <main className="main-content" id="main-content">
+        {/* Rappel permanent à l'administrateur, sur toutes les pages : il ne se ferme pas et ne
+            disparaît qu'une fois des conditions d'utilisation saisies. Sur Paramètres, le rappel
+            est déjà sous le champ. */}
+        {user.isAdmin &&
+        !user.settings.PORTAIL_CONDITIONS.trim() &&
+        !pathname.startsWith("/parametres") ? (
+          <div
+            className={`alert ${features.portail ? "alert-danger" : "alert-warning"} d-flex align-items-center gap-2`}
+            role="status"
+          >
+            <span className="flex-shrink-0 d-inline-flex">
+              <Icone nom="triangle-alert" taille={16} />
+            </span>
+            <span className="flex-grow-1">
+              <strong>Aucune condition d'utilisation n'est saisie.</strong>{" "}
+              {features.portail
+                ? "Le portail est ouvert : les usagers n'ont rien à lire ni à accepter."
+                : "À saisir avant d'ouvrir le portail."}
+            </span>
+            <a href="/parametres#portail" className="flex-shrink-0 fw-semibold text-nowrap">
+              Saisir les conditions
+            </a>
+          </div>
+        ) : null}
         <FlashMessages flashes={flashes} nonce={nonce} />
         {children}
       </main>

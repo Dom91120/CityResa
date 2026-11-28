@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { BoutonOuvrir, Entete, MenuPost, MenuSep, ModalAction } from "@/components/fiche";
+import { Champ, Interrupteur, Select, Zone } from "@/components/formulaire";
 import { Icone } from "@/components/icones";
 import { VideBloc } from "@/components/liste";
 import { CarteStat } from "@/components/stats";
@@ -9,6 +10,7 @@ import {
   TRANSITION_CAMPAGNE_LIBELLES,
   TRANSITIONS_CAMPAGNE,
 } from "@/lib/campagnes";
+import { JOURS_ISO } from "@/lib/constantes";
 import { dateCourte, pluriel } from "@/lib/libelles";
 import { ChampsCampagne, StatutCampagne, TableauVoeux } from "@/modules/campagnes/vues";
 import { Onglets, Volet } from "@/modules/espaces/vues";
@@ -53,6 +55,20 @@ export default async function CampagnePage({ params }: { params: Promise<{ id: s
     }),
     espacesDeCampagne(c),
   ]);
+  // Saisir le vœu d'une organisation à sa place : sur les espaces que l'agent gère, tant que le
+  // dépôt est ouvert, et encore pendant l'instruction (dossier papier arrivé après la clôture).
+  const espacesSaisie = ouverts.filter((e) => user.gereEspace(e.id));
+  const peutSaisir =
+    peutEditer &&
+    espacesSaisie.length > 0 &&
+    (c.status === "ouverte" || c.status === "instruction");
+  const organisationsChoix = peutSaisir
+    ? await prisma.organisation.findMany({
+        where: { isActive: true },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      })
+    : [];
   const choixServices = page.features.processus
     ? (
         await prisma.service.findMany({
@@ -96,38 +112,50 @@ export default async function CampagnePage({ params }: { params: Promise<{ id: s
         }
         retour="/campagnes"
         actions={
-          peutGerer ? (
+          peutGerer || peutSaisir ? (
             <>
-              {c.status === "instruction" && nb("en_attente") ? (
-                <form method="POST" action={`${ici}/arbitrer`} className="d-inline">
-                  <input type="hidden" name="csrf_token" value={csrf} />
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    data-confirm={`Arbitrer automatiquement les ${nb("en_attente")} vœux en attente ? Les conflits sont tranchés par priorité puis ancienneté ; chaque vœu retenu crée un dossier sur toute la saison.`}
-                  >
-                    <Icone nom="gavel" taille={14} /> Arbitrer automatiquement
-                  </button>
-                </form>
+              {peutSaisir ? (
+                <BoutonOuvrir
+                  cible="modal-voeu"
+                  libelle="Saisir un vœu"
+                  icone="plus"
+                  classe="btn-outline-primary"
+                />
               ) : null}
-              {c.status !== "brouillon" && aPrevenir ? (
-                <form method="POST" action={`${ici}/notifier`} className="d-inline">
-                  <input type="hidden" name="csrf_token" value={csrf} />
-                  <button
-                    type="submit"
-                    className="btn btn-outline-primary"
-                    data-confirm="Envoyer à chaque organisation un courriel récapitulant ses créneaux attribués et ses vœux refusés ?"
-                  >
-                    <Icone nom="send" taille={14} /> Prévenir les demandeurs ({aPrevenir})
-                  </button>
-                </form>
-              ) : null}
-              <BoutonOuvrir
-                cible="modal-campagne"
-                libelle="Modifier"
-                icone="pencil"
-                classe="btn-outline-secondary"
-              />
+              {!peutGerer ? null : (
+                <>
+                  {c.status === "instruction" && nb("en_attente") ? (
+                    <form method="POST" action={`${ici}/arbitrer`} className="d-inline">
+                      <input type="hidden" name="csrf_token" value={csrf} />
+                      <button
+                        type="submit"
+                        className="btn btn-primary"
+                        data-confirm={`Arbitrer automatiquement les ${nb("en_attente")} vœux en attente ? Les conflits sont tranchés par priorité puis ancienneté ; chaque vœu retenu crée un dossier sur toute la saison.`}
+                      >
+                        <Icone nom="gavel" taille={14} /> Arbitrer automatiquement
+                      </button>
+                    </form>
+                  ) : null}
+                  {c.status !== "brouillon" && aPrevenir ? (
+                    <form method="POST" action={`${ici}/notifier`} className="d-inline">
+                      <input type="hidden" name="csrf_token" value={csrf} />
+                      <button
+                        type="submit"
+                        className="btn btn-outline-primary"
+                        data-confirm="Envoyer à chaque organisation un courriel récapitulant ses créneaux attribués et ses vœux refusés ?"
+                      >
+                        <Icone nom="send" taille={14} /> Prévenir les demandeurs ({aPrevenir})
+                      </button>
+                    </form>
+                  ) : null}
+                  <BoutonOuvrir
+                    cible="modal-campagne"
+                    libelle="Modifier"
+                    icone="pencil"
+                    classe="btn-outline-secondary"
+                  />
+                </>
+              )}
             </>
           ) : undefined
         }
@@ -144,9 +172,11 @@ export default async function CampagnePage({ params }: { params: Promise<{ id: s
                     champs={{ statut: t }}
                     confirm={
                       t === "ouverte"
-                        ? "Ouvrir le dépôt : la campagne devient visible des usagers dans « Mes vœux »."
+                        ? page.features.portail
+                          ? "Ouvrir le dépôt : la campagne devient visible des usagers dans « Mes vœux »."
+                          : "Ouvrir le dépôt : le portail étant fermé, vous saisirez les vœux des organisations par « Saisir un vœu »."
                         : t === "instruction"
-                          ? "Clore le dépôt : les usagers ne pourront plus déposer ni retirer de vœu."
+                          ? "Clore le dépôt : les usagers ne pourront plus déposer ni retirer de vœu. Vous pourrez encore saisir un vœu reçu sur papier."
                           : undefined
                     }
                   />
@@ -233,7 +263,9 @@ export default async function CampagnePage({ params }: { params: Promise<{ id: s
                         titre="Aucun vœu sur cet espace"
                         texte={
                           c.status === "ouverte"
-                            ? "Le dépôt est ouvert : les vœux apparaîtront ici."
+                            ? peutSaisir
+                              ? "Le dépôt est ouvert : les vœux apparaîtront ici. « Saisir un vœu » enregistre celui d'une organisation à sa place."
+                              : "Le dépôt est ouvert : les vœux apparaîtront ici."
                             : undefined
                         }
                       />
@@ -252,6 +284,104 @@ export default async function CampagnePage({ params }: { params: Promise<{ id: s
           />
         </div>
       )}
+
+      {peutSaisir ? (
+        <ModalAction
+          id="modal-voeu"
+          titre="Saisir un vœu pour une organisation"
+          action={`${ici}/voeux/nouveau`}
+          csrf={csrf}
+          bouton="Enregistrer le vœu"
+          icone="check"
+          taille="lg"
+          aide="Pour une demande reçue sur papier, par téléphone ou au guichet. Le vœu rejoint ceux déposés par les usagers et s'arbitre de la même façon."
+        >
+          <div className="grille grille-3">
+            <Select
+              label="Organisation"
+              name="organisation_id"
+              id="vn-organisation"
+              options={organisationsChoix.map((o) => [String(o.id), o.name])}
+              requis
+              pleine
+              blank="Choisir…"
+              aide="Absente de la liste ? Créez-la d'abord dans Usagers."
+            />
+            <Select
+              label="Espace souhaité"
+              name="espace_id"
+              id="vn-espace"
+              options={espacesSaisie.map((e) => [String(e.id), `${e.name} · ${e.siteName}`])}
+              requis
+              blank="Choisir…"
+            />
+            <Select
+              label="Jour"
+              name="weekday"
+              id="vn-jour"
+              options={JOURS_ISO.map((j) => [String(j.iso), j.long])}
+              requis
+              blank="Choisir…"
+            />
+            <div>
+              <label className="form-label" htmlFor="vn-debut">
+                Horaire <span className="req">*</span>
+              </label>
+              <div className="d-flex align-items-center gap-2">
+                <input
+                  type="time"
+                  name="heure_debut"
+                  id="vn-debut"
+                  className="form-control"
+                  required
+                  step={900}
+                  aria-label="Heure de début"
+                />
+                <span className="text-muted">–</span>
+                <input
+                  type="time"
+                  name="heure_fin"
+                  className="form-control"
+                  required
+                  step={900}
+                  aria-label="Heure de fin"
+                />
+              </div>
+            </div>
+            <Champ
+              label="Activité"
+              name="title"
+              id="vn-activite"
+              requis
+              pleine
+              placeholder="Ex. : Entraînement seniors, cours de danse…"
+            />
+            <Champ
+              label="Participants habituels"
+              name="participants"
+              id="vn-participants"
+              type="number"
+              min={1}
+            />
+            <Zone
+              label="Précisions"
+              name="description"
+              id="vn-precisions"
+              rows={2}
+              placeholder="Matériel, contraintes, public accueilli…"
+            />
+            <div style={{ gridColumn: "1 / -1" }}>
+              <Interrupteur
+                label="Hors vacances scolaires"
+                name="hors_vacances"
+                id="vn-vacances"
+                coche
+                aide="Décoché, le créneau est aussi demandé pendant les vacances."
+              />
+            </div>
+          </div>
+        </ModalAction>
+      ) : null}
 
       {peutGerer ? (
         <ModalAction

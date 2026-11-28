@@ -24,7 +24,7 @@ import { saisonLue } from "@/server/calendrier";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { UserFacingError } from "@/server/errors";
-import { enabledIn } from "@/server/features";
+import { enabledIn, signatureEnLigneIn } from "@/server/features";
 import type { CurrentUser } from "@/server/guards";
 import { horairesSaisonDe } from "@/server/horaires";
 import { envoyerDepuisModele } from "@/server/mailer";
@@ -249,8 +249,11 @@ export async function deposerVoeu(
   org: { id: number; name: string },
   userId: string | null,
   e: VoeuEntree,
+  opts: { parAgent?: boolean } = {},
 ): Promise<number> {
-  if (c.status !== "ouverte") throw new UserFacingError("Le dépôt des vœux est clos.");
+  // Un agent saisit aussi pendant l'instruction : un dossier papier arrivé après la clôture.
+  const ouvert = c.status === "ouverte" || (opts.parAgent && c.status === "instruction");
+  if (!ouvert) throw new UserFacingError("Le dépôt des vœux est clos.");
   const ouverts = await espacesDeCampagne(c);
   const espace = ouverts.find((x) => x.id === e.espaceId);
   if (!espace) throw new UserFacingError("Cet espace n'est pas ouvert à la campagne.");
@@ -271,7 +274,12 @@ export async function deposerVoeu(
       v.startMin === e.startMin &&
       v.endMin === e.endMin,
   );
-  if (doublon) throw new UserFacingError("Vous avez déjà déposé ce vœu.");
+  if (doublon)
+    throw new UserFacingError(
+      opts.parAgent
+        ? `Ce vœu est déjà enregistré pour ${org.name}.`
+        : "Vous avez déjà déposé ce vœu.",
+    );
   const v = await prisma.voeu.create({
     data: {
       campagneId: c.id,
@@ -290,12 +298,13 @@ export async function deposerVoeu(
   return v.id;
 }
 
+/** `orgId` nul : un agent retire le vœu qu'il a saisi pour une organisation, quelle qu'elle soit. */
 export async function retirerVoeu(
   c: CampagneComplete,
   voeuId: number,
-  orgId: number,
+  orgId: number | null,
 ): Promise<void> {
-  const v = c.voeux.find((x) => x.id === voeuId && x.organisationId === orgId);
+  const v = c.voeux.find((x) => x.id === voeuId && (orgId === null || x.organisationId === orgId));
   if (!v) throw new UserFacingError("Vœu introuvable.");
   if (c.status !== "ouverte" || v.status !== "en_attente")
     throw new UserFacingError("Ce vœu ne peut plus être retiré.");
@@ -527,9 +536,13 @@ export async function notifierDecisions(
           .join("\n")}`
       : "";
     const suite = attribues.length
-      ? enabledIn(cfg, "signature")
+      ? signatureEnLigneIn(cfg)
         ? "Chaque créneau attribué fait l'objet d'une convention à signer depuis votre espace."
-        : "Chaque créneau attribué fait l'objet d'une réservation confirmée visible dans votre espace."
+        : enabledIn(cfg, "signature")
+          ? "Chaque créneau attribué fait l'objet d'une convention, que vous recevez par courriel et que nous vous remercions de nous retourner signée."
+          : enabledIn(cfg, "portail")
+            ? "Chaque créneau attribué fait l'objet d'une réservation confirmée visible dans votre espace."
+            : "Chaque créneau attribué fait l'objet d'une réservation confirmée."
       : "Nous restons à votre disposition pour étudier d'autres créneaux.";
     if (to) {
       await envoyerDepuisModele("campagne_decisions", to, {
@@ -541,6 +554,16 @@ export async function notifierDecisions(
         suite,
         lien: `${cfg.APP_BASE_URL}/portail/mes-voeux`,
       });
+      // Portail coupé : l'organisation ne trouvera pas ses conventions en ligne, elles partent
+      // donc par courriel, une par créneau attribué, à retourner signées.
+      if (enabledIn(cfg, "signature") && !enabledIn(cfg, "portail")) {
+        const { courrielConventionASigner } = await import("@/server/reservations");
+        for (const v of attribues) {
+          const r = v.reservationId ? await chargerReservation(v.reservationId) : null;
+          if (r?.status === "acceptee")
+            await courrielConventionASigner(r).catch((e) => console.error("[convention]", e));
+        }
+      }
     }
     if (destinataire)
       await notifier(

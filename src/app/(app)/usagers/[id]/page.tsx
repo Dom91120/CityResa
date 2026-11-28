@@ -23,6 +23,7 @@ import {
 import { DOCUMENT_KINDS, SUBVENTION_TYPES } from "@/lib/constantes";
 import {
   manquesDossier,
+  manquesSur,
   nomRepresentant,
   phraseManques,
   qualiteRepresentant,
@@ -61,7 +62,13 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
   const reference = await referenceDe(org);
   const peutAnonymiser = user.canDelete("usagers");
   const regles = reglesDe(user.settings);
-  const manques = manquesDossier(org, org.users.find((u) => u.isActive) ?? null);
+  // Portail fermé, une fiche tenue sans compte n'a pas de contact de dépôt à renseigner : seules
+  // les données de l'organisation comptent (l'agent saisit la demande, sans ce contrôle).
+  const contact = org.users.find((u) => u.isActive) ?? null;
+  const manques =
+    !features.portail && !org.users.length
+      ? manquesSur("organisation", org, null)
+      : manquesDossier(org, contact);
   const [reservations, factures, subventions, documents, categories, historique, absences] =
     await Promise.all([
       prisma.reservation.findMany({
@@ -171,7 +178,10 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
         <div className="alert alert-warning d-flex gap-2 align-items-start mb-3">
           <Icone nom="triangle-alert" taille={16} />
           <span>
-            <strong>Dossier incomplet pour réserver.</strong> {phraseManques(manques)}{" "}
+            <strong>
+              {features.portail ? "Dossier incomplet pour réserver." : "Fiche incomplète."}
+            </strong>{" "}
+            {phraseManques(manques)}{" "}
             {peutEditer ? (
               <a href={`${ici}/modifier`}>Compléter la fiche</a>
             ) : (
@@ -286,7 +296,7 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
             nb={org.users.length}
             id="membres"
             droite={
-              peutEditer ? (
+              peutEditer && page.features.portail ? (
                 <BoutonOuvrir
                   cible="modal-membre"
                   libelle="Ajouter un membre"
@@ -416,8 +426,9 @@ export default async function UsagerPage({ params }: { params: Promise<{ id: str
               </ul>
             ) : (
               <p className="text-muted small mb-0">
-                Aucun compte rattaché. Ajoutez un membre pour que l'organisation puisse déposer des
-                demandes sur le portail.
+                {page.features.portail
+                  ? "Aucun compte rattaché. Ajoutez un membre pour que l'organisation puisse déposer des demandes sur le portail."
+                  : "Aucun compte : le portail est fermé, les agents saisissent les demandes de cette organisation. Son compte sera créé à l'ouverture du portail, d'après son courriel et le nom de son représentant."}
               </p>
             )}
           </Section>

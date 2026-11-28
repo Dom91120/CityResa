@@ -319,9 +319,11 @@ export function CarteDecision({
       texte = (
         <>
           La demande est acceptée : <strong>{demandeur}</strong> doit signer la convention
-          {features.signature
+          {features.signature && features.portail
             ? " depuis son espace, avec un code reçu par SMS ou par courriel."
-            : "."}
+            : features.signature
+              ? " sur papier : la convention lui est envoyée par courriel, à retourner signée. À réception, enregistrez-la par « Marquer signée »."
+              : "."}
           <EtatSignature r={r} />
         </>
       );
@@ -711,9 +713,11 @@ export function PanneauApprobation({
             aria-label="Message à l'usager"
           />
           <div className="form-text">
-            {features.signature
-              ? "L'usager reçoit l'acceptation, la convention à signer et ce message."
-              : "Sans signature électronique, la demande passe directement « Confirmée »."}
+            {features.signature && !features.portail
+              ? "L'usager reçoit l'acceptation, la convention à retourner signée (en pièce jointe) et ce message."
+              : features.signature
+                ? "L'usager reçoit l'acceptation, la convention à signer et ce message."
+                : "Sans signature électronique, la demande passe directement « Confirmée »."}
           </div>
         </div>
         <div

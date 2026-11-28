@@ -5,6 +5,7 @@
  */
 import { APIError } from "better-auth/api";
 import { headers } from "next/headers";
+import { connexionOuverte, MESSAGE_PORTAIL_FERME } from "@/lib/portail";
 import { auditRecord } from "@/server/audit";
 import { auth } from "@/server/auth";
 import { getSettings } from "@/server/config-store";
@@ -64,6 +65,13 @@ export async function seConnecter(
       where: { userId: user.id, providerId: "credential" },
     });
     authed = Boolean(cred?.password && (await verifyPassword(cred.password, password)));
+  }
+
+  // Portail coupé : aucun usager n'entre. Le refus ne vient qu'après un mot de passe juste (il
+  // ne révèle donc rien à un tiers) et ne touche jamais un agent ni un administrateur.
+  if (authed && user && !connexionOuverte(user.kind, cfg.PORTAIL_ENABLED)) {
+    await auditRecord("connexion refusée", "portail fermé aux usagers", "securite", user.email);
+    return { ok: false, message: MESSAGE_PORTAIL_FERME };
   }
 
   if (authed && user) {
