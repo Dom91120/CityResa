@@ -53,6 +53,13 @@ export default async function ProcessusPage({
     optionsCriteres(),
   ]);
   const libelles = libellesDe(options);
+  // Qui signe quand un service n'a pas de signataire : rappelé sous le champ.
+  const signataireCollectivite = [
+    page.user.settings.COLLECTIVITE_SIGNATAIRE,
+    page.user.settings.COLLECTIVITE_SIGNATAIRE_QUALITE,
+  ]
+    .filter(Boolean)
+    .join(", ");
   const choixAgents = agents.map((a) => [a.id, `${nom(a)} · ${a.role}`] as [string, string]);
   const elus = agents.filter((a) => a.role === "elu");
   const choixElus = (elus.length ? elus : agents).map((a) => [a.id, nom(a)] as [string, string]);
@@ -136,6 +143,12 @@ export default async function ProcessusPage({
                             <small>
                               {[s.email, s.phone, s.description].filter(Boolean).join(" · ") || "—"}
                             </small>
+                            {s.signataire || s.signataireQualite ? (
+                              <small>
+                                Signataire :{" "}
+                                {[s.signataire, s.signataireQualite].filter(Boolean).join(", ")}
+                              </small>
+                            ) : null}
                           </span>
                         </td>
                         <td>{nom(s.responsable) || <span className="text-faint">—</span>}</td>
@@ -240,6 +253,22 @@ export default async function ProcessusPage({
                   pleine
                   valeur={s?.description}
                   placeholder="Ce dont le service a la charge"
+                />
+                <Champ
+                  label="Signataire des conventions"
+                  name="signataire"
+                  id={`s-sign-${s?.id ?? 0}`}
+                  valeur={s?.signataire}
+                  placeholder="Prénom Nom"
+                  aide={`Signe pour la collectivité les conventions et avenants des dossiers du service. Vide : ${signataireCollectivite || "le signataire de Paramètres › Collectivité"}.`}
+                />
+                <Champ
+                  label="Qualité du signataire"
+                  name="signataire_qualite"
+                  id={`s-signq-${s?.id ?? 0}`}
+                  valeur={s?.signataireQualite}
+                  placeholder="Directeur de la communication"
+                  aide="Telle qu'elle doit figurer sur la convention, délégation comprise."
                 />
                 <Coches
                   label="Membres (comptes du back-office)"

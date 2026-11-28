@@ -514,10 +514,23 @@ async function creerComptesServices(motDePasse?: string): Promise<number> {
   return crees;
 }
 
+/**
+ * Le signataire des conventions de la Vie associative : la directrice de la communication
+ * (personnage fictif). Les autres services n'en ont pas : le signataire de la collectivité signe.
+ * Un signataire déjà saisi n'est jamais remplacé.
+ */
+async function poserSignatairesDemo(): Promise<void> {
+  await prisma.service.updateMany({
+    where: { name: "Vie associative", signataire: null, signataireQualite: null },
+    data: { signataire: "Claire Vasseur", signataireQualite: "Directrice de la communication" },
+  });
+}
+
 export async function creerProcessusDemo(motDePasse?: string): Promise<Record<string, number>> {
   await seedCircuitStandard();
   await creerRoleInstructeur();
-  if ((await prisma.service.count()) > 0)
+  if ((await prisma.service.count()) > 0) {
+    await poserSignatairesDemo();
     return {
       services: 0,
       comptes: await creerComptesServices(motDePasse),
@@ -525,6 +538,7 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
       dossiers: 0,
       etapes: (await creerEtapeDemo()) + (await creerEtapesPasseesDemo()),
     };
+  }
   const compte = async (email: string) =>
     (await prisma.user.findUnique({ where: { email }, select: { id: true } }))?.id ?? null;
   const [sophie, karim, pierre] = await Promise.all([
@@ -587,6 +601,7 @@ export async function creerProcessusDemo(motDePasse?: string): Promise<Record<st
     "communication@exemple.fr",
     null,
   );
+  await poserSignatairesDemo();
   const delegation = await prisma.delegation.create({
     data: { label: "Sports, vie associative et fêtes", userId: pierre },
   });

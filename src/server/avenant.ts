@@ -8,6 +8,7 @@ import type { Avenant } from "@/generated/prisma/client";
 import { ORGANISATION_TYPES } from "@/lib/constantes";
 import { nomRepresentant, qualiteRepresentant } from "@/lib/dossier-usager";
 import { dateCourte, dateHeure, montant, plage } from "@/lib/libelles";
+import { lignesSignataire, signataireEnLigne } from "@/lib/services";
 import { auditRecord } from "@/server/audit";
 import { getSettings } from "@/server/config-store";
 import { codeNumerique, hmacSign, timingSafeEqualStr } from "@/server/crypto";
@@ -26,6 +27,7 @@ import {
   type ReservationComplete,
   variablesDossier,
 } from "@/server/reservations";
+import { signataireDossier } from "@/server/services";
 import { envoyerSms, normaliserMobile } from "@/server/sms";
 
 const MAX_ESSAIS = 5;
@@ -46,6 +48,8 @@ export function libelleAvenant(a: { numero: number }): string {
 /** Le HTML complet d'un avenant : parties, convention de référence, objet, créneaux, montant. */
 export async function htmlAvenant(r: ReservationComplete, a: Avenant): Promise<string> {
   const cfg = await getSettings();
+  // Le même signataire que la convention : celui du service, à défaut celui de la collectivité.
+  const signataire = signataireDossier(cfg, r.service);
   const creneaux = r.creneaux.filter((c) => c.status === "prevu");
   const devis = await deviser(
     r.espaceId,
@@ -75,7 +79,7 @@ export async function htmlAvenant(r: ReservationComplete, a: Avenant): Promise<s
 <p class="muted">${p(r.espace.name)} · ${p(r.espace.site.name)} · convention N° ${p(r.numero)}${r.signedAt ? ` signée le ${dateCourte(r.signedAt)}${r.signerName ? ` par ${p(r.signerName)}` : ""}` : ""}</p>
 
 <h2>Entre</h2>
-<p><strong>${p(cfg.COLLECTIVITE_NOM)}</strong>, représentée par ${p(cfg.COLLECTIVITE_SIGNATAIRE || cfg.COLLECTIVITE_SIGNATAIRE_QUALITE)}${cfg.COLLECTIVITE_SIGNATAIRE ? `, ${p(cfg.COLLECTIVITE_SIGNATAIRE_QUALITE)}` : ""}, ci-après « la collectivité »,</p>
+<p><strong>${p(cfg.COLLECTIVITE_NOM)}</strong>, représentée par ${p(signataireEnLigne(signataire))}, ci-après « la collectivité »,</p>
 <p>et <strong>${occupant}</strong>, ci-après « l'occupant », parties à la convention N° ${p(r.numero)} relative à « ${p(r.title)} ».</p>
 
 <h2>Article 1 — Objet</h2>
@@ -92,7 +96,7 @@ ${creneaux.map((c) => `<tr><td>${plage(c.startAt, c.endAt)}</td><td class="num">
 <p>Les autres clauses de la convention demeurent inchangées.</p>
 
 <div class="signatures">
-<div class="signature"><strong>Pour la collectivité</strong><br>${p(cfg.COLLECTIVITE_SIGNATAIRE_QUALITE)}${cfg.COLLECTIVITE_SIGNATAIRE ? `<br>${p(cfg.COLLECTIVITE_SIGNATAIRE)}` : ""}<br><small class="muted">Édité le ${dateCourte(a.createdAt)}${a.createdBy ? ` par ${p(a.createdBy)}` : ""}</small></div>
+<div class="signature"><strong>Pour la collectivité</strong><br>${lignesSignataire(signataire).map(p).join("<br>")}<br><small class="muted">Édité le ${dateCourte(a.createdAt)}${a.createdBy ? ` par ${p(a.createdBy)}` : ""}</small></div>
 ${signature}
 </div>
 <div class="pied">${p(cfg.COLLECTIVITE_NOM)} · Avenant ${libelleAvenant(a)} · Convention ${p(r.numero)} · CityRésa</div>

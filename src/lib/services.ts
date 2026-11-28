@@ -158,6 +158,43 @@ export function usagerSuivi(a: Acteur, referenceId: number | null | undefined): 
   return file === null || !referenceId || file.includes(referenceId);
 }
 
+// ── Le signataire des documents d'un dossier ──
+
+export type Signataire = {
+  /** Le nom de la personne ; vide si seule la qualité est connue (« Le Maire »). */
+  nom: string;
+  /** Sa qualité ; vide si le service ne l'a pas précisée. */
+  qualite: string;
+  /** Vrai quand c'est le signataire du service, faux quand la collectivité signe. */
+  duService: boolean;
+};
+
+/**
+ * Qui signe pour la collectivité la convention ou l'avenant d'un dossier : le signataire du
+ * service auquel le dossier est confié, s'il en a un ; sinon celui de la collectivité
+ * (Paramètres › Collectivité). Un service qui nomme son signataire sans dire sa qualité n'hérite
+ * pas de celle de la collectivité : « Damien Marillier, Le Maire » serait faux.
+ */
+export function signataireDe(
+  service: { signataire: string | null; signataireQualite: string | null } | null | undefined,
+  collectivite: { nom: string; qualite: string },
+): Signataire {
+  const nom = service?.signataire?.trim() ?? "";
+  const qualite = service?.signataireQualite?.trim() ?? "";
+  if (nom || qualite) return { nom, qualite, duService: true };
+  return { nom: collectivite.nom.trim(), qualite: collectivite.qualite.trim(), duService: false };
+}
+
+/** « Damien Marillier, Directeur de la communication » ; l'un des deux s'il manque l'autre. */
+export function signataireEnLigne(s: Signataire): string {
+  return [s.nom, s.qualite].filter(Boolean).join(", ");
+}
+
+/** Le bloc de signature : la qualité, puis le nom, une ligne chacun (celles qui existent). */
+export function lignesSignataire(s: Signataire): string[] {
+  return [s.qualite, s.nom].filter(Boolean);
+}
+
 // ── Le service dans les courriels d'un dossier ──
 
 export type ServiceContact = { name: string; email: string | null; phone: string | null };

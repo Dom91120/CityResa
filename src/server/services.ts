@@ -10,8 +10,10 @@ import {
   rattachements,
   type ServiceBrut,
   type ServiceUsagers,
+  type Signataire,
   serviceReference,
   servicesAgis,
+  signataireDe,
   variablesService,
 } from "@/lib/services";
 import { getSettings } from "@/server/config-store";
@@ -89,6 +91,20 @@ export async function rattachementsParAgent(
 /** Le titre auquel un agent agit pour un service, en clair. */
 export function libelleRattachement(r: RattachementNomme): string {
   return r.lien === "suppleance" ? `supplée, par ${r.viaName}` : r.lien;
+}
+
+/**
+ * Qui signe pour la collectivité les documents d'un dossier confié à ce service (convention,
+ * avenant) : le signataire du service, sinon celui de Paramètres › Collectivité.
+ */
+export function signataireDossier(
+  cfg: { COLLECTIVITE_SIGNATAIRE: string; COLLECTIVITE_SIGNATAIRE_QUALITE: string },
+  service: { signataire: string | null; signataireQualite: string | null } | null | undefined,
+): Signataire {
+  return signataireDe(service, {
+    nom: cfg.COLLECTIVITE_SIGNATAIRE,
+    qualite: cfg.COLLECTIVITE_SIGNATAIRE_QUALITE,
+  });
 }
 
 /** Les services et les usagers qu'ils suivent, pour calculer le service de référence. */

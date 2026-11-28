@@ -390,6 +390,13 @@ disposition gracieuses accordées aux associations, top organisations ; export *
   ou par courriel ; validité et nombre d'essais limités ; empreinte seule conservée ; nom du
   signataire, horodatage, adresse IP ; convention régénérée avec le cartouche de signature ;
   relances.
+- **Signataire pour la collectivité** : la convention et les avenants d'un dossier sont signés
+  par le signataire du **service auquel le dossier est confié** (nom et qualité saisis sur le
+  service, par exemple le directeur de la communication pour la Vie associative) ; un service
+  sans signataire ou un dossier sans service laisse signer le signataire de la collectivité
+  (Paramètres › Collectivité). Règle pure et testée (`signataireDe`, `src/lib/services.ts`).
+  L'attestation annuelle de valorisation reste signée par la collectivité. Une délégation de
+  signature datée (absence du signataire) n'est pas gérée : on change le signataire du service.
 
 ### Paiements
 

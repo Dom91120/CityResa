@@ -5,11 +5,14 @@ import {
   dossierOuvert,
   factureOuverte,
   fileDeTravail,
+  lignesSignataire,
   rattachements,
   type ServiceBrut,
   type ServiceUsagers,
   serviceReference,
   servicesAgis,
+  signataireDe,
+  signataireEnLigne,
   suppleanceEnCours,
   usagerSuivi,
   variablesService,
@@ -39,6 +42,44 @@ const services = [
   service(COM, { membres: ["camille"], responsableId: "claire" }),
   service(SPORTS, { membres: ["karim"] }),
 ];
+
+describe("signataire d'un dossier", () => {
+  const ville = { nom: "Jeanne Martin", qualite: "Le Maire" };
+
+  it("le service signe quand il a un signataire", () => {
+    const s = signataireDe(
+      { signataire: "Damien Marillier", signataireQualite: "Directeur de la communication" },
+      ville,
+    );
+    expect(s).toEqual({
+      nom: "Damien Marillier",
+      qualite: "Directeur de la communication",
+      duService: true,
+    });
+    expect(signataireEnLigne(s)).toBe("Damien Marillier, Directeur de la communication");
+    expect(lignesSignataire(s)).toEqual(["Directeur de la communication", "Damien Marillier"]);
+  });
+
+  it("sans signataire de service, ou sans service, la collectivité signe", () => {
+    const attendu = { nom: "Jeanne Martin", qualite: "Le Maire", duService: false };
+    expect(signataireDe({ signataire: null, signataireQualite: "  " }, ville)).toEqual(attendu);
+    expect(signataireDe(null, ville)).toEqual(attendu);
+    expect(signataireDe(undefined, ville)).toEqual(attendu);
+  });
+
+  it("un nom sans qualité n'emprunte pas celle de la collectivité", () => {
+    const s = signataireDe({ signataire: "Damien Marillier", signataireQualite: null }, ville);
+    expect(s.qualite).toBe("");
+    expect(signataireEnLigne(s)).toBe("Damien Marillier");
+    expect(lignesSignataire(s)).toEqual(["Damien Marillier"]);
+  });
+
+  it("la collectivité sans nom saisi signe par sa seule qualité", () => {
+    const s = signataireDe(null, { nom: "", qualite: "Le Maire" });
+    expect(signataireEnLigne(s)).toBe("Le Maire");
+    expect(lignesSignataire(s)).toEqual(["Le Maire"]);
+  });
+});
 
 describe("suppléance", () => {
   it("court entre ses deux dates, bornes comprises", () => {

@@ -157,8 +157,9 @@ Une étape précède l'un de six gestes sur une réservation :
 
 1. Onglet **Services**, bouton **Nouveau service** (ou le crayon d'une ligne).
 2. Saisissez le **Nom**, le **Courriel**, le **Téléphone**, choisissez le **Responsable** et cochez les **Membres** parmi les comptes du back-office. Un agent peut appartenir à plusieurs services.
-3. Pour une **suppléance**, choisissez le service dans **Suppléé par** et indiquez les dates **Du** et **Au** : pendant la période, les membres du service suppléant reçoivent aussi ses étapes.
-4. Cliquez sur **Enregistrer**.
+3. Si une personne signe les conventions du service à la place du signataire de la collectivité, saisissez-la dans **Signataire des conventions** (prénom et nom) et sa **Qualité du signataire** (par exemple « Directeur de la communication »). Laissés vides, le signataire de Paramètres › Collectivité signe ; son nom est rappelé sous le champ.
+4. Pour une **suppléance**, choisissez le service dans **Suppléé par** et indiquez les dates **Du** et **Au** : pendant la période, les membres du service suppléant reçoivent aussi ses étapes.
+5. Cliquez sur **Enregistrer**.
 
 ![Délégations](captures/processus-delegations.webp)
 
@@ -171,6 +172,8 @@ Une étape précède l'un de six gestes sur une réservation :
 - les onglets **À valider** et **Pièces à vérifier** de la liste des usagers, le compteur du menu et l'alerte du tableau de bord ne montrent à un agent que les usagers de ses services, et ceux qui n'ont pas de référent.
 
 Consulter et modifier une fiche reste ouvert à tous les agents qui ont l'écriture sur les usagers : une même association peut réserver un gymnase et une salle.
+
+**Le signataire d'un service** — La convention et les avenants d'un dossier sont signés, pour la collectivité, par le signataire du **service auquel le dossier est confié** : son nom et sa qualité figurent dans « représentée par… » et dans le bloc de signature. Un service sans signataire, ou un dossier sans service, laisse signer le signataire de la collectivité (chapitre 9.2). Le changement vaut pour les conventions éditées ensuite ; une convention déjà éditée se réédite depuis la fiche du dossier (**Régénérer la convention**). L'attestation annuelle de valorisation reste signée par la collectivité. Dans la liste des services, le signataire est rappelé sous le nom du service.
 
 **Les campagnes de créneaux d'un service** — Une campagne de créneaux est conduite par un service (chapitre 3.12) : ses membres l'ouvrent, la modifient, l'arbitrent et préviennent les demandeurs. Deux services peuvent mener leur campagne en même temps, sur des espaces distincts.
 

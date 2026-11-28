@@ -47,6 +47,8 @@ export async function POST(req: Request) {
         description: champOuNull(form, "description")?.slice(0, 300) ?? null,
         email,
         phone: champOuNull(form, "phone")?.slice(0, 40) ?? null,
+        signataire: champOuNull(form, "signataire")?.slice(0, 120) ?? null,
+        signataireQualite: champOuNull(form, "signataire_qualite")?.slice(0, 160) ?? null,
         responsableId: responsableId && connus.has(responsableId) ? responsableId : null,
         suppleantId: suppleantId && suppleantId !== id ? suppleantId : null,
         suppleanceDu: suppleantId ? du : null,

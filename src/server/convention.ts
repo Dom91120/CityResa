@@ -7,12 +7,14 @@
 import { ORGANISATION_TYPES, TARIF_UNITES } from "@/lib/constantes";
 import { nomRepresentant, qualiteRepresentant } from "@/lib/dossier-usager";
 import { dateCourte, dateHeure, montant, plage } from "@/lib/libelles";
+import { lignesSignataire, signataireEnLigne } from "@/lib/services";
 import { getSettings } from "@/server/config-store";
 import { prisma } from "@/server/db";
 import { enregistrerPdf } from "@/server/documents";
 import { escapeHtml } from "@/server/email-templates";
 import { CSS_EDITION, htmlVersPdf } from "@/server/pdf";
 import { chargerReservation, deviser, type ReservationComplete } from "@/server/reservations";
+import { signataireDossier } from "@/server/services";
 
 function p(s: string | null | undefined): string {
   return escapeHtml(s ?? "");
@@ -21,6 +23,8 @@ function p(s: string | null | undefined): string {
 /** Le HTML complet de la convention d'un dossier. */
 export async function htmlConvention(r: ReservationComplete): Promise<string> {
   const cfg = await getSettings();
+  // Le signataire du service auquel le dossier est confié ; à défaut, celui de la collectivité.
+  const signataire = signataireDossier(cfg, r.service);
   const devis = await deviser(
     r.espaceId,
     r.organisation?.profilId ?? null,
@@ -60,7 +64,7 @@ export async function htmlConvention(r: ReservationComplete): Promise<string> {
 <p class="muted">${p(r.espace.name)} · ${p(r.espace.site.name)}</p>
 
 <h2>Entre</h2>
-<p><strong>${p(cfg.COLLECTIVITE_NOM)}</strong>, représentée par ${p(cfg.COLLECTIVITE_SIGNATAIRE || cfg.COLLECTIVITE_SIGNATAIRE_QUALITE)}${cfg.COLLECTIVITE_SIGNATAIRE ? `, ${p(cfg.COLLECTIVITE_SIGNATAIRE_QUALITE)}` : ""}, ci-après « la collectivité »,</p>
+<p><strong>${p(cfg.COLLECTIVITE_NOM)}</strong>, représentée par ${p(signataireEnLigne(signataire))}, ci-après « la collectivité »,</p>
 <p>et <strong>${occupant}</strong>${adresse ? `, ${p(adresse)}` : ""}${r.user?.email ? ` (${p(r.user.email)})` : ""}, ci-après « l'occupant ».</p>
 
 ${r.service ? `<p class="muted">Dossier suivi par : <strong>${p(r.service.name)}</strong>${r.service.email || r.service.phone ? ` (${p([r.service.email, r.service.phone].filter(Boolean).join(" · "))})` : ""}.</p>` : ""}
@@ -94,7 +98,7 @@ ${r.espace.rules ? `<h3>Règlement propre à l'espace</h3><div class="pre">${p(r
 ${r.espace.instructions ? `<h3>Consignes d'accès</h3><div class="pre">${p(r.espace.instructions)}</div>` : ""}
 
 <div class="signatures">
-<div class="signature"><strong>Pour la collectivité</strong><br>${p(cfg.COLLECTIVITE_SIGNATAIRE_QUALITE)}${cfg.COLLECTIVITE_SIGNATAIRE ? `<br>${p(cfg.COLLECTIVITE_SIGNATAIRE)}` : ""}<br><small class="muted">Accepté le ${r.decisionAt ? dateCourte(r.decisionAt) : dateCourte(new Date())}${r.decisionBy ? ` par ${p(r.decisionBy)}` : ""}</small></div>
+<div class="signature"><strong>Pour la collectivité</strong><br>${lignesSignataire(signataire).map(p).join("<br>")}<br><small class="muted">Accepté le ${r.decisionAt ? dateCourte(r.decisionAt) : dateCourte(new Date())}${r.decisionBy ? ` par ${p(r.decisionBy)}` : ""}</small></div>
 ${signature}
 </div>
 <div class="pied">${p(cfg.COLLECTIVITE_NOM)} · Convention ${p(r.numero)} · CityRésa</div>

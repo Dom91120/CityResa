@@ -31,7 +31,7 @@ Ce chapitre décrit les écrans réservés aux administrateurs : réglages gén�
   - **Nom de la collectivité** (obligatoire) ;
   - **Adresse** : le code postal qu'elle contient sert à reconnaître les usagers « de la commune » (tarifs résidents, pré-remplissage à l'inscription) ;
   - **Courriel de contact**, **Téléphone**, **Site web** ;
-  - **Signataire des conventions** et **Qualité du signataire** (par exemple « Le Maire ») ;
+  - **Signataire des conventions** et **Qualité du signataire** (par exemple « Le Maire ») : il signe les conventions et avenants des dossiers dont le service n'a pas son propre signataire (chapitre 12.5), et l'attestation de valorisation ;
   - **Subventions : service à contacter**, son **courriel** et son **téléphone** : rappelés aux associations sur la campagne, le dossier de demande et son PDF (vides, le courriel et le téléphone de la collectivité sont repris) ;
   - **Logo ou blason** : l'aperçu actuel, le bouton **Choisir un fichier** et la case **Retirer le logo actuel**. Le logo est affiché dans la barre latérale, sur le portail, sur les pages de connexion et en en-tête des conventions et factures.
 - Le bouton **Enregistrer** en bas à droite.

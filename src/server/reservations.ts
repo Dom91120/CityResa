@@ -48,7 +48,16 @@ import { verifierPieces } from "@/server/pieces";
 export const INCLUDE_RESERVATION = {
   espace: { include: { site: true, parent: true, enfants: true } },
   organisation: { include: { profil: true } },
-  service: { select: { id: true, name: true, email: true, phone: true } },
+  service: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      signataire: true,
+      signataireQualite: true,
+    },
+  },
   user: true,
   agent: true,
   nature: true,

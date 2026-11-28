@@ -1444,6 +1444,11 @@ model Service {
   description     String?   @db.VarChar(300)
   email           String?   @db.VarChar(160)
   phone           String?   @db.VarChar(40)
+  /// La personne qui signe pour la collectivité les conventions et avenants des dossiers du
+  /// service (nom, puis qualité : « Directeur de la communication »). Vides : le signataire de la
+  /// collectivité (Paramètres › Collectivité) signe.
+  signataire        String? @db.VarChar(120)
+  signataireQualite String? @map("signataire_qualite") @db.VarChar(160)
   /// Responsable du service (compte du back-office).
   responsableId   String?   @map("responsable_id")
   responsable     User?     @relation("ServiceResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
